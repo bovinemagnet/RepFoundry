@@ -37,8 +37,7 @@ class CalculateProgressUseCase {
       (max, s) => s.estimatedOneRepMax > max ? s.estimatedOneRepMax : max,
     );
 
-    final totalVolume =
-        sets.fold<double>(0, (sum, s) => sum + s.volume);
+    final totalVolume = sets.fold<double>(0, (sum, s) => sum + s.volume);
 
     return ExerciseProgress(
       exerciseId: exerciseId,

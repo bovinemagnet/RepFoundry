@@ -4,6 +4,7 @@ import 'package:rep_foundry/features/workout/application/log_set_use_case.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
 import 'package:rep_foundry/features/workout/domain/repositories/workout_repository.dart';
+import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
 
 class _FakeWorkoutRepository implements WorkoutRepository {
   final List<WorkoutSet> _sets = [];
@@ -19,10 +20,7 @@ class _FakeWorkoutRepository implements WorkoutRepository {
     String exerciseId, {
     int limit = 50,
   }) async {
-    return _sets
-        .where((s) => s.exerciseId == exerciseId)
-        .take(limit)
-        .toList();
+    return _sets.where((s) => s.exerciseId == exerciseId).take(limit).toList();
   }
 
   // Unused stubs
@@ -49,8 +47,7 @@ class _FakeWorkoutRepository implements WorkoutRepository {
   @override
   Future<void> deleteSet(String setId) async {}
   @override
-  Stream<List<Workout>> watchWorkoutHistory() =>
-      const Stream.empty();
+  Stream<List<Workout>> watchWorkoutHistory() => const Stream.empty();
   @override
   Stream<List<WorkoutSet>> watchSetsForWorkout(String workoutId) =>
       const Stream.empty();
@@ -84,8 +81,10 @@ void main() {
   test('execute() detects a PR on first set', () async {
     final result = await useCase.execute(validInput);
     // First set ever → any positive e1RM should trigger PR
-    expect(result.newPersonalRecord, isNull);
-    // (The PR check only fires when the new set beats a previous best)
+    expect(result.newPersonalRecord, isNotNull);
+    expect(result.newPersonalRecord!.exerciseId, 'e1');
+    expect(result.newPersonalRecord!.recordType, RecordType.estimatedOneRepMax);
+    expect(result.newPersonalRecord!.value, greaterThan(0));
   });
 
   test('execute() detects PR when e1RM exceeds previous', () async {
@@ -110,8 +109,7 @@ void main() {
       ),
     );
     expect(result.newPersonalRecord, isNotNull);
-    expect(result.newPersonalRecord!.value,
-        greaterThan(50 * (1 + 5 / 30.0)));
+    expect(result.newPersonalRecord!.value, greaterThan(50 * (1 + 5 / 30.0)));
   });
 
   test('throws LogSetException for zero reps', () async {

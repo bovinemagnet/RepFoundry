@@ -27,7 +27,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -39,6 +39,18 @@ class AppDatabase extends _$AppDatabase {
           await batch((b) {
             b.insertAll(exercises, _defaultExercises);
           });
+        },
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_workout_sets_exercise_timestamp '
+              'ON workout_sets (exercise_id, timestamp)',
+            );
+            await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_workout_sets_workout_order '
+              'ON workout_sets (workout_id, set_order)',
+            );
+          }
         },
       );
 

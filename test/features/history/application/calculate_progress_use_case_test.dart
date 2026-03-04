@@ -14,10 +14,7 @@ class _FakeWorkoutRepository implements WorkoutRepository {
     String exerciseId, {
     int limit = 50,
   }) async {
-    return _sets
-        .where((s) => s.exerciseId == exerciseId)
-        .take(limit)
-        .toList();
+    return _sets.where((s) => s.exerciseId == exerciseId).take(limit).toList();
   }
 
   // Unused stubs
@@ -46,8 +43,7 @@ class _FakeWorkoutRepository implements WorkoutRepository {
   @override
   Future<void> deleteSet(String setId) async {}
   @override
-  Stream<List<Workout>> watchWorkoutHistory() =>
-      const Stream.empty();
+  Stream<List<Workout>> watchWorkoutHistory() => const Stream.empty();
   @override
   Stream<List<WorkoutSet>> watchSetsForWorkout(String workoutId) =>
       const Stream.empty();

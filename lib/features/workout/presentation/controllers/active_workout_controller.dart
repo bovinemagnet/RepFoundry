@@ -120,8 +120,7 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
   Future<void> addExercise(Exercise exercise) async {
     if (state.activeWorkout == null) return;
 
-    final updated =
-        Map<String, List<WorkoutSet>>.from(state.setsByExercise);
+    final updated = Map<String, List<WorkoutSet>>.from(state.setsByExercise);
     updated.putIfAbsent(exercise.id, () => []);
 
     final updatedExercises = List<Exercise>.from(state.exercises);
@@ -158,8 +157,7 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
         ),
       );
 
-      final updated =
-          Map<String, List<WorkoutSet>>.from(state.setsByExercise);
+      final updated = Map<String, List<WorkoutSet>>.from(state.setsByExercise);
       updated[exerciseId] = [
         ...(updated[exerciseId] ?? []),
         result.set,
@@ -173,11 +171,9 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
   Future<void> deleteSet(String setId, String exerciseId) async {
     try {
       await _workoutRepository.deleteSet(setId);
-      final updated =
-          Map<String, List<WorkoutSet>>.from(state.setsByExercise);
-      updated[exerciseId] = (updated[exerciseId] ?? [])
-          .where((s) => s.id != setId)
-          .toList();
+      final updated = Map<String, List<WorkoutSet>>.from(state.setsByExercise);
+      updated[exerciseId] =
+          (updated[exerciseId] ?? []).where((s) => s.id != setId).toList();
       state = state.copyWith(setsByExercise: updated);
     } catch (e) {
       state = state.copyWith(error: e.toString());

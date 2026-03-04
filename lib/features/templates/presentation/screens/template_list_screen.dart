@@ -1,85 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/workout_template.dart';
+import '../../../../core/providers.dart';
 
-// In-memory template storage provider
 final _templateListProvider =
-    StateNotifierProvider<_TemplateNotifier, List<WorkoutTemplate>>(
-  (ref) => _TemplateNotifier(),
-);
-
-class _TemplateNotifier extends StateNotifier<List<WorkoutTemplate>> {
-  _TemplateNotifier() : super([]);
-
-  void add(WorkoutTemplate template) {
-    state = [...state, template];
-  }
-
-  void remove(String id) {
-    state = state.where((t) => t.id != id).toList();
-  }
-
-  void update(WorkoutTemplate template) {
-    state = [
-      for (final t in state) t.id == template.id ? template : t,
-    ];
-  }
-}
+    StreamProvider.autoDispose<List<WorkoutTemplate>>((ref) {
+  return ref.watch(workoutTemplateRepositoryProvider).watchAllTemplates();
+});
 
 class TemplateListScreen extends ConsumerWidget {
   const TemplateListScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final templates = ref.watch(_templateListProvider);
-    final notifier = ref.read(_templateListProvider.notifier);
+    final templatesAsync = ref.watch(_templateListProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Templates')),
-      body: templates.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.view_list,
-                    size: 80,
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No templates yet',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Create a template to quickly start workouts.',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant,
-                        ),
-                  ),
-                ],
+      body: templatesAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(
+          child: Text('Failed to load templates: $error'),
+        ),
+        data: (templates) => templates.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.view_list,
+                      size: 80,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No templates yet',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Create a template to quickly start workouts.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
+              )
+            : ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: templates.length,
+                itemBuilder: (context, index) {
+                  final template = templates[index];
+                  return _TemplateTile(
+                    template: template,
+                    onDelete: () => ref
+                        .read(workoutTemplateRepositoryProvider)
+                        .deleteTemplate(template.id),
+                  );
+                },
               ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: templates.length,
-              itemBuilder: (context, index) {
-                final template = templates[index];
-                return _TemplateTile(
-                  template: template,
-                  onDelete: () => notifier.remove(template.id),
-                );
-              },
-            ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () =>
-            _showCreateTemplateDialog(context, notifier),
+        onPressed: () => _showCreateTemplateDialog(context, ref),
         icon: const Icon(Icons.add),
         label: const Text('New Template'),
       ),
@@ -88,7 +72,7 @@ class TemplateListScreen extends ConsumerWidget {
 
   Future<void> _showCreateTemplateDialog(
     BuildContext context,
-    _TemplateNotifier notifier,
+    WidgetRef ref,
   ) async {
     final nameController = TextEditingController();
     final result = await showDialog<String>(
@@ -110,8 +94,7 @@ class TemplateListScreen extends ConsumerWidget {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(ctx, nameController.text.trim()),
+            onPressed: () => Navigator.pop(ctx, nameController.text.trim()),
             child: const Text('Create'),
           ),
         ],
@@ -119,7 +102,9 @@ class TemplateListScreen extends ConsumerWidget {
     );
 
     if (result != null && result.isNotEmpty) {
-      notifier.add(WorkoutTemplate.create(name: result));
+      await ref
+          .read(workoutTemplateRepositoryProvider)
+          .createTemplate(WorkoutTemplate.create(name: result));
     }
   }
 }
@@ -139,21 +124,17 @@ class _TemplateTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              Theme.of(context).colorScheme.secondaryContainer,
+          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
           child: Icon(
             Icons.view_list,
-            color: Theme.of(context)
-                .colorScheme
-                .onSecondaryContainer,
+            color: Theme.of(context).colorScheme.onSecondaryContainer,
           ),
         ),
         title: Text(template.name),
         subtitle: Text(
           '${template.exercises.length} exercises',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color:
-                    Theme.of(context).colorScheme.onSurfaceVariant,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
         ),
         trailing: PopupMenuButton<String>(

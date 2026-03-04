@@ -96,14 +96,11 @@ class Exercise {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Exercise &&
-          runtimeType == other.runtimeType &&
-          id == other.id;
+      other is Exercise && runtimeType == other.runtimeType && id == other.id;
 
   @override
   int get hashCode => id.hashCode;
 
   @override
-  String toString() =>
-      'Exercise(id: $id, name: $name, category: $category)';
+  String toString() => 'Exercise(id: $id, name: $name, category: $category)';
 }

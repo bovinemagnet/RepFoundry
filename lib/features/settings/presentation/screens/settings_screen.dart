@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final _themeModeProvider =
-    StateNotifierProvider<_ThemeModeNotifier, ThemeMode>(
+final _themeModeProvider = StateNotifierProvider<_ThemeModeNotifier, ThemeMode>(
   (ref) => _ThemeModeNotifier(),
 );
 
@@ -36,8 +35,7 @@ class _ThemeModeNotifier extends StateNotifier<ThemeMode> {
   }
 }
 
-final _weightUnitProvider =
-    StateNotifierProvider<_WeightUnitNotifier, String>(
+final _weightUnitProvider = StateNotifierProvider<_WeightUnitNotifier, String>(
   (ref) => _WeightUnitNotifier(),
 );
 
@@ -94,9 +92,7 @@ class SettingsScreen extends ConsumerWidget {
               ],
               selected: {themeMode},
               onSelectionChanged: (modes) {
-                ref
-                    .read(_themeModeProvider.notifier)
-                    .set(modes.first);
+                ref.read(_themeModeProvider.notifier).set(modes.first);
               },
             ),
           ),
@@ -117,9 +113,7 @@ class SettingsScreen extends ConsumerWidget {
               ],
               selected: {weightUnit},
               onSelectionChanged: (units) {
-                ref
-                    .read(_weightUnitProvider.notifier)
-                    .set(units.first);
+                ref.read(_weightUnitProvider.notifier).set(units.first);
               },
             ),
           ),
@@ -189,8 +183,7 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:
-          const EdgeInsets.fromLTRB(16, 20, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
       child: Text(
         title,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(

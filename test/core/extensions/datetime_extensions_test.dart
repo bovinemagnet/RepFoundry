@@ -9,8 +9,7 @@ void main() {
     });
 
     test('relativeLabel returns "Yesterday" for yesterday', () {
-      final yesterday =
-          DateTime.now().subtract(const Duration(days: 1));
+      final yesterday = DateTime.now().subtract(const Duration(days: 1));
       expect(yesterday.relativeLabel, 'Yesterday');
     });
 

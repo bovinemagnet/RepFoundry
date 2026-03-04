@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import '../../domain/models/cardio_session.dart';
 import '../../../exercises/domain/models/exercise.dart';
+import '../../../workout/domain/models/workout.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 
@@ -28,10 +30,8 @@ class _CardioState {
     return _CardioState(
       isRunning: isRunning ?? this.isRunning,
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
-      selectedExerciseId:
-          selectedExerciseId ?? this.selectedExerciseId,
-      selectedExerciseName:
-          selectedExerciseName ?? this.selectedExerciseName,
+      selectedExerciseId: selectedExerciseId ?? this.selectedExerciseId,
+      selectedExerciseName: selectedExerciseName ?? this.selectedExerciseName,
     );
   }
 }
@@ -45,8 +45,7 @@ class _CardioNotifier extends StateNotifier<_CardioState> {
     if (state.isRunning) return;
     state = state.copyWith(isRunning: true);
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      state =
-          state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
+      state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
     });
   }
 
@@ -93,8 +92,7 @@ class CardioTrackingScreen extends ConsumerStatefulWidget {
       _CardioTrackingScreenState();
 }
 
-class _CardioTrackingScreenState
-    extends ConsumerState<CardioTrackingScreen> {
+class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
   final _distanceController = TextEditingController();
   final _heartRateController = TextEditingController();
 
@@ -138,8 +136,7 @@ class _CardioTrackingScreenState
                 notifier.selectExercise(id, ex.name);
               },
             ),
-            loading: () =>
-                const LinearProgressIndicator(),
+            loading: () => const LinearProgressIndicator(),
             error: (_, __) => const Text('Failed to load exercises'),
           ),
           const SizedBox(height: 24),
@@ -147,20 +144,16 @@ class _CardioTrackingScreenState
           // Timer display
           Center(
             child: Text(
-              Duration(seconds: cardioState.elapsedSeconds)
-                  .formatted,
-              style: Theme.of(context)
-                  .textTheme
-                  .displayLarge
-                  ?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: cardioState.isRunning
-                        ? Theme.of(context).colorScheme.primary
-                        : null,
-                    fontFeatures: const [
-                      FontFeature.tabularFigures(),
-                    ],
-                  ),
+              Duration(seconds: cardioState.elapsedSeconds).formatted,
+              style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: cardioState.isRunning
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+                fontFeatures: const [
+                  FontFeature.tabularFigures(),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -173,9 +166,8 @@ class _CardioTrackingScreenState
                 FilledButton.icon(
                   onPressed: notifier.start,
                   icon: const Icon(Icons.play_arrow),
-                  label: Text(cardioState.elapsedSeconds == 0
-                      ? 'Start'
-                      : 'Resume'),
+                  label: Text(
+                      cardioState.elapsedSeconds == 0 ? 'Start' : 'Resume'),
                 ),
               ] else ...[
                 OutlinedButton.icon(
@@ -186,9 +178,8 @@ class _CardioTrackingScreenState
               ],
               const SizedBox(width: 12),
               OutlinedButton.icon(
-                onPressed: cardioState.elapsedSeconds > 0
-                    ? notifier.reset
-                    : null,
+                onPressed:
+                    cardioState.elapsedSeconds > 0 ? notifier.reset : null,
                 icon: const Icon(Icons.stop),
                 label: const Text('Reset'),
               ),
@@ -204,8 +195,7 @@ class _CardioTrackingScreenState
               border: OutlineInputBorder(),
               prefixIcon: Icon(Icons.directions_run),
             ),
-            keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -232,30 +222,41 @@ class _CardioTrackingScreenState
     );
   }
 
-  void _saveSession(
+  Future<void> _saveSession(
     BuildContext context,
     _CardioState cardioState,
-  ) {
+  ) async {
+    // Create a completed workout as the parent (satisfies FK constraint).
+    final now = DateTime.now().toUtc();
+    final workout = Workout(
+      id: const Uuid().v4(),
+      startedAt: now.subtract(Duration(seconds: cardioState.elapsedSeconds)),
+      completedAt: now,
+      notes: 'Cardio: ${cardioState.selectedExerciseName ?? "session"}',
+    );
+    await ref.read(workoutRepositoryProvider).createWorkout(workout);
+
     final session = CardioSession.create(
-      workoutId: 'standalone',
+      workoutId: workout.id,
       exerciseId: cardioState.selectedExerciseId!,
       durationSeconds: cardioState.elapsedSeconds,
-      distanceMeters:
-          double.tryParse(_distanceController.text),
-      avgHeartRate:
-          int.tryParse(_heartRateController.text),
+      distanceMeters: double.tryParse(_distanceController.text),
+      avgHeartRate: int.tryParse(_heartRateController.text),
     );
+    await ref.read(cardioSessionRepositoryProvider).createSession(session);
 
     ref.read(_cardioProvider.notifier).reset();
     _distanceController.clear();
     _heartRateController.clear();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Cardio session saved: ${Duration(seconds: session.durationSeconds).formatted}',
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Cardio session saved: ${Duration(seconds: session.durationSeconds).formatted}',
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 }

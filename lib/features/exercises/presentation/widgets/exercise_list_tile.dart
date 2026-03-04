@@ -17,8 +17,7 @@ class ExerciseListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor:
-            Theme.of(context).colorScheme.primaryContainer,
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         child: Icon(
           _iconForCategory(exercise.category),
           color: Theme.of(context).colorScheme.onPrimaryContainer,

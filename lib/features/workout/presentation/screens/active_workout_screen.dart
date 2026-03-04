@@ -15,8 +15,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(activeWorkoutControllerProvider);
-    final controller =
-        ref.read(activeWorkoutControllerProvider.notifier);
+    final controller = ref.read(activeWorkoutControllerProvider.notifier);
 
     if (state.error != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -123,8 +122,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
                   Text(
                     'Add exercises using the button below',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                   ),
                 ],
@@ -155,8 +153,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
                 rpe: rpe,
               );
             },
-            onDeleteSet: (setId) =>
-                controller.deleteSet(setId, exercise.id),
+            onDeleteSet: (setId) => controller.deleteSet(setId, exercise.id),
           ),
       ],
     );
@@ -165,9 +162,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
   Future<void> _pickExercise(BuildContext context, WidgetRef ref) async {
     final exercise = await context.push<Exercise>('/exercises');
     if (exercise != null) {
-      ref
-          .read(activeWorkoutControllerProvider.notifier)
-          .addExercise(exercise);
+      ref.read(activeWorkoutControllerProvider.notifier).addExercise(exercise);
     }
   }
 

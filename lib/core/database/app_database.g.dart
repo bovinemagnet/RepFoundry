@@ -2665,6 +2665,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $WorkoutTemplatesTable(this);
   late final $TemplateExercisesTable templateExercises =
       $TemplateExercisesTable(this);
+  late final Index idxWorkoutSetsExerciseTimestamp = Index(
+      'idx_workout_sets_exercise_timestamp',
+      'CREATE INDEX idx_workout_sets_exercise_timestamp ON workout_sets (exercise_id, timestamp)');
+  late final Index idxWorkoutSetsWorkoutOrder = Index(
+      'idx_workout_sets_workout_order',
+      'CREATE INDEX idx_workout_sets_workout_order ON workout_sets (workout_id, set_order)');
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2676,7 +2682,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         cardioSessions,
         personalRecords,
         workoutTemplates,
-        templateExercises
+        templateExercises,
+        idxWorkoutSetsExerciseTimestamp,
+        idxWorkoutSetsWorkoutOrder
       ];
 }
 

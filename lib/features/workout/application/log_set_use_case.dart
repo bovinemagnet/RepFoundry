@@ -1,6 +1,7 @@
 import '../domain/models/workout_set.dart';
 import '../domain/repositories/workout_repository.dart';
 import '../../history/domain/models/personal_record.dart';
+import '../../history/domain/repositories/personal_record_repository.dart';
 
 class LogSetResult {
   final WorkoutSet set;
@@ -37,9 +38,13 @@ class LogSetException implements Exception {
 
 class LogSetUseCase {
   final WorkoutRepository _workoutRepository;
+  final PersonalRecordRepository? _personalRecordRepository;
 
-  const LogSetUseCase({required WorkoutRepository workoutRepository})
-      : _workoutRepository = workoutRepository;
+  const LogSetUseCase({
+    required WorkoutRepository workoutRepository,
+    PersonalRecordRepository? personalRecordRepository,
+  })  : _workoutRepository = workoutRepository,
+        _personalRecordRepository = personalRecordRepository;
 
   Future<LogSetResult> execute(LogSetInput input) async {
     _validate(input);
@@ -55,6 +60,10 @@ class LogSetUseCase {
 
     final savedSet = await _workoutRepository.addSet(set);
     final pr = await _checkForPersonalRecord(savedSet);
+
+    if (pr != null) {
+      await _personalRecordRepository?.createRecord(pr);
+    }
 
     return LogSetResult(set: savedSet, newPersonalRecord: pr);
   }
@@ -77,9 +86,7 @@ class LogSetUseCase {
       limit: 100,
     );
 
-    final previousBest = previousSets
-        .where((s) => s.id != set.id)
-        .fold<double>(
+    final previousBest = previousSets.where((s) => s.id != set.id).fold<double>(
           0,
           (max, s) => s.estimatedOneRepMax > max ? s.estimatedOneRepMax : max,
         );

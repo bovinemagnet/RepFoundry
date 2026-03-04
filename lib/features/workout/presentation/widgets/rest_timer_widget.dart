@@ -66,12 +66,12 @@ class RestTimerWidget extends ConsumerWidget {
             Text(
               Duration(seconds: secondsLeft).formatted,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                    fontFeatures: const [
-                      FontFeature.tabularFigures(),
-                    ],
-                  ),
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold,
+                fontFeatures: const [
+                  FontFeature.tabularFigures(),
+                ],
+              ),
             ),
             const SizedBox(width: 8),
             IconButton(
@@ -93,7 +93,8 @@ class RestTimerWidget extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(left: 4),
               child: ActionChip(
-                label: Text('${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}'),
+                label: Text(
+                    '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}'),
                 onPressed: () => notifier.start(seconds),
                 padding: EdgeInsets.zero,
                 labelStyle: Theme.of(context).textTheme.labelSmall,

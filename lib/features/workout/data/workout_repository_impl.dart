@@ -87,9 +87,7 @@ class InMemoryWorkoutRepository implements WorkoutRepository {
 
   @override
   Future<List<WorkoutSet>> getSetsForWorkout(String workoutId) async {
-    return _sets
-        .where((s) => s.workoutId == workoutId)
-        .toList()
+    return _sets.where((s) => s.workoutId == workoutId).toList()
       ..sort((a, b) => a.setOrder.compareTo(b.setOrder));
   }
 
@@ -98,9 +96,7 @@ class InMemoryWorkoutRepository implements WorkoutRepository {
     String exerciseId, {
     int limit = 50,
   }) async {
-    final results = _sets
-        .where((s) => s.exerciseId == exerciseId)
-        .toList()
+    final results = _sets.where((s) => s.exerciseId == exerciseId).toList()
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
     return results.length > limit ? results.sublist(0, limit) : results;
   }
@@ -135,18 +131,17 @@ class InMemoryWorkoutRepository implements WorkoutRepository {
   }
 
   void _notifyHistoryListeners() {
-    final completed =
-        _workouts.where((w) => w.status == WorkoutStatus.completed).toList()
-          ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+    final completed = _workouts
+        .where((w) => w.status == WorkoutStatus.completed)
+        .toList()
+      ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
     _historyController.add(completed);
   }
 
   void _notifySetListeners(String workoutId) {
     final controller = _setControllers[workoutId];
     if (controller != null) {
-      final sets = _sets
-          .where((s) => s.workoutId == workoutId)
-          .toList()
+      final sets = _sets.where((s) => s.workoutId == workoutId).toList()
         ..sort((a, b) => a.setOrder.compareTo(b.setOrder));
       controller.add(sets);
     }

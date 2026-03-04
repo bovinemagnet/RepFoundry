@@ -6,8 +6,7 @@ import '../../../../core/providers.dart';
 import '../../../../core/widgets/loading_widget.dart';
 
 final _searchQueryProvider = StateProvider<String>((ref) => '');
-final _selectedMuscleGroupProvider =
-    StateProvider<MuscleGroup?>((ref) => null);
+final _selectedMuscleGroupProvider = StateProvider<MuscleGroup?>((ref) => null);
 
 final _filteredExercisesProvider =
     FutureProvider.autoDispose<List<Exercise>>((ref) async {
@@ -32,8 +31,7 @@ class ExercisePickerScreen extends ConsumerStatefulWidget {
       _ExercisePickerScreenState();
 }
 
-class _ExercisePickerScreenState
-    extends ConsumerState<ExercisePickerScreen> {
+class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
   late final TextEditingController _searchController;
 
   @override
@@ -59,8 +57,7 @@ class _ExercisePickerScreenState
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -71,9 +68,7 @@ class _ExercisePickerScreenState
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
-                          ref
-                              .read(_searchQueryProvider.notifier)
-                              .state = '';
+                          ref.read(_searchQueryProvider.notifier).state = '';
                         },
                       )
                     : null,
@@ -106,8 +101,7 @@ class _ExercisePickerScreenState
                         );
                       },
                     ),
-              loading: () =>
-                  const LoadingWidget(message: 'Loading exercises…'),
+              loading: () => const LoadingWidget(message: 'Loading exercises…'),
               error: (e, _) => Center(child: Text('Error: $e')),
             ),
           ),

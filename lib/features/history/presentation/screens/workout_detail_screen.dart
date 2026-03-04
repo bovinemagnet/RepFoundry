@@ -55,8 +55,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dataAsync =
-        ref.watch(_workoutDetailProvider(workoutId));
+    final dataAsync = ref.watch(_workoutDetailProvider(workoutId));
 
     return Scaffold(
       appBar: AppBar(
@@ -70,8 +69,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
           }
           return _WorkoutDetailBody(data: data);
         },
-        loading: () =>
-            const LoadingWidget(message: 'Loading workout…'),
+        loading: () => const LoadingWidget(message: 'Loading workout…'),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
@@ -113,9 +111,7 @@ class _WorkoutDetailBody extends StatelessWidget {
                 Text(
                   workout.startedAt.toLocal().timeOfDay,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurfaceVariant,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
                 const Divider(height: 24),
@@ -132,8 +128,7 @@ class _WorkoutDetailBody extends StatelessWidget {
                     ),
                     _StatBox(
                       label: 'Volume',
-                      value:
-                          '${totalVolume.toStringAsFixed(0)} kg',
+                      value: '${totalVolume.toStringAsFixed(0)} kg',
                     ),
                   ],
                 ),
@@ -194,8 +189,7 @@ class _ExerciseSetsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = exercise?.name ?? exerciseId;
-    final volume =
-        sets.fold<double>(0, (sum, s) => sum + s.volume);
+    final volume = sets.fold<double>(0, (sum, s) => sum + s.volume);
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -209,18 +203,15 @@ class _ExerciseSetsCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     name,
-                    style:
-                        Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 ),
                 Text(
                   'Vol: ${volume.toStringAsFixed(0)} kg',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurfaceVariant,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
               ],
@@ -245,20 +236,13 @@ class _ExerciseSetsCard extends StatelessWidget {
                 for (int i = 0; i < sets.length; i++)
                   TableRow(
                     children: [
-                      _tableCell(context, '${i + 1}',
-                          isHeader: true),
-                      _tableCell(
-                          context, '${sets[i].weight} kg'),
-                      _tableCell(
-                          context, '${sets[i].reps}'),
+                      _tableCell(context, '${i + 1}', isHeader: true),
+                      _tableCell(context, '${sets[i].weight} kg'),
+                      _tableCell(context, '${sets[i].reps}'),
                       _tableCell(
                         context,
-                        sets[i]
-                            .estimatedOneRepMax
-                            .toStringAsFixed(1),
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primary,
+                        sets[i].estimatedOneRepMax.toStringAsFixed(1),
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ],
                   ),
@@ -276,8 +260,7 @@ class _ExerciseSetsCard extends StatelessWidget {
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color:
-                  Theme.of(context).colorScheme.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
         textAlign: TextAlign.center,
       ),
@@ -295,8 +278,7 @@ class _ExerciseSetsCard extends StatelessWidget {
       child: Text(
         text,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontWeight:
-                  isHeader ? FontWeight.bold : FontWeight.normal,
+              fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
               color: color,
             ),
         textAlign: TextAlign.center,

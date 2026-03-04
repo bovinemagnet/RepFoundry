@@ -29,10 +29,8 @@ class ExerciseProgressScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync =
-        ref.watch(_exerciseProgressProvider(exerciseId));
-    final exerciseAsync =
-        ref.watch(_exerciseDetailProvider(exerciseId));
+    final progressAsync = ref.watch(_exerciseProgressProvider(exerciseId));
+    final exerciseAsync = ref.watch(_exerciseDetailProvider(exerciseId));
 
     return Scaffold(
       appBar: AppBar(
@@ -45,8 +43,7 @@ class ExerciseProgressScreen extends ConsumerWidget {
           progress: progress,
           exerciseName: exerciseAsync.valueOrNull?.name,
         ),
-        loading: () =>
-            const LoadingWidget(message: 'Loading progress…'),
+        loading: () => const LoadingWidget(message: 'Loading progress…'),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
@@ -104,8 +101,7 @@ class _ProgressBody extends StatelessWidget {
             Expanded(
               child: _StatCard(
                 label: 'Total Volume',
-                value:
-                    '${progress.totalVolume?.toStringAsFixed(0) ?? '—'} kg',
+                value: '${progress.totalVolume?.toStringAsFixed(0) ?? '—'} kg',
                 icon: Icons.bar_chart,
               ),
             ),
@@ -131,43 +127,35 @@ class _ProgressBody extends StatelessWidget {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
                     Expanded(
                       child: Text(
                         'Date',
-                        style:
-                            Theme.of(context).textTheme.labelSmall,
+                        style: Theme.of(context).textTheme.labelSmall,
                       ),
                     ),
                     Expanded(
                       child: Text(
                         'Weight',
-                        style:
-                            Theme.of(context).textTheme.labelSmall,
+                        style: Theme.of(context).textTheme.labelSmall,
                         textAlign: TextAlign.center,
                       ),
                     ),
                     Expanded(
                       child: Text(
                         'Reps',
-                        style:
-                            Theme.of(context).textTheme.labelSmall,
+                        style: Theme.of(context).textTheme.labelSmall,
                         textAlign: TextAlign.center,
                       ),
                     ),
                     Expanded(
                       child: Text(
                         'e1RM',
-                        style: Theme.of(context)
-                            .textTheme
-                            .labelSmall
-                            ?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .primary,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                         textAlign: TextAlign.center,
                       ),
@@ -178,30 +166,27 @@ class _ProgressBody extends StatelessWidget {
               const Divider(height: 1),
               for (final set in progress.sets.take(30))
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     children: [
                       Expanded(
                         child: Text(
                           set.timestamp.toLocal().relativeLabel,
-                          style:
-                              Theme.of(context).textTheme.bodySmall,
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
                       Expanded(
                         child: Text(
                           '${set.weight} kg',
-                          style:
-                              Theme.of(context).textTheme.bodySmall,
+                          style: Theme.of(context).textTheme.bodySmall,
                           textAlign: TextAlign.center,
                         ),
                       ),
                       Expanded(
                         child: Text(
                           '${set.reps}',
-                          style:
-                              Theme.of(context).textTheme.bodySmall,
+                          style: Theme.of(context).textTheme.bodySmall,
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -212,9 +197,7 @@ class _ProgressBody extends StatelessWidget {
                               .textTheme
                               .bodySmall
                               ?.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primary,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                           textAlign: TextAlign.center,
                         ),
@@ -248,22 +231,18 @@ class _StatCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            Icon(icon,
-                color: Theme.of(context).colorScheme.primary),
+            Icon(icon, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 4),
             Text(
               value,
-              style:
-                  Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             Text(
               label,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
               textAlign: TextAlign.center,
             ),
