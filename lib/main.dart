@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/app.dart';
+import 'core/database/app_database.dart';
+import 'core/database/database_provider.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: RepFoundryApp()));
+
+  final database = AppDatabase();
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        databaseProvider.overrideWithValue(database),
+      ],
+      child: const RepFoundryApp(),
+    ),
+  );
 }

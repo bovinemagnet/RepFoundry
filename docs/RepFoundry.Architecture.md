@@ -17,7 +17,7 @@ RepFoundry follows a clean architecture pattern with clear separation between pr
 |-------|-----------|---------|
 | Framework | Flutter 3.x / Dart 3.x | Cross-platform UI and application framework |
 | State Management | Riverpod 2.x | Reactive state management with dependency injection |
-| Local Database | In-memory repositories (Drift planned) | In-memory storage with repository interfaces designed for future Drift (SQLite) migration |
+| Local Database | Drift 2.x (SQLite) | Offline-first persistence with type-safe queries; in-memory repositories retained for testing |
 | Navigation | GoRouter | Declarative routing with deep link support |
 | Dependency Injection | Riverpod (built-in) | Provider-based DI with auto-dispose and scoping |
 | Charts | fl_chart | High-performance charting for progress visualisation |
@@ -42,13 +42,18 @@ lib/
 │   │   ├── presentation/     # Screens, widgets, controllers
 │   │   ├── application/      # Use cases, state notifiers
 │   │   ├── domain/           # Models, repository interfaces
-│   │   └── data/             # Repository impls, data sources
+│   │   └── data/             # Repository impls (Drift + in-memory)
 │   ├── exercises/            # Exercise library feature
 │   ├── history/              # Workout history & progress
 │   ├── cardio/               # Cardio tracking feature
 │   ├── templates/            # Workout templates
 │   └── settings/             # App preferences
 ├── core/                     # Shared utilities
+│   ├── database/             # Drift database, tables, converters
+│   │   ├── app_database.dart # @DriftDatabase class + seed data
+│   │   ├── converters.dart   # DateTime↔epoch ms, enum↔string
+│   │   ├── database_provider.dart  # Riverpod provider
+│   │   └── tables/           # 7 Drift table definitions
 │   ├── extensions/           # Dart extension methods
 │   └── widgets/              # Reusable UI components
 └── main.dart
@@ -89,34 +94,47 @@ Pure Dart models with no framework dependencies. These are immutable data classe
 
 ### 4.4 Data Layer
 
-Repository implementations currently use in-memory storage with Dart collections. Each repository implements a domain-layer interface, making the persistence mechanism swappable. The interfaces are designed so that Drift (SQLite) implementations can replace the in-memory versions without changing the application or presentation layers.
+Repository implementations use Drift (SQLite) for production persistence and in-memory storage for testing. Each repository implements a domain-layer interface, keeping the persistence mechanism swappable.
+
+**Production repositories:**
+
+- `DriftExerciseRepository` — implements `ExerciseRepository` against SQLite
+- `DriftWorkoutRepository` — implements `WorkoutRepository` against SQLite
+
+**Test repositories (kept alongside):**
+
+- `InMemoryExerciseRepository` — used by use case tests with hand-written fakes
+- `InMemoryWorkoutRepository` — used by use case tests with hand-written fakes
 
 Key data design decisions:
 
 - Soft deletes on workouts and exercises (`deletedAt` field) to support undo and data recovery
-- Repository interfaces return Streams for reactive data, currently backed by `StreamController` broadcast streams
-
-**Planned (Drift migration):**
-
-- All timestamps stored as UTC epoch milliseconds for consistency and sort performance
-- Indexes on `workoutId`, `exerciseId`, and `timestamp` columns for fast history queries
-- Schema versioning with Drift migrations; each version bump has an explicit migration step
+- Repository interfaces return Streams for reactive data; Drift's query watcher efficiently invalidates only affected streams when data changes
+- All timestamps stored as UTC epoch milliseconds (`IntColumn`) for consistency and sort performance
+- Enums stored as their `.name` string — human-readable in the database and safe against reordering
+- String UUID primary keys, matching the existing domain model pattern
+- `PRAGMA foreign_keys = ON` enabled in `beforeOpen` for referential integrity
+- 18 default exercises seeded on first run (IDs '1'–'18')
+- `driftDatabase()` from `drift_flutter` provides a `LazyDatabase` — the DB opens on first query, avoiding a loading screen
+- Import aliasing (`import '...app_database.dart' as db;`) resolves naming conflicts between Drift-generated data classes and domain models
 
 ---
 
-## 5. Data Schema (Planned)
+## 5. Data Schema
 
-> **Note:** The current implementation uses in-memory repositories. The tables below represent the target schema for the planned Drift (SQLite) migration. Drift will generate type-safe accessors from these definitions.
+All 7 tables are defined as Drift table classes in `lib/core/database/tables/`. Drift generates type-safe accessors, companion classes, and query watchers from these definitions. The generated code lives in `app_database.g.dart` (regenerate with `dart run build_runner build --delete-conflicting-outputs`).
 
-| Table | Columns | Relationships |
-|-------|---------|---------------|
-| workouts | id (PK), started_at, completed_at, template_id (FK?), notes, deleted_at | Has many workout_sets, cardio_sessions |
-| workout_sets | id (PK), workout_id (FK), exercise_id (FK), set_order, weight, reps, rpe, timestamp | Belongs to workout and exercise |
-| exercises | id (PK), name, category, muscle_group, equipment_type, is_custom, deleted_at | Has many workout_sets |
-| cardio_sessions | id (PK), workout_id (FK), exercise_id (FK), duration_sec, distance_m, incline, avg_hr | Belongs to workout |
-| workout_templates | id (PK), name, created_at, updated_at | Has many template_exercises |
-| template_exercises | id (PK), template_id (FK), exercise_id (FK), target_sets, target_reps, order_index | Belongs to template and exercise |
-| personal_records | id (PK), exercise_id (FK), record_type, value, achieved_at, workout_set_id (FK) | Belongs to exercise |
+| Table | Columns | Repository | Status |
+|-------|---------|------------|--------|
+| exercises | id (PK, text), name, category, muscle_group, equipment_type, is_custom, deleted_at | `DriftExerciseRepository` | Implemented |
+| workouts | id (PK, text), started_at, completed_at, template_id (FK?), notes, deleted_at | `DriftWorkoutRepository` | Implemented |
+| workout_sets | id (PK, text), workout_id (FK), exercise_id (FK), set_order, weight, reps, rpe, timestamp | `DriftWorkoutRepository` | Implemented |
+| cardio_sessions | id (PK, text), workout_id (FK), exercise_id (FK), duration_seconds, distance_meters, incline, avg_heart_rate | — | Table only (repo deferred) |
+| personal_records | id (PK, text), exercise_id (FK), record_type, value, achieved_at, workout_set_id (FK?) | — | Table only (repo deferred) |
+| workout_templates | id (PK, text), name, created_at, updated_at | — | Table only (repo deferred) |
+| template_exercises | id (PK, text), template_id (FK), exercise_id (FK), exercise_name, target_sets, target_reps, order_index | — | Table only (repo deferred) |
+
+All datetime columns use `IntColumn` storing UTC epoch milliseconds. Enum columns use `TextColumn` storing the enum's `.name` string. All primary keys are text (UUID v4).
 
 ---
 
@@ -126,10 +144,12 @@ Riverpod is used throughout for reactive state management. The provider tree fol
 
 ### 6.1 Provider Types
 
-- **Provider:** static dependencies (database instance, repositories)
+- **Provider:** static dependencies (database instance, repositories, use cases)
 - **FutureProvider:** one-shot async data (exercise library load, single workout fetch)
-- **StreamProvider:** reactive data (workout history list, active workout sets — powered by StreamController broadcast streams)
+- **StreamProvider:** reactive data (workout history list, active workout sets — powered by Drift query watchers)
 - **NotifierProvider:** mutable UI state (active workout controller, rest timer, exercise search filter)
+
+The `databaseProvider` is defined with an `UnimplementedError` default and overridden in `ProviderScope` inside `main()` with the real `AppDatabase` instance. Repository providers read from `databaseProvider` to obtain the database.
 
 ### 6.2 Active Workout State Flow
 
@@ -166,7 +186,7 @@ GoRouter is configured with a ShellRoute for the bottom navigation bar (three ta
 
 ## 8. Offline-First Strategy
 
-The app is designed to work entirely offline. In-memory repositories serve as the data layer; data does not persist across app restarts. Drift (SQLite) persistence is planned. No feature requires network connectivity. This is critical for gym environments with poor connectivity.
+The app is designed to work entirely offline. All data is persisted locally via Drift (SQLite). No feature requires network connectivity. This is critical for gym environments with poor connectivity.
 
 When cloud sync is introduced in v2, the strategy will be:
 
@@ -183,11 +203,9 @@ When cloud sync is introduced in v2, the strategy will be:
 
 The target is sub-2-second cold start on mid-range devices. Key strategies: lazy provider initialisation (only the active workout feature loads on start) and minimal widget tree depth on the home screen. The exercise library loads asynchronously and is searchable once loaded.
 
-### 9.2 Database Performance (Planned)
+### 9.2 Database Performance
 
-> **Note:** The following applies to the planned Drift (SQLite) migration. The current in-memory implementation does not require these optimisations.
-
-For users with years of workout data, query performance will be maintained through composite indexes on `(exercise_id, timestamp)` and `(workout_id, set_order)`. History pagination will use keyset pagination (`WHERE timestamp < lastTimestamp`) rather than OFFSET to avoid degrading performance on large datasets. Drift's query watcher efficiently invalidates only affected streams when data changes.
+For users with years of workout data, query performance is maintained through Drift's foreign-key references (which create implicit indexes) on `workout_id`, `exercise_id`, and similar columns. History pagination uses keyset pagination (`WHERE started_at < lastTimestamp`) rather than OFFSET to avoid degrading performance on large datasets. Drift's query watcher efficiently invalidates only affected streams when data changes.
 
 ### 9.3 UI Rendering
 
@@ -199,7 +217,7 @@ List-heavy screens (workout history, exercise list) use `ListView.builder` for l
 
 | Level | Scope | Tools |
 |-------|-------|-------|
-| Unit tests | Domain models, use cases, repository logic, state notifiers | flutter_test, mockito, riverpod testing utilities |
+| Unit tests | Domain models, use cases, repository logic (in-memory fakes + Drift in-memory DB), state notifiers | flutter_test, mockito, drift/native (NativeDatabase.memory()), riverpod testing utilities |
 | Widget tests | Individual screens and components with mocked providers | flutter_test, WidgetTester |
 | Integration tests | Full user flows (start workout → log sets → finish → view history) | flutter_test |
 
@@ -237,6 +255,7 @@ GitHub Actions will handle continuous integration. Fastlane will automate store 
 
 The following architectural investments are deferred to keep v1 lean but are accounted for in the current structure:
 
+- **Remaining Drift repositories:** CardioSession, PersonalRecord, and WorkoutTemplate repositories need implementing against the existing table definitions.
 - **Cloud sync layer:** Repository interfaces are designed so a remote data source can be added behind the same contract without changing the application or presentation layers.
 - **Wearable companion:** Shared domain models will be extracted into a Dart package consumable by a Wear OS (Kotlin) or watchOS (Swift) companion app, with data sync via platform channels.
 - **Feature flags:** A FeatureFlag provider is planned to support A/B testing and gradual rollout of Pro features.
