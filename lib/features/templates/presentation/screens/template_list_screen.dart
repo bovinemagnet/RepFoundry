@@ -1,0 +1,202 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../domain/models/workout_template.dart';
+
+// In-memory template storage provider
+final _templateListProvider =
+    StateNotifierProvider<_TemplateNotifier, List<WorkoutTemplate>>(
+  (ref) => _TemplateNotifier(),
+);
+
+class _TemplateNotifier extends StateNotifier<List<WorkoutTemplate>> {
+  _TemplateNotifier() : super([]);
+
+  void add(WorkoutTemplate template) {
+    state = [...state, template];
+  }
+
+  void remove(String id) {
+    state = state.where((t) => t.id != id).toList();
+  }
+
+  void update(WorkoutTemplate template) {
+    state = [
+      for (final t in state) t.id == template.id ? template : t,
+    ];
+  }
+}
+
+class TemplateListScreen extends ConsumerWidget {
+  const TemplateListScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final templates = ref.watch(_templateListProvider);
+    final notifier = ref.read(_templateListProvider.notifier);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Templates')),
+      body: templates.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.view_list,
+                    size: 80,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No templates yet',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Create a template to quickly start workouts.',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurfaceVariant,
+                        ),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: templates.length,
+              itemBuilder: (context, index) {
+                final template = templates[index];
+                return _TemplateTile(
+                  template: template,
+                  onDelete: () => notifier.remove(template.id),
+                );
+              },
+            ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () =>
+            _showCreateTemplateDialog(context, notifier),
+        icon: const Icon(Icons.add),
+        label: const Text('New Template'),
+      ),
+    );
+  }
+
+  Future<void> _showCreateTemplateDialog(
+    BuildContext context,
+    _TemplateNotifier notifier,
+  ) async {
+    final nameController = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('New Template'),
+        content: TextField(
+          controller: nameController,
+          decoration: const InputDecoration(
+            labelText: 'Template Name',
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.pop(ctx, nameController.text.trim()),
+            child: const Text('Create'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty) {
+      notifier.add(WorkoutTemplate.create(name: result));
+    }
+  }
+}
+
+class _TemplateTile extends StatelessWidget {
+  const _TemplateTile({
+    required this.template,
+    required this.onDelete,
+  });
+
+  final WorkoutTemplate template;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor:
+              Theme.of(context).colorScheme.secondaryContainer,
+          child: Icon(
+            Icons.view_list,
+            color: Theme.of(context)
+                .colorScheme
+                .onSecondaryContainer,
+          ),
+        ),
+        title: Text(template.name),
+        subtitle: Text(
+          '${template.exercises.length} exercises',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color:
+                    Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+        trailing: PopupMenuButton<String>(
+          onSelected: (value) {
+            if (value == 'delete') {
+              _confirmDelete(context);
+            }
+          },
+          itemBuilder: (_) => [
+            const PopupMenuItem(
+              value: 'delete',
+              child: ListTile(
+                leading: Icon(Icons.delete_outline),
+                title: Text('Delete'),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Template?'),
+        content: Text(
+          'Are you sure you want to delete "${template.name}"?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) onDelete();
+  }
+}
