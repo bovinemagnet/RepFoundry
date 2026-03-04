@@ -37,10 +37,10 @@ Beginners following a structured program (e.g., Starting Strength, PPL) who need
 
 | Feature | Description | Priority |
 |---------|-------------|----------|
-| Quick-add sets | Tap to log a set with weight and reps; auto-fills from previous session | P0 |
+| Quick-add sets | Tap to log a set with weight and reps; auto-fills from previous session | P0 | *Note: auto-fill from previous session is not yet implemented* |
 | Exercise library | Pre-built list of common gym exercises categorised by muscle group and equipment type | P0 |
-| Custom exercises | Users can create their own exercises with custom names and categories | P0 |
-| Rest timer | Configurable countdown timer between sets with optional vibration/sound alert | P0 |
+| Custom exercises | Users can create their own exercises with custom names and categories | P0 | *Note: domain model exists but no UI for creating custom exercises yet* |
+| Rest timer | Configurable countdown timer between sets with optional vibration/sound alert | P0 | *Note: timer works but vibration/sound alerts are not yet implemented* |
 | Workout templates | Save and reuse workout routines (e.g., Push Day, Leg Day) | P1 |
 | Superset support | Group exercises together as supersets or circuits | P2 |
 
@@ -59,8 +59,8 @@ Beginners following a structured program (e.g., Starting Strength, PPL) who need
 |---------|-------------|----------|
 | Workout history | Scrollable list of past workouts with date, exercises, and total volume | P0 |
 | Exercise history | Per-exercise view showing weight/rep progression over time | P0 |
-| Progress charts | Line charts for estimated 1RM, total volume, and frequency per muscle group | P1 |
-| Personal records | Automatic PR detection and display with badges | P1 |
+| Progress charts | Line charts for estimated 1RM, total volume, and frequency per muscle group | P1 | *Note: fl_chart dependency included but charts not yet implemented* |
+| Personal records | Automatic PR detection and display with badges | P1 | *Note: domain model exists but automatic detection not yet wired up* |
 | Body measurements | Optional logging of body weight, photos, and measurements | P2 |
 
 ### 4.4 User Experience
@@ -81,7 +81,7 @@ Beginners following a structured program (e.g., Starting Strength, PPL) who need
 | Offline capability | 100% core features offline | Cloud sync is additive, not required |
 | App size | < 30 MB installed | Minimise bundled assets |
 | Cold start time | < 2 seconds | Measured on mid-range devices |
-| Data export | CSV and JSON | User-initiated export of all workout data |
+| Data export | CSV and JSON | User-initiated export of all workout data — *not yet implemented* |
 | Accessibility | WCAG 2.1 AA | Screen reader support, adequate contrast ratios |
 | Localisation | English (launch), i18n-ready | String externalisation from day one |
 
@@ -106,7 +106,7 @@ Beginners following a structured program (e.g., Starting Strength, PPL) who need
 | Workouts per user per week | > 2.5 | Average across active users in first month |
 | Set logging time | < 5 seconds | Time from tapping +set to confirming entry |
 | App store rating | > 4.5 stars | Combined iOS and Android average |
-| Crash-free sessions | > 99.5% | Firebase Crashlytics |
+| Crash-free sessions | > 99.5% | Planned — Firebase Crashlytics |
 
 ---
 
@@ -123,13 +123,13 @@ No ads will be shown in either tier. The free tier must be fully functional as a
 
 ## 9. Release Plan
 
-| Phase | Scope | Timeline |
-|-------|-------|----------|
-| Alpha | Core logging, exercise library, history view — internal testing | Weeks 1–6 |
-| Beta | Templates, rest timer, progress charts, cardio tracking — TestFlight/Play Console | Weeks 7–12 |
-| v1.0 Launch | Full P0 + P1 features, both app stores | Week 14 |
-| v1.1 | PR badges, body measurements, superset support | Week 18 |
-| v2.0 | Cloud sync, wearable integration, social features | TBD |
+| Phase | Scope | Timeline | Status |
+|-------|-------|----------|--------|
+| Alpha | Core logging, exercise library, history view — internal testing | Weeks 1–6 | **Current** — core workout logging works with in-memory storage; no data persistence across restarts |
+| Beta | Templates, rest timer, progress charts, cardio tracking — TestFlight/Play Console | Weeks 7–12 | Not started |
+| v1.0 Launch | Full P0 + P1 features, both app stores | Week 14 | Not started |
+| v1.1 | PR badges, body measurements, superset support | Week 18 | Not started |
+| v2.0 | Cloud sync, wearable integration, social features | TBD | Not started |
 
 ---
 
