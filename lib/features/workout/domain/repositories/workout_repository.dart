@@ -17,6 +17,7 @@ abstract class WorkoutRepository {
   });
   Future<WorkoutSet?> getLastSetForExercise(String exerciseId);
   Future<void> deleteSet(String setId);
+  Future<List<WorkoutSet>> getSetsFromLastSession(String exerciseId);
 
   Stream<List<Workout>> watchWorkoutHistory();
   Stream<List<WorkoutSet>> watchSetsForWorkout(String workoutId);

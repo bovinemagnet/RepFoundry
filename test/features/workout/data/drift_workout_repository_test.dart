@@ -331,5 +331,104 @@ void main() {
         expect(emissions.last, hasLength(1));
       });
     });
+
+    group('getSetsFromLastSession', () {
+      test('returns empty list when no history', () async {
+        final result = await repo.getSetsFromLastSession('1');
+        expect(result, isEmpty);
+      });
+
+      test('returns sets from most recent completed workout', () async {
+        // Older completed workout.
+        final w1 = newWorkout(startedAt: DateTime.utc(2025, 1, 1));
+        await repo.createWorkout(w1);
+        await repo.addSet(
+          newSet(workoutId: w1.id, setOrder: 1, weight: 60, reps: 10),
+        );
+        await repo.updateWorkout(
+          w1.copyWith(completedAt: DateTime.utc(2025, 1, 1, 1)),
+        );
+
+        // Newer completed workout.
+        final w2 = newWorkout(startedAt: DateTime.utc(2025, 2, 1));
+        await repo.createWorkout(w2);
+        await repo.addSet(
+          newSet(workoutId: w2.id, setOrder: 1, weight: 80, reps: 5),
+        );
+        await repo.addSet(
+          newSet(workoutId: w2.id, setOrder: 2, weight: 85, reps: 5),
+        );
+        await repo.updateWorkout(
+          w2.copyWith(completedAt: DateTime.utc(2025, 2, 1, 1)),
+        );
+
+        final result = await repo.getSetsFromLastSession('1');
+        expect(result, hasLength(2));
+        expect(result.first.weight, 80);
+        expect(result.last.weight, 85);
+      });
+
+      test('ignores in-progress workouts', () async {
+        // Completed workout.
+        final w1 = newWorkout(startedAt: DateTime.utc(2025, 1, 1));
+        await repo.createWorkout(w1);
+        await repo.addSet(
+          newSet(workoutId: w1.id, setOrder: 1, weight: 60, reps: 10),
+        );
+        await repo.updateWorkout(
+          w1.copyWith(completedAt: DateTime.utc(2025, 1, 1, 1)),
+        );
+
+        // In-progress workout (newer, but not completed).
+        final w2 = newWorkout(startedAt: DateTime.utc(2025, 2, 1));
+        await repo.createWorkout(w2);
+        await repo.addSet(
+          newSet(workoutId: w2.id, setOrder: 1, weight: 100, reps: 3),
+        );
+
+        final result = await repo.getSetsFromLastSession('1');
+        expect(result, hasLength(1));
+        expect(result.first.weight, 60);
+      });
+
+      test('ignores soft-deleted workouts', () async {
+        final w1 = newWorkout(startedAt: DateTime.utc(2025, 1, 1));
+        await repo.createWorkout(w1);
+        await repo.addSet(
+          newSet(workoutId: w1.id, setOrder: 1, weight: 60, reps: 10),
+        );
+        await repo.updateWorkout(
+          w1.copyWith(completedAt: DateTime.utc(2025, 1, 1, 1)),
+        );
+        await repo.deleteWorkout(w1.id);
+
+        final result = await repo.getSetsFromLastSession('1');
+        expect(result, isEmpty);
+      });
+
+      test('returns sets ordered by setOrder', () async {
+        final w = newWorkout(startedAt: DateTime.utc(2025, 1, 1));
+        await repo.createWorkout(w);
+        // Insert out of order.
+        await repo.addSet(
+          newSet(workoutId: w.id, setOrder: 3, weight: 90, reps: 3),
+        );
+        await repo.addSet(
+          newSet(workoutId: w.id, setOrder: 1, weight: 80, reps: 5),
+        );
+        await repo.addSet(
+          newSet(workoutId: w.id, setOrder: 2, weight: 85, reps: 4),
+        );
+        await repo.updateWorkout(
+          w.copyWith(completedAt: DateTime.utc(2025, 1, 1, 1)),
+        );
+
+        final result = await repo.getSetsFromLastSession('1');
+        expect(result, hasLength(3));
+        expect(result[0].setOrder, 1);
+        expect(result[1].setOrder, 2);
+        expect(result[2].setOrder, 3);
+      });
+    });
   });
 }

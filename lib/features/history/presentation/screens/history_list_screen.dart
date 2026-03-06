@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../providers/volume_sparkline_provider.dart';
 import '../widgets/workout_history_tile.dart';
 import '../../../workout/domain/models/workout.dart';
 import '../../../workout/domain/models/workout_set.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/widgets/loading_widget.dart';
+import '../../../../core/widgets/sparkline_widget.dart';
 
 class _WorkoutWithSets {
   final Workout workout;
@@ -65,9 +67,12 @@ class HistoryListScreen extends ConsumerWidget {
           }
           return ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: items.length,
+            itemCount: items.length + 1,
             itemBuilder: (context, index) {
-              final item = items[index];
+              if (index == 0) {
+                return _VolumeTrendHeader();
+              }
+              final item = items[index - 1];
               return WorkoutHistoryTile(
                 workout: item.workout,
                 setCount: item.sets.length,
@@ -79,6 +84,46 @@ class HistoryListScreen extends ConsumerWidget {
         loading: () => const LoadingWidget(message: 'Loading history…'),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
+    );
+  }
+}
+
+class _VolumeTrendHeader extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final volumeAsync = ref.watch(volumeSparklineProvider);
+
+    return volumeAsync.when(
+      data: (data) {
+        if (data.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Volume trend (last ${data.length} workouts)',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 60,
+                    child: SparklineWidget(data: data),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }

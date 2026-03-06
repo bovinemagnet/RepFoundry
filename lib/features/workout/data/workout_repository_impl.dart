@@ -109,6 +109,26 @@ class InMemoryWorkoutRepository implements WorkoutRepository {
   }
 
   @override
+  Future<List<WorkoutSet>> getSetsFromLastSession(String exerciseId) async {
+    // Find the most recent completed, non-deleted workout containing this exercise.
+    final completedWorkouts = _workouts
+        .where((w) => w.status == WorkoutStatus.completed && !w.isDeleted)
+        .toList()
+      ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+
+    for (final workout in completedWorkouts) {
+      final sets = _sets
+          .where(
+            (s) => s.workoutId == workout.id && s.exerciseId == exerciseId,
+          )
+          .toList()
+        ..sort((a, b) => a.setOrder.compareTo(b.setOrder));
+      if (sets.isNotEmpty) return sets;
+    }
+    return [];
+  }
+
+  @override
   Future<void> deleteSet(String setId) async {
     final index = _sets.indexWhere((s) => s.id == setId);
     if (index != -1) {

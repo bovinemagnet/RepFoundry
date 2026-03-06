@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import '../models/ghost_set.dart';
 
 /// A card widget for entering a new set's weight and reps.
 class SetInputCard extends StatefulWidget {
-  const SetInputCard({super.key, required this.onLogSet});
+  const SetInputCard({super.key, required this.onLogSet, this.suggestion});
 
   final void Function({
     required double weight,
@@ -10,16 +11,54 @@ class SetInputCard extends StatefulWidget {
     double? rpe,
   }) onLogSet;
 
+  final GhostSet? suggestion;
+
   @override
   State<SetInputCard> createState() => _SetInputCardState();
 }
 
 class _SetInputCardState extends State<SetInputCard> {
-  final _weightController = TextEditingController(text: '0');
-  final _repsController = TextEditingController(text: '0');
+  late final TextEditingController _weightController;
+  late final TextEditingController _repsController;
   final _rpeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _showRpe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final s = widget.suggestion;
+    _weightController = TextEditingController(
+      text: s != null ? _formatWeight(s.weight) : '0',
+    );
+    _repsController = TextEditingController(
+      text: s != null ? '${s.reps}' : '0',
+    );
+    if (s?.rpe != null) {
+      _rpeController.text = _formatWeight(s!.rpe!);
+      _showRpe = true;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant SetInputCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.suggestion != oldWidget.suggestion) {
+      final s = widget.suggestion;
+      _weightController.text = s != null ? _formatWeight(s.weight) : '0';
+      _repsController.text = s != null ? '${s.reps}' : '0';
+      if (s?.rpe != null) {
+        _rpeController.text = _formatWeight(s!.rpe!);
+        if (!_showRpe) setState(() => _showRpe = true);
+      }
+    }
+  }
+
+  String _formatWeight(double value) {
+    return value == value.truncateToDouble()
+        ? value.toInt().toString()
+        : value.toString();
+  }
 
   @override
   void dispose() {

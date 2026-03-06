@@ -143,6 +143,35 @@ class DriftWorkoutRepository implements WorkoutRepository {
     await (_db.delete(_db.workoutSets)..where((t) => t.id.equals(setId))).go();
   }
 
+  @override
+  Future<List<WorkoutSet>> getSetsFromLastSession(String exerciseId) async {
+    // Find the most recent completed, non-deleted workout containing this exercise.
+    final workoutIdResult = await _db.customSelect(
+      'SELECT w.id FROM workouts w '
+      'INNER JOIN workout_sets ws ON ws.workout_id = w.id '
+      'WHERE ws.exercise_id = ? '
+      'AND w.completed_at IS NOT NULL '
+      'AND w.deleted_at IS NULL '
+      'ORDER BY w.started_at DESC '
+      'LIMIT 1',
+      variables: [Variable.withString(exerciseId)],
+    ).getSingleOrNull();
+
+    if (workoutIdResult == null) return [];
+
+    final workoutId = workoutIdResult.read<String>('id');
+
+    // Fetch all sets for that exercise in that workout, ordered by setOrder.
+    final q = _db.select(_db.workoutSets)
+      ..where(
+        (t) =>
+            t.workoutId.equals(workoutId) & t.exerciseId.equals(exerciseId),
+      )
+      ..orderBy([(t) => OrderingTerm.asc(t.setOrder)]);
+    final rows = await q.get();
+    return rows.map(_setToDomain).toList();
+  }
+
   // ── Streams ───────────────────────────────────────────────────────────
 
   @override

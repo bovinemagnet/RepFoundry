@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../providers/rest_timer_settings_provider.dart';
 
 final _themeModeProvider = StateNotifierProvider<_ThemeModeNotifier, ThemeMode>(
   (ref) => _ThemeModeNotifier(),
@@ -116,6 +117,25 @@ class SettingsScreen extends ConsumerWidget {
                 ref.read(_weightUnitProvider.notifier).set(units.first);
               },
             ),
+          ),
+          const _SectionHeader(title: 'Rest Timer'),
+          SwitchListTile(
+            secondary: const Icon(Icons.vibration),
+            title: const Text('Vibration Alert'),
+            subtitle: const Text('Vibrate when rest timer completes'),
+            value: ref.watch(restTimerSettingsProvider).vibrationEnabled,
+            onChanged: (_) {
+              ref.read(restTimerSettingsProvider.notifier).toggleVibration();
+            },
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.volume_up_outlined),
+            title: const Text('Sound Alert'),
+            subtitle: const Text('Play a sound when rest timer completes'),
+            value: ref.watch(restTimerSettingsProvider).soundEnabled,
+            onChanged: (_) {
+              ref.read(restTimerSettingsProvider.notifier).toggleSound();
+            },
           ),
           _SectionHeader(title: 'Data'),
           ListTile(

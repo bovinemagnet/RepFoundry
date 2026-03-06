@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/exercise.dart';
+import '../screens/create_exercise_screen.dart';
 import '../widgets/exercise_list_tile.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/widgets/loading_widget.dart';
@@ -116,44 +117,14 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
   }
 
   Future<void> _showCreateExerciseDialog(BuildContext context) async {
-    final nameController = TextEditingController();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('New Exercise'),
-        content: TextField(
-          controller: nameController,
-          decoration: const InputDecoration(
-            labelText: 'Exercise Name',
-            border: OutlineInputBorder(),
-          ),
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, nameController.text.trim()),
-            child: const Text('Create'),
-          ),
-        ],
+    final exercise = await Navigator.of(context).push<Exercise>(
+      MaterialPageRoute(
+        builder: (_) => const CreateExerciseScreen(),
       ),
     );
 
-    if (result != null && result.isNotEmpty && mounted) {
-      final repo = ref.read(exerciseRepositoryProvider);
-      final exercise = Exercise.create(
-        name: result,
-        category: ExerciseCategory.custom,
-        muscleGroup: MuscleGroup.fullBody,
-        equipmentType: EquipmentType.other,
-        isCustom: true,
-      );
-      final created = await repo.createExercise(exercise);
-      if (mounted) Navigator.of(context).pop(created);
+    if (exercise != null && mounted) {
+      Navigator.of(this.context).pop(exercise);
     }
   }
 }
@@ -165,7 +136,7 @@ class _MuscleGroupFilterBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final groups = MuscleGroup.values;
+    const groups = MuscleGroup.values;
 
     return SizedBox(
       height: 44,

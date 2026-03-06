@@ -37,10 +37,10 @@ Beginners following a structured program (e.g., Starting Strength, PPL) who need
 
 | Feature | Description | Priority |
 |---------|-------------|----------|
-| Quick-add sets | Tap to log a set with weight and reps; auto-fills from previous session | P0 | *Note: auto-fill from previous session is not yet implemented* |
+| Quick-add sets | Tap to log a set with weight and reps; auto-fills from previous session | P0 | *Implemented — ghost rows from previous session pre-fill the SetInputCard* |
 | Exercise library | Pre-built list of common gym exercises categorised by muscle group and equipment type | P0 |
 | Custom exercises | Users can create their own exercises with custom names and categories | P0 | *Note: domain model exists but no UI for creating custom exercises yet* |
-| Rest timer | Configurable countdown timer between sets with optional vibration/sound alert | P0 | *Note: timer works but vibration/sound alerts are not yet implemented* |
+| Rest timer | Configurable countdown timer between sets with vibration/sound alert | P0 | *Implemented — countdown with quick-start chips (1:00, 1:30, 2:00, 3:00); haptic vibration and audible beep on completion; alerts configurable in Settings* |
 | Workout templates | Save and reuse workout routines (e.g., Push Day, Leg Day) | P1 |
 | Superset support | Group exercises together as supersets or circuits | P2 |
 

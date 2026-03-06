@@ -1,19 +1,22 @@
 import 'dart:async';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
+import '../../../settings/presentation/providers/rest_timer_settings_provider.dart';
 
 /// Provider that holds the current rest timer state in seconds remaining.
 /// A value of null means the timer is not running.
-final _restTimerProvider =
-    StateNotifierProvider<_RestTimerNotifier, int?>((ref) {
-  return _RestTimerNotifier();
+final restTimerProvider =
+    StateNotifierProvider<RestTimerNotifier, int?>((ref) {
+  return RestTimerNotifier();
 });
 
-class _RestTimerNotifier extends StateNotifier<int?> {
+class RestTimerNotifier extends StateNotifier<int?> {
   Timer? _timer;
 
-  _RestTimerNotifier() : super(null);
+  RestTimerNotifier() : super(null);
 
   void start(int seconds) {
     _timer?.cancel();
@@ -41,13 +44,48 @@ class _RestTimerNotifier extends StateNotifier<int?> {
 }
 
 /// Displays a rest timer with quick-start buttons.
-class RestTimerWidget extends ConsumerWidget {
+class RestTimerWidget extends ConsumerStatefulWidget {
   const RestTimerWidget({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final secondsLeft = ref.watch(_restTimerProvider);
-    final notifier = ref.read(_restTimerProvider.notifier);
+  ConsumerState<RestTimerWidget> createState() => _RestTimerWidgetState();
+}
+
+class _RestTimerWidgetState extends ConsumerState<RestTimerWidget> {
+  AudioPlayer? _audioPlayer;
+
+  @override
+  void initState() {
+    super.initState();
+    _audioPlayer = AudioPlayer();
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer?.dispose();
+    super.dispose();
+  }
+
+  void _onTimerComplete() {
+    final settings = ref.read(restTimerSettingsProvider);
+    if (settings.vibrationEnabled) {
+      HapticFeedback.heavyImpact();
+    }
+    if (settings.soundEnabled) {
+      _audioPlayer?.play(AssetSource('sounds/timer_complete.wav'));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<int?>(restTimerProvider, (previous, next) {
+      if (previous != null && next == null) {
+        _onTimerComplete();
+      }
+    });
+
+    final secondsLeft = ref.watch(restTimerProvider);
+    final notifier = ref.read(restTimerProvider.notifier);
     final isRunning = secondsLeft != null;
 
     return Container(

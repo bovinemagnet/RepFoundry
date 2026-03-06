@@ -4,6 +4,7 @@ import '../../../exercises/domain/models/exercise.dart';
 import '../../../history/application/calculate_progress_use_case.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/widgets/loading_widget.dart';
+import '../../../../core/widgets/progress_chart_widget.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 
 final _exerciseProgressProvider =
@@ -114,6 +115,18 @@ class _ProgressBody extends StatelessWidget {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 24),
+        ProgressChartWidget(
+          label: 'Estimated 1RM Trend',
+          dataPoints: progress.sets.reversed
+              .map(
+                (s) => ProgressDataPoint(
+                  date: s.timestamp,
+                  value: s.estimatedOneRepMax,
+                ),
+              )
+              .toList(),
         ),
         const SizedBox(height: 24),
         Text(

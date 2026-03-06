@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../controllers/active_workout_controller.dart';
+import '../models/ghost_set.dart';
 import '../widgets/set_input_card.dart';
 import '../widgets/rest_timer_widget.dart';
 import '../../domain/models/workout_set.dart';
@@ -141,6 +142,8 @@ class ActiveWorkoutScreen extends ConsumerWidget {
           _ExerciseSection(
             exercise: exercise,
             sets: state.setsByExercise[exercise.id] ?? [],
+            ghostSets: state.remainingGhosts(exercise.id),
+            suggestion: state.nextGhostSet(exercise.id),
             onLogSet: ({
               required double weight,
               required int reps,
@@ -197,12 +200,16 @@ class _ExerciseSection extends StatelessWidget {
   const _ExerciseSection({
     required this.exercise,
     required this.sets,
+    required this.ghostSets,
+    required this.suggestion,
     required this.onLogSet,
     required this.onDeleteSet,
   });
 
   final Exercise exercise;
   final List<WorkoutSet> sets;
+  final List<GhostSet> ghostSets;
+  final GhostSet? suggestion;
   final void Function({
     required double weight,
     required int reps,
@@ -212,6 +219,8 @@ class _ExerciseSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasTableContent = sets.isNotEmpty || ghostSets.isNotEmpty;
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
@@ -239,7 +248,7 @@ class _ExerciseSection extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            if (sets.isNotEmpty) ...[
+            if (hasTableContent) ...[
               _SetTableHeader(context),
               const Divider(height: 8),
               for (int i = 0; i < sets.length; i++)
@@ -248,9 +257,14 @@ class _ExerciseSection extends StatelessWidget {
                   set: sets[i],
                   onDelete: () => onDeleteSet(sets[i].id),
                 ),
+              for (int i = 0; i < ghostSets.length; i++)
+                _GhostSetRow(
+                  index: sets.length + i,
+                  ghost: ghostSets[i],
+                ),
               const SizedBox(height: 8),
             ],
-            SetInputCard(onLogSet: onLogSet),
+            SetInputCard(onLogSet: onLogSet, suggestion: suggestion),
           ],
         ),
       ),
@@ -353,6 +367,63 @@ class _SetRow extends StatelessWidget {
               padding: EdgeInsets.zero,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GhostSetRow extends StatelessWidget {
+  const _GhostSetRow({
+    required this.index,
+    required this.ghost,
+  });
+
+  final int index;
+  final GhostSet ghost;
+
+  @override
+  Widget build(BuildContext context) {
+    final dimStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+          fontStyle: FontStyle.italic,
+        );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 32,
+            child: Text(
+              '${index + 1}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurfaceVariant
+                        .withValues(alpha: 0.4),
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              '${ghost.weight} kg',
+              textAlign: TextAlign.center,
+              style: dimStyle,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              '${ghost.reps}',
+              textAlign: TextAlign.center,
+              style: dimStyle,
+            ),
+          ),
+          // No e1RM column for ghost rows.
+          const Expanded(child: SizedBox.shrink()),
+          // No delete button for ghost rows.
+          const SizedBox(width: 36),
         ],
       ),
     );

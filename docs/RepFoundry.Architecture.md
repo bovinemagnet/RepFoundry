@@ -21,6 +21,7 @@ RepFoundry follows a clean architecture pattern with clear separation between pr
 | Navigation | GoRouter | Declarative routing with deep link support |
 | Dependency Injection | Riverpod (built-in) | Provider-based DI with auto-dispose and scoping |
 | Charts | fl_chart | High-performance charting for progress visualisation |
+| Audio | audioplayers 6.x | Cross-platform audio playback for rest timer alerts |
 | Testing | flutter_test, mockito, integration_test | Unit, widget, and integration testing |
 | CI/CD | Planned — GitHub Actions + Fastlane | Automated build, test, and store deployment (not yet configured) |
 | Analytics / Crash | Planned — Firebase Crashlytics + Analytics | Crash reporting and usage analytics (not yet integrated) |
@@ -68,7 +69,8 @@ lib/
 Flutter widgets and screens consume state from Riverpod providers. Screens are thin and delegate all logic to controllers (StateNotifier classes). No business logic lives in widget build methods.
 
 - **Screens:** full-page widgets mapped to GoRouter routes
-- **Widgets:** reusable UI components (SetInputCard, RestTimerWidget, ExercisePicker)
+- **Widgets:** reusable UI components (SetInputCard, RestTimerWidget, ExercisePicker, GhostSetRow). RestTimerWidget fires haptic vibration and an audible beep when the countdown completes, controlled by user preferences in `RestTimerSettings`.
+- **Models:** presentation-only data objects (e.g. `GhostSet` — lightweight, non-persistable representation of a previous session's set used for auto-fill suggestions)
 - **Controllers:** Riverpod Notifiers that manage screen-level state and coordinate use cases
 
 ### 4.2 Application Layer
@@ -159,11 +161,34 @@ The flow is:
 
 1. User taps **Start Workout**
 2. `ActiveWorkoutController` creates a `Workout` in the repository
-3. User adds sets (each persisted immediately)
-4. Rest timer runs between sets
-5. User taps **Finish**
-6. Notifier marks workout as completed
-7. History providers auto-refresh via broadcast streams
+3. User adds an exercise — the controller fetches sets from the last completed session for that exercise via `WorkoutRepository.getSetsFromLastSession()` and stores them as `GhostSet` objects in state
+4. Ghost rows appear as dimmed placeholders beneath confirmed sets; `SetInputCard` is pre-populated with the next ghost set's weight/reps/RPE
+5. User confirms each set (persisted immediately) — the ghost list advances automatically
+6. Rest timer runs between sets
+7. User taps **Finish**
+8. Notifier marks workout as completed; unconsumed ghosts are discarded (never persisted)
+9. History providers auto-refresh via broadcast streams
+
+### 6.3 Ghost Set Auto-Fill
+
+When an exercise is added to a workout, the controller queries the most recent completed session containing that exercise. The returned sets are converted to lightweight `GhostSet` objects (weight, reps, RPE, setOrder) — deliberately stripped of IDs and timestamps to prevent accidental persistence.
+
+The `ActiveWorkoutState` exposes two helpers:
+- `nextGhostSet(exerciseId)` — returns the ghost at index `loggedSetCount`, or `null` if all ghosts are consumed
+- `remainingGhosts(exerciseId)` — returns the ghost list beyond the logged set count, used to render dimmed placeholder rows
+
+Key files: `lib/features/workout/presentation/models/ghost_set.dart`, `lib/features/workout/presentation/controllers/active_workout_controller.dart`
+
+### 6.4 Rest Timer Alerts
+
+The rest timer (`restTimerProvider` in `rest_timer_widget.dart`) counts down from a user-selected duration. When the countdown transitions from a non-null value to `null`, the `RestTimerWidget` (a `ConsumerStatefulWidget`) detects this via `ref.listen()` and fires:
+
+- **Haptic feedback:** `HapticFeedback.heavyImpact()` — uses Flutter's built-in `dart:services`, no external package
+- **Sound alert:** `AudioPlayer.play(AssetSource('sounds/timer_complete.wav'))` — a bundled 0.5s 440 Hz sine-wave beep via the `audioplayers` package
+
+Both alerts are gated by `RestTimerSettings` (vibration and sound toggles), persisted via SharedPreferences. The settings provider (`restTimerSettingsProvider`) follows the same `StateNotifier` + `SharedPreferences` pattern as the existing theme and weight-unit providers.
+
+Key files: `lib/features/workout/presentation/widgets/rest_timer_widget.dart`, `lib/features/settings/presentation/providers/rest_timer_settings_provider.dart`, `assets/sounds/timer_complete.wav`
 
 ---
 

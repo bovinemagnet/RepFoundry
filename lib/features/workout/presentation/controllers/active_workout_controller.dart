@@ -4,11 +4,13 @@ import '../../domain/models/workout.dart';
 import '../../domain/models/workout_set.dart';
 import '../../domain/repositories/workout_repository.dart';
 import '../../../exercises/domain/models/exercise.dart';
+import '../models/ghost_set.dart';
 import '../../../../core/providers.dart';
 
 class ActiveWorkoutState {
   final Workout? activeWorkout;
   final Map<String, List<WorkoutSet>> setsByExercise;
+  final Map<String, List<GhostSet>> ghostSetsByExercise;
   final List<Exercise> exercises;
   final bool isLoading;
   final String? error;
@@ -16,6 +18,7 @@ class ActiveWorkoutState {
   const ActiveWorkoutState({
     this.activeWorkout,
     this.setsByExercise = const {},
+    this.ghostSetsByExercise = const {},
     this.exercises = const [],
     this.isLoading = false,
     this.error,
@@ -25,9 +28,28 @@ class ActiveWorkoutState {
 
   List<String> get exerciseIds => setsByExercise.keys.toList();
 
+  /// Returns the next ghost set suggestion for the given exercise,
+  /// based on how many sets have already been logged.
+  GhostSet? nextGhostSet(String exerciseId) {
+    final ghosts = ghostSetsByExercise[exerciseId] ?? [];
+    final loggedCount = (setsByExercise[exerciseId] ?? []).length;
+    if (loggedCount >= ghosts.length) return null;
+    return ghosts[loggedCount];
+  }
+
+  /// Returns the ghost sets that have not yet been consumed
+  /// (i.e. beyond the number of logged sets).
+  List<GhostSet> remainingGhosts(String exerciseId) {
+    final ghosts = ghostSetsByExercise[exerciseId] ?? [];
+    final loggedCount = (setsByExercise[exerciseId] ?? []).length;
+    if (loggedCount >= ghosts.length) return [];
+    return ghosts.sublist(loggedCount);
+  }
+
   ActiveWorkoutState copyWith({
     Workout? activeWorkout,
     Map<String, List<WorkoutSet>>? setsByExercise,
+    Map<String, List<GhostSet>>? ghostSetsByExercise,
     List<Exercise>? exercises,
     bool? isLoading,
     String? error,
@@ -37,6 +59,7 @@ class ActiveWorkoutState {
       activeWorkout:
           clearWorkout ? null : (activeWorkout ?? this.activeWorkout),
       setsByExercise: setsByExercise ?? this.setsByExercise,
+      ghostSetsByExercise: ghostSetsByExercise ?? this.ghostSetsByExercise,
       exercises: exercises ?? this.exercises,
       isLoading: isLoading ?? this.isLoading,
       error: error,
@@ -79,9 +102,13 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
     final usedExercises =
         allExercises.where((e) => byExercise.containsKey(e.id)).toList();
 
+    // Load ghost sets for all exercises already in the workout.
+    final ghosts = await _loadGhostsForExercises(byExercise.keys.toList());
+
     state = state.copyWith(
       activeWorkout: workout,
       setsByExercise: byExercise,
+      ghostSetsByExercise: ghosts,
       exercises: usedExercises,
       isLoading: false,
     );
@@ -128,10 +155,52 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
       updatedExercises.add(exercise);
     }
 
+    // Fetch ghost sets from the last session for this exercise.
+    final lastSessionSets =
+        await _workoutRepository.getSetsFromLastSession(exercise.id);
+    final updatedGhosts =
+        Map<String, List<GhostSet>>.from(state.ghostSetsByExercise);
+    if (lastSessionSets.isNotEmpty) {
+      updatedGhosts[exercise.id] = lastSessionSets
+          .map(
+            (s) => GhostSet(
+              weight: s.weight,
+              reps: s.reps,
+              rpe: s.rpe,
+              setOrder: s.setOrder,
+            ),
+          )
+          .toList();
+    }
+
     state = state.copyWith(
       setsByExercise: updated,
       exercises: updatedExercises,
+      ghostSetsByExercise: updatedGhosts,
     );
+  }
+
+  Future<Map<String, List<GhostSet>>> _loadGhostsForExercises(
+    List<String> exerciseIds,
+  ) async {
+    final ghosts = <String, List<GhostSet>>{};
+    for (final exerciseId in exerciseIds) {
+      final lastSessionSets =
+          await _workoutRepository.getSetsFromLastSession(exerciseId);
+      if (lastSessionSets.isNotEmpty) {
+        ghosts[exerciseId] = lastSessionSets
+            .map(
+              (s) => GhostSet(
+                weight: s.weight,
+                reps: s.reps,
+                rpe: s.rpe,
+                setOrder: s.setOrder,
+              ),
+            )
+            .toList();
+      }
+    }
+    return ghosts;
   }
 
   Future<void> logSet({
