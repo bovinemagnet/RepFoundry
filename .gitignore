@@ -6,8 +6,9 @@
 *.swp
 .buildlog/
 .history
-
-
+.idea
+.claude
+CLAUDE.md
 
 # Flutter repo-specific
 /bin/cache/
