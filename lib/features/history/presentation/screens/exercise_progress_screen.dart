@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../history/application/calculate_progress_use_case.dart';
 import '../../../../core/providers.dart';
@@ -30,13 +31,14 @@ class ExerciseProgressScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
     final progressAsync = ref.watch(_exerciseProgressProvider(exerciseId));
     final exerciseAsync = ref.watch(_exerciseDetailProvider(exerciseId));
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          exerciseAsync.valueOrNull?.name ?? 'Exercise Progress',
+          exerciseAsync.valueOrNull?.name ?? s.exerciseProgressTitle,
         ),
       ),
       body: progressAsync.when(
@@ -44,8 +46,8 @@ class ExerciseProgressScreen extends ConsumerWidget {
           progress: progress,
           exerciseName: exerciseAsync.valueOrNull?.name,
         ),
-        loading: () => const LoadingWidget(message: 'Loading progress…'),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => LoadingWidget(message: s.loadingProgress),
+        error: (e, _) => Center(child: Text(s.errorPrefix(e.toString()))),
       ),
     );
   }
@@ -62,6 +64,7 @@ class _ProgressBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     if (progress.sets.isEmpty) {
       return Center(
         child: Column(
@@ -74,11 +77,11 @@ class _ProgressBody extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'No data yet',
+              s.noDataYet,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
-            const Text('Log sets for this exercise to see your progress.'),
+            Text(s.noDataYetSubtitle),
           ],
         ),
       );
@@ -92,7 +95,7 @@ class _ProgressBody extends StatelessWidget {
           children: [
             Expanded(
               child: _StatCard(
-                label: 'Best e1RM',
+                label: s.bestE1rm,
                 value:
                     '${progress.maxEstimated1RM?.toStringAsFixed(1) ?? '—'} kg',
                 icon: Icons.emoji_events,
@@ -101,7 +104,7 @@ class _ProgressBody extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _StatCard(
-                label: 'Total Volume',
+                label: s.totalVolume,
                 value: '${progress.totalVolume?.toStringAsFixed(0) ?? '—'} kg',
                 icon: Icons.bar_chart,
               ),
@@ -109,7 +112,7 @@ class _ProgressBody extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _StatCard(
-                label: 'Total Sets',
+                label: s.totalSets,
                 value: '${progress.sets.length}',
                 icon: Icons.repeat,
               ),
@@ -118,7 +121,7 @@ class _ProgressBody extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         ProgressChartWidget(
-          label: 'Estimated 1RM Trend',
+          label: s.e1rmTrend,
           dataPoints: progress.sets.reversed
               .map(
                 (s) => ProgressDataPoint(
@@ -130,7 +133,7 @@ class _ProgressBody extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         Text(
-          'Recent Sets',
+          s.recentSets,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -146,27 +149,27 @@ class _ProgressBody extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        'Date',
+                        s.tableHeaderDate,
                         style: Theme.of(context).textTheme.labelSmall,
                       ),
                     ),
                     Expanded(
                       child: Text(
-                        'Weight',
-                        style: Theme.of(context).textTheme.labelSmall,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        'Reps',
+                        s.tableHeaderWeight,
                         style: Theme.of(context).textTheme.labelSmall,
                         textAlign: TextAlign.center,
                       ),
                     ),
                     Expanded(
                       child: Text(
-                        'e1RM',
+                        s.tableHeaderReps,
+                        style: Theme.of(context).textTheme.labelSmall,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        s.tableHeaderE1rm,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               color: Theme.of(context).colorScheme.primary,
                             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../domain/models/personal_record.dart';
 import '../../../workout/domain/models/workout.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
@@ -19,6 +20,7 @@ class WorkoutHistoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     final duration = workout.completedAt != null
         ? workout.startedAt.durationUntil(workout.completedAt!)
         : null;
@@ -55,7 +57,7 @@ class WorkoutHistoryTile extends StatelessWidget {
                 children: [
                   _InfoChip(
                     icon: Icons.fitness_center,
-                    label: '$setCount sets',
+                    label: s.setsCount(setCount),
                   ),
                   if (duration != null) ...[
                     const SizedBox(width: 8),
@@ -68,7 +70,7 @@ class WorkoutHistoryTile extends StatelessWidget {
                     const SizedBox(width: 8),
                     _InfoChip(
                       icon: Icons.emoji_events,
-                      label: 'PR!',
+                      label: s.prBadge,
                       color: Theme.of(context).colorScheme.tertiary,
                     ),
                   ],

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../heart_rate/domain/warning_messages.dart';
 import '../../../heart_rate/domain/zone_calculator.dart';
 import '../../../heart_rate/presentation/providers/health_profile_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_bands_provider.dart';
@@ -76,17 +76,19 @@ class SettingsScreen extends ConsumerWidget {
     final profile = ref.watch(healthProfileProvider);
     final zoneConfig = ref.watch(zoneConfigurationProvider);
 
+    final s = S.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(s.settingsTitle)),
       body: ListView(
         children: [
-          const _SectionHeader(title: 'Health Profile'),
+          _SectionHeader(title: s.sectionHealthProfile),
           ListTile(
             leading: const Icon(Icons.cake_outlined),
-            title: const Text('Age'),
+            title: Text(s.ageLabel),
             subtitle: userAge != null
-                ? Text('$userAge years (max HR: ${220 - userAge} bpm)')
-                : const Text('Set your age for heart rate zones'),
+                ? Text(s.ageSubtitleSet(userAge, 220 - userAge))
+                : Text(s.ageSubtitleEmpty),
             trailing: userAge != null
                 ? IconButton(
                     icon: const Icon(Icons.clear),
@@ -98,10 +100,10 @@ class SettingsScreen extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.monitor_heart_outlined),
-            title: const Text('Resting Heart Rate'),
+            title: Text(s.restingHeartRate),
             subtitle: profile.restingHeartRate != null
-                ? Text('${profile.restingHeartRate} bpm')
-                : const Text('Optional — enables Karvonen zones'),
+                ? Text(s.restingHrSubtitleSet(profile.restingHeartRate!))
+                : Text(s.restingHrSubtitleEmpty),
             trailing: profile.restingHeartRate != null
                 ? IconButton(
                     icon: const Icon(Icons.clear),
@@ -113,10 +115,10 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => _showIntDialog(
               context,
               ref,
-              title: 'Resting Heart Rate',
-              label: 'BPM',
-              hint: 'e.g. 60',
-              suffix: 'bpm',
+              title: s.restingHeartRate,
+              label: s.bpmSuffix,
+              hint: s.restingHrHint,
+              suffix: s.bpmSuffix,
               current: profile.restingHeartRate,
               min: 20,
               max: 220,
@@ -127,10 +129,11 @@ class SettingsScreen extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.speed_outlined),
-            title: const Text('Measured Max Heart Rate'),
+            title: Text(s.measuredMaxHeartRate),
             subtitle: profile.measuredMaxHeartRate != null
-                ? Text('${profile.measuredMaxHeartRate} bpm')
-                : const Text('Optional — from exercise testing'),
+                ? Text(
+                    s.measuredMaxHrSubtitleSet(profile.measuredMaxHeartRate!))
+                : Text(s.measuredMaxHrSubtitleEmpty),
             trailing: profile.measuredMaxHeartRate != null
                 ? IconButton(
                     icon: const Icon(Icons.clear),
@@ -142,10 +145,10 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => _showIntDialog(
               context,
               ref,
-              title: 'Measured Max Heart Rate',
-              label: 'BPM',
-              hint: 'e.g. 185',
-              suffix: 'bpm',
+              title: s.measuredMaxHeartRate,
+              label: s.bpmSuffix,
+              hint: s.measuredMaxHrHint,
+              suffix: s.bpmSuffix,
               current: profile.measuredMaxHeartRate,
               min: 60,
               max: 250,
@@ -156,8 +159,8 @@ class SettingsScreen extends ConsumerWidget {
           ),
           SwitchListTile(
             secondary: const Icon(Icons.medication_outlined),
-            title: const Text('Beta Blocker Medication'),
-            subtitle: const Text('Affects heart rate zone accuracy'),
+            title: Text(s.betaBlockerMedication),
+            subtitle: Text(s.betaBlockerSubtitle),
             value: profile.takingBetaBlocker,
             onChanged: (v) => ref
                 .read(healthProfileProvider.notifier)
@@ -165,8 +168,8 @@ class SettingsScreen extends ConsumerWidget {
           ),
           SwitchListTile(
             secondary: const Icon(Icons.favorite_outline),
-            title: const Text('Heart Condition'),
-            subtitle: const Text('Enables caution mode for zones'),
+            title: Text(s.heartConditionLabel),
+            subtitle: Text(s.heartConditionSubtitle),
             value: profile.hasHeartCondition,
             onChanged: (v) => ref
                 .read(healthProfileProvider.notifier)
@@ -174,10 +177,10 @@ class SettingsScreen extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.medical_services_outlined),
-            title: const Text('Clinician Max Heart Rate'),
+            title: Text(s.clinicianMaxHeartRate),
             subtitle: profile.clinicianMaxHr != null
-                ? Text('${profile.clinicianMaxHr} bpm — overrides estimates')
-                : const Text('Optional — from your doctor'),
+                ? Text(s.clinicianMaxHrSubtitleSet(profile.clinicianMaxHr!))
+                : Text(s.clinicianMaxHrSubtitleEmpty),
             trailing: profile.clinicianMaxHr != null
                 ? IconButton(
                     icon: const Icon(Icons.clear),
@@ -189,10 +192,10 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => _showIntDialog(
               context,
               ref,
-              title: 'Clinician Max Heart Rate',
-              label: 'BPM',
-              hint: 'e.g. 150',
-              suffix: 'bpm',
+              title: s.clinicianMaxHeartRate,
+              label: s.bpmSuffix,
+              hint: s.clinicianMaxHrHint,
+              suffix: s.bpmSuffix,
               current: profile.clinicianMaxHr,
               min: 60,
               max: 250,
@@ -203,52 +206,52 @@ class SettingsScreen extends ConsumerWidget {
           if (zoneConfig != null)
             ListTile(
               leading: const Icon(Icons.bar_chart_outlined),
-              title: const Text('Zone Method'),
+              title: Text(s.zoneMethod),
               subtitle: Text(
-                '${_methodLabel(zoneConfig.activeMethod)} · '
-                '${_reliabilityLabel(zoneConfig.reliability)} confidence',
+                '${_methodLabel(zoneConfig.activeMethod, s)} · '
+                '${_reliabilityLabel(zoneConfig.reliability, s)} confidence',
               ),
             ),
           ListTile(
             leading: const Icon(Icons.tune_outlined),
-            title: const Text('Set Up Heart Rate Zones'),
-            subtitle: const Text('Step-by-step guided setup'),
+            title: Text(s.setUpHeartRateZones),
+            subtitle: Text(s.stepByStepGuidedSetup),
             onTap: () => showHealthProfileOnboarding(context),
           ),
           SwitchListTile(
             secondary: const Icon(Icons.palette_outlined),
-            title: const Text('Zone Colour Bands'),
-            subtitle: const Text(
-              'Show coloured zone bands on HR chart',
+            title: Text(s.zoneColourBands),
+            subtitle: Text(
+              s.zoneColourBandsSubtitle,
             ),
             value: ref.watch(zoneBandsProvider),
             onChanged: (_) => ref.read(zoneBandsProvider.notifier).toggle(),
           ),
-          const ListTile(
-            leading: Icon(Icons.info_outline),
-            title: Text('Disclaimer'),
-            subtitle: Text(WarningMessages.generalDisclaimer),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: Text(s.disclaimerLabel),
+            subtitle: Text(s.warningGeneralDisclaimer),
           ),
-          const _SectionHeader(title: 'Appearance'),
+          _SectionHeader(title: s.sectionAppearance),
           ListTile(
             leading: const Icon(Icons.palette_outlined),
-            title: const Text('Theme'),
+            title: Text(s.themeLabel),
             trailing: SegmentedButton<ThemeMode>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: ThemeMode.light,
-                  icon: Icon(Icons.light_mode),
-                  label: Text('Light'),
+                  icon: const Icon(Icons.light_mode),
+                  label: Text(s.themeLight),
                 ),
                 ButtonSegment(
                   value: ThemeMode.dark,
-                  icon: Icon(Icons.dark_mode),
-                  label: Text('Dark'),
+                  icon: const Icon(Icons.dark_mode),
+                  label: Text(s.themeDark),
                 ),
                 ButtonSegment(
                   value: ThemeMode.system,
-                  icon: Icon(Icons.brightness_auto),
-                  label: Text('Auto'),
+                  icon: const Icon(Icons.brightness_auto),
+                  label: Text(s.themeAuto),
                 ),
               ],
               selected: {themeMode},
@@ -257,19 +260,19 @@ class SettingsScreen extends ConsumerWidget {
               },
             ),
           ),
-          const _SectionHeader(title: 'Units'),
+          _SectionHeader(title: s.sectionUnits),
           ListTile(
             leading: const Icon(Icons.scale_outlined),
-            title: const Text('Weight Unit'),
+            title: Text(s.weightUnitLabel),
             trailing: SegmentedButton<String>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: 'kg',
-                  label: Text('kg'),
+                  label: Text(s.kgUnit),
                 ),
                 ButtonSegment(
                   value: 'lbs',
-                  label: Text('lbs'),
+                  label: Text(s.lbsUnit),
                 ),
               ],
               selected: {weightUnit},
@@ -278,11 +281,11 @@ class SettingsScreen extends ConsumerWidget {
               },
             ),
           ),
-          const _SectionHeader(title: 'Rest Timer'),
+          _SectionHeader(title: s.sectionRestTimer),
           SwitchListTile(
             secondary: const Icon(Icons.vibration),
-            title: const Text('Vibration Alert'),
-            subtitle: const Text('Vibrate when rest timer completes'),
+            title: Text(s.vibrationAlert),
+            subtitle: Text(s.vibrationAlertSubtitle),
             value: ref.watch(restTimerSettingsProvider).vibrationEnabled,
             onChanged: (_) {
               ref.read(restTimerSettingsProvider.notifier).toggleVibration();
@@ -290,29 +293,29 @@ class SettingsScreen extends ConsumerWidget {
           ),
           SwitchListTile(
             secondary: const Icon(Icons.volume_up_outlined),
-            title: const Text('Sound Alert'),
-            subtitle: const Text('Play a sound when rest timer completes'),
+            title: Text(s.soundAlert),
+            subtitle: Text(s.soundAlertSubtitle),
             value: ref.watch(restTimerSettingsProvider).soundEnabled,
             onChanged: (_) {
               ref.read(restTimerSettingsProvider.notifier).toggleSound();
             },
           ),
-          const _SectionHeader(title: 'Data'),
+          _SectionHeader(title: s.sectionData),
           ListTile(
             leading: const Icon(Icons.delete_forever_outlined),
-            title: const Text('Clear All Data'),
-            subtitle: const Text(
-              'Permanently delete all workouts and settings.',
+            title: Text(s.clearAllData),
+            subtitle: Text(
+              s.clearAllDataSubtitle,
             ),
             textColor: Theme.of(context).colorScheme.error,
             iconColor: Theme.of(context).colorScheme.error,
             onTap: () => _confirmClearData(context),
           ),
-          const _SectionHeader(title: 'About'),
-          const ListTile(
-            leading: Icon(Icons.info_outline),
-            title: Text('RepFoundry'),
-            subtitle: Text('Version 1.0.0'),
+          _SectionHeader(title: s.sectionAbout),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: Text(s.aboutAppName),
+            subtitle: Text(s.aboutVersion),
           ),
         ],
       ),
@@ -324,28 +327,29 @@ class SettingsScreen extends ConsumerWidget {
     WidgetRef ref,
     int? currentAge,
   ) async {
+    final s = S.of(context)!;
     final controller = TextEditingController(
       text: currentAge?.toString() ?? '',
     );
     final result = await showDialog<int?>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Set Your Age'),
+        title: Text(s.setYourAge),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
           autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Age',
-            hintText: 'e.g. 30',
-            border: OutlineInputBorder(),
-            suffixText: 'years',
+          decoration: InputDecoration(
+            labelText: s.ageLabel,
+            hintText: s.ageHint,
+            border: const OutlineInputBorder(),
+            suffixText: s.yearsSuffix,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(s.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -354,7 +358,7 @@ class SettingsScreen extends ConsumerWidget {
                 Navigator.pop(ctx, age);
               }
             },
-            child: const Text('Save'),
+            child: Text(s.save),
           ),
         ],
       ),
@@ -378,6 +382,7 @@ class SettingsScreen extends ConsumerWidget {
     required int max,
     required void Function(int) onSave,
   }) async {
+    final s = S.of(context)!;
     final controller = TextEditingController(
       text: current?.toString() ?? '',
     );
@@ -400,7 +405,7 @@ class SettingsScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(s.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -409,7 +414,7 @@ class SettingsScreen extends ConsumerWidget {
                 Navigator.pop(ctx, value);
               }
             },
-            child: const Text('Save'),
+            child: Text(s.save),
           ),
         ],
       ),
@@ -421,43 +426,44 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  String _methodLabel(ZoneMethod method) {
+  String _methodLabel(ZoneMethod method, S s) {
     return switch (method) {
-      ZoneMethod.custom => 'Custom zones',
-      ZoneMethod.clinicianCap => 'Clinician cap',
-      ZoneMethod.hrr => 'Heart rate reserve (Karvonen)',
-      ZoneMethod.percentOfMeasuredMax => 'Measured max HR',
-      ZoneMethod.percentOfEstimatedMax => 'Age-estimated max HR',
+      ZoneMethod.custom => s.zoneMethodCustom,
+      ZoneMethod.clinicianCap => s.zoneMethodClinicianCap,
+      ZoneMethod.hrr => s.zoneMethodHrr,
+      ZoneMethod.percentOfMeasuredMax => s.zoneMethodMeasuredMax,
+      ZoneMethod.percentOfEstimatedMax => s.zoneMethodEstimatedMax,
     };
   }
 
-  String _reliabilityLabel(ZoneReliability reliability) {
+  String _reliabilityLabel(ZoneReliability reliability, S s) {
     return switch (reliability) {
-      ZoneReliability.high => 'High',
-      ZoneReliability.medium => 'Medium',
-      ZoneReliability.low => 'Low',
+      ZoneReliability.high => s.reliabilityHigh,
+      ZoneReliability.medium => s.reliabilityMedium,
+      ZoneReliability.low => s.reliabilityLow,
     };
   }
 
   Future<void> _confirmClearData(BuildContext context) async {
+    final s = S.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Clear All Data?'),
-        content: const Text(
-          'This will permanently delete all your workout history and cannot be undone.',
+        title: Text(s.clearAllDataConfirmTitle),
+        content: Text(
+          s.clearAllDataConfirmContent,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(s.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(ctx).colorScheme.error,
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete'),
+            child: Text(s.delete),
           ),
         ],
       ),
@@ -468,7 +474,7 @@ class SettingsScreen extends ConsumerWidget {
       await prefs.clear();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('All data cleared.')),
+          SnackBar(content: Text(s.allDataCleared)),
         );
       }
     }

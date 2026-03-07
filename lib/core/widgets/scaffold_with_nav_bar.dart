@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 class ScaffoldWithNavBar extends StatelessWidget {
   const ScaffoldWithNavBar({super.key, required this.child});
@@ -14,26 +15,26 @@ class ScaffoldWithNavBar extends StatelessWidget {
         selectedIndex: _calculateSelectedIndex(context),
         onDestinationSelected: (index) =>
             _onDestinationSelected(index, context),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.fitness_center),
-            label: 'Workout',
+            icon: const Icon(Icons.fitness_center),
+            label: S.of(context)!.navWorkout,
           ),
           NavigationDestination(
-            icon: Icon(Icons.history),
-            label: 'History',
+            icon: const Icon(Icons.history),
+            label: S.of(context)!.navHistory,
           ),
           NavigationDestination(
-            icon: Icon(Icons.directions_run),
-            label: 'Cardio',
+            icon: const Icon(Icons.directions_run),
+            label: S.of(context)!.navCardio,
           ),
           NavigationDestination(
-            icon: Icon(Icons.monitor_heart),
-            label: 'Heart Rate',
+            icon: const Icon(Icons.monitor_heart),
+            label: S.of(context)!.navHeartRate,
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
+            icon: const Icon(Icons.settings),
+            label: S.of(context)!.navSettings,
           ),
         ],
       ),

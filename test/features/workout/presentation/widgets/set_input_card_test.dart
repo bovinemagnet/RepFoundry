@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/workout/presentation/models/ghost_set.dart';
 import 'package:rep_foundry/features/workout/presentation/widgets/set_input_card.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
   group('SetInputCard', () {
     Widget buildCard({GhostSet? suggestion, Key? key}) {
       return MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: SetInputCard(
             key: key,
@@ -60,6 +63,8 @@ void main() {
       // Build with first suggestion using a ValueKey to keep state.
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: SetInputCard(
               onLogSet: ({
@@ -80,6 +85,8 @@ void main() {
       // Rebuild with second suggestion.
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: SetInputCard(
               onLogSet: ({
@@ -102,6 +109,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: SetInputCard(
               onLogSet: ({
@@ -122,6 +131,8 @@ void main() {
       // Rebuild without suggestion.
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: SetInputCard(
               onLogSet: ({

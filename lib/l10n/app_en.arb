@@ -1,0 +1,364 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "RepFoundry",
+
+  "navWorkout": "Workout",
+  "navHistory": "History",
+  "navCardio": "Cardio",
+  "navHeartRate": "Heart Rate",
+  "navSettings": "Settings",
+
+  "start": "Start",
+  "pause": "Pause",
+  "resume": "Resume",
+  "reset": "Reset",
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "create": "Create",
+  "finish": "Finish",
+  "next": "Next",
+  "back": "Back",
+  "skip": "Skip",
+  "done": "Done",
+  "retry": "Retry",
+
+  "bpmSuffix": "bpm",
+  "yearsSuffix": "years",
+  "kgUnit": "kg",
+  "lbsUnit": "lbs",
+
+  "settingsTitle": "Settings",
+  "sectionHealthProfile": "Health Profile",
+  "sectionAppearance": "Appearance",
+  "sectionUnits": "Units",
+  "sectionRestTimer": "Rest Timer",
+  "sectionData": "Data",
+  "sectionAbout": "About",
+
+  "ageLabel": "Age",
+  "ageSubtitleSet": "{age} years (max HR: {maxHr} bpm)",
+  "@ageSubtitleSet": {
+    "placeholders": {
+      "age": { "type": "int" },
+      "maxHr": { "type": "int" }
+    }
+  },
+  "ageSubtitleEmpty": "Set your age for heart rate zones",
+  "setYourAge": "Set Your Age",
+  "ageHint": "e.g. 30",
+
+  "restingHeartRate": "Resting Heart Rate",
+  "restingHrSubtitleSet": "{bpm} bpm",
+  "@restingHrSubtitleSet": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "restingHrSubtitleEmpty": "Optional \u2014 enables Karvonen zones",
+  "restingHrHint": "e.g. 60",
+
+  "measuredMaxHeartRate": "Measured Max Heart Rate",
+  "measuredMaxHrSubtitleSet": "{bpm} bpm",
+  "@measuredMaxHrSubtitleSet": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "measuredMaxHrSubtitleEmpty": "Optional \u2014 from exercise testing",
+  "measuredMaxHrHint": "e.g. 185",
+
+  "betaBlockerMedication": "Beta Blocker Medication",
+  "betaBlockerSubtitle": "Affects heart rate zone accuracy",
+
+  "heartConditionLabel": "Heart Condition",
+  "heartConditionSubtitle": "Enables caution mode for zones",
+
+  "clinicianMaxHeartRate": "Clinician Max Heart Rate",
+  "clinicianMaxHrSubtitleSet": "{bpm} bpm \u2014 overrides estimates",
+  "@clinicianMaxHrSubtitleSet": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "clinicianMaxHrSubtitleEmpty": "Optional \u2014 from your doctor",
+  "clinicianMaxHrHint": "e.g. 150",
+
+  "zoneMethod": "Zone Method",
+  "zoneMethodAndReliability": "{method} \u00b7 {reliability} confidence",
+  "@zoneMethodAndReliability": {
+    "placeholders": {
+      "method": { "type": "String" },
+      "reliability": { "type": "String" }
+    }
+  },
+  "zoneMethodCustom": "Custom zones",
+  "zoneMethodClinicianCap": "Clinician cap",
+  "zoneMethodHrr": "Heart rate reserve (Karvonen)",
+  "zoneMethodMeasuredMax": "Measured max HR",
+  "zoneMethodEstimatedMax": "Age-estimated max HR",
+  "reliabilityHigh": "High",
+  "reliabilityMedium": "Medium",
+  "reliabilityLow": "Low",
+
+  "setUpHeartRateZones": "Set Up Heart Rate Zones",
+  "stepByStepGuidedSetup": "Step-by-step guided setup",
+
+  "zoneColourBands": "Zone Colour Bands",
+  "zoneColourBandsSubtitle": "Show coloured zone bands on HR chart",
+
+  "disclaimerLabel": "Disclaimer",
+
+  "themeLabel": "Theme",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeAuto": "Auto",
+
+  "weightUnitLabel": "Weight Unit",
+
+  "vibrationAlert": "Vibration Alert",
+  "vibrationAlertSubtitle": "Vibrate when rest timer completes",
+  "soundAlert": "Sound Alert",
+  "soundAlertSubtitle": "Play a sound when rest timer completes",
+
+  "clearAllData": "Clear All Data",
+  "clearAllDataSubtitle": "Permanently delete all workouts and settings.",
+  "clearAllDataConfirmTitle": "Clear All Data?",
+  "clearAllDataConfirmContent": "This will permanently delete all your workout history and cannot be undone.",
+  "allDataCleared": "All data cleared.",
+
+  "aboutAppName": "RepFoundry",
+  "aboutVersion": "Version 1.0.0",
+
+  "heartRateTitle": "Heart Rate",
+  "connectHrMonitor": "Connect HR Monitor",
+  "disconnect": "Disconnect",
+  "setupGuide": "Setup guide",
+  "reconnecting": "Reconnecting...",
+  "recentChart": "Recent",
+  "fullSessionChart": "Full Session",
+  "setAgeInSettings": "Set your age in Settings",
+  "setAgeInSettingsSubtitle": "Heart rate training zones will appear when your age is configured.",
+  "statsAvg": "Avg",
+  "statsMin": "Min",
+  "statsMax": "Max",
+  "statsReadings": "Readings",
+  "timeInZone": "Time in Zone",
+  "moderateOrHigher": "Moderate or higher: {duration}",
+  "@moderateOrHigher": {
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "recoveryHrDrop": "Recovery HR drop: {bpm} bpm",
+  "@recoveryHrDrop": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "bluetoothNotAvailable": "Bluetooth is not available. Ensure Bluetooth is turned on.",
+  "chartWindowSeconds": "{seconds}s",
+  "@chartWindowSeconds": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "chartWindowMinutes": "{minutes}m",
+  "@chartWindowMinutes": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+
+  "onboardingTitle": "Set Up Heart Rate Zones",
+  "onboardingStepOf": "Step {current} of {total}",
+  "@onboardingStepOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "onboardingAgeExplanation": "Your age is used to estimate your maximum heart rate and personalise training zones.",
+  "onboardingRestingHrExplanation": "Providing your resting heart rate enables more accurate zone calculation using the Karvonen (heart rate reserve) method.",
+  "onboardingRestingHrLabel": "Resting Heart Rate (optional)",
+  "onboardingMeasuredMaxHrLabel": "Measured Max Heart Rate (optional)",
+  "onboardingRestingHrHint": "e.g. 60",
+  "onboardingMeasuredMaxHrHint": "e.g. 185",
+  "onboardingMedicalExplanation": "If any of these apply, heart rate zones will be shown in caution mode with reduced confidence. We recommend consulting your healthcare provider for personalised limits.",
+  "onboardingBetaBlockerLabel": "Taking beta blocker medication",
+  "onboardingHeartConditionLabel": "Heart condition",
+  "onboardingClinicianWithFlags": "Because you have medical factors, we strongly recommend entering a clinician-provided maximum heart rate. This will override all other estimates.",
+  "onboardingClinicianWithoutFlags": "If your doctor or exercise physiologist has given you a maximum heart rate, enter it here to override the estimate.",
+  "onboardingClinicianMaxHrLabel": "Clinician Max Heart Rate (optional)",
+
+  "disclaimerDialogTitle": "Heart Rate Monitoring",
+  "disclaimerDialogButton": "I understand",
+
+  "cautionModeTitle": "Caution Mode",
+
+  "symptomReportButton": "Report Symptom",
+  "symptomReportTitle": "Symptom Report",
+  "stopExerciseTitle": "Stop Exercise",
+  "stopExerciseOk": "I'm OK, stopping exercise",
+  "stopExerciseHelp": "I need help",
+
+  "warningGeneralDisclaimer": "Heart rate zone estimates are for informational purposes only and do not constitute medical advice. Always consult a healthcare professional before starting or modifying an exercise programme, especially if you have a pre-existing medical condition.",
+  "warningBetaBlocker": "Beta blocker medication can significantly reduce your maximum heart rate. Standard zone calculations may not be accurate. We recommend setting a clinician-provided maximum heart rate or using rate of perceived exertion (RPE) and the talk test to gauge intensity.",
+  "warningHeartCondition": "You have indicated a heart condition. Standard heart rate zone calculations may not be appropriate. We strongly recommend obtaining a clinician-provided maximum heart rate before using intensity-based training guidance.",
+  "warningClinicianCap": "Heart rate zones are calculated using a clinician-provided maximum heart rate. This overrides any age-based or measured estimates.",
+  "warningStopExercise": "If you are experiencing chest pain, severe dizziness, fainting, or unusual shortness of breath, stop exercising immediately. If symptoms persist, seek urgent medical attention.",
+  "warningSymptomIntro": "Are you experiencing any of the following symptoms?",
+  "symptomChestPain": "Chest pain or tightness",
+  "symptomDizziness": "Severe dizziness or light-headedness",
+  "symptomFainting": "Feeling faint or about to faint",
+  "symptomBreathing": "Unusual shortness of breath",
+
+  "clinicianLimitsInUse": "Clinician-provided limits in use",
+
+  "workoutTitle": "Workout",
+  "workoutTitleWithTime": "Workout  \u2022  {time}",
+  "@workoutTitleWithTime": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "loadingWorkout": "Loading workout\u2026",
+  "addExercise": "Add Exercise",
+  "startWorkout": "Start Workout",
+  "noActiveWorkout": "No active workout",
+  "noActiveWorkoutSubtitle": "Start a new workout to begin logging sets.",
+  "addExercisesHint": "Add exercises using the button below",
+  "finishWorkoutTitle": "Finish Workout?",
+  "finishWorkoutContent": "This will save your workout and end the session.",
+  "tableHeaderHash": "#",
+  "tableHeaderWeight": "Weight",
+  "tableHeaderReps": "Reps",
+  "tableHeaderE1rm": "e1RM",
+
+  "weightKgLabel": "Weight (kg)",
+  "repsLabel": "Reps",
+  "rpeLabel": "RPE",
+  "addRpe": "Add RPE",
+  "hideRpe": "Hide RPE",
+  "logSet": "Log Set",
+  "validationRequired": "Required",
+  "validationInvalid": "Invalid",
+  "validationMinZero": "\u2265 0",
+  "validationRpeRange": "1\u201310",
+
+  "restTimer": "Rest Timer",
+  "stopTimer": "Stop timer",
+
+  "newPersonalRecord": "New Personal Record!",
+  "e1rmValue": "e1RM: {value} kg",
+  "@e1rmValue": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+
+  "historyTitle": "History",
+  "noWorkoutsYet": "No workouts yet",
+  "noWorkoutsYetSubtitle": "Completed workouts will appear here.",
+  "loadingHistory": "Loading history\u2026",
+  "errorPrefix": "Error: {error}",
+  "@errorPrefix": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "volumeTrend": "Volume trend (last {count} workouts)",
+  "@volumeTrend": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "setsCount": "{count} sets",
+  "@setsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "prBadge": "PR!",
+
+  "workoutDetailTitle": "Workout Detail",
+  "workoutNotFound": "Workout not found",
+  "durationLabel": "Duration",
+  "setsLabel": "Sets",
+  "volumeLabel": "Volume",
+
+  "exerciseProgressTitle": "Exercise Progress",
+  "noDataYet": "No data yet",
+  "noDataYetSubtitle": "Log sets for this exercise to see your progress.",
+  "loadingProgress": "Loading progress\u2026",
+  "bestE1rm": "Best e1RM",
+  "totalVolume": "Total Volume",
+  "totalSets": "Total Sets",
+  "e1rmTrend": "Estimated 1RM Trend",
+  "recentSets": "Recent Sets",
+  "tableHeaderDate": "Date",
+
+  "chooseExercise": "Choose Exercise",
+  "searchExercisesHint": "Search exercises\u2026",
+  "filterAll": "All",
+  "noExercisesFound": "No exercises found",
+  "loadingExercises": "Loading exercises\u2026",
+  "customExercise": "Custom",
+
+  "newExerciseTitle": "New Exercise",
+  "exerciseNameLabel": "Exercise Name",
+  "categoryLabel": "Category",
+  "muscleGroupLabel": "Muscle Group",
+  "equipmentLabel": "Equipment",
+  "exerciseNameRequired": "Please enter an exercise name",
+
+  "cardioTitle": "Cardio",
+  "exerciseField": "Exercise",
+  "distanceMetresLabel": "Distance (metres)",
+  "inclineLabel": "Incline (%)",
+  "avgHeartRateLabel": "Avg Heart Rate (bpm)",
+  "lastSession": "Last session",
+  "gpsDistanceTracking": "GPS Distance Tracking",
+  "gpsAcquiring": "Acquiring signal...",
+  "gpsMetresTracked": "{metres} m tracked",
+  "@gpsMetresTracked": {
+    "placeholders": { "metres": { "type": "String" } }
+  },
+  "gpsSubtitle": "Track distance via GPS for outdoor runs",
+  "saveSession": "Save Session",
+  "cardioSessionSaved": "Cardio session saved",
+  "heartRateMonitorCard": "Heart Rate Monitor",
+  "heartRateMonitorSubtitle": "Connect a BLE heart rate strap or watch",
+  "connect": "Connect",
+  "connectingTo": "Connecting to {device}...",
+  "@connectingTo": {
+    "placeholders": { "device": { "type": "String" } }
+  },
+  "reconnectingTo": "Reconnecting to {device}...",
+  "@reconnectingTo": {
+    "placeholders": { "device": { "type": "String" } }
+  },
+  "paceLabel": "Pace: {pace}",
+  "@paceLabel": {
+    "placeholders": { "pace": { "type": "String" } }
+  },
+
+  "hrSetupGuideTitle": "Heart Rate Setup Guide",
+  "appleWatchTitle": "Apple Watch",
+  "samsungWatchTitle": "Samsung Galaxy Watch",
+  "chestStrapsTitle": "Chest Straps & Arm Bands",
+  "appleWatchStep1": "On your Apple Watch, open Settings \u2192 Workout \u2192 Heart Rate.",
+  "appleWatchStep2": "Enable \"Broadcast Heart Rate\".",
+  "appleWatchStep3": "Start any workout on the Apple Watch.",
+  "appleWatchStep4": "In RepFoundry, tap \"Connect\" and select your Apple Watch.",
+  "samsungWatchStep1": "Open Samsung Health on your watch.",
+  "samsungWatchStep2": "Go to Settings \u2192 Heart Rate Broadcast.",
+  "samsungWatchStep3": "Enable BLE broadcasting.",
+  "samsungWatchStep4": "In RepFoundry, tap \"Connect\" and select your Galaxy Watch.",
+  "chestStrapStep1": "Any BLE heart rate device (Polar, Garmin, Wahoo, etc.) works automatically.",
+  "chestStrapStep2": "Simply wear your strap or band and tap \"Connect\".",
+  "chestStrapStep3": "Your device will appear in the scan list.",
+
+  "hrDevicePickerTitle": "Heart Rate Monitors",
+  "scanning": "Scanning for devices...",
+  "noDevicesFound": "No heart rate monitors found. Ensure your device is broadcasting \u2014 for Apple Watch, start a workout with Broadcast Heart Rate enabled.",
+  "scanAgain": "Scan Again",
+  "setupHelp": "Setup Help",
+
+  "templatesTitle": "Templates",
+  "noTemplatesYet": "No templates yet",
+  "noTemplatesYetSubtitle": "Create a template to quickly start workouts.",
+  "failedToLoadTemplates": "Failed to load templates: {error}",
+  "@failedToLoadTemplates": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "newTemplate": "New Template",
+  "newTemplateTitle": "New Template",
+  "templateNameLabel": "Template Name",
+  "deleteTemplateTitle": "Delete Template?",
+  "deleteTemplateContent": "Are you sure you want to delete \"{name}\"?",
+  "@deleteTemplateContent": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "exerciseCount": "{count} exercises",
+  "@exerciseCount": {
+    "placeholders": { "count": { "type": "int" } }
+  }
+}

@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/heart_rate/domain/analytics_events.dart';
 import 'package:rep_foundry/features/heart_rate/domain/models/health_profile.dart';

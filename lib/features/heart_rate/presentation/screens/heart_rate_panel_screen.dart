@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
@@ -68,6 +69,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     final panelState = ref.watch(heartRatePanelProvider);
     final controller = ref.read(heartRatePanelProvider.notifier);
     final profile = ref.watch(healthProfileProvider);
@@ -89,17 +91,17 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Heart Rate'),
+        title: Text(s.heartRateTitle),
         actions: [
           if (panelState.hrConnected)
             IconButton(
               icon: const Icon(Icons.bluetooth_disabled),
-              tooltip: 'Disconnect',
+              tooltip: s.disconnect,
               onPressed: () => controller.disconnectHeartRate(),
             ),
           IconButton(
             icon: const Icon(Icons.help_outline),
-            tooltip: 'Setup guide',
+            tooltip: s.setupGuide,
             onPressed: () => showHrSetupGuide(context),
           ),
         ],
@@ -125,7 +127,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
           if (panelState.readings.isNotEmpty) ...[
             _buildChartHeader(
               context,
-              'Recent',
+              s.recentChart,
               chartWindow,
             ),
             HeartRateChart(
@@ -138,7 +140,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
 
             // Full session chart
             Text(
-              'Full Session',
+              s.fullSessionChart,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -187,10 +189,8 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
             Card(
               child: ListTile(
                 leading: const Icon(Icons.info_outline),
-                title: const Text('Set your age in Settings'),
-                subtitle: const Text(
-                  'Heart rate training zones will appear when your age is configured.',
-                ),
+                title: Text(s.setAgeInSettings),
+                subtitle: Text(s.setAgeInSettingsSubtitle),
                 onTap: () => showHealthProfileOnboarding(context),
               ),
             ),
@@ -242,6 +242,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     HeartRatePanelState panelState,
     CalculatedZone? zone,
   ) {
+    final s = S.of(context)!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -270,7 +271,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'bpm',
+                  s.bpmSuffix,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -307,7 +308,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Reconnecting...',
+                    s.reconnecting,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -343,6 +344,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     HeartRatePanelState panelState,
     HeartRatePanelController controller,
   ) {
+    final s = S.of(context)!;
     if (panelState.hrConnecting) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -352,7 +354,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
         child: FilledButton.icon(
           onPressed: () => _showDevicePicker(controller),
           icon: const Icon(Icons.bluetooth),
-          label: const Text('Connect HR Monitor'),
+          label: Text(s.connectHrMonitor),
         ),
       );
     }
@@ -364,20 +366,20 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
           FilledButton.icon(
             onPressed: controller.startMonitoring,
             icon: const Icon(Icons.play_arrow),
-            label: const Text('Start'),
+            label: Text(s.start),
           )
         else
           OutlinedButton.icon(
             onPressed: controller.stopMonitoring,
             icon: const Icon(Icons.pause),
-            label: const Text('Pause'),
+            label: Text(s.pause),
           ),
         if (panelState.readings.isNotEmpty) ...[
           const SizedBox(width: 12),
           OutlinedButton.icon(
             onPressed: controller.resetReadings,
             icon: const Icon(Icons.refresh),
-            label: const Text('Reset'),
+            label: Text(s.reset),
           ),
         ],
       ],
@@ -385,6 +387,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
   }
 
   Widget _buildStats(BuildContext context, HeartRatePanelState panelState) {
+    final s = S.of(context)!;
     final bpmValues = panelState.readings.map((r) => r.bpm);
     final avg = (bpmValues.reduce((a, b) => a + b) / bpmValues.length).round();
     final min = bpmValues.reduce((a, b) => a < b ? a : b);
@@ -396,11 +399,11 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _StatColumn(label: 'Avg', value: '$avg'),
-            _StatColumn(label: 'Min', value: '$min'),
-            _StatColumn(label: 'Max', value: '$max'),
+            _StatColumn(label: s.statsAvg, value: '$avg'),
+            _StatColumn(label: s.statsMin, value: '$min'),
+            _StatColumn(label: s.statsMax, value: '$max'),
             _StatColumn(
-              label: 'Readings',
+              label: s.statsReadings,
               value: '${panelState.readings.length}',
             ),
           ],
@@ -414,6 +417,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     HeartRatePanelState panelState,
     ZoneConfiguration zoneConfig,
   ) {
+    final s = S.of(context)!;
     final summary = calculateTimeInZones(panelState.readings, zoneConfig);
     final totalSeconds = panelState.readings.isNotEmpty
         ? panelState.readings.last.elapsed.inSeconds
@@ -428,7 +432,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
             Row(
               children: [
                 Text(
-                  'Time in Zone',
+                  s.timeInZone,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -447,7 +451,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
             ],
             const SizedBox(height: 8),
             Text(
-              'Moderate or higher: ${_formatDuration(summary.moderateOrHigher)}',
+              s.moderateOrHigher(_formatDuration(summary.moderateOrHigher)),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -455,7 +459,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
             if (summary.recoveryHrDrop != null) ...[
               const SizedBox(height: 4),
               Text(
-                'Recovery HR drop: ${summary.recoveryHrDrop} bpm',
+                s.recoveryHrDrop(summary.recoveryHrDrop!),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -477,11 +481,10 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
 
     final permissionOk = await heartRateService.checkAndRequestPermission();
     if (!permissionOk) {
+      final s = S.of(context)!;
       scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Bluetooth is not available. Ensure Bluetooth is turned on.',
-          ),
+        SnackBar(
+          content: Text(s.bluetoothNotAvailable),
         ),
       );
       return;

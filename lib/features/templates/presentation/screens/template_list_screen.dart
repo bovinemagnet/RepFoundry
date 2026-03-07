@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../domain/models/workout_template.dart';
 import '../../../../core/providers.dart';
 
@@ -13,14 +14,15 @@ class TemplateListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
     final templatesAsync = ref.watch(_templateListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Templates')),
+      appBar: AppBar(title: Text(s.templatesTitle)),
       body: templatesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(
-          child: Text('Failed to load templates: $error'),
+          child: Text(s.failedToLoadTemplates(error.toString())),
         ),
         data: (templates) => templates.isEmpty
             ? Center(
@@ -34,12 +36,12 @@ class TemplateListScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No templates yet',
+                      s.noTemplatesYet,
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Create a template to quickly start workouts.',
+                      s.noTemplatesYetSubtitle,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
@@ -65,7 +67,7 @@ class TemplateListScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateTemplateDialog(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('New Template'),
+        label: Text(s.newTemplate),
       ),
     );
   }
@@ -74,16 +76,17 @@ class TemplateListScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) async {
+    final s = S.of(context)!;
     final nameController = TextEditingController();
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('New Template'),
+        title: Text(s.newTemplateTitle),
         content: TextField(
           controller: nameController,
-          decoration: const InputDecoration(
-            labelText: 'Template Name',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: s.templateNameLabel,
+            border: const OutlineInputBorder(),
           ),
           autofocus: true,
           textCapitalization: TextCapitalization.words,
@@ -91,11 +94,11 @@ class TemplateListScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(s.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, nameController.text.trim()),
-            child: const Text('Create'),
+            child: Text(s.create),
           ),
         ],
       ),
@@ -120,6 +123,7 @@ class _TemplateTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: ListTile(
@@ -132,7 +136,7 @@ class _TemplateTile extends StatelessWidget {
         ),
         title: Text(template.name),
         subtitle: Text(
-          '${template.exercises.length} exercises',
+          s.exerciseCount(template.exercises.length),
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -144,11 +148,11 @@ class _TemplateTile extends StatelessWidget {
             }
           },
           itemBuilder: (_) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'delete',
               child: ListTile(
-                leading: Icon(Icons.delete_outline),
-                title: Text('Delete'),
+                leading: const Icon(Icons.delete_outline),
+                title: Text(s.delete),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
@@ -159,21 +163,22 @@ class _TemplateTile extends StatelessWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
+    final s = S.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Template?'),
+        title: Text(s.deleteTemplateTitle),
         content: Text(
-          'Are you sure you want to delete "${template.name}"?',
+          s.deleteTemplateContent(template.name),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(s.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete'),
+            child: Text(s.delete),
           ),
         ],
       ),

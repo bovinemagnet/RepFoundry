@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
@@ -37,6 +38,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     final cardioState = ref.watch(cardioTrackingProvider);
     final controller = ref.read(cardioTrackingProvider.notifier);
     final exercisesAsync = ref.watch(_cardioExercisesProvider);
@@ -47,7 +49,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
         _inclineController.clear();
         _heartRateController.clear();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cardio session saved')),
+          SnackBar(content: Text(s.cardioSessionSaved)),
         );
       }
       if (next.error != null && next.error != prev?.error) {
@@ -58,7 +60,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cardio')),
+      appBar: AppBar(title: Text(s.cardioTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -66,9 +68,9 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
           exercisesAsync.when(
             data: (exercises) => DropdownButtonFormField<String>(
               key: ValueKey(cardioState.selectedExerciseId),
-              decoration: const InputDecoration(
-                labelText: 'Exercise',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: s.exerciseField,
+                border: const OutlineInputBorder(),
               ),
               initialValue: cardioState.selectedExerciseId,
               items: exercises
@@ -100,7 +102,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Last session',
+                      s.lastSession,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
@@ -174,13 +176,13 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
                   onPressed: controller.start,
                   icon: const Icon(Icons.play_arrow),
                   label: Text(
-                      cardioState.elapsedSeconds == 0 ? 'Start' : 'Resume'),
+                      cardioState.elapsedSeconds == 0 ? s.start : s.resume),
                 ),
               ] else ...[
                 OutlinedButton.icon(
                   onPressed: controller.pause,
                   icon: const Icon(Icons.pause),
-                  label: const Text('Pause'),
+                  label: Text(s.pause),
                 ),
               ],
               const SizedBox(width: 12),
@@ -188,7 +190,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
                 onPressed:
                     cardioState.elapsedSeconds > 0 ? controller.reset : null,
                 icon: const Icon(Icons.stop),
-                label: const Text('Reset'),
+                label: Text(s.reset),
               ),
             ],
           ),
@@ -197,13 +199,13 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
           // GPS toggle
           Card(
             child: SwitchListTile(
-              title: const Text('GPS Distance Tracking'),
+              title: Text(s.gpsDistanceTracking),
               subtitle: cardioState.gpsAcquiring
-                  ? const Text('Acquiring signal...')
+                  ? Text(s.gpsAcquiring)
                   : cardioState.gpsEnabled
-                      ? Text(
-                          '${cardioState.gpsDistanceMeters.toStringAsFixed(0)} m tracked')
-                      : const Text('Track distance via GPS for outdoor runs'),
+                      ? Text(s.gpsMetresTracked(
+                          cardioState.gpsDistanceMeters.toStringAsFixed(0)))
+                      : Text(s.gpsSubtitle),
               secondary: Icon(
                 Icons.gps_fixed,
                 color: cardioState.gpsEnabled
@@ -252,10 +254,10 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
           if (!cardioState.gpsEnabled) ...[
             TextField(
               controller: _distanceController,
-              decoration: const InputDecoration(
-                labelText: 'Distance (metres)',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.directions_run),
+              decoration: InputDecoration(
+                labelText: s.distanceMetresLabel,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.directions_run),
               ),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
@@ -267,7 +269,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 4, left: 12),
                 child: Text(
-                  'Pace: $_computedPace',
+                  S.of(context)!.paceLabel(_computedPace!),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -280,10 +282,10 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
           // Incline
           TextField(
             controller: _inclineController,
-            decoration: const InputDecoration(
-              labelText: 'Incline (%)',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.trending_up),
+            decoration: InputDecoration(
+              labelText: s.inclineLabel,
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.trending_up),
             ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
@@ -293,10 +295,10 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
           if (!cardioState.hrConnected) ...[
             TextField(
               controller: _heartRateController,
-              decoration: const InputDecoration(
-                labelText: 'Avg Heart Rate (bpm)',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.favorite_outline),
+              decoration: InputDecoration(
+                labelText: s.avgHeartRateLabel,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.favorite_outline),
               ),
               keyboardType: TextInputType.number,
             ),
@@ -320,7 +322,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.save),
-            label: const Text('Save Session'),
+            label: Text(s.saveSession),
           ),
         ],
       ),
@@ -332,6 +334,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
     CardioTrackingState cardioState,
     CardioTrackingController controller,
   ) {
+    final s = S.of(context)!;
     if (cardioState.hrConnecting || cardioState.hrReconnecting) {
       return Card(
         child: ListTile(
@@ -342,8 +345,8 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
           ),
           title: Text(
             cardioState.hrReconnecting
-                ? 'Reconnecting to ${cardioState.hrDeviceName ?? "device"}...'
-                : 'Connecting to ${cardioState.hrDeviceName ?? "device"}...',
+                ? s.reconnectingTo(cardioState.hrDeviceName ?? 'device')
+                : s.connectingTo(cardioState.hrDeviceName ?? 'device'),
           ),
         ),
       );
@@ -374,7 +377,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'bpm',
+                    s.bpmSuffix,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -389,7 +392,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
                       ),
                       TextButton(
                         onPressed: () => controller.disconnectHeartRate(),
-                        child: const Text('Disconnect'),
+                        child: Text(s.disconnect),
                       ),
                     ],
                   ),
@@ -405,21 +408,21 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
     return Card(
       child: ListTile(
         leading: const Icon(Icons.bluetooth),
-        title: const Text('Heart Rate Monitor'),
-        subtitle: const Text('Connect a BLE heart rate strap or watch'),
+        title: Text(s.heartRateMonitorCard),
+        subtitle: Text(s.heartRateMonitorSubtitle),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
               icon: const Icon(Icons.help_outline),
-              tooltip: 'Setup guide',
+              tooltip: s.setupGuide,
               onPressed: () => showHrSetupGuide(context),
             ),
             FilledButton.tonal(
               onPressed: cardioState.isSaving
                   ? null
                   : () => _showHrDevicePicker(controller),
-              child: const Text('Connect'),
+              child: Text(s.connect),
             ),
           ],
         ),
@@ -430,16 +433,15 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
   Future<void> _showHrDevicePicker(
     CardioTrackingController controller,
   ) async {
+    final s = S.of(context)!;
     final heartRateService = ref.read(heartRateServiceProvider);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     final permissionOk = await heartRateService.checkAndRequestPermission();
     if (!permissionOk) {
       scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Bluetooth is not available. Ensure Bluetooth is turned on.',
-          ),
+        SnackBar(
+          content: Text(s.bluetoothNotAvailable),
         ),
       );
       return;

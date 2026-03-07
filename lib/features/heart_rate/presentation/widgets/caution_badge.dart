@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../domain/models/health_profile.dart';
-import '../../domain/warning_messages.dart';
 
 /// Amber caution badge shown when the user has medical flags.
 class CautionBadge extends StatelessWidget {
@@ -13,14 +13,15 @@ class CautionBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!profile.isCautionMode) return const SizedBox.shrink();
 
+    final s = S.of(context)!;
     final String message;
     if (profile.takingBetaBlocker && profile.hasHeartCondition) {
-      message = '${WarningMessages.betaBlockerWarning}\n\n'
-          '${WarningMessages.heartConditionWarning}';
+      message = '${s.warningBetaBlocker}\n\n'
+          '${s.warningHeartCondition}';
     } else if (profile.takingBetaBlocker) {
-      message = WarningMessages.betaBlockerWarning;
+      message = s.warningBetaBlocker;
     } else {
-      message = WarningMessages.heartConditionWarning;
+      message = s.warningHeartCondition;
     }
 
     return Card(
@@ -37,7 +38,7 @@ class CautionBadge extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Caution Mode',
+                    s.cautionModeTitle,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: Colors.amber.shade900,
                           fontWeight: FontWeight.bold,

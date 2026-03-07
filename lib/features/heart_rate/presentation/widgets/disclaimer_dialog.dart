@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/analytics_events.dart';
-import '../../domain/warning_messages.dart';
 
 const _disclaimerShownKey = 'hr_disclaimer_shown';
 
@@ -19,18 +19,19 @@ Future<bool> showDisclaimerIfNeeded(
 
   if (!context.mounted) return false;
 
+  final s = S.of(context)!;
   await showDialog<void>(
     context: context,
     barrierDismissible: false,
     builder: (ctx) => AlertDialog(
-      title: const Text('Heart Rate Monitoring'),
-      content: const SingleChildScrollView(
-        child: Text(WarningMessages.generalDisclaimer),
+      title: Text(s.disclaimerDialogTitle),
+      content: SingleChildScrollView(
+        child: Text(s.warningGeneralDisclaimer),
       ),
       actions: [
         FilledButton(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('I understand'),
+          child: Text(s.disclaimerDialogButton),
         ),
       ],
     ),

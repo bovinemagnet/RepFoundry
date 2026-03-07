@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/heart_rate/data/noop_analytics_reporter.dart';
-import 'package:rep_foundry/features/heart_rate/domain/analytics_events.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/health_profile_provider.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/widgets/health_profile_onboarding.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
   group('HealthProfileOnboarding', () {
@@ -16,6 +16,8 @@ void main() {
               .overrideWithValue(NoopAnalyticsReporter()),
         ],
         child: MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Builder(
             builder: (context) => Scaffold(
               body: ElevatedButton(
@@ -91,6 +93,8 @@ void main() {
                 .overrideWithValue(NoopAnalyticsReporter()),
           ],
           child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Consumer(
               builder: (context, ref, _) {
                 container = ProviderScope.containerOf(context);

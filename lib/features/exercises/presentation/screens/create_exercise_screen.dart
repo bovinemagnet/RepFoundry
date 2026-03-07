@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../../core/providers.dart';
 import '../../domain/models/exercise.dart';
 import '../helpers/exercise_labels.dart';
@@ -56,9 +57,10 @@ class _CreateExerciseScreenState extends ConsumerState<CreateExerciseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Exercise'),
+        title: Text(s.newExerciseTitle),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8),
@@ -70,7 +72,7 @@ class _CreateExerciseScreenState extends ConsumerState<CreateExerciseScreen> {
                       height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Create'),
+                  : Text(s.create),
             ),
           ),
         ],
@@ -82,15 +84,15 @@ class _CreateExerciseScreenState extends ConsumerState<CreateExerciseScreen> {
           children: [
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Exercise Name',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: s.exerciseNameLabel,
+                border: const OutlineInputBorder(),
               ),
               autofocus: true,
               textCapitalization: TextCapitalization.words,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Please enter an exercise name';
+                  return s.exerciseNameRequired;
                 }
                 return null;
               },
@@ -98,9 +100,9 @@ class _CreateExerciseScreenState extends ConsumerState<CreateExerciseScreen> {
             const SizedBox(height: 16),
             DropdownButtonFormField<ExerciseCategory>(
               initialValue: _category,
-              decoration: const InputDecoration(
-                labelText: 'Category',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: s.categoryLabel,
+                border: const OutlineInputBorder(),
               ),
               items: ExerciseCategory.values
                   .map((c) => DropdownMenuItem(
@@ -115,9 +117,9 @@ class _CreateExerciseScreenState extends ConsumerState<CreateExerciseScreen> {
             const SizedBox(height: 16),
             DropdownButtonFormField<MuscleGroup>(
               initialValue: _muscleGroup,
-              decoration: const InputDecoration(
-                labelText: 'Muscle Group',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: s.muscleGroupLabel,
+                border: const OutlineInputBorder(),
               ),
               items: MuscleGroup.values
                   .map((g) => DropdownMenuItem(
@@ -132,9 +134,9 @@ class _CreateExerciseScreenState extends ConsumerState<CreateExerciseScreen> {
             const SizedBox(height: 16),
             DropdownButtonFormField<EquipmentType>(
               initialValue: _equipmentType,
-              decoration: const InputDecoration(
-                labelText: 'Equipment',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: s.equipmentLabel,
+                border: const OutlineInputBorder(),
               ),
               items: EquipmentType.values
                   .map((e) => DropdownMenuItem(

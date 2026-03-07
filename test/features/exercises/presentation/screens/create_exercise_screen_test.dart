@@ -5,6 +5,7 @@ import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/exercises/presentation/screens/create_exercise_screen.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
   late InMemoryExerciseRepository fakeRepo;
@@ -19,6 +20,8 @@ void main() {
         exerciseRepositoryProvider.overrideWithValue(fakeRepo),
       ],
       child: MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: const CreateExerciseScreen(),
         navigatorObservers: observer != null ? [observer] : [],
       ),
@@ -55,6 +58,8 @@ void main() {
             exerciseRepositoryProvider.overrideWithValue(fakeRepo),
           ],
           child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Builder(
               builder: (context) => Scaffold(
                 body: ElevatedButton(
@@ -106,6 +111,8 @@ void main() {
             exerciseRepositoryProvider.overrideWithValue(fakeRepo),
           ],
           child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Builder(
               builder: (context) => Scaffold(
                 body: ElevatedButton(

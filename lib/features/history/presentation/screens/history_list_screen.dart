@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../providers/volume_sparkline_provider.dart';
 import '../widgets/workout_history_tile.dart';
 import '../../../workout/domain/models/workout.dart';
@@ -33,10 +34,11 @@ class HistoryListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
     final historyAsync = ref.watch(_workoutHistoryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('History')),
+      appBar: AppBar(title: Text(s.historyTitle)),
       body: historyAsync.when(
         data: (items) {
           if (items.isEmpty) {
@@ -51,12 +53,12 @@ class HistoryListScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No workouts yet',
+                    s.noWorkoutsYet,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Completed workouts will appear here.',
+                    s.noWorkoutsYetSubtitle,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -81,8 +83,8 @@ class HistoryListScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const LoadingWidget(message: 'Loading history…'),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => LoadingWidget(message: s.loadingHistory),
+        error: (e, _) => Center(child: Text(s.errorPrefix(e.toString()))),
       ),
     );
   }
@@ -91,6 +93,7 @@ class HistoryListScreen extends ConsumerWidget {
 class _VolumeTrendHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
     final volumeAsync = ref.watch(volumeSparklineProvider);
 
     return volumeAsync.when(
@@ -105,7 +108,7 @@ class _VolumeTrendHeader extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Volume trend (last ${data.length} workouts)',
+                    s.volumeTrend(data.length),
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),

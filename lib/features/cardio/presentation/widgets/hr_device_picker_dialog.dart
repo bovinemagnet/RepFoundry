@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../data/heart_rate_service.dart';
 import 'hr_setup_guide_dialog.dart';
@@ -52,6 +53,7 @@ class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     return DraggableScrollableSheet(
       initialChildSize: 0.4,
       minChildSize: 0.25,
@@ -76,7 +78,7 @@ class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
                 ),
               ),
               Text(
-                'Heart Rate Monitors',
+                s.hrDevicePickerTitle,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
@@ -85,7 +87,7 @@ class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
                 const SizedBox(height: 8),
                 Center(
                   child: Text(
-                    'Scanning for devices...',
+                    s.scanning,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
@@ -99,16 +101,14 @@ class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: _startScan,
-                  child: const Text('Retry'),
+                  child: Text(s.retry),
                 ),
               ] else if (_devices != null && _devices!.isEmpty) ...[
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      'No heart rate monitors found. Ensure your device is '
-                      'broadcasting \u2014 for Apple Watch, start a workout '
-                      'with Broadcast Heart Rate enabled.',
+                      s.noDevicesFound,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
@@ -121,12 +121,12 @@ class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
                     children: [
                       TextButton(
                         onPressed: _startScan,
-                        child: const Text('Scan Again'),
+                        child: Text(s.scanAgain),
                       ),
                       const SizedBox(width: 8),
                       TextButton(
                         onPressed: () => showHrSetupGuide(context),
-                        child: const Text('Setup Help'),
+                        child: Text(s.setupHelp),
                       ),
                     ],
                   ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../domain/analytics_events.dart';
-import '../../domain/warning_messages.dart';
 
 /// Button shown during active monitoring to report symptoms.
 class SymptomReportButton extends StatelessWidget {
@@ -19,6 +19,7 @@ class SymptomReportButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     return OutlinedButton.icon(
       style: OutlinedButton.styleFrom(
         foregroundColor: Theme.of(context).colorScheme.error,
@@ -26,22 +27,29 @@ class SymptomReportButton extends StatelessWidget {
       ),
       onPressed: () => _showSymptomDialog(context),
       icon: const Icon(Icons.warning_amber_rounded),
-      label: const Text('Report Symptom'),
+      label: Text(s.symptomReportButton),
     );
   }
 
   void _showSymptomDialog(BuildContext context) {
+    final s = S.of(context)!;
+    final symptomOptions = [
+      s.symptomChestPain,
+      s.symptomDizziness,
+      s.symptomFainting,
+      s.symptomBreathing,
+    ];
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Symptom Report'),
+        title: Text(s.symptomReportTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(WarningMessages.symptomListIntro),
+            Text(s.warningSymptomIntro),
             const SizedBox(height: 12),
-            for (final symptom in WarningMessages.symptomOptions)
+            for (final symptom in symptomOptions)
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: OutlinedButton(
@@ -62,7 +70,7 @@ class SymptomReportButton extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(s.cancel),
           ),
         ],
       ),
@@ -70,6 +78,7 @@ class SymptomReportButton extends StatelessWidget {
   }
 
   void _showStopExerciseDialog(BuildContext context, String symptom) {
+    final s = S.of(context)!;
     onStopRequested();
     analytics?.trackEvent(HrAnalyticsEvent.warningDisplayed, {
       'type': 'symptom_report',
@@ -84,19 +93,19 @@ class SymptomReportButton extends StatelessWidget {
           color: Theme.of(ctx).colorScheme.error,
           size: 48,
         ),
-        title: const Text('Stop Exercise'),
-        content: const Text(WarningMessages.stopExercisePrompt),
+        title: Text(s.stopExerciseTitle),
+        content: Text(s.warningStopExercise),
         actions: [
           OutlinedButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("I'm OK, stopping exercise"),
+            child: Text(s.stopExerciseOk),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(ctx).colorScheme.error,
             ),
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('I need help'),
+            child: Text(s.stopExerciseHelp),
           ),
         ],
       ),

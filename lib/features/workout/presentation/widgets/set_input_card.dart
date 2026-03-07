@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../models/ghost_set.dart';
 
 /// A card widget for entering a new set's weight and reps.
@@ -83,6 +84,7 @@ class _SetInputCardState extends State<SetInputCard> {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     return Form(
       key: _formKey,
       child: Column(
@@ -93,7 +95,7 @@ class _SetInputCardState extends State<SetInputCard> {
               Expanded(
                 child: _NumberField(
                   controller: _weightController,
-                  label: 'Weight (kg)',
+                  label: s.weightKgLabel,
                   isDouble: true,
                 ),
               ),
@@ -101,7 +103,7 @@ class _SetInputCardState extends State<SetInputCard> {
               Expanded(
                 child: _NumberField(
                   controller: _repsController,
-                  label: 'Reps',
+                  label: s.repsLabel,
                   isDouble: false,
                 ),
               ),
@@ -111,14 +113,14 @@ class _SetInputCardState extends State<SetInputCard> {
                   width: 80,
                   child: _NumberField(
                     controller: _rpeController,
-                    label: 'RPE',
+                    label: s.rpeLabel,
                     isDouble: true,
                     isRequired: false,
                     validator: (value) {
                       if (value == null || value.isEmpty) return null;
                       final d = double.tryParse(value);
                       if (d == null || d < 1 || d > 10) {
-                        return '1–10';
+                        return s.validationRpeRange;
                       }
                       return null;
                     },
@@ -136,7 +138,7 @@ class _SetInputCardState extends State<SetInputCard> {
                   _showRpe ? Icons.remove : Icons.add,
                   size: 16,
                 ),
-                label: Text(_showRpe ? 'Hide RPE' : 'Add RPE'),
+                label: Text(_showRpe ? s.hideRpe : s.addRpe),
                 style: TextButton.styleFrom(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -147,7 +149,7 @@ class _SetInputCardState extends State<SetInputCard> {
               FilledButton.icon(
                 onPressed: _submit,
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('Log Set'),
+                label: Text(s.logSet),
               ),
             ],
           ),
@@ -174,6 +176,7 @@ class _NumberField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
@@ -188,12 +191,12 @@ class _NumberField extends StatelessWidget {
       validator: validator ??
           (value) {
             if (!isRequired && (value == null || value.isEmpty)) return null;
-            if (value == null || value.isEmpty) return 'Required';
+            if (value == null || value.isEmpty) return s.validationRequired;
             final n = isDouble
                 ? double.tryParse(value)
                 : int.tryParse(value)?.toDouble();
-            if (n == null) return 'Invalid';
-            if (isRequired && n < 0) return '≥ 0';
+            if (n == null) return s.validationInvalid;
+            if (isRequired && n < 0) return s.validationMinZero;
             return null;
           },
     );

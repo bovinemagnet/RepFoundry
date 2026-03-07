@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 class PRCelebrationOverlay extends StatefulWidget {
   const PRCelebrationOverlay({
@@ -100,7 +101,7 @@ class _PRCelebrationOverlayState extends State<PRCelebrationOverlay>
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'New Personal Record!',
+                      S.of(context)!.newPersonalRecord,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),

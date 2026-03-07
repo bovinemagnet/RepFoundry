@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 /// Shows a bottom sheet with device-specific setup instructions for
 /// BLE heart rate broadcasting from watches and straps.
@@ -15,6 +16,7 @@ class _HrSetupGuideSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     return DraggableScrollableSheet(
       initialChildSize: 0.55,
       minChildSize: 0.3,
@@ -39,43 +41,43 @@ class _HrSetupGuideSheet extends StatelessWidget {
                 ),
               ),
               Text(
-                'Heart Rate Setup Guide',
+                s.hrSetupGuideTitle,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
               Expanded(
                 child: ListView(
                   controller: scrollController,
-                  children: const [
+                  children: [
                     _DeviceSection(
                       icon: Icons.watch,
-                      title: 'Apple Watch',
+                      title: s.appleWatchTitle,
                       steps: [
-                        'On your Apple Watch, open Settings \u2192 Workout \u2192 Heart Rate.',
-                        'Enable "Broadcast Heart Rate".',
-                        'Start any workout on the Apple Watch.',
-                        'In RepFoundry, tap "Connect" and select your Apple Watch.',
+                        s.appleWatchStep1,
+                        s.appleWatchStep2,
+                        s.appleWatchStep3,
+                        s.appleWatchStep4,
                       ],
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     _DeviceSection(
                       icon: Icons.watch,
-                      title: 'Samsung Galaxy Watch',
+                      title: s.samsungWatchTitle,
                       steps: [
-                        'Open Samsung Health on your watch.',
-                        'Go to Settings \u2192 Heart Rate Broadcast.',
-                        'Enable BLE broadcasting.',
-                        'In RepFoundry, tap "Connect" and select your Galaxy Watch.',
+                        s.samsungWatchStep1,
+                        s.samsungWatchStep2,
+                        s.samsungWatchStep3,
+                        s.samsungWatchStep4,
                       ],
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     _DeviceSection(
                       icon: Icons.monitor_heart,
-                      title: 'Chest Straps & Arm Bands',
+                      title: s.chestStrapsTitle,
                       steps: [
-                        'Any BLE heart rate device (Polar, Garmin, Wahoo, etc.) works automatically.',
-                        'Simply wear your strap or band and tap "Connect".',
-                        'Your device will appear in the scan list.',
+                        s.chestStrapStep1,
+                        s.chestStrapStep2,
+                        s.chestStrapStep3,
                       ],
                     ),
                   ],

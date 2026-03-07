@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rep_foundry/features/settings/presentation/providers/rest_timer_settings_provider.dart';
 import 'package:rep_foundry/features/workout/presentation/widgets/rest_timer_widget.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
   late List<String> hapticCalls;
@@ -31,6 +32,8 @@ void main() {
     return ProviderScope(
       overrides: overrides,
       child: const MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Scaffold(body: RestTimerWidget()),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../domain/zone_calculator.dart';
 import 'reliability_indicator.dart';
@@ -16,6 +17,7 @@ class HeartRateZoneLegend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     final activeZone =
         currentBpm != null ? currentZoneFromConfig(currentBpm!, config) : null;
 
@@ -28,7 +30,7 @@ class HeartRateZoneLegend extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'Heart Rate Zones (max $maxBpm bpm)',
+                '${s.heartRateTitle} Zones (max $maxBpm ${s.bpmSuffix})',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -40,7 +42,7 @@ class HeartRateZoneLegend extends StatelessWidget {
         if (config.activeMethod == ZoneMethod.clinicianCap) ...[
           const SizedBox(height: 4),
           Text(
-            'Clinician-provided limits in use',
+            s.clinicianLimitsInUse,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                   fontStyle: FontStyle.italic,
@@ -73,7 +75,7 @@ class HeartRateZoneLegend extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${zone.lowerBpm}–${zone.upperBpm} bpm',
+                  '${zone.lowerBpm}–${zone.upperBpm} ${s.bpmSuffix}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontWeight: activeZone?.zoneNumber == zone.zoneNumber

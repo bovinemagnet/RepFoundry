@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../controllers/active_workout_controller.dart';
 import '../models/ghost_set.dart';
 import '../widgets/pr_celebration_overlay.dart';
@@ -16,6 +17,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
     final state = ref.watch(activeWorkoutControllerProvider);
     final controller = ref.read(activeWorkoutControllerProvider.notifier);
 
@@ -44,9 +46,9 @@ class ActiveWorkoutScreen extends ConsumerWidget {
       appBar: AppBar(
         title: state.hasActiveWorkout
             ? Text(
-                'Workout  •  ${state.activeWorkout!.startedAt.timeOfDay}',
+                '${s.workoutTitle}  •  ${state.activeWorkout!.startedAt.timeOfDay}',
               )
-            : const Text('Workout'),
+            : Text(s.workoutTitle),
         actions: [
           if (state.hasActiveWorkout)
             TextButton.icon(
@@ -54,12 +56,12 @@ class ActiveWorkoutScreen extends ConsumerWidget {
                   ? null
                   : () => _confirmFinish(context, controller),
               icon: const Icon(Icons.check),
-              label: const Text('Finish'),
+              label: Text(s.finish),
             ),
         ],
       ),
       body: state.isLoading
-          ? const LoadingWidget(message: 'Loading workout…')
+          ? LoadingWidget(message: s.loadingWorkout)
           : state.hasActiveWorkout
               ? _buildActiveWorkout(context, ref, state, controller)
               : _buildNoWorkout(context, controller),
@@ -67,7 +69,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
           ? FloatingActionButton.extended(
               onPressed: () => _pickExercise(context, ref),
               icon: const Icon(Icons.add),
-              label: const Text('Add Exercise'),
+              label: Text(s.addExercise),
             )
           : null,
     );
@@ -77,6 +79,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
     BuildContext context,
     ActiveWorkoutController controller,
   ) {
+    final s = S.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -88,12 +91,12 @@ class ActiveWorkoutScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'No active workout',
+            s.noActiveWorkout,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'Start a new workout to begin logging sets.',
+            s.noActiveWorkoutSubtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -102,7 +105,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
           FilledButton.icon(
             onPressed: controller.startWorkout,
             icon: const Icon(Icons.play_arrow),
-            label: const Text('Start Workout'),
+            label: Text(s.startWorkout),
           ),
         ],
       ),
@@ -131,7 +134,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Add exercises using the button below',
+                    S.of(context)!.addExercisesHint,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -203,19 +206,20 @@ class ActiveWorkoutScreen extends ConsumerWidget {
     BuildContext context,
     ActiveWorkoutController controller,
   ) async {
+    final s = S.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Finish Workout?'),
-        content: const Text('This will save your workout and end the session.'),
+        title: Text(s.finishWorkoutTitle),
+        content: Text(s.finishWorkoutContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(s.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Finish'),
+            child: Text(s.finish),
           ),
         ],
       ),
@@ -302,12 +306,13 @@ class _ExerciseSection extends StatelessWidget {
   }
 
   Widget _SetTableHeader(BuildContext context) {
+    final s = S.of(context)!;
     return Row(
       children: [
         const SizedBox(width: 32),
         Expanded(
           child: Text(
-            'Weight',
+            s.tableHeaderWeight,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -316,7 +321,7 @@ class _ExerciseSection extends StatelessWidget {
         ),
         Expanded(
           child: Text(
-            'Reps',
+            s.tableHeaderReps,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -325,7 +330,7 @@ class _ExerciseSection extends StatelessWidget {
         ),
         Expanded(
           child: Text(
-            'e1RM',
+            s.tableHeaderE1rm,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),

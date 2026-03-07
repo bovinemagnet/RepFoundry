@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../domain/models/exercise.dart';
 import '../screens/create_exercise_screen.dart';
 import '../widgets/exercise_list_tile.dart';
@@ -49,12 +50,13 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     final exercisesAsync = ref.watch(_filteredExercisesProvider);
     final selectedGroup = ref.watch(_selectedMuscleGroupProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Choose Exercise'),
+        title: Text(s.chooseExercise),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
@@ -62,7 +64,7 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search exercises…',
+                hintText: s.searchExercisesHint,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -90,7 +92,7 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
           Expanded(
             child: exercisesAsync.when(
               data: (exercises) => exercises.isEmpty
-                  ? const Center(child: Text('No exercises found'))
+                  ? Center(child: Text(s.noExercisesFound))
                   : ListView.builder(
                       itemCount: exercises.length,
                       itemBuilder: (context, index) {
@@ -102,8 +104,8 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                         );
                       },
                     ),
-              loading: () => const LoadingWidget(message: 'Loading exercises…'),
-              error: (e, _) => Center(child: Text('Error: $e')),
+              loading: () => LoadingWidget(message: s.loadingExercises),
+              error: (e, _) => Center(child: Text(s.errorPrefix(e.toString()))),
             ),
           ),
         ],
@@ -111,7 +113,7 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateExerciseDialog(context),
         icon: const Icon(Icons.add),
-        label: const Text('Custom'),
+        label: Text(s.customExercise),
       ),
     );
   }
@@ -136,6 +138,7 @@ class _MuscleGroupFilterBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
     const groups = MuscleGroup.values;
 
     return SizedBox(
@@ -148,7 +151,7 @@ class _MuscleGroupFilterBar extends ConsumerWidget {
         itemBuilder: (context, index) {
           if (index == 0) {
             return FilterChip(
-              label: const Text('All'),
+              label: Text(s.filterAll),
               selected: selectedGroup == null,
               onSelected: (_) {
                 ref.read(_selectedMuscleGroupProvider.notifier).state = null;

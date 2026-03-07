@@ -236,7 +236,7 @@ All implemented in `calculateZones()` in `lib/features/heart_rate/domain/zone_ca
 
 - Calculations must be deterministic and testable. **Done** — pure Dart functions with 32 unit tests.
 - Rounding rules must be consistent across platforms. **Done** — `round()` used consistently in zone calculator.
-- The product must support localization of warnings and urgent-help text. **Partial** — string constants in `warning_messages.dart` are localisation-ready but not yet externalised to `.arb` files.
+- The product must support localization of warnings and urgent-help text. **Done** — all user-facing strings externalised to `lib/l10n/app_en.arb` using Flutter's `gen-l10n` infrastructure; `S.of(context)!` used throughout presentation layer.
 - Accessibility must support color-blind-friendly rendering; zone labels must not rely on color alone. **Done** — zones have textual labels alongside colour swatches.
 - The graph must remain readable under rapid sensor updates and low-connectivity conditions. **Done** — chart uses 200ms animation duration and curved smoothing.
 

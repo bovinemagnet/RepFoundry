@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/providers.dart';
 import '../../domain/analytics_events.dart';
@@ -58,6 +59,7 @@ class _HealthProfileOnboardingState
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     return Padding(
       padding: EdgeInsets.only(
         left: 24,
@@ -73,12 +75,12 @@ class _HealthProfileOnboardingState
             children: [
               Expanded(
                 child: Text(
-                  'Set Up Heart Rate Zones',
+                  s.onboardingTitle,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
               ),
               Text(
-                'Step ${_step + 1} of 4',
+                s.onboardingStepOf(_step + 1, 4),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -110,12 +112,12 @@ class _HealthProfileOnboardingState
   }
 
   Widget _ageStep() {
+    final s = S.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Your age is used to estimate your maximum heart rate and '
-          'personalise training zones.',
+          s.onboardingAgeExplanation,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 12),
@@ -124,11 +126,11 @@ class _HealthProfileOnboardingState
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Age',
-            hintText: 'e.g. 30',
-            border: OutlineInputBorder(),
-            suffixText: 'years',
+          decoration: InputDecoration(
+            labelText: s.ageLabel,
+            hintText: s.ageHint,
+            border: const OutlineInputBorder(),
+            suffixText: s.yearsSuffix,
           ),
         ),
       ],
@@ -136,12 +138,12 @@ class _HealthProfileOnboardingState
   }
 
   Widget _heartRateStep() {
+    final s = S.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Providing your resting heart rate enables more accurate zone '
-          'calculation using the Karvonen (heart rate reserve) method.',
+          s.onboardingRestingHrExplanation,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 12),
@@ -149,11 +151,11 @@ class _HealthProfileOnboardingState
           controller: _restingHrController,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: const InputDecoration(
-            labelText: 'Resting Heart Rate (optional)',
-            hintText: 'e.g. 60',
-            border: OutlineInputBorder(),
-            suffixText: 'bpm',
+          decoration: InputDecoration(
+            labelText: s.onboardingRestingHrLabel,
+            hintText: s.onboardingRestingHrHint,
+            border: const OutlineInputBorder(),
+            suffixText: s.bpmSuffix,
           ),
         ),
         const SizedBox(height: 12),
@@ -161,11 +163,11 @@ class _HealthProfileOnboardingState
           controller: _measuredMaxController,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: const InputDecoration(
-            labelText: 'Measured Max Heart Rate (optional)',
-            hintText: 'e.g. 185',
-            border: OutlineInputBorder(),
-            suffixText: 'bpm',
+          decoration: InputDecoration(
+            labelText: s.onboardingMeasuredMaxHrLabel,
+            hintText: s.onboardingMeasuredMaxHrHint,
+            border: const OutlineInputBorder(),
+            suffixText: s.bpmSuffix,
           ),
         ),
       ],
@@ -173,25 +175,24 @@ class _HealthProfileOnboardingState
   }
 
   Widget _medicalStep() {
+    final s = S.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'If any of these apply, heart rate zones will be shown in caution '
-          'mode with reduced confidence. We recommend consulting your '
-          'healthcare provider for personalised limits.',
+          s.onboardingMedicalExplanation,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 12),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Taking beta blocker medication'),
+          title: Text(s.onboardingBetaBlockerLabel),
           value: _betaBlocker,
           onChanged: (v) => setState(() => _betaBlocker = v),
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Heart condition'),
+          title: Text(s.onboardingHeartConditionLabel),
           value: _heartCondition,
           onChanged: (v) => setState(() => _heartCondition = v),
         ),
@@ -200,17 +201,15 @@ class _HealthProfileOnboardingState
   }
 
   Widget _clinicianStep() {
+    final s = S.of(context)!;
     final showEmphasis = _betaBlocker || _heartCondition;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           showEmphasis
-              ? 'Because you have medical factors, we strongly recommend '
-                  'entering a clinician-provided maximum heart rate. This will '
-                  'override all other estimates.'
-              : 'If your doctor or exercise physiologist has given you a '
-                  'maximum heart rate, enter it here to override the estimate.',
+              ? s.onboardingClinicianWithFlags
+              : s.onboardingClinicianWithoutFlags,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: showEmphasis ? FontWeight.w600 : FontWeight.normal,
               ),
@@ -220,11 +219,11 @@ class _HealthProfileOnboardingState
           controller: _clinicianMaxController,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: const InputDecoration(
-            labelText: 'Clinician Max Heart Rate (optional)',
-            hintText: 'e.g. 150',
-            border: OutlineInputBorder(),
-            suffixText: 'bpm',
+          decoration: InputDecoration(
+            labelText: s.onboardingClinicianMaxHrLabel,
+            hintText: s.clinicianMaxHrHint,
+            border: const OutlineInputBorder(),
+            suffixText: s.bpmSuffix,
           ),
         ),
       ],
@@ -232,13 +231,14 @@ class _HealthProfileOnboardingState
   }
 
   Widget _buildNav() {
+    final s = S.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         if (_step > 0)
           TextButton(
             onPressed: () => setState(() => _step--),
-            child: const Text('Back'),
+            child: Text(s.back),
           )
         else
           const SizedBox.shrink(),
@@ -247,12 +247,12 @@ class _HealthProfileOnboardingState
             if (_step < 3)
               TextButton(
                 onPressed: () => _advance(skip: true),
-                child: const Text('Skip'),
+                child: Text(s.skip),
               ),
             const SizedBox(width: 8),
             FilledButton(
               onPressed: () => _advance(skip: false),
-              child: Text(_step == 3 ? 'Done' : 'Next'),
+              child: Text(_step == 3 ? s.done : s.next),
             ),
           ],
         ),

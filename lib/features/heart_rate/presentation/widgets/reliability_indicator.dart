@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../domain/zone_calculator.dart';
 
@@ -10,10 +11,19 @@ class ReliabilityIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     final (colour, icon, label) = switch (config.reliability) {
-      ZoneReliability.high => (Colors.green, Icons.verified, 'High'),
-      ZoneReliability.medium => (Colors.amber, Icons.info_outline, 'Medium'),
-      ZoneReliability.low => (Colors.red, Icons.warning_outlined, 'Low'),
+      ZoneReliability.high => (Colors.green, Icons.verified, s.reliabilityHigh),
+      ZoneReliability.medium => (
+          Colors.amber,
+          Icons.info_outline,
+          s.reliabilityMedium
+        ),
+      ZoneReliability.low => (
+          Colors.red,
+          Icons.warning_outlined,
+          s.reliabilityLow
+        ),
     };
 
     return Tooltip(

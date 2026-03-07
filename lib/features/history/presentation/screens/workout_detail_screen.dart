@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../workout/domain/models/workout.dart';
 import '../../../workout/domain/models/workout_set.dart';
 import '../../../exercises/domain/models/exercise.dart';
@@ -55,22 +56,23 @@ class WorkoutDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
     final dataAsync = ref.watch(_workoutDetailProvider(workoutId));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Workout Detail'),
+        title: Text(s.workoutDetailTitle),
         leading: BackButton(onPressed: () => context.go('/history')),
       ),
       body: dataAsync.when(
         data: (data) {
           if (data == null) {
-            return const Center(child: Text('Workout not found'));
+            return Center(child: Text(s.workoutNotFound));
           }
           return _WorkoutDetailBody(data: data);
         },
-        loading: () => const LoadingWidget(message: 'Loading workout…'),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => LoadingWidget(message: s.loadingWorkout),
+        error: (e, _) => Center(child: Text(s.errorPrefix(e.toString()))),
       ),
     );
   }
@@ -83,6 +85,7 @@ class _WorkoutDetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     final workout = data.workout;
     final duration = workout.completedAt != null
         ? workout.startedAt.durationUntil(workout.completedAt!)
@@ -119,15 +122,15 @@ class _WorkoutDetailBody extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _StatBox(
-                      label: 'Duration',
+                      label: s.durationLabel,
                       value: duration ?? '—',
                     ),
                     _StatBox(
-                      label: 'Sets',
+                      label: s.setsLabel,
                       value: '$totalSets',
                     ),
                     _StatBox(
-                      label: 'Volume',
+                      label: s.volumeLabel,
                       value: '${totalVolume.toStringAsFixed(0)} kg',
                     ),
                   ],
@@ -188,6 +191,7 @@ class _ExerciseSetsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context)!;
     final name = exercise?.name ?? exerciseId;
     final volume = sets.fold<double>(0, (sum, s) => sum + s.volume);
 
@@ -227,10 +231,10 @@ class _ExerciseSetsCard extends StatelessWidget {
               children: [
                 TableRow(
                   children: [
-                    _tableHeader(context, '#'),
-                    _tableHeader(context, 'Weight'),
-                    _tableHeader(context, 'Reps'),
-                    _tableHeader(context, 'e1RM'),
+                    _tableHeader(context, s.tableHeaderHash),
+                    _tableHeader(context, s.tableHeaderWeight),
+                    _tableHeader(context, s.tableHeaderReps),
+                    _tableHeader(context, s.tableHeaderE1rm),
                   ],
                 ),
                 for (int i = 0; i < sets.length; i++)

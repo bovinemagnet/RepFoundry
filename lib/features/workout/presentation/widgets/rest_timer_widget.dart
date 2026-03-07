@@ -3,6 +3,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../settings/presentation/providers/rest_timer_settings_provider.dart';
 
@@ -114,13 +115,13 @@ class _RestTimerWidgetState extends ConsumerState<RestTimerWidget> {
             IconButton(
               icon: const Icon(Icons.stop),
               onPressed: notifier.stop,
-              tooltip: 'Stop timer',
+              tooltip: S.of(context)!.stopTimer,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
             ),
           ] else
             Text(
-              'Rest Timer',
+              S.of(context)!.restTimer,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),

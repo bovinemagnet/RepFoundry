@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/workout/presentation/widgets/pr_celebration_overlay.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
   group('PRCelebrationOverlay', () {
     testWidgets('renders exercise name and e1RM value', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: PRCelebrationOverlay(
               exerciseName: 'Bench Press',
@@ -28,6 +31,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: PRCelebrationOverlay(
               exerciseName: 'Squat',
@@ -53,6 +58,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: PRCelebrationOverlay(
               exerciseName: 'Deadlift',
