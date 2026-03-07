@@ -54,7 +54,7 @@ Beginners following a structured program (e.g., Starting Strength, PPL) who need
 | Incline/resistance | Track machine incline or resistance level settings | P1 |
 | Heart rate zones | Optional manual HR entry with zone classification | P2 |
 | BLE heart rate streaming | Live heart rate from BLE monitors, Apple Watch (broadcast mode), Samsung Galaxy Watch, and chest straps (Polar, Garmin, Wahoo) | P1 | *Implemented — BLE HR Service 0x180D; auto-reconnect on drop; in-app setup guide for watch configuration* |
-| Heart rate panel | Dedicated screen with live BPM display, real-time HR graph, session stats (avg/min/max), and training zone visualisation based on user age | P1 | *Implemented — separate nav tab; zones show when age is set in Settings; shares BLE connection with cardio* |
+| Heart rate panel | Dedicated screen with live BPM display, dual HR graphs (recent sliding window + full session), session stats (avg/min/max), time-in-zone summary, and multi-method zone calculation (custom, clinician cap, HRR/Karvonen, measured max, age-estimated) with health profile onboarding, caution mode, reliability indicators, disclaimers, and symptom reporting | P1 | *Implemented — separate nav tab; health profile with medical flags; 5-zone model with dual labels; configurable chart window (30s–5m); shares BLE connection with cardio; see `docs/heartRateMonitoringPRD.md` for full PRD* |
 
 ### 4.3 Progress and History
 

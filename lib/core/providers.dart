@@ -13,6 +13,8 @@ import '../features/cardio/data/heart_rate_service.dart';
 import '../features/cardio/data/location_service.dart';
 import '../features/cardio/domain/repositories/cardio_session_repository.dart';
 import '../features/cardio/application/save_cardio_session_use_case.dart';
+import '../features/heart_rate/data/noop_analytics_reporter.dart';
+import '../features/heart_rate/domain/analytics_events.dart';
 import '../features/history/data/drift_personal_record_repository.dart';
 import '../features/history/domain/repositories/personal_record_repository.dart';
 import '../features/templates/data/drift_workout_template_repository.dart';
@@ -49,6 +51,10 @@ final locationServiceProvider = Provider<LocationService>((ref) {
 
 final heartRateServiceProvider = Provider<HeartRateService>((ref) {
   return FlutterBlueHeartRateService();
+});
+
+final hrAnalyticsReporterProvider = Provider<HrAnalyticsReporter>((ref) {
+  return NoopAnalyticsReporter();
 });
 
 // Use cases

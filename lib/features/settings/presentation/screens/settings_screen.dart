@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../heart_rate/domain/warning_messages.dart';
+import '../../../heart_rate/domain/zone_calculator.dart';
+import '../../../heart_rate/presentation/providers/health_profile_provider.dart';
+import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
+import '../../../heart_rate/presentation/widgets/health_profile_onboarding.dart';
 import '../providers/rest_timer_settings_provider.dart';
 import '../providers/user_age_provider.dart';
 
@@ -66,12 +72,14 @@ class SettingsScreen extends ConsumerWidget {
     final themeMode = ref.watch(_themeModeProvider);
     final weightUnit = ref.watch(_weightUnitProvider);
     final userAge = ref.watch(userAgeProvider);
+    final profile = ref.watch(healthProfileProvider);
+    final zoneConfig = ref.watch(zoneConfigurationProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
-          const _SectionHeader(title: 'Profile'),
+          const _SectionHeader(title: 'Health Profile'),
           ListTile(
             leading: const Icon(Icons.cake_outlined),
             title: const Text('Age'),
@@ -86,6 +94,130 @@ class SettingsScreen extends ConsumerWidget {
                   )
                 : null,
             onTap: () => _showAgeDialog(context, ref, userAge),
+          ),
+          ListTile(
+            leading: const Icon(Icons.monitor_heart_outlined),
+            title: const Text('Resting Heart Rate'),
+            subtitle: profile.restingHeartRate != null
+                ? Text('${profile.restingHeartRate} bpm')
+                : const Text('Optional — enables Karvonen zones'),
+            trailing: profile.restingHeartRate != null
+                ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () => ref
+                        .read(healthProfileProvider.notifier)
+                        .updateRestingHeartRate(null),
+                  )
+                : null,
+            onTap: () => _showIntDialog(
+              context,
+              ref,
+              title: 'Resting Heart Rate',
+              label: 'BPM',
+              hint: 'e.g. 60',
+              suffix: 'bpm',
+              current: profile.restingHeartRate,
+              min: 20,
+              max: 220,
+              onSave: (v) => ref
+                  .read(healthProfileProvider.notifier)
+                  .updateRestingHeartRate(v),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.speed_outlined),
+            title: const Text('Measured Max Heart Rate'),
+            subtitle: profile.measuredMaxHeartRate != null
+                ? Text('${profile.measuredMaxHeartRate} bpm')
+                : const Text('Optional — from exercise testing'),
+            trailing: profile.measuredMaxHeartRate != null
+                ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () => ref
+                        .read(healthProfileProvider.notifier)
+                        .updateMeasuredMaxHeartRate(null),
+                  )
+                : null,
+            onTap: () => _showIntDialog(
+              context,
+              ref,
+              title: 'Measured Max Heart Rate',
+              label: 'BPM',
+              hint: 'e.g. 185',
+              suffix: 'bpm',
+              current: profile.measuredMaxHeartRate,
+              min: 60,
+              max: 250,
+              onSave: (v) => ref
+                  .read(healthProfileProvider.notifier)
+                  .updateMeasuredMaxHeartRate(v),
+            ),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.medication_outlined),
+            title: const Text('Beta Blocker Medication'),
+            subtitle: const Text('Affects heart rate zone accuracy'),
+            value: profile.takingBetaBlocker,
+            onChanged: (v) => ref
+                .read(healthProfileProvider.notifier)
+                .setTakingBetaBlocker(v),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.favorite_outline),
+            title: const Text('Heart Condition'),
+            subtitle: const Text('Enables caution mode for zones'),
+            value: profile.hasHeartCondition,
+            onChanged: (v) => ref
+                .read(healthProfileProvider.notifier)
+                .setHasHeartCondition(v),
+          ),
+          ListTile(
+            leading: const Icon(Icons.medical_services_outlined),
+            title: const Text('Clinician Max Heart Rate'),
+            subtitle: profile.clinicianMaxHr != null
+                ? Text('${profile.clinicianMaxHr} bpm — overrides estimates')
+                : const Text('Optional — from your doctor'),
+            trailing: profile.clinicianMaxHr != null
+                ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () => ref
+                        .read(healthProfileProvider.notifier)
+                        .setClinicianMaxHr(null),
+                  )
+                : null,
+            onTap: () => _showIntDialog(
+              context,
+              ref,
+              title: 'Clinician Max Heart Rate',
+              label: 'BPM',
+              hint: 'e.g. 150',
+              suffix: 'bpm',
+              current: profile.clinicianMaxHr,
+              min: 60,
+              max: 250,
+              onSave: (v) =>
+                  ref.read(healthProfileProvider.notifier).setClinicianMaxHr(v),
+            ),
+          ),
+          if (zoneConfig != null)
+            ListTile(
+              leading: const Icon(Icons.bar_chart_outlined),
+              title: const Text('Zone Method'),
+              subtitle: Text(
+                '${_methodLabel(zoneConfig.activeMethod)} · '
+                '${_reliabilityLabel(zoneConfig.reliability)} confidence',
+              ),
+            ),
+          ListTile(
+            leading: const Icon(Icons.tune_outlined),
+            title: const Text('Set Up Heart Rate Zones'),
+            subtitle: const Text('Step-by-step guided setup'),
+            onTap: () => showHealthProfileOnboarding(context),
+          ),
+          const ListTile(
+            leading: Icon(Icons.info_outline),
+            title: Text('Disclaimer'),
+            subtitle: Text(WarningMessages.generalDisclaimer),
           ),
           const _SectionHeader(title: 'Appearance'),
           ListTile(
@@ -222,6 +354,79 @@ class SettingsScreen extends ConsumerWidget {
     if (result != null) {
       ref.read(userAgeProvider.notifier).setAge(result);
     }
+  }
+
+  Future<void> _showIntDialog(
+    BuildContext context,
+    WidgetRef ref, {
+    required String title,
+    required String label,
+    required String hint,
+    required String suffix,
+    required int? current,
+    required int min,
+    required int max,
+    required void Function(int) onSave,
+  }) async {
+    final controller = TextEditingController(
+      text: current?.toString() ?? '',
+    );
+    final result = await showDialog<int?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: label,
+            hintText: hint,
+            border: const OutlineInputBorder(),
+            suffixText: suffix,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = int.tryParse(controller.text);
+              if (value != null && value >= min && value <= max) {
+                Navigator.pop(ctx, value);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+
+    if (result != null) {
+      onSave(result);
+    }
+  }
+
+  String _methodLabel(ZoneMethod method) {
+    return switch (method) {
+      ZoneMethod.custom => 'Custom zones',
+      ZoneMethod.clinicianCap => 'Clinician cap',
+      ZoneMethod.hrr => 'Heart rate reserve (Karvonen)',
+      ZoneMethod.percentOfMeasuredMax => 'Measured max HR',
+      ZoneMethod.percentOfEstimatedMax => 'Age-estimated max HR',
+    };
+  }
+
+  String _reliabilityLabel(ZoneReliability reliability) {
+    return switch (reliability) {
+      ZoneReliability.high => 'High',
+      ZoneReliability.medium => 'Medium',
+      ZoneReliability.low => 'Low',
+    };
   }
 
   Future<void> _confirmClearData(BuildContext context) async {

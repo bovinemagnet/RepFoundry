@@ -1,21 +1,28 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../domain/zone_calculator.dart';
 import '../controllers/heart_rate_panel_state.dart';
-import 'heart_rate_zones.dart';
 
 /// Real-time heart rate line chart with optional HR zone bands.
+///
+/// When [windowSeconds] is provided, only the most recent N seconds of
+/// readings are shown (sliding window). When null, all readings are shown.
 class HeartRateChart extends StatelessWidget {
   const HeartRateChart({
     super.key,
     required this.readings,
-    this.maxHr,
+    this.zoneConfig,
+    this.windowSeconds,
   });
 
   final List<HrReading> readings;
 
-  /// If provided, coloured horizontal bands are drawn for each HR zone.
-  final int? maxHr;
+  /// If provided, coloured horizontal bands are drawn for each zone.
+  final ZoneConfiguration? zoneConfig;
+
+  /// If set, only show the last N seconds of readings.
+  final int? windowSeconds;
 
   @override
   Widget build(BuildContext context) {
@@ -38,20 +45,33 @@ class HeartRateChart extends StatelessWidget {
     final gridColour = theme.colorScheme.surfaceContainerHighest;
     final textColour = theme.colorScheme.onSurfaceVariant;
 
+    // Apply sliding window filter
+    final displayReadings = _filterReadings();
+
     final spots = <FlSpot>[];
-    for (final r in readings) {
+    for (final r in displayReadings) {
       spots.add(FlSpot(r.elapsed.inSeconds.toDouble(), r.bpm.toDouble()));
     }
 
-    final bpmValues = readings.map((r) => r.bpm);
+    final bpmValues = displayReadings.map((r) => r.bpm);
     final minBpm = bpmValues.reduce((a, b) => a < b ? a : b);
     final maxBpm = bpmValues.reduce((a, b) => a > b ? a : b);
     final range = maxBpm - minBpm;
     final yPadding = range == 0 ? 20.0 : range * 0.15;
+    final chartMaxHr = zoneConfig?.zones.isNotEmpty == true
+        ? zoneConfig!.zones.last.upperBpm
+        : null;
     final chartMinY = (minBpm - yPadding).clamp(0, double.infinity).toDouble();
-    final chartMaxY = maxHr != null
-        ? (maxBpm + yPadding).clamp(0, maxHr!.toDouble()).toDouble()
+    final chartMaxY = chartMaxHr != null
+        ? (maxBpm + yPadding).clamp(0, chartMaxHr.toDouble()).toDouble()
         : (maxBpm + yPadding);
+
+    final totalSeconds = displayReadings.last.elapsed.inSeconds;
+    final double? minX = windowSeconds != null && readings.length > 1
+        ? (readings.last.elapsed.inSeconds - windowSeconds!)
+            .toDouble()
+            .clamp(0, double.infinity)
+        : null;
 
     return SizedBox(
       height: 220,
@@ -76,7 +96,7 @@ class HeartRateChart extends StatelessWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 28,
-                interval: _xInterval(readings.last.elapsed.inSeconds),
+                interval: _xInterval(totalSeconds),
                 getTitlesWidget: (value, meta) {
                   final secs = value.toInt();
                   final mins = secs ~/ 60;
@@ -105,12 +125,13 @@ class HeartRateChart extends StatelessWidget {
             ),
           ),
           borderData: FlBorderData(show: false),
+          minX: minX,
           minY: chartMinY,
           maxY: chartMaxY,
-          rangeAnnotations: maxHr != null
+          rangeAnnotations: zoneConfig != null
               ? RangeAnnotations(
                   horizontalRangeAnnotations: _zoneAnnotations(
-                    maxHr!,
+                    zoneConfig!,
                     chartMinY,
                     chartMaxY,
                   ),
@@ -157,22 +178,28 @@ class HeartRateChart extends StatelessWidget {
     );
   }
 
+  List<HrReading> _filterReadings() {
+    if (windowSeconds == null || readings.length <= 1) return readings;
+    final cutoff = readings.last.elapsed - Duration(seconds: windowSeconds!);
+    final filtered = readings.where((r) => r.elapsed >= cutoff).toList();
+    return filtered.isEmpty ? [readings.last] : filtered;
+  }
+
   List<HorizontalRangeAnnotation> _zoneAnnotations(
-    int maxHr,
+    ZoneConfiguration config,
     double chartMinY,
     double chartMaxY,
   ) {
     final annotations = <HorizontalRangeAnnotation>[];
-    // Skip the 'Rest' zone — only show training zones.
-    for (final zone in heartRateZones.skip(1)) {
-      final from = zone.minBpm(maxHr).toDouble().clamp(chartMinY, chartMaxY);
-      final to = zone.maxBpm(maxHr).toDouble().clamp(chartMinY, chartMaxY);
+    for (final zone in config.zones) {
+      final from = zone.lowerBpm.toDouble().clamp(chartMinY, chartMaxY);
+      final to = zone.upperBpm.toDouble().clamp(chartMinY, chartMaxY);
       if (to > from) {
         annotations.add(
           HorizontalRangeAnnotation(
             y1: from,
             y2: to,
-            color: zone.colour.withValues(alpha: 0.15),
+            color: Color(zone.colourValue).withValues(alpha: 0.15),
           ),
         );
       }

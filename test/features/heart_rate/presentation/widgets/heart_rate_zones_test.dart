@@ -1,64 +1,82 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rep_foundry/features/heart_rate/presentation/widgets/heart_rate_zones.dart';
+import 'package:rep_foundry/features/heart_rate/domain/models/health_profile.dart';
+import 'package:rep_foundry/features/heart_rate/domain/zone_calculator.dart';
 
 void main() {
-  group('estimateMaxHeartRate', () {
-    test('returns 220 minus age', () {
-      expect(estimateMaxHeartRate(30), 190);
-      expect(estimateMaxHeartRate(45), 175);
-      expect(estimateMaxHeartRate(20), 200);
+  group('calculateZones (via HeartRateZoneLegend prerequisites)', () {
+    test('age 30 → max 190, 5 zones', () {
+      const profile = HealthProfile(age: 30);
+      final config = calculateZones(profile)!;
+
+      expect(config.zones, hasLength(5));
+      expect(config.zones.last.upperBpm, 190);
+    });
+
+    test('age 45 → max 175', () {
+      const profile = HealthProfile(age: 45);
+      final config = calculateZones(profile)!;
+
+      expect(config.zones.last.upperBpm, 175);
+    });
+
+    test('age 20 → max 200', () {
+      const profile = HealthProfile(age: 20);
+      final config = calculateZones(profile)!;
+
+      expect(config.zones.last.upperBpm, 200);
     });
   });
 
-  group('currentZone', () {
-    test('returns Rest zone for low HR', () {
-      final zone = currentZone(80, 190);
+  group('currentZoneFromConfig', () {
+    final config = calculateZones(const HealthProfile(age: 30))!;
+
+    test('returns zone 1 for low HR within training range', () {
+      // Z1: 50-60% of 190 = 95-114
+      final zone = currentZoneFromConfig(100, config);
       expect(zone, isNotNull);
-      expect(zone!.name, 'Rest');
+      expect(zone!.zoneNumber, 1);
     });
 
-    test('returns Fat Burn zone at 50-60% max HR', () {
-      // 50% of 190 = 95, 60% of 190 = 114
-      final zone = currentZone(100, 190);
+    test('returns zone 3 at 70-80% max HR', () {
+      // Z3: 70-80% of 190 = 133-152
+      final zone = currentZoneFromConfig(140, config);
       expect(zone, isNotNull);
-      expect(zone!.name, 'Fat Burn');
+      expect(zone!.zoneNumber, 3);
     });
 
-    test('returns Aerobic zone at 70-80% max HR', () {
-      // 70% of 190 = 133, 80% of 190 = 152
-      final zone = currentZone(140, 190);
+    test('returns zone 4 at 80-90% max HR', () {
+      // Z4: 80-90% of 190 = 152-171
+      final zone = currentZoneFromConfig(160, config);
       expect(zone, isNotNull);
-      expect(zone!.name, 'Aerobic');
+      expect(zone!.zoneNumber, 4);
     });
 
-    test('returns Anaerobic zone at 80-90% max HR', () {
-      // 80% of 190 = 152, 90% of 190 = 171
-      final zone = currentZone(160, 190);
+    test('returns zone 5 at 90-100% max HR', () {
+      // Z5: 90-100% of 190 = 171-190
+      final zone = currentZoneFromConfig(175, config);
       expect(zone, isNotNull);
-      expect(zone!.name, 'Anaerobic');
+      expect(zone!.zoneNumber, 5);
     });
 
-    test('returns VO2 Max zone at 90-100% max HR', () {
-      // 90% of 190 = 171
-      final zone = currentZone(175, 190);
-      expect(zone, isNotNull);
-      expect(zone!.name, 'VO2 Max');
-    });
-
-    test('returns Rest zone for 0 bpm', () {
-      final zone = currentZone(0, 190);
-      expect(zone, isNotNull);
-      expect(zone!.name, 'Rest');
+    test('returns null for very low bpm', () {
+      final zone = currentZoneFromConfig(40, config);
+      expect(zone, isNull);
     });
   });
 
-  group('HeartRateZone', () {
-    test('minBpm and maxBpm calculate correctly', () {
-      // Aerobic zone: 70-80%
-      final aerobic = heartRateZones[3];
-      expect(aerobic.name, 'Aerobic');
-      expect(aerobic.minBpm(190), 133);
-      expect(aerobic.maxBpm(190), 152);
+  group('CalculatedZone', () {
+    test('zone 3 BPM ranges calculated correctly for age 30', () {
+      final config = calculateZones(const HealthProfile(age: 30))!;
+      final zone3 = config.zones[2];
+      expect(zone3.zoneNumber, 3);
+      expect(zone3.lowerBpm, 133);
+      expect(zone3.upperBpm, 152);
+    });
+
+    test('zones have dual display labels', () {
+      final config = calculateZones(const HealthProfile(age: 30))!;
+      expect(config.zones[0].displayLabel, 'Easy (Recovery)');
+      expect(config.zones[2].displayLabel, 'Moderate (Aerobic)');
     });
   });
 }

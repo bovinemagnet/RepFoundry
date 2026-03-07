@@ -6,11 +6,20 @@ import '../../../../core/providers.dart';
 import '../../../cardio/presentation/controllers/cardio_tracking_controller.dart';
 import '../../../cardio/presentation/widgets/hr_device_picker_dialog.dart';
 import '../../../cardio/presentation/widgets/hr_setup_guide_dialog.dart';
-import '../../../settings/presentation/providers/user_age_provider.dart';
+import '../../domain/time_in_zone_calculator.dart';
+import '../../domain/zone_calculator.dart';
 import '../controllers/heart_rate_panel_controller.dart';
 import '../controllers/heart_rate_panel_state.dart';
+import '../providers/chart_window_provider.dart';
+import '../providers/health_profile_provider.dart';
+import '../providers/zone_configuration_provider.dart';
+import '../widgets/caution_badge.dart';
+import '../widgets/disclaimer_dialog.dart';
+import '../widgets/health_profile_onboarding.dart';
 import '../widgets/heart_rate_chart.dart';
 import '../widgets/heart_rate_zones.dart';
+import '../widgets/reliability_indicator.dart';
+import '../widgets/symptom_report_button.dart';
 
 class HeartRatePanelScreen extends ConsumerStatefulWidget {
   const HeartRatePanelScreen({super.key});
@@ -21,11 +30,15 @@ class HeartRatePanelScreen extends ConsumerStatefulWidget {
 }
 
 class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
+  bool _initialised = false;
+
   @override
   void initState() {
     super.initState();
-    // If cardio already has HR connected, sync it.
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _onFirstVisit();
+
+      // If cardio already has HR connected, sync it.
       final cardioState = ref.read(cardioTrackingProvider);
       final panelController = ref.read(heartRatePanelProvider.notifier);
       if (cardioState.hrConnected &&
@@ -38,12 +51,26 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     });
   }
 
+  Future<void> _onFirstVisit() async {
+    if (_initialised || !mounted) return;
+    _initialised = true;
+
+    await showDisclaimerIfNeeded(context);
+
+    if (!mounted) return;
+    final profile = ref.read(healthProfileProvider);
+    if (profile.age == null) {
+      await showHealthProfileOnboarding(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final panelState = ref.watch(heartRatePanelProvider);
     final controller = ref.read(heartRatePanelProvider.notifier);
-    final userAge = ref.watch(userAgeProvider);
-    final maxHr = userAge != null ? estimateMaxHeartRate(userAge) : null;
+    final profile = ref.watch(healthProfileProvider);
+    final zoneConfig = ref.watch(zoneConfigurationProvider);
+    final chartWindow = ref.watch(chartWindowProvider);
 
     ref.listen(heartRatePanelProvider, (prev, next) {
       if (next.error != null && next.error != prev?.error) {
@@ -52,6 +79,10 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
         );
       }
     });
+
+    final activeZone = panelState.currentHeartRate != null && zoneConfig != null
+        ? currentZoneFromConfig(panelState.currentHeartRate!, zoneConfig)
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -73,41 +104,87 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Caution badge
+          if (profile.isCautionMode) ...[
+            CautionBadge(profile: profile),
+            const SizedBox(height: 12),
+          ],
+
           // Current HR display
-          _buildHrDisplay(context, panelState, maxHr),
+          _buildHrDisplay(context, panelState, activeZone),
           const SizedBox(height: 16),
 
           // Controls
           _buildControls(context, panelState, controller),
           const SizedBox(height: 24),
 
-          // HR chart
-          HeartRateChart(
-            readings: panelState.readings,
-            maxHr: maxHr,
-          ),
-          const SizedBox(height: 16),
+          // Recent chart (sliding window)
+          if (panelState.readings.isNotEmpty) ...[
+            _buildChartHeader(
+              context,
+              'Recent',
+              chartWindow,
+            ),
+            HeartRateChart(
+              readings: panelState.readings,
+              zoneConfig: zoneConfig,
+              windowSeconds: chartWindow,
+            ),
+            const SizedBox(height: 20),
 
-          // Session stats
+            // Full session chart
+            Text(
+              'Full Session',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            HeartRateChart(
+              readings: panelState.readings,
+              zoneConfig: zoneConfig,
+            ),
+            const SizedBox(height: 16),
+          ] else ...[
+            HeartRateChart(
+              readings: panelState.readings,
+              zoneConfig: zoneConfig,
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Session stats + time-in-zone
           if (panelState.readings.isNotEmpty) ...[
             _buildStats(context, panelState),
+            const SizedBox(height: 12),
+            if (zoneConfig != null)
+              _buildTimeInZone(context, panelState, zoneConfig),
+            const SizedBox(height: 16),
+          ],
+
+          // Symptom report button during active monitoring
+          if (panelState.isMonitoring) ...[
+            SymptomReportButton(
+              onStopRequested: controller.stopMonitoring,
+            ),
             const SizedBox(height: 16),
           ],
 
           // Zone legend
-          if (maxHr != null) ...[
+          if (zoneConfig != null) ...[
             HeartRateZoneLegend(
-              maxHr: maxHr,
+              config: zoneConfig,
               currentBpm: panelState.currentHeartRate,
             ),
           ] else ...[
-            const Card(
+            Card(
               child: ListTile(
-                leading: Icon(Icons.info_outline),
-                title: Text('Set your age in Settings'),
-                subtitle: Text(
+                leading: const Icon(Icons.info_outline),
+                title: const Text('Set your age in Settings'),
+                subtitle: const Text(
                   'Heart rate training zones will appear when your age is configured.',
                 ),
+                onTap: () => showHealthProfileOnboarding(context),
               ),
             ),
           ],
@@ -116,15 +193,48 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     );
   }
 
+  Widget _buildChartHeader(
+    BuildContext context,
+    String title,
+    int windowSeconds,
+  ) {
+    return Row(
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const Spacer(),
+        DropdownButton<int>(
+          value: windowSeconds,
+          underline: const SizedBox.shrink(),
+          isDense: true,
+          items: ChartWindowNotifier.allowedValues
+              .map((v) => DropdownMenuItem(
+                    value: v,
+                    child: Text(
+                      v < 60 ? '${v}s' : '${v ~/ 60}m',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ))
+              .toList(),
+          onChanged: (v) {
+            if (v != null) {
+              ref.read(chartWindowProvider.notifier).setWindow(v);
+            }
+          },
+        ),
+      ],
+    );
+  }
+
   Widget _buildHrDisplay(
     BuildContext context,
     HeartRatePanelState panelState,
-    int? maxHr,
+    CalculatedZone? zone,
   ) {
-    final zone = panelState.currentHeartRate != null && maxHr != null
-        ? currentZone(panelState.currentHeartRate!, maxHr)
-        : null;
-
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -166,13 +276,13 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: zone.colour.withValues(alpha: 0.2),
+                  color: Color(zone.colourValue).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  zone.name,
+                  zone.displayLabel,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: zone.colour,
+                        color: Color(zone.colourValue),
                         fontWeight: FontWeight.bold,
                       ),
                 ),
@@ -292,6 +402,68 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     );
   }
 
+  Widget _buildTimeInZone(
+    BuildContext context,
+    HeartRatePanelState panelState,
+    ZoneConfiguration zoneConfig,
+  ) {
+    final summary = calculateTimeInZones(panelState.readings, zoneConfig);
+    final totalSeconds = panelState.readings.isNotEmpty
+        ? panelState.readings.last.elapsed.inSeconds
+        : 1;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Time in Zone',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const Spacer(),
+                ReliabilityIndicator(config: zoneConfig),
+              ],
+            ),
+            const SizedBox(height: 8),
+            for (final zone in zoneConfig.zones) ...[
+              _ZoneTimeBar(
+                zone: zone,
+                duration: summary.zoneTime[zone.zoneNumber] ?? Duration.zero,
+                totalSeconds: totalSeconds,
+              ),
+            ],
+            const SizedBox(height: 8),
+            Text(
+              'Moderate or higher: ${_formatDuration(summary.moderateOrHigher)}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            if (summary.recoveryHrDrop != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Recovery HR drop: ${summary.recoveryHrDrop} bpm',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDuration(Duration d) {
+    final mins = d.inMinutes;
+    final secs = d.inSeconds % 60;
+    return '$mins:${secs.toString().padLeft(2, '0')}';
+  }
+
   Future<void> _showDevicePicker(HeartRatePanelController controller) async {
     final heartRateService = ref.read(heartRateServiceProvider);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -344,6 +516,63 @@ class _StatColumn extends StatelessWidget {
               ),
         ),
       ],
+    );
+  }
+}
+
+class _ZoneTimeBar extends StatelessWidget {
+  const _ZoneTimeBar({
+    required this.zone,
+    required this.duration,
+    required this.totalSeconds,
+  });
+
+  final CalculatedZone zone;
+  final Duration duration;
+  final int totalSeconds;
+
+  @override
+  Widget build(BuildContext context) {
+    final fraction = totalSeconds > 0 ? duration.inSeconds / totalSeconds : 0.0;
+    final mins = duration.inMinutes;
+    final secs = duration.inSeconds % 60;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 24,
+            child: Text(
+              'Z${zone.zoneNumber}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: fraction.clamp(0.0, 1.0),
+                backgroundColor:
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation(Color(zone.colourValue)),
+                minHeight: 14,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 44,
+            child: Text(
+              '$mins:${secs.toString().padLeft(2, '0')}',
+              style: Theme.of(context).textTheme.bodySmall,
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -223,16 +223,40 @@ Key files: `lib/features/cardio/data/heart_rate_service.dart`, `lib/features/car
 
 A dedicated heart rate monitoring screen (`lib/features/heart_rate/`) provides a focused view for tracking heart rate during any activity. It shares the `HeartRateService` singleton with the cardio feature — if cardio already has a BLE connection, the panel auto-syncs on navigation.
 
-**Components:**
+**Domain layer** (pure Dart, no Flutter imports):
+
+- `HealthProfile` — user health data model: age, resting HR, measured max HR, clinician cap, beta blocker flag, heart condition flag, custom zones. `isCautionMode` computed property. `estimatedMaxHr` via 220 − age.
+- `ZoneCalculator` — multi-method zone engine with priority chain: custom zones → clinician cap → caution mode → HRR/Karvonen → measured max → age-estimated. Returns `ZoneConfiguration` with `List<CalculatedZone>`, `ZoneMethod`, `ZoneReliability` (high/medium/low), and human-readable `reason`. HRR formula: `restingHR + pct × (maxHR − restingHR)`. 5-zone model with dual labels (e.g. "Moderate (Aerobic)").
+- `TimeInZoneCalculator` — calculates per-zone time distribution from timestamped readings, total moderate-or-higher duration, and recovery HR drop (peak to 60s post-exercise).
+- `WarningMessages` — static string constants for disclaimers, beta blocker/heart condition warnings, symptom prompts, and stop-exercise text. British spelling, localisation-ready.
+- `HrAnalyticsEvent` + `HrAnalyticsReporter` — analytics event definitions and abstract reporter interface. `NoopAnalyticsReporter` (debug-log only) used for MVP.
+
+**Providers:**
+
+- `HealthProfileNotifier` (StateNotifier) — SharedPreferences-backed health profile. Migrates legacy `user_age` key to `hr_age` on first load. Methods: `updateAge`, `updateRestingHeartRate`, `updateMeasuredMaxHeartRate`, `setTakingBetaBlocker`, `setHasHeartCondition`, `setClinicianMaxHr`, `setCustomZones`.
+- `zoneConfigurationProvider` (derived Provider) — watches `healthProfileProvider`, calls `calculateZones()`. Returns `ZoneConfiguration?`.
+- `cautionModeProvider` (derived Provider) — `healthProfileProvider.isCautionMode`.
+- `chartWindowProvider` (StateNotifier) — configurable sliding window duration (30s, 60s, 90s, 120s, 300s). Default 60s. Persisted via SharedPreferences.
+- `userAgeProvider` — refactored to delegate to `healthProfileProvider.age` for backwards compatibility.
+
+**Presentation components:**
 
 - `HeartRatePanelController` (StateNotifier) — manages monitoring state, timestamped readings (`HrReading` with `bpm` and `elapsed` duration), elapsed timer, and BLE connection lifecycle. Non-autoDispose so monitoring survives tab switches.
-- `HeartRateChart` — real-time fl_chart `LineChart` plotting BPM against elapsed time. When user age is set, coloured horizontal range annotations mark the training zones. X-axis shows `M:SS` timestamps with adaptive intervals.
-- `HeartRateZoneLegend` — displays the five training zones (Fat Burn, Endurance, Aerobic, Anaerobic, VO2 Max) with BPM ranges calculated from max HR (220 − age). Highlights the current zone.
-- `UserAgeProvider` — SharedPreferences-backed `StateNotifier<int?>` in the settings feature, exposed via `userAgeProvider`. The Settings screen has an Age field under a new "Profile" section.
+- `HeartRateChart` — real-time fl_chart `LineChart` plotting BPM against elapsed time. Accepts `ZoneConfiguration` for zone band annotations and optional `windowSeconds` for a sliding window view. X-axis shows `M:SS` timestamps with adaptive intervals.
+- `HeartRateZoneLegend` — displays 5 training zones with dual labels, BPM ranges, and inline `ReliabilityIndicator`. Highlights the current zone. Shows "Clinician-provided limits in use" when applicable.
+- `HealthProfileOnboarding` — 4-step bottom sheet: age → resting HR + measured max → medical flags → clinician cap. Skip/Next/Back navigation. Triggered on first HR panel visit (when age is null) or from Settings.
+- `DisclaimerDialog` — first-use disclaimer dialog (shown once via SharedPreferences flag).
+- `CautionBadge` — amber warning card shown when `isCautionMode` is true. Text varies by flag (beta blocker, heart condition, or both).
+- `ReliabilityIndicator` — colour-coded High (green) / Medium (amber) / Low (red) indicator with tooltip explaining the reasoning.
+- `SymptomReportButton` — symptom selection dialog → stop-exercise dialog with urgent-help guidance. Calls `controller.stopMonitoring()` on symptom report.
+
+**Screen layout:** The `HeartRatePanelScreen` shows (top to bottom): caution badge (if applicable), live BPM display with zone label, Start/Pause/Reset controls, recent chart (sliding window with configurable dropdown), full session chart, stats card (avg/min/max/readings), time-in-zone summary bars, symptom report button (during monitoring), and zone legend.
 
 **Controls:** Connect (opens BLE device picker), Start/Pause monitoring, Reset readings, Disconnect. Stats card shows avg/min/max/readings count.
 
-Key files: `lib/features/heart_rate/presentation/screens/heart_rate_panel_screen.dart`, `lib/features/heart_rate/presentation/controllers/heart_rate_panel_controller.dart`, `lib/features/heart_rate/presentation/widgets/heart_rate_chart.dart`, `lib/features/heart_rate/presentation/widgets/heart_rate_zones.dart`, `lib/features/settings/presentation/providers/user_age_provider.dart`
+**Settings integration:** The Settings screen has an expanded "Health Profile" section with tiles for: age, resting HR, measured max HR, beta blocker toggle, heart condition toggle, clinician max HR, zone method summary with reliability, "Set Up Heart Rate Zones" wizard link, and general disclaimer text.
+
+Key files: `lib/features/heart_rate/domain/models/health_profile.dart`, `lib/features/heart_rate/domain/zone_calculator.dart`, `lib/features/heart_rate/domain/time_in_zone_calculator.dart`, `lib/features/heart_rate/domain/warning_messages.dart`, `lib/features/heart_rate/presentation/providers/health_profile_provider.dart`, `lib/features/heart_rate/presentation/providers/zone_configuration_provider.dart`, `lib/features/heart_rate/presentation/providers/chart_window_provider.dart`, `lib/features/heart_rate/presentation/screens/heart_rate_panel_screen.dart`, `lib/features/heart_rate/presentation/controllers/heart_rate_panel_controller.dart`, `lib/features/heart_rate/presentation/widgets/heart_rate_chart.dart`, `lib/features/heart_rate/presentation/widgets/heart_rate_zones.dart`, `lib/features/heart_rate/presentation/widgets/health_profile_onboarding.dart`, `lib/features/heart_rate/presentation/widgets/disclaimer_dialog.dart`, `lib/features/heart_rate/presentation/widgets/caution_badge.dart`, `lib/features/heart_rate/presentation/widgets/reliability_indicator.dart`, `lib/features/heart_rate/presentation/widgets/symptom_report_button.dart`, `lib/features/settings/presentation/providers/user_age_provider.dart`
 
 ---
 
