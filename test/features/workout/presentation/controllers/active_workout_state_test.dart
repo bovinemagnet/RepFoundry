@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
 import 'package:rep_foundry/features/workout/presentation/controllers/active_workout_controller.dart';
 import 'package:rep_foundry/features/workout/presentation/models/ghost_set.dart';
@@ -143,6 +144,54 @@ void main() {
 
       expect(copied.ghostSetsByExercise, {'e1': ghosts});
       expect(copied.isLoading, isTrue);
+    });
+  });
+
+  group('ActiveWorkoutState PR fields', () {
+    final pr = PersonalRecord.create(
+      exerciseId: 'e1',
+      recordType: RecordType.estimatedOneRepMax,
+      value: 120.5,
+      workoutSetId: 'set-1',
+    );
+
+    test('latestPR defaults to null', () {
+      const state = ActiveWorkoutState();
+      expect(state.latestPR, isNull);
+      expect(state.latestPRExerciseName, isNull);
+    });
+
+    test('copyWith sets latestPR and exercise name', () {
+      const state = ActiveWorkoutState();
+      final updated = state.copyWith(
+        latestPR: pr,
+        latestPRExerciseName: 'Bench Press',
+      );
+
+      expect(updated.latestPR, pr);
+      expect(updated.latestPRExerciseName, 'Bench Press');
+    });
+
+    test('copyWith preserves latestPR when not provided', () {
+      final state = ActiveWorkoutState(
+        latestPR: pr,
+        latestPRExerciseName: 'Bench Press',
+      );
+      final updated = state.copyWith(isLoading: true);
+
+      expect(updated.latestPR, pr);
+      expect(updated.latestPRExerciseName, 'Bench Press');
+    });
+
+    test('copyWith clearPR clears both fields', () {
+      final state = ActiveWorkoutState(
+        latestPR: pr,
+        latestPRExerciseName: 'Bench Press',
+      );
+      final updated = state.copyWith(clearPR: true);
+
+      expect(updated.latestPR, isNull);
+      expect(updated.latestPRExerciseName, isNull);
     });
   });
 }

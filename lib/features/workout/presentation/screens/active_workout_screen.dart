@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../controllers/active_workout_controller.dart';
 import '../models/ghost_set.dart';
+import '../widgets/pr_celebration_overlay.dart';
 import '../widgets/set_input_card.dart';
 import '../widgets/rest_timer_widget.dart';
 import '../../domain/models/workout_set.dart';
@@ -17,6 +18,15 @@ class ActiveWorkoutScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(activeWorkoutControllerProvider);
     final controller = ref.read(activeWorkoutControllerProvider.notifier);
+
+    ref.listen<ActiveWorkoutState>(
+      activeWorkoutControllerProvider,
+      (previous, next) {
+        if (previous?.latestPR == null && next.latestPR != null) {
+          _showPRCelebration(context, ref, next);
+        }
+      },
+    );
 
     if (state.error != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -167,6 +177,26 @@ class ActiveWorkoutScreen extends ConsumerWidget {
     if (exercise != null) {
       ref.read(activeWorkoutControllerProvider.notifier).addExercise(exercise);
     }
+  }
+
+  void _showPRCelebration(
+    BuildContext context,
+    WidgetRef ref,
+    ActiveWorkoutState state,
+  ) {
+    final overlay = Overlay.of(context);
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => PRCelebrationOverlay(
+        exerciseName: state.latestPRExerciseName ?? 'Exercise',
+        value: state.latestPR!.value,
+        onDismiss: () {
+          entry.remove();
+          ref.read(activeWorkoutControllerProvider.notifier).clearPR();
+        },
+      ),
+    );
+    overlay.insert(entry);
   }
 
   Future<void> _confirmFinish(

@@ -4,6 +4,7 @@ import '../../domain/models/workout.dart';
 import '../../domain/models/workout_set.dart';
 import '../../domain/repositories/workout_repository.dart';
 import '../../../exercises/domain/models/exercise.dart';
+import '../../../history/domain/models/personal_record.dart';
 import '../models/ghost_set.dart';
 import '../../../../core/providers.dart';
 
@@ -14,6 +15,8 @@ class ActiveWorkoutState {
   final List<Exercise> exercises;
   final bool isLoading;
   final String? error;
+  final PersonalRecord? latestPR;
+  final String? latestPRExerciseName;
 
   const ActiveWorkoutState({
     this.activeWorkout,
@@ -22,6 +25,8 @@ class ActiveWorkoutState {
     this.exercises = const [],
     this.isLoading = false,
     this.error,
+    this.latestPR,
+    this.latestPRExerciseName,
   });
 
   bool get hasActiveWorkout => activeWorkout != null;
@@ -54,6 +59,9 @@ class ActiveWorkoutState {
     bool? isLoading,
     String? error,
     bool clearWorkout = false,
+    PersonalRecord? latestPR,
+    String? latestPRExerciseName,
+    bool clearPR = false,
   }) {
     return ActiveWorkoutState(
       activeWorkout:
@@ -63,6 +71,10 @@ class ActiveWorkoutState {
       exercises: exercises ?? this.exercises,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      latestPR: clearPR ? null : (latestPR ?? this.latestPR),
+      latestPRExerciseName: clearPR
+          ? null
+          : (latestPRExerciseName ?? this.latestPRExerciseName),
     );
   }
 }
@@ -231,7 +243,20 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
         ...(updated[exerciseId] ?? []),
         result.set,
       ];
-      state = state.copyWith(setsByExercise: updated);
+
+      if (result.newPersonalRecord != null) {
+        final exerciseName = state.exercises
+            .where((e) => e.id == exerciseId)
+            .map((e) => e.name)
+            .firstOrNull;
+        state = state.copyWith(
+          setsByExercise: updated,
+          latestPR: result.newPersonalRecord,
+          latestPRExerciseName: exerciseName,
+        );
+      } else {
+        state = state.copyWith(setsByExercise: updated);
+      }
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -248,6 +273,8 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
       state = state.copyWith(error: e.toString());
     }
   }
+
+  void clearPR() => state = state.copyWith(clearPR: true);
 
   void clearError() => state = state.copyWith(error: null);
 }
