@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/rest_timer_settings_provider.dart';
+import '../providers/user_age_provider.dart';
 
 final _themeModeProvider = StateNotifierProvider<_ThemeModeNotifier, ThemeMode>(
   (ref) => _ThemeModeNotifier(),
@@ -64,11 +65,28 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(_themeModeProvider);
     final weightUnit = ref.watch(_weightUnitProvider);
+    final userAge = ref.watch(userAgeProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
+          const _SectionHeader(title: 'Profile'),
+          ListTile(
+            leading: const Icon(Icons.cake_outlined),
+            title: const Text('Age'),
+            subtitle: userAge != null
+                ? Text('$userAge years (max HR: ${220 - userAge} bpm)')
+                : const Text('Set your age for heart rate zones'),
+            trailing: userAge != null
+                ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () =>
+                        ref.read(userAgeProvider.notifier).setAge(null),
+                  )
+                : null,
+            onTap: () => _showAgeDialog(context, ref, userAge),
+          ),
           const _SectionHeader(title: 'Appearance'),
           ListTile(
             leading: const Icon(Icons.palette_outlined),
@@ -157,6 +175,53 @@ class SettingsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _showAgeDialog(
+    BuildContext context,
+    WidgetRef ref,
+    int? currentAge,
+  ) async {
+    final controller = TextEditingController(
+      text: currentAge?.toString() ?? '',
+    );
+    final result = await showDialog<int?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Set Your Age'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Age',
+            hintText: 'e.g. 30',
+            border: OutlineInputBorder(),
+            suffixText: 'years',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final age = int.tryParse(controller.text);
+              if (age != null && age > 0 && age <= 120) {
+                Navigator.pop(ctx, age);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+
+    if (result != null) {
+      ref.read(userAgeProvider.notifier).setAge(result);
+    }
   }
 
   Future<void> _confirmClearData(BuildContext context) async {

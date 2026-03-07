@@ -28,6 +28,10 @@ class ScaffoldWithNavBar extends StatelessWidget {
             label: 'Cardio',
           ),
           NavigationDestination(
+            icon: Icon(Icons.monitor_heart),
+            label: 'Heart Rate',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),
@@ -41,7 +45,8 @@ class ScaffoldWithNavBar extends StatelessWidget {
     if (location.startsWith('/workout')) return 0;
     if (location.startsWith('/history')) return 1;
     if (location.startsWith('/cardio')) return 2;
-    return 3;
+    if (location.startsWith('/heart-rate')) return 3;
+    return 4;
   }
 
   void _onDestinationSelected(int index, BuildContext context) {
@@ -53,6 +58,8 @@ class ScaffoldWithNavBar extends StatelessWidget {
       case 2:
         context.go('/cardio');
       case 3:
+        context.go('/heart-rate');
+      case 4:
         context.go('/settings');
     }
   }

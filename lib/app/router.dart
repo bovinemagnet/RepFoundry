@@ -8,6 +8,7 @@ import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/templates/presentation/screens/template_list_screen.dart';
 import '../features/exercises/presentation/screens/exercise_picker_screen.dart';
 import '../features/cardio/presentation/screens/cardio_tracking_screen.dart';
+import '../features/heart_rate/presentation/screens/heart_rate_panel_screen.dart';
 import '../core/widgets/scaffold_with_nav_bar.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -36,6 +37,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/cardio',
             builder: (context, state) => const CardioTrackingScreen(),
+          ),
+          GoRoute(
+            path: '/heart-rate',
+            builder: (context, state) => const HeartRatePanelScreen(),
           ),
           GoRoute(
             path: '/settings',

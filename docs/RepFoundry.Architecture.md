@@ -49,6 +49,7 @@ lib/
 │   ├── exercises/            # Exercise library feature
 │   ├── history/              # Workout history & progress
 │   ├── cardio/               # Cardio tracking feature
+│   ├── heart_rate/           # Real-time HR monitoring panel
 │   ├── templates/            # Workout templates
 │   └── settings/             # App preferences
 ├── core/                     # Shared utilities
@@ -218,6 +219,21 @@ The cardio feature supports live heart rate streaming from any device that adver
 
 Key files: `lib/features/cardio/data/heart_rate_service.dart`, `lib/features/cardio/data/flutter_blue_heart_rate_service.dart`, `lib/features/cardio/presentation/controllers/cardio_tracking_controller.dart`, `lib/features/cardio/presentation/widgets/hr_setup_guide_dialog.dart`, `lib/features/cardio/presentation/widgets/hr_device_picker_dialog.dart`
 
+### 6.6 Heart Rate Panel
+
+A dedicated heart rate monitoring screen (`lib/features/heart_rate/`) provides a focused view for tracking heart rate during any activity. It shares the `HeartRateService` singleton with the cardio feature — if cardio already has a BLE connection, the panel auto-syncs on navigation.
+
+**Components:**
+
+- `HeartRatePanelController` (StateNotifier) — manages monitoring state, timestamped readings (`HrReading` with `bpm` and `elapsed` duration), elapsed timer, and BLE connection lifecycle. Non-autoDispose so monitoring survives tab switches.
+- `HeartRateChart` — real-time fl_chart `LineChart` plotting BPM against elapsed time. When user age is set, coloured horizontal range annotations mark the training zones. X-axis shows `M:SS` timestamps with adaptive intervals.
+- `HeartRateZoneLegend` — displays the five training zones (Fat Burn, Endurance, Aerobic, Anaerobic, VO2 Max) with BPM ranges calculated from max HR (220 − age). Highlights the current zone.
+- `UserAgeProvider` — SharedPreferences-backed `StateNotifier<int?>` in the settings feature, exposed via `userAgeProvider`. The Settings screen has an Age field under a new "Profile" section.
+
+**Controls:** Connect (opens BLE device picker), Start/Pause monitoring, Reset readings, Disconnect. Stats card shows avg/min/max/readings count.
+
+Key files: `lib/features/heart_rate/presentation/screens/heart_rate_panel_screen.dart`, `lib/features/heart_rate/presentation/controllers/heart_rate_panel_controller.dart`, `lib/features/heart_rate/presentation/widgets/heart_rate_chart.dart`, `lib/features/heart_rate/presentation/widgets/heart_rate_zones.dart`, `lib/features/settings/presentation/providers/user_age_provider.dart`
+
 ---
 
 ## 7. Navigation Architecture
@@ -229,6 +245,7 @@ GoRouter is configured with a ShellRoute for the bottom navigation bar (three ta
 | `/workout` | ActiveWorkoutScreen | Main logging screen; start or continue a workout |
 | `/exercises` | ExerciseLibraryScreen | Browse and search the exercise library |
 | `/cardio` | CardioTrackingScreen | Log cardio sessions |
+| `/heart-rate` | HeartRatePanelScreen | Real-time HR monitoring with zone chart |
 | `/history` | HistoryListScreen | Past workouts in reverse chronological order |
 | `/history/:id` | WorkoutDetailScreen | Full breakdown of a past workout |
 | `/history/exercise/:id` | ExerciseProgressScreen | Per-exercise history with charts |
