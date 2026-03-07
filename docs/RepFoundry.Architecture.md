@@ -22,6 +22,8 @@ RepFoundry follows a clean architecture pattern with clear separation between pr
 | Dependency Injection | Riverpod (built-in) | Provider-based DI with auto-dispose and scoping |
 | Charts | fl_chart | High-performance charting for progress visualisation |
 | Audio | audioplayers 6.x | Cross-platform audio playback for rest timer alerts |
+| BLE | flutter_blue_plus | Bluetooth Low Energy scanning and connection for heart rate monitors |
+| Location | geolocator | GPS position stream for outdoor cardio distance tracking |
 | Testing | flutter_test, mockito, integration_test | Unit, widget, and integration testing |
 | CI/CD | Planned — GitHub Actions + Fastlane | Automated build, test, and store deployment (not yet configured) |
 | Analytics / Crash | Planned — Firebase Crashlytics + Analytics | Crash reporting and usage analytics (not yet integrated) |
@@ -190,6 +192,32 @@ Both alerts are gated by `RestTimerSettings` (vibration and sound toggles), pers
 
 Key files: `lib/features/workout/presentation/widgets/rest_timer_widget.dart`, `lib/features/settings/presentation/providers/rest_timer_settings_provider.dart`, `assets/sounds/timer_complete.wav`
 
+### 6.5 BLE Heart Rate Streaming
+
+The cardio feature supports live heart rate streaming from any device that advertises the standard BLE Heart Rate Service (UUID 0x180D). This includes dedicated chest straps (Polar, Garmin, Wahoo), arm bands, Apple Watch (via its built-in "Broadcast Heart Rate" setting), and Samsung Galaxy Watch (via Samsung Health's BLE broadcast setting).
+
+**Architecture:**
+
+- `HeartRateService` (abstract) — defines the BLE contract: scan, connect, disconnect, heart rate stream, and connection state stream. The `HrConnectionState` enum (`connected`, `reconnecting`, `disconnected`) enables the UI to reflect connection lifecycle.
+- `FlutterBlueHeartRateService` — production implementation using `flutter_blue_plus`. Scans for devices advertising 0x180D, connects, discovers the HR Measurement characteristic (0x2A37), and subscribes to notifications. Parses both 8-bit and 16-bit HR value formats per the BLE spec.
+- `FakeHeartRateService` — test double with controllable streams for unit testing.
+
+**Auto-reconnect:** When an unexpected BLE disconnection is detected (e.g. watch goes briefly out of range), the service automatically attempts up to 2 reconnections with a 2-second delay between attempts. If reconnection succeeds, services are re-discovered and the HR characteristic is re-subscribed. If all retries fail, a `disconnected` event is emitted. Intentional disconnects (via `disconnect()`) skip reconnection.
+
+**Connection state flow:**
+
+1. `connectToDevice()` → connects and emits `HrConnectionState.connected`
+2. Unexpected disconnect detected → emits `HrConnectionState.reconnecting` → retries
+3. Reconnect succeeds → emits `HrConnectionState.connected`
+4. All retries fail → emits `HrConnectionState.disconnected`
+5. `disconnect()` → intentional flag set, no reconnect attempt
+
+**Controller integration:** `CardioTrackingController` subscribes to both `heartRateStream` (for BPM readings) and `connectionStateStream` (for reconnecting/disconnected states). The `hrReconnecting` field in `CardioTrackingState` drives a "Reconnecting..." indicator in the UI.
+
+**UX guidance:** An in-app setup guide (`hr_setup_guide_dialog.dart`) provides device-specific instructions for enabling BLE broadcast on Apple Watch and Samsung Galaxy Watch. The guide is accessible via a help icon on the HR monitor card and a "Setup Help" button in the empty-state device picker.
+
+Key files: `lib/features/cardio/data/heart_rate_service.dart`, `lib/features/cardio/data/flutter_blue_heart_rate_service.dart`, `lib/features/cardio/presentation/controllers/cardio_tracking_controller.dart`, `lib/features/cardio/presentation/widgets/hr_setup_guide_dialog.dart`, `lib/features/cardio/presentation/widgets/hr_device_picker_dialog.dart`
+
 ---
 
 ## 7. Navigation Architecture
@@ -282,6 +310,6 @@ The following architectural investments are deferred to keep v1 lean but are acc
 
 - **Remaining Drift repositories:** CardioSession, PersonalRecord, and WorkoutTemplate repositories need implementing against the existing table definitions.
 - **Cloud sync layer:** Repository interfaces are designed so a remote data source can be added behind the same contract without changing the application or presentation layers.
-- **Wearable companion:** Shared domain models will be extracted into a Dart package consumable by a Wear OS (Kotlin) or watchOS (Swift) companion app, with data sync via platform channels.
+- **Wearable companion:** Live BLE heart rate streaming from Apple Watch and Samsung Galaxy Watch is implemented (via standard BLE HR broadcast). A full native companion app for Wear OS or watchOS (providing workout control, rep logging on wrist, etc.) would require shared domain models extracted into a Dart package with platform channel integration — this remains deferred.
 - **Feature flags:** A FeatureFlag provider is planned to support A/B testing and gradual rollout of Pro features.
 - **Modularisation:** Features are self-contained directories today. When the codebase grows, each feature can be extracted into a separate Dart package for independent compilation and testing.

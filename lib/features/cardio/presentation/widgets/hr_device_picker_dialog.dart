@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/heart_rate_service.dart';
+import 'hr_setup_guide_dialog.dart';
 
 class HrDevicePickerDialog extends StatefulWidget {
   final HeartRateService heartRateService;
@@ -101,14 +102,33 @@ class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
                   child: const Text('Retry'),
                 ),
               ] else if (_devices != null && _devices!.isEmpty) ...[
-                const Center(
-                  child: Text('No heart rate monitors found'),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'No heart rate monitors found. Ensure your device is '
+                      'broadcasting \u2014 for Apple Watch, start a workout '
+                      'with Broadcast Heart Rate enabled.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Center(
-                  child: TextButton(
-                    onPressed: _startScan,
-                    child: const Text('Scan Again'),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextButton(
+                        onPressed: _startScan,
+                        child: const Text('Scan Again'),
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton(
+                        onPressed: () => showHrSetupGuide(context),
+                        child: const Text('Setup Help'),
+                      ),
+                    ],
                   ),
                 ),
               ] else ...[

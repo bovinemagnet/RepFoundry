@@ -11,14 +11,25 @@ final _hrServiceUuid = Guid('180D');
 final _hrMeasurementUuid = Guid('2A37');
 
 class FlutterBlueHeartRateService implements HeartRateService {
+  static const _maxReconnectAttempts = 2;
+  static const _reconnectDelay = Duration(seconds: 2);
+
   final _heartRateController = StreamController<int>.broadcast();
+  final _connectionStateController =
+      StreamController<HrConnectionState>.broadcast();
   StreamSubscription<List<int>>? _characteristicSub;
   StreamSubscription<BluetoothConnectionState>? _connectionStateSub;
   BluetoothDevice? _connectedDevice;
+  String? _connectedDeviceId;
   bool _connected = false;
+  bool _intentionalDisconnect = false;
 
   @override
   Stream<int> get heartRateStream => _heartRateController.stream;
+
+  @override
+  Stream<HrConnectionState> get connectionStateStream =>
+      _connectionStateController.stream;
 
   @override
   bool get isConnected => _connected;
@@ -69,6 +80,12 @@ class FlutterBlueHeartRateService implements HeartRateService {
 
   @override
   Future<void> connectToDevice(String deviceId) async {
+    _intentionalDisconnect = false;
+    _connectedDeviceId = deviceId;
+    await _connectAndSubscribe(deviceId);
+  }
+
+  Future<void> _connectAndSubscribe(String deviceId) async {
     final device = BluetoothDevice.fromId(deviceId);
 
     await device.connect(autoConnect: false);
@@ -81,6 +98,10 @@ class FlutterBlueHeartRateService implements HeartRateService {
         _characteristicSub?.cancel();
         _connectionStateSub?.cancel();
         _connectedDevice = null;
+
+        if (!_intentionalDisconnect && _connectedDeviceId != null) {
+          _attemptReconnect(_connectedDeviceId!);
+        }
       }
     });
 
@@ -114,10 +135,35 @@ class FlutterBlueHeartRateService implements HeartRateService {
     });
 
     _connected = true;
+    _connectionStateController.add(HrConnectionState.connected);
+  }
+
+  Future<void> _attemptReconnect(String deviceId) async {
+    _connectionStateController.add(HrConnectionState.reconnecting);
+
+    for (var attempt = 0; attempt < _maxReconnectAttempts; attempt++) {
+      if (_intentionalDisconnect) return;
+
+      await Future<void>.delayed(_reconnectDelay);
+
+      if (_intentionalDisconnect) return;
+
+      try {
+        await _connectAndSubscribe(deviceId);
+        return; // Reconnection succeeded.
+      } catch (_) {
+        // Will retry or fall through.
+      }
+    }
+
+    // All retries exhausted.
+    _connectedDeviceId = null;
+    _connectionStateController.add(HrConnectionState.disconnected);
   }
 
   @override
   Future<void> disconnect() async {
+    _intentionalDisconnect = true;
     _characteristicSub?.cancel();
     _characteristicSub = null;
     _connectionStateSub?.cancel();
@@ -125,6 +171,7 @@ class FlutterBlueHeartRateService implements HeartRateService {
 
     await _connectedDevice?.disconnect();
     _connectedDevice = null;
+    _connectedDeviceId = null;
     _connected = false;
   }
 

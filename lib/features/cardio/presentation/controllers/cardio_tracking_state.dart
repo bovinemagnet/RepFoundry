@@ -14,6 +14,7 @@ class CardioTrackingState {
   final bool gpsAcquiring;
   final bool hrConnected;
   final bool hrConnecting;
+  final bool hrReconnecting;
   final int? currentHeartRate;
   final List<int> heartRateReadings;
   final String? hrDeviceName;
@@ -32,6 +33,7 @@ class CardioTrackingState {
     this.gpsAcquiring = false,
     this.hrConnected = false,
     this.hrConnecting = false,
+    this.hrReconnecting = false,
     this.currentHeartRate,
     this.heartRateReadings = const [],
     this.hrDeviceName,
@@ -53,6 +55,7 @@ class CardioTrackingState {
     bool? gpsAcquiring,
     bool? hrConnected,
     bool? hrConnecting,
+    bool? hrReconnecting,
     int? currentHeartRate,
     bool clearCurrentHeartRate = false,
     List<int>? heartRateReadings,
@@ -73,6 +76,7 @@ class CardioTrackingState {
       gpsAcquiring: gpsAcquiring ?? this.gpsAcquiring,
       hrConnected: hrConnected ?? this.hrConnected,
       hrConnecting: hrConnecting ?? this.hrConnecting,
+      hrReconnecting: hrReconnecting ?? this.hrReconnecting,
       currentHeartRate: clearCurrentHeartRate
           ? null
           : (currentHeartRate ?? this.currentHeartRate),

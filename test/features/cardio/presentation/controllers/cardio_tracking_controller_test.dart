@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/cardio/application/save_cardio_session_use_case.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
+import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
 import 'package:rep_foundry/features/cardio/presentation/controllers/cardio_tracking_controller.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
@@ -350,6 +351,43 @@ void main() {
         expect(controller.state.hrConnected, isTrue);
         expect(controller.state.hrDeviceName, 'Polar H10');
         expect(controller.state.heartRateReadings, isEmpty);
+      });
+
+      test('hrReconnecting is set when reconnecting event received', () async {
+        await controller.connectHeartRate('dev1', 'Polar H10');
+        expect(controller.state.hrReconnecting, isFalse);
+
+        heartRateService.emitConnectionState(HrConnectionState.reconnecting);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+
+        expect(controller.state.hrReconnecting, isTrue);
+        expect(controller.state.hrConnected, isTrue);
+      });
+
+      test('hrReconnecting clears when connected event received', () async {
+        await controller.connectHeartRate('dev1', 'Polar H10');
+
+        heartRateService.emitConnectionState(HrConnectionState.reconnecting);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        expect(controller.state.hrReconnecting, isTrue);
+
+        heartRateService.emitConnectionState(HrConnectionState.connected);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+
+        expect(controller.state.hrReconnecting, isFalse);
+        expect(controller.state.hrConnected, isTrue);
+      });
+
+      test('disconnected event clears HR state and sets error', () async {
+        await controller.connectHeartRate('dev1', 'Polar H10');
+
+        heartRateService.emitConnectionState(HrConnectionState.disconnected);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+
+        expect(controller.state.hrConnected, isFalse);
+        expect(controller.state.hrReconnecting, isFalse);
+        expect(controller.state.currentHeartRate, isNull);
+        expect(controller.state.error, isNotNull);
       });
     });
   });

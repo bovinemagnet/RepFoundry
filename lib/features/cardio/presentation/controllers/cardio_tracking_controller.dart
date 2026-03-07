@@ -19,6 +19,7 @@ class CardioTrackingController extends StateNotifier<CardioTrackingState> {
   StreamSubscription<Position>? _positionSub;
   Position? _lastPosition;
   StreamSubscription<int>? _hrSub;
+  StreamSubscription<HrConnectionState>? _hrConnectionSub;
 
   CardioTrackingController({
     required CardioSessionRepository cardioRepository,
@@ -141,11 +142,34 @@ class CardioTrackingController extends StateNotifier<CardioTrackingState> {
           state = state.copyWith(
             hrConnected: false,
             hrConnecting: false,
+            hrReconnecting: false,
             clearCurrentHeartRate: true,
             error: 'Heart rate monitor disconnected',
           );
         },
       );
+
+      _hrConnectionSub?.cancel();
+      _hrConnectionSub =
+          _heartRateService.connectionStateStream.listen((connState) {
+        switch (connState) {
+          case HrConnectionState.reconnecting:
+            state = state.copyWith(hrReconnecting: true);
+          case HrConnectionState.connected:
+            state = state.copyWith(
+              hrConnected: true,
+              hrReconnecting: false,
+            );
+          case HrConnectionState.disconnected:
+            state = state.copyWith(
+              hrConnected: false,
+              hrReconnecting: false,
+              clearCurrentHeartRate: true,
+              error: 'Heart rate monitor disconnected',
+            );
+        }
+      });
+
       state = state.copyWith(
         hrConnected: true,
         hrConnecting: false,
@@ -162,10 +186,13 @@ class CardioTrackingController extends StateNotifier<CardioTrackingState> {
   Future<void> disconnectHeartRate() async {
     _hrSub?.cancel();
     _hrSub = null;
+    _hrConnectionSub?.cancel();
+    _hrConnectionSub = null;
     await _heartRateService.disconnect();
     state = state.copyWith(
       hrConnected: false,
       hrConnecting: false,
+      hrReconnecting: false,
       clearCurrentHeartRate: true,
       clearHrDeviceName: true,
       heartRateReadings: const [],
@@ -229,6 +256,7 @@ class CardioTrackingController extends StateNotifier<CardioTrackingState> {
     _timer?.cancel();
     _stopGpsTracking();
     _hrSub?.cancel();
+    _hrConnectionSub?.cancel();
     super.dispose();
   }
 }

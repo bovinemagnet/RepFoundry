@@ -50,8 +50,10 @@ Beginners following a structured program (e.g., Starting Strength, PPL) who need
 |---------|-------------|----------|
 | Duration tracking | Start/stop timer for treadmill, elliptical, bike, rowing sessions | P0 |
 | Distance and pace | Manual entry of distance; calculated pace display | P0 |
+| GPS distance | Live GPS-based distance and pace tracking for outdoor runs | P0 | *Implemented — toggle in cardio screen; accumulates distance from position stream* |
 | Incline/resistance | Track machine incline or resistance level settings | P1 |
 | Heart rate zones | Optional manual HR entry with zone classification | P2 |
+| BLE heart rate streaming | Live heart rate from BLE monitors, Apple Watch (broadcast mode), Samsung Galaxy Watch, and chest straps (Polar, Garmin, Wahoo) | P1 | *Implemented — BLE HR Service 0x180D; auto-reconnect on drop; in-app setup guide for watch configuration* |
 
 ### 4.3 Progress and History
 
@@ -92,7 +94,7 @@ Beginners following a structured program (e.g., Starting Strength, PPL) who need
 - Social features (sharing workouts, leaderboards, following other users)
 - AI-generated workout plans or exercise recommendations
 - Nutrition and calorie tracking
-- Wearable device integration (Apple Watch, Wear OS) — planned for v2
+- Wearable device integration (Apple Watch, Wear OS) — planned for v2. *Note: live heart rate streaming from Apple Watch (BLE broadcast mode) and Samsung Galaxy Watch is now supported via standard BLE HR Service. Full companion app integration remains out of scope for v1.*
 - Trainer/coach features and client management
 - Video exercise demonstrations (link to external resources instead)
 

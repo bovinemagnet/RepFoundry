@@ -1,3 +1,6 @@
+/// Connection state events emitted by [HeartRateService].
+enum HrConnectionState { connected, reconnecting, disconnected }
+
 /// Abstraction over BLE heart rate monitors for testability.
 abstract class HeartRateService {
   Future<bool> checkAndRequestPermission();
@@ -5,6 +8,9 @@ abstract class HeartRateService {
   Future<void> connectToDevice(String deviceId);
   Future<void> disconnect();
   Stream<int> get heartRateStream;
+
+  /// Emits connection lifecycle events including reconnection attempts.
+  Stream<HrConnectionState> get connectionStateStream;
   bool get isConnected;
 }
 

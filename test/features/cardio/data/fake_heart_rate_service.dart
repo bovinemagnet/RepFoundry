@@ -7,6 +7,8 @@ class FakeHeartRateService implements HeartRateService {
   bool _connected = false;
   String? connectedDeviceId;
   final _heartRateController = StreamController<int>.broadcast();
+  final _connectionStateController =
+      StreamController<HrConnectionState>.broadcast();
   List<DiscoveredHrDevice> devicesToReturn;
   bool shouldThrowOnConnect;
 
@@ -45,6 +47,10 @@ class FakeHeartRateService implements HeartRateService {
   Stream<int> get heartRateStream => _heartRateController.stream;
 
   @override
+  Stream<HrConnectionState> get connectionStateStream =>
+      _connectionStateController.stream;
+
+  @override
   bool get isConnected => _connected;
 
   void emitHeartRate(int bpm) {
@@ -56,7 +62,12 @@ class FakeHeartRateService implements HeartRateService {
     connectedDeviceId = null;
   }
 
+  void emitConnectionState(HrConnectionState connectionState) {
+    _connectionStateController.add(connectionState);
+  }
+
   void dispose() {
     _heartRateController.close();
+    _connectionStateController.close();
   }
 }

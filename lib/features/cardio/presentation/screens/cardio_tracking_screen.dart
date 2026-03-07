@@ -7,6 +7,7 @@ import '../../../exercises/domain/models/exercise.dart';
 import '../controllers/cardio_tracking_controller.dart';
 import '../controllers/cardio_tracking_state.dart';
 import '../widgets/hr_device_picker_dialog.dart';
+import '../widgets/hr_setup_guide_dialog.dart';
 
 final _cardioExercisesProvider = FutureProvider<List<Exercise>>((ref) async {
   final repo = ref.watch(exerciseRepositoryProvider);
@@ -331,7 +332,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
     CardioTrackingState cardioState,
     CardioTrackingController controller,
   ) {
-    if (cardioState.hrConnecting) {
+    if (cardioState.hrConnecting || cardioState.hrReconnecting) {
       return Card(
         child: ListTile(
           leading: const SizedBox(
@@ -339,8 +340,11 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
             height: 24,
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
-          title:
-              Text('Connecting to ${cardioState.hrDeviceName ?? "device"}...'),
+          title: Text(
+            cardioState.hrReconnecting
+                ? 'Reconnecting to ${cardioState.hrDeviceName ?? "device"}...'
+                : 'Connecting to ${cardioState.hrDeviceName ?? "device"}...',
+          ),
         ),
       );
     }
@@ -402,12 +406,22 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
       child: ListTile(
         leading: const Icon(Icons.bluetooth),
         title: const Text('Heart Rate Monitor'),
-        subtitle: const Text('Connect a BLE heart rate strap'),
-        trailing: FilledButton.tonal(
-          onPressed: cardioState.isSaving
-              ? null
-              : () => _showHrDevicePicker(controller),
-          child: const Text('Connect'),
+        subtitle: const Text('Connect a BLE heart rate strap or watch'),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.help_outline),
+              tooltip: 'Setup guide',
+              onPressed: () => showHrSetupGuide(context),
+            ),
+            FilledButton.tonal(
+              onPressed: cardioState.isSaving
+                  ? null
+                  : () => _showHrDevicePicker(controller),
+              child: const Text('Connect'),
+            ),
+          ],
         ),
       ),
     );
