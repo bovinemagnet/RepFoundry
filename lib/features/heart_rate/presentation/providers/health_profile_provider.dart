@@ -3,12 +3,17 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/providers.dart';
+import '../../domain/analytics_events.dart';
 import '../../domain/models/health_profile.dart';
 
 class HealthProfileNotifier extends StateNotifier<HealthProfile> {
-  HealthProfileNotifier() : super(const HealthProfile()) {
+  HealthProfileNotifier({this.analyticsReporter})
+      : super(const HealthProfile()) {
     _load();
   }
+
+  final HrAnalyticsReporter? analyticsReporter;
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -56,6 +61,10 @@ class HealthProfileNotifier extends StateNotifier<HealthProfile> {
       await prefs.setInt('hr_age', age);
       // Keep legacy key in sync
       await prefs.setInt('user_age', age);
+      analyticsReporter?.trackEvent(
+        HrAnalyticsEvent.healthFieldCompleted,
+        {'field': 'age'},
+      );
     } else {
       await prefs.remove('hr_age');
       await prefs.remove('user_age');
@@ -69,6 +78,10 @@ class HealthProfileNotifier extends StateNotifier<HealthProfile> {
     final prefs = await SharedPreferences.getInstance();
     if (restingHr != null) {
       await prefs.setInt('hr_resting_hr', restingHr);
+      analyticsReporter?.trackEvent(
+        HrAnalyticsEvent.healthFieldCompleted,
+        {'field': 'restingHeartRate'},
+      );
     } else {
       await prefs.remove('hr_resting_hr');
     }
@@ -90,12 +103,18 @@ class HealthProfileNotifier extends StateNotifier<HealthProfile> {
     state = state.copyWith(takingBetaBlocker: value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hr_beta_blocker', value);
+    if (state.isCautionMode) {
+      analyticsReporter?.trackEvent(HrAnalyticsEvent.cautionModeActivated);
+    }
   }
 
   Future<void> setHasHeartCondition(bool value) async {
     state = state.copyWith(hasHeartCondition: value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hr_heart_condition', value);
+    if (state.isCautionMode) {
+      analyticsReporter?.trackEvent(HrAnalyticsEvent.cautionModeActivated);
+    }
   }
 
   Future<void> setClinicianMaxHr(int? maxHr) async {
@@ -105,6 +124,7 @@ class HealthProfileNotifier extends StateNotifier<HealthProfile> {
     final prefs = await SharedPreferences.getInstance();
     if (maxHr != null) {
       await prefs.setInt('hr_clinician_max_hr', maxHr);
+      analyticsReporter?.trackEvent(HrAnalyticsEvent.customCapUsed);
     } else {
       await prefs.remove('hr_clinician_max_hr');
     }
@@ -132,5 +152,7 @@ class HealthProfileNotifier extends StateNotifier<HealthProfile> {
 
 final healthProfileProvider =
     StateNotifierProvider<HealthProfileNotifier, HealthProfile>(
-  (ref) => HealthProfileNotifier(),
+  (ref) => HealthProfileNotifier(
+    analyticsReporter: ref.watch(hrAnalyticsReporterProvider),
+  ),
 );

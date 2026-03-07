@@ -150,10 +150,10 @@ Both charts must:
 
 - Display the current heart-rate line over coloured background bands representing active zones. **Done** — `_zoneAnnotations()` reads from `ZoneConfiguration.zones`.
 - Show zone bands derived from the selected calculation method (not hardcoded). **Done** — bands from `ZoneConfiguration`.
-- Expose threshold lines for at least 50%, 60%, 70%, 80%, 90%, and 100% of the selected method reference. **Partial** — zone bands shown as horizontal range annotations; explicit threshold lines not yet drawn.
+- Expose threshold lines for at least 50%, 60%, 70%, 80%, 90%, and 100% of the selected method reference. **Done** — dashed horizontal threshold lines at zone boundaries with percentage and BPM labels via `_thresholdLines()` in `HeartRateChart`.
 - Show the current heart rate, current zone label, session average heart rate, session peak heart rate, and elapsed time. **Done** — HR display card + stats card.
 - Apply smoothing to reduce flicker from short-lived sensor spikes. **Done** — `curveSmoothness: 0.15` on the line chart.
-- Allow users to disable red-zone colour or set a custom cap if they prefer conservative visual behaviour. **Partial** — clinician cap overrides zones; dedicated colour toggle not yet implemented.
+- Allow users to disable red-zone colour or set a custom cap if they prefer conservative visual behaviour. **Done** — clinician cap overrides zones; zone colour bands toggle via `ZoneBandsNotifier` in Settings and HR panel.
 
 ### 5.2 Session summaries
 
@@ -254,7 +254,7 @@ For MVP, capture anonymous product telemetry where permitted:
 
 Do not log sensitive free-text medical details unless specifically designed, consented, and secured for that purpose.
 
-**Status:** Analytics event infrastructure is **Done** (`HrAnalyticsReporter` interface + `NoopAnalyticsReporter` for MVP). Events are defined but firing points are wired to no-op; a production reporter can be swapped in via `hrAnalyticsReporterProvider`.
+**Status:** Analytics event infrastructure is **Done** (`HrAnalyticsReporter` interface + `NoopAnalyticsReporter` for MVP). All 7 events are wired to their firing points: onboarding completion, health field updates, caution mode activation, zone method selection, clinician cap usage, time-in-zone summary views, and warning/symptom displays. A production reporter can be swapped in via `hrAnalyticsReporterProvider`.
 
 ## 10. Acceptance criteria
 

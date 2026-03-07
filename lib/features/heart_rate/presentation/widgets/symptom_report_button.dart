@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 
+import '../../domain/analytics_events.dart';
 import '../../domain/warning_messages.dart';
 
 /// Button shown during active monitoring to report symptoms.
 class SymptomReportButton extends StatelessWidget {
-  const SymptomReportButton({super.key, required this.onStopRequested});
+  const SymptomReportButton({
+    super.key,
+    required this.onStopRequested,
+    this.analytics,
+  });
 
   /// Called when the user reports a symptom and exercise should stop.
   final VoidCallback onStopRequested;
+
+  /// Optional analytics reporter for tracking warning events.
+  final HrAnalyticsReporter? analytics;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +52,7 @@ class SymptomReportButton extends StatelessWidget {
                   ),
                   onPressed: () {
                     Navigator.pop(ctx);
-                    _showStopExerciseDialog(context);
+                    _showStopExerciseDialog(context, symptom);
                   },
                   child: Text(symptom),
                 ),
@@ -61,8 +69,12 @@ class SymptomReportButton extends StatelessWidget {
     );
   }
 
-  void _showStopExerciseDialog(BuildContext context) {
+  void _showStopExerciseDialog(BuildContext context, String symptom) {
     onStopRequested();
+    analytics?.trackEvent(HrAnalyticsEvent.warningDisplayed, {
+      'type': 'symptom_report',
+      'symptom': symptom,
+    });
     showDialog<void>(
       context: context,
       barrierDismissible: false,

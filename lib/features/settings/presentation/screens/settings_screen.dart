@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../heart_rate/domain/warning_messages.dart';
 import '../../../heart_rate/domain/zone_calculator.dart';
 import '../../../heart_rate/presentation/providers/health_profile_provider.dart';
+import '../../../heart_rate/presentation/providers/zone_bands_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../../heart_rate/presentation/widgets/health_profile_onboarding.dart';
 import '../providers/rest_timer_settings_provider.dart';
@@ -213,6 +214,15 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text('Set Up Heart Rate Zones'),
             subtitle: const Text('Step-by-step guided setup'),
             onTap: () => showHealthProfileOnboarding(context),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.palette_outlined),
+            title: const Text('Zone Colour Bands'),
+            subtitle: const Text(
+              'Show coloured zone bands on HR chart',
+            ),
+            value: ref.watch(zoneBandsProvider),
+            onChanged: (_) => ref.read(zoneBandsProvider.notifier).toggle(),
           ),
           const ListTile(
             leading: Icon(Icons.info_outline),

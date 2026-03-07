@@ -12,6 +12,7 @@ import '../controllers/heart_rate_panel_controller.dart';
 import '../controllers/heart_rate_panel_state.dart';
 import '../providers/chart_window_provider.dart';
 import '../providers/health_profile_provider.dart';
+import '../providers/zone_bands_provider.dart';
 import '../providers/zone_configuration_provider.dart';
 import '../widgets/caution_badge.dart';
 import '../widgets/disclaimer_dialog.dart';
@@ -55,7 +56,8 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     if (_initialised || !mounted) return;
     _initialised = true;
 
-    await showDisclaimerIfNeeded(context);
+    final analytics = ref.read(hrAnalyticsReporterProvider);
+    await showDisclaimerIfNeeded(context, analytics: analytics);
 
     if (!mounted) return;
     final profile = ref.read(healthProfileProvider);
@@ -71,6 +73,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     final profile = ref.watch(healthProfileProvider);
     final zoneConfig = ref.watch(zoneConfigurationProvider);
     final chartWindow = ref.watch(chartWindowProvider);
+    final showZoneBands = ref.watch(zoneBandsProvider);
 
     ref.listen(heartRatePanelProvider, (prev, next) {
       if (next.error != null && next.error != prev?.error) {
@@ -129,6 +132,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
               readings: panelState.readings,
               zoneConfig: zoneConfig,
               windowSeconds: chartWindow,
+              showZoneBands: showZoneBands,
             ),
             const SizedBox(height: 20),
 
@@ -143,12 +147,14 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
             HeartRateChart(
               readings: panelState.readings,
               zoneConfig: zoneConfig,
+              showZoneBands: showZoneBands,
             ),
             const SizedBox(height: 16),
           ] else ...[
             HeartRateChart(
               readings: panelState.readings,
               zoneConfig: zoneConfig,
+              showZoneBands: showZoneBands,
             ),
             const SizedBox(height: 16),
           ],
@@ -166,6 +172,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
           if (panelState.isMonitoring) ...[
             SymptomReportButton(
               onStopRequested: controller.stopMonitoring,
+              analytics: ref.read(hrAnalyticsReporterProvider),
             ),
             const SizedBox(height: 16),
           ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../domain/analytics_events.dart';
 import '../../domain/warning_messages.dart';
 
 const _disclaimerShownKey = 'hr_disclaimer_shown';
@@ -9,7 +10,10 @@ const _disclaimerShownKey = 'hr_disclaimer_shown';
 ///
 /// Returns `true` if the disclaimer was shown (and acknowledged), `false` if
 /// it had already been shown previously.
-Future<bool> showDisclaimerIfNeeded(BuildContext context) async {
+Future<bool> showDisclaimerIfNeeded(
+  BuildContext context, {
+  HrAnalyticsReporter? analytics,
+}) async {
   final prefs = await SharedPreferences.getInstance();
   if (prefs.getBool(_disclaimerShownKey) == true) return false;
 
@@ -33,5 +37,8 @@ Future<bool> showDisclaimerIfNeeded(BuildContext context) async {
   );
 
   await prefs.setBool(_disclaimerShownKey, true);
+  analytics?.trackEvent(HrAnalyticsEvent.warningDisplayed, {
+    'type': 'disclaimer',
+  });
   return true;
 }

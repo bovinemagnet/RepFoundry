@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/providers.dart';
+import '../../domain/analytics_events.dart';
 import '../providers/health_profile_provider.dart';
 
 /// Shows a multi-step health profile onboarding bottom sheet.
@@ -265,6 +267,8 @@ class _HealthProfileOnboardingState
     if (_step < 3) {
       setState(() => _step++);
     } else {
+      final reporter = ref.read(hrAnalyticsReporterProvider);
+      reporter.trackEvent(HrAnalyticsEvent.onboardingCompleted);
       Navigator.pop(context);
     }
   }

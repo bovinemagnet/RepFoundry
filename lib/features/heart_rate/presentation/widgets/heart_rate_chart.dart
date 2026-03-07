@@ -14,6 +14,7 @@ class HeartRateChart extends StatelessWidget {
     required this.readings,
     this.zoneConfig,
     this.windowSeconds,
+    this.showZoneBands = true,
   });
 
   final List<HrReading> readings;
@@ -23,6 +24,10 @@ class HeartRateChart extends StatelessWidget {
 
   /// If set, only show the last N seconds of readings.
   final int? windowSeconds;
+
+  /// Whether to show coloured zone bands. When false, only threshold lines
+  /// are drawn (useful for colour-sensitive users).
+  final bool showZoneBands;
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +133,17 @@ class HeartRateChart extends StatelessWidget {
           minX: minX,
           minY: chartMinY,
           maxY: chartMaxY,
-          rangeAnnotations: zoneConfig != null
+          extraLinesData: zoneConfig != null
+              ? ExtraLinesData(
+                  horizontalLines: _thresholdLines(
+                    zoneConfig!,
+                    chartMinY,
+                    chartMaxY,
+                    textColour,
+                  ),
+                )
+              : null,
+          rangeAnnotations: zoneConfig != null && showZoneBands
               ? RangeAnnotations(
                   horizontalRangeAnnotations: _zoneAnnotations(
                     zoneConfig!,
@@ -183,6 +198,41 @@ class HeartRateChart extends StatelessWidget {
     final cutoff = readings.last.elapsed - Duration(seconds: windowSeconds!);
     final filtered = readings.where((r) => r.elapsed >= cutoff).toList();
     return filtered.isEmpty ? [readings.last] : filtered;
+  }
+
+  List<HorizontalLine> _thresholdLines(
+    ZoneConfiguration config,
+    double chartMinY,
+    double chartMaxY,
+    Color textColour,
+  ) {
+    final lines = <HorizontalLine>[];
+    for (final zone in config.zones) {
+      final y = zone.lowerBpm.toDouble();
+      if (y > chartMinY && y < chartMaxY) {
+        lines.add(
+          HorizontalLine(
+            y: y,
+            color: Color(zone.colourValue).withValues(alpha: 0.6),
+            strokeWidth: 0.8,
+            dashArray: [4, 4],
+            label: HorizontalLineLabel(
+              show: true,
+              alignment: Alignment.topRight,
+              padding: const EdgeInsets.only(right: 4, bottom: 2),
+              style: TextStyle(
+                color: textColour,
+                fontSize: 8,
+                fontWeight: FontWeight.w500,
+              ),
+              labelResolver: (_) =>
+                  '${zone.lowerPercent > 0 ? '${(zone.lowerPercent * 100).round()}%' : ''} ${zone.lowerBpm}',
+            ),
+          ),
+        );
+      }
+    }
+    return lines;
   }
 
   List<HorizontalRangeAnnotation> _zoneAnnotations(
