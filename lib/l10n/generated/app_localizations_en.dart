@@ -217,6 +217,38 @@ class SEn extends S {
   String get zoneColourBandsSubtitle => 'Show coloured zone bands on HR chart';
 
   @override
+  String get sectionMaxHrAlert => 'Max Heart Rate Alert';
+
+  @override
+  String get maxHrAlertVibration => 'Vibration on Max HR';
+
+  @override
+  String get maxHrAlertVibrationSubtitle =>
+      'Vibrate when heart rate reaches the recommended maximum';
+
+  @override
+  String get maxHrAlertSound => 'Sound on Max HR';
+
+  @override
+  String get maxHrAlertSoundSubtitle =>
+      'Play a warning sound when heart rate reaches the recommended maximum';
+
+  @override
+  String get maxHrAlertCooldown => 'Alert Cooldown';
+
+  @override
+  String get maxHrAlertCooldownSubtitle =>
+      'Minimum seconds between repeated alerts';
+
+  @override
+  String maxHrAlertCooldownValue(int seconds) {
+    return '${seconds}s';
+  }
+
+  @override
+  String get maxHrReached => 'Heart rate at or above recommended maximum';
+
+  @override
   String get disclaimerLabel => 'Disclaimer';
 
   @override

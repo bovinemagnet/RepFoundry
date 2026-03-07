@@ -1,4 +1,6 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
@@ -13,6 +15,7 @@ import '../controllers/heart_rate_panel_controller.dart';
 import '../controllers/heart_rate_panel_state.dart';
 import '../providers/chart_window_provider.dart';
 import '../providers/health_profile_provider.dart';
+import '../providers/max_hr_alert_provider.dart';
 import '../providers/zone_bands_provider.dart';
 import '../providers/zone_configuration_provider.dart';
 import '../widgets/caution_badge.dart';
@@ -33,10 +36,13 @@ class HeartRatePanelScreen extends ConsumerStatefulWidget {
 
 class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
   bool _initialised = false;
+  AudioPlayer? _alertPlayer;
+  DateTime? _lastMaxHrAlert;
 
   @override
   void initState() {
     super.initState();
+    _alertPlayer = AudioPlayer();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _onFirstVisit();
 
@@ -68,6 +74,43 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
   }
 
   @override
+  void dispose() {
+    _alertPlayer?.dispose();
+    super.dispose();
+  }
+
+  void _checkMaxHrAlert(HeartRatePanelState panelState) {
+    final alertSettings = ref.read(maxHrAlertProvider);
+    if (!alertSettings.isEnabled) return;
+    if (!panelState.isMonitoring) return;
+
+    final currentHr = panelState.currentHeartRate;
+    if (currentHr == null) return;
+
+    final zoneConfig = ref.read(zoneConfigurationProvider);
+    if (zoneConfig == null || zoneConfig.zones.isEmpty) return;
+
+    final maxBpm = zoneConfig.zones.last.upperBpm;
+    if (currentHr < maxBpm) return;
+
+    // Cooldown check
+    final now = DateTime.now();
+    if (_lastMaxHrAlert != null &&
+        now.difference(_lastMaxHrAlert!).inSeconds <
+            alertSettings.cooldownSeconds) {
+      return;
+    }
+    _lastMaxHrAlert = now;
+
+    if (alertSettings.vibrationEnabled) {
+      HapticFeedback.heavyImpact();
+    }
+    if (alertSettings.soundEnabled) {
+      _alertPlayer?.play(AssetSource('sounds/timer_complete.wav'));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
     final panelState = ref.watch(heartRatePanelProvider);
@@ -83,6 +126,8 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
           SnackBar(content: Text(next.error!)),
         );
       }
+      // Check if HR has reached or exceeded the recommended max
+      _checkMaxHrAlert(next);
     });
 
     final activeZone = panelState.currentHeartRate != null && zoneConfig != null

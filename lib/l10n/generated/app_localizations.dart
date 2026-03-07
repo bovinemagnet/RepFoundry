@@ -489,6 +489,60 @@ abstract class S {
   /// **'Show coloured zone bands on HR chart'**
   String get zoneColourBandsSubtitle;
 
+  /// No description provided for @sectionMaxHrAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Heart Rate Alert'**
+  String get sectionMaxHrAlert;
+
+  /// No description provided for @maxHrAlertVibration.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibration on Max HR'**
+  String get maxHrAlertVibration;
+
+  /// No description provided for @maxHrAlertVibrationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibrate when heart rate reaches the recommended maximum'**
+  String get maxHrAlertVibrationSubtitle;
+
+  /// No description provided for @maxHrAlertSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound on Max HR'**
+  String get maxHrAlertSound;
+
+  /// No description provided for @maxHrAlertSoundSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a warning sound when heart rate reaches the recommended maximum'**
+  String get maxHrAlertSoundSubtitle;
+
+  /// No description provided for @maxHrAlertCooldown.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert Cooldown'**
+  String get maxHrAlertCooldown;
+
+  /// No description provided for @maxHrAlertCooldownSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum seconds between repeated alerts'**
+  String get maxHrAlertCooldownSubtitle;
+
+  /// No description provided for @maxHrAlertCooldownValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds}s'**
+  String maxHrAlertCooldownValue(int seconds);
+
+  /// No description provided for @maxHrReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart rate at or above recommended maximum'**
+  String get maxHrReached;
+
   /// No description provided for @disclaimerLabel.
   ///
   /// In en, this message translates to:

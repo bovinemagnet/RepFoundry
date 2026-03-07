@@ -5,6 +5,7 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../heart_rate/domain/zone_calculator.dart';
 import '../../../heart_rate/presentation/providers/health_profile_provider.dart';
+import '../../../heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_bands_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../../heart_rate/presentation/widgets/health_profile_onboarding.dart';
@@ -226,6 +227,43 @@ class SettingsScreen extends ConsumerWidget {
             ),
             value: ref.watch(zoneBandsProvider),
             onChanged: (_) => ref.read(zoneBandsProvider.notifier).toggle(),
+          ),
+          _SectionHeader(title: s.sectionMaxHrAlert),
+          SwitchListTile(
+            secondary: const Icon(Icons.vibration),
+            title: Text(s.maxHrAlertVibration),
+            subtitle: Text(s.maxHrAlertVibrationSubtitle),
+            value: ref.watch(maxHrAlertProvider).vibrationEnabled,
+            onChanged: (_) =>
+                ref.read(maxHrAlertProvider.notifier).toggleVibration(),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.volume_up_outlined),
+            title: Text(s.maxHrAlertSound),
+            subtitle: Text(s.maxHrAlertSoundSubtitle),
+            value: ref.watch(maxHrAlertProvider).soundEnabled,
+            onChanged: (_) =>
+                ref.read(maxHrAlertProvider.notifier).toggleSound(),
+          ),
+          ListTile(
+            leading: const Icon(Icons.timer_outlined),
+            title: Text(s.maxHrAlertCooldown),
+            subtitle: Text(s.maxHrAlertCooldownSubtitle),
+            trailing: DropdownButton<int>(
+              value: ref.watch(maxHrAlertProvider).cooldownSeconds,
+              underline: const SizedBox.shrink(),
+              items: const [10, 15, 30, 60]
+                  .map((v) => DropdownMenuItem(
+                        value: v,
+                        child: Text('${v}s'),
+                      ))
+                  .toList(),
+              onChanged: (v) {
+                if (v != null) {
+                  ref.read(maxHrAlertProvider.notifier).setCooldown(v);
+                }
+              },
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.info_outline),

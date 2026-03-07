@@ -1,0 +1,377 @@
+{
+  "@@locale": "zh_Hans",
+
+  "appTitle": "RepFoundry",
+
+  "navWorkout": "训练",
+  "navHistory": "历史",
+  "navCardio": "有氧",
+  "navHeartRate": "心率",
+  "navSettings": "设置",
+
+  "start": "开始",
+  "pause": "暂停",
+  "resume": "继续",
+  "reset": "重置",
+  "cancel": "取消",
+  "save": "保存",
+  "delete": "删除",
+  "create": "创建",
+  "finish": "完成",
+  "next": "下一步",
+  "back": "返回",
+  "skip": "跳过",
+  "done": "完成",
+  "retry": "重试",
+
+  "bpmSuffix": "次/分",
+  "yearsSuffix": "岁",
+  "kgUnit": "千克",
+  "lbsUnit": "磅",
+
+  "settingsTitle": "设置",
+  "sectionHealthProfile": "健康资料",
+  "sectionAppearance": "外观",
+  "sectionUnits": "单位",
+  "sectionRestTimer": "休息计时器",
+  "sectionData": "数据",
+  "sectionAbout": "关于",
+
+  "ageLabel": "年龄",
+  "ageSubtitleSet": "{age} 岁（最大心率：{maxHr} 次/分）",
+  "@ageSubtitleSet": {
+    "placeholders": {
+      "age": { "type": "int" },
+      "maxHr": { "type": "int" }
+    }
+  },
+  "ageSubtitleEmpty": "设置你的年龄以计算心率区间",
+  "setYourAge": "设置年龄",
+  "ageHint": "例如：30",
+
+  "restingHeartRate": "静息心率",
+  "restingHrSubtitleSet": "{bpm} 次/分",
+  "@restingHrSubtitleSet": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "restingHrSubtitleEmpty": "可选——启用 Karvonen 区间",
+  "restingHrHint": "例如：60",
+
+  "measuredMaxHeartRate": "实测最大心率",
+  "measuredMaxHrSubtitleSet": "{bpm} 次/分",
+  "@measuredMaxHrSubtitleSet": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "measuredMaxHrSubtitleEmpty": "可选——来自运动测试",
+  "measuredMaxHrHint": "例如：185",
+
+  "betaBlockerMedication": "β受体阻滞剂用药",
+  "betaBlockerSubtitle": "会影响心率区间计算准确性",
+
+  "heartConditionLabel": "心脏疾病",
+  "heartConditionSubtitle": "为区间启用谨慎模式",
+
+  "clinicianMaxHeartRate": "医生建议最大心率",
+  "clinicianMaxHrSubtitleSet": "{bpm} 次/分——覆盖估算值",
+  "@clinicianMaxHrSubtitleSet": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "clinicianMaxHrSubtitleEmpty": "可选——由医生提供",
+  "clinicianMaxHrHint": "例如：150",
+
+  "zoneMethod": "区间计算方式",
+  "zoneMethodAndReliability": "{method} · 置信度{reliability}",
+  "@zoneMethodAndReliability": {
+    "placeholders": {
+      "method": { "type": "String" },
+      "reliability": { "type": "String" }
+    }
+  },
+  "zoneMethodCustom": "自定义区间",
+  "zoneMethodClinicianCap": "医生上限",
+  "zoneMethodHrr": "心率储备法（Karvonen）",
+  "zoneMethodMeasuredMax": "实测最大心率",
+  "zoneMethodEstimatedMax": "按年龄估算最大心率",
+  "reliabilityHigh": "高",
+  "reliabilityMedium": "中",
+  "reliabilityLow": "低",
+
+  "setUpHeartRateZones": "设置心率区间",
+  "stepByStepGuidedSetup": "分步引导设置",
+
+  "zoneColourBands": "区间颜色带",
+  "zoneColourBandsSubtitle": "在心率图表上显示彩色区间带",
+
+  "sectionMaxHrAlert": "最大心率提醒",
+  "maxHrAlertVibration": "达到最大心率时震动",
+  "maxHrAlertVibrationSubtitle": "当心率达到建议最大值时震动提醒",
+  "maxHrAlertSound": "达到最大心率时声音提醒",
+  "maxHrAlertSoundSubtitle": "当心率达到建议最大值时播放警告音",
+  "maxHrAlertCooldown": "提醒冷却时间",
+  "maxHrAlertCooldownSubtitle": "重复提醒之间的最短秒数",
+  "maxHrAlertCooldownValue": "{seconds}秒",
+  "@maxHrAlertCooldownValue": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "maxHrReached": "心率已达到或超过建议最大值",
+
+  "disclaimerLabel": "免责声明",
+
+  "themeLabel": "主题",
+  "themeLight": "浅色",
+  "themeDark": "深色",
+  "themeAuto": "自动",
+
+  "weightUnitLabel": "体重单位",
+
+  "vibrationAlert": "震动提醒",
+  "vibrationAlertSubtitle": "休息计时结束时震动",
+  "soundAlert": "声音提醒",
+  "soundAlertSubtitle": "休息计时结束时播放声音",
+
+  "clearAllData": "清除所有数据",
+  "clearAllDataSubtitle": "永久删除所有训练和设置。",
+  "clearAllDataConfirmTitle": "清除所有数据？",
+  "clearAllDataConfirmContent": "这将永久删除你所有的训练历史，且无法撤销。",
+  "allDataCleared": "所有数据已清除。",
+
+  "aboutAppName": "RepFoundry",
+  "aboutVersion": "版本 1.0.0",
+
+  "heartRateTitle": "心率",
+  "connectHrMonitor": "连接心率监测器",
+  "disconnect": "断开连接",
+  "setupGuide": "设置指南",
+  "reconnecting": "正在重新连接...",
+  "recentChart": "最近",
+  "fullSessionChart": "完整训练",
+  "setAgeInSettings": "请在设置中填写年龄",
+  "setAgeInSettingsSubtitle": "配置年龄后，将显示心率训练区间。",
+  "statsAvg": "平均",
+  "statsMin": "最低",
+  "statsMax": "最高",
+  "statsReadings": "读数",
+  "timeInZone": "区间停留时间",
+  "moderateOrHigher": "中等或以上强度：{duration}",
+  "@moderateOrHigher": {
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "recoveryHrDrop": "恢复心率下降：{bpm} 次/分",
+  "@recoveryHrDrop": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "bluetoothNotAvailable": "蓝牙不可用。请确认蓝牙已开启。",
+  "chartWindowSeconds": "{seconds}秒",
+  "@chartWindowSeconds": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "chartWindowMinutes": "{minutes}分",
+  "@chartWindowMinutes": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+
+  "onboardingTitle": "设置心率区间",
+  "onboardingStepOf": "第 {current} / {total} 步",
+  "@onboardingStepOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "onboardingAgeExplanation": "你的年龄将用于估算最大心率并个性化训练区间。",
+  "onboardingRestingHrExplanation": "提供静息心率后，可使用 Karvonen（心率储备）方法更准确地计算区间。",
+  "onboardingRestingHrLabel": "静息心率（可选）",
+  "onboardingMeasuredMaxHrLabel": "实测最大心率（可选）",
+  "onboardingRestingHrHint": "例如：60",
+  "onboardingMeasuredMaxHrHint": "例如：185",
+  "onboardingMedicalExplanation": "如果以下任一情况适用于你，心率区间将以谨慎模式显示，并降低置信度。建议咨询医疗专业人士以获得个性化上限。",
+  "onboardingBetaBlockerLabel": "正在服用 β受体阻滞剂",
+  "onboardingHeartConditionLabel": "心脏疾病",
+  "onboardingClinicianWithFlags": "由于你存在医疗相关因素，我们强烈建议输入医生提供的最大心率。该值将覆盖所有其他估算。",
+  "onboardingClinicianWithoutFlags": "如果医生或运动生理师给了你最大心率，请在此输入以覆盖估算值。",
+  "onboardingClinicianMaxHrLabel": "医生建议最大心率（可选）",
+
+  "disclaimerDialogTitle": "心率监测",
+  "disclaimerDialogButton": "我已了解",
+
+  "cautionModeTitle": "谨慎模式",
+
+  "symptomReportButton": "报告症状",
+  "symptomReportTitle": "症状报告",
+  "stopExerciseTitle": "停止运动",
+  "stopExerciseOk": "我没事，正在停止运动",
+  "stopExerciseHelp": "我需要帮助",
+
+  "warningGeneralDisclaimer": "心率区间估算仅供参考，不构成医疗建议。开始或调整运动计划前，请务必咨询医疗专业人士，尤其是在你已有既往疾病的情况下。",
+  "warningBetaBlocker": "β受体阻滞剂可能会显著降低你的最大心率。标准区间计算可能不准确。建议设置医生提供的最大心率，或使用主观用力感（RPE）和谈话测试来判断强度。",
+  "warningHeartCondition": "你已标明存在心脏疾病。标准心率区间计算可能并不适合你。强烈建议在使用基于强度的训练指导前，先获取医生提供的最大心率。",
+  "warningClinicianCap": "当前心率区间基于医生提供的最大心率计算。该值会覆盖基于年龄或实测的估算值。",
+  "warningStopExercise": "如果你正在经历胸痛、严重头晕、昏厥，或异常呼吸困难，请立即停止运动。如症状持续，请尽快就医。",
+  "warningSymptomIntro": "你是否正在经历以下任一症状？",
+  "symptomChestPain": "胸痛或胸闷",
+  "symptomDizziness": "严重头晕或头昏",
+  "symptomFainting": "感觉快要昏倒或即将昏倒",
+  "symptomBreathing": "异常呼吸困难",
+
+  "clinicianLimitsInUse": "当前使用医生提供的限制",
+
+  "workoutTitle": "训练",
+  "workoutTitleWithTime": "训练  •  {time}",
+  "@workoutTitleWithTime": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "loadingWorkout": "正在加载训练…",
+  "addExercise": "添加动作",
+  "startWorkout": "开始训练",
+  "noActiveWorkout": "当前没有进行中的训练",
+  "noActiveWorkoutSubtitle": "开始新的训练以记录组数。",
+  "addExercisesHint": "使用下方按钮添加动作",
+  "finishWorkoutTitle": "完成训练？",
+  "finishWorkoutContent": "这将保存训练并结束本次会话。",
+  "tableHeaderHash": "#",
+  "tableHeaderWeight": "重量",
+  "tableHeaderReps": "次数",
+  "tableHeaderE1rm": "估算1RM",
+
+  "weightKgLabel": "重量（kg）",
+  "repsLabel": "次数",
+  "rpeLabel": "RPE",
+  "addRpe": "添加 RPE",
+  "hideRpe": "隐藏 RPE",
+  "logSet": "记录一组",
+  "validationRequired": "必填",
+  "validationInvalid": "无效",
+  "validationMinZero": "≥ 0",
+  "validationRpeRange": "1–10",
+
+  "restTimer": "休息计时器",
+  "stopTimer": "停止计时",
+
+  "newPersonalRecord": "新的个人纪录！",
+  "e1rmValue": "估算1RM：{value} kg",
+  "@e1rmValue": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+
+  "historyTitle": "历史",
+  "noWorkoutsYet": "还没有训练记录",
+  "noWorkoutsYetSubtitle": "已完成的训练会显示在这里。",
+  "loadingHistory": "正在加载历史…",
+  "errorPrefix": "错误：{error}",
+  "@errorPrefix": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "volumeTrend": "训练量趋势（最近 {count} 次训练）",
+  "@volumeTrend": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "setsCount": "{count} 组",
+  "@setsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "prBadge": "PR!",
+
+  "workoutDetailTitle": "训练详情",
+  "workoutNotFound": "未找到训练",
+  "durationLabel": "时长",
+  "setsLabel": "组数",
+  "volumeLabel": "训练量",
+
+  "exerciseProgressTitle": "动作进展",
+  "noDataYet": "暂无数据",
+  "noDataYetSubtitle": "记录该动作的组数后即可查看进展。",
+  "loadingProgress": "正在加载进展…",
+  "bestE1rm": "最佳估算1RM",
+  "totalVolume": "总训练量",
+  "totalSets": "总组数",
+  "e1rmTrend": "估算 1RM 趋势",
+  "recentSets": "最近组数",
+  "tableHeaderDate": "日期",
+
+  "chooseExercise": "选择动作",
+  "searchExercisesHint": "搜索动作…",
+  "filterAll": "全部",
+  "noExercisesFound": "未找到动作",
+  "loadingExercises": "正在加载动作…",
+  "customExercise": "自定义",
+
+  "newExerciseTitle": "新建动作",
+  "exerciseNameLabel": "动作名称",
+  "categoryLabel": "分类",
+  "muscleGroupLabel": "肌群",
+  "equipmentLabel": "器械",
+  "exerciseNameRequired": "请输入动作名称",
+
+  "cardioTitle": "有氧",
+  "exerciseField": "运动项目",
+  "distanceMetresLabel": "距离（米）",
+  "inclineLabel": "坡度（%）",
+  "avgHeartRateLabel": "平均心率（次/分）",
+  "lastSession": "上次训练",
+  "gpsDistanceTracking": "GPS 距离追踪",
+  "gpsAcquiring": "正在获取信号...",
+  "gpsMetresTracked": "已追踪 {metres} 米",
+  "@gpsMetresTracked": {
+    "placeholders": { "metres": { "type": "String" } }
+  },
+  "gpsSubtitle": "通过 GPS 追踪户外跑步距离",
+  "saveSession": "保存会话",
+  "cardioSessionSaved": "有氧训练已保存",
+  "heartRateMonitorCard": "心率监测器",
+  "heartRateMonitorSubtitle": "连接 BLE 心率带或手表",
+  "connect": "连接",
+  "connectingTo": "正在连接到 {device}...",
+  "@connectingTo": {
+    "placeholders": { "device": { "type": "String" } }
+  },
+  "reconnectingTo": "正在重新连接到 {device}...",
+  "@reconnectingTo": {
+    "placeholders": { "device": { "type": "String" } }
+  },
+  "paceLabel": "配速：{pace}",
+  "@paceLabel": {
+    "placeholders": { "pace": { "type": "String" } }
+  },
+
+  "hrSetupGuideTitle": "心率设置指南",
+  "appleWatchTitle": "Apple Watch",
+  "samsungWatchTitle": "Samsung Galaxy Watch",
+  "chestStrapsTitle": "胸带与臂带",
+  "appleWatchStep1": "在 Apple Watch 上，打开“设置”→“锻炼”→“心率”。",
+  "appleWatchStep2": "启用“广播心率”。",
+  "appleWatchStep3": "在 Apple Watch 上开始任意一次锻炼。",
+  "appleWatchStep4": "在 RepFoundry 中点击“连接”，然后选择你的 Apple Watch。",
+  "samsungWatchStep1": "在手表上打开 Samsung Health。",
+  "samsungWatchStep2": "前往“设置”→“心率广播”。",
+  "samsungWatchStep3": "启用 BLE 广播。",
+  "samsungWatchStep4": "在 RepFoundry 中点击“连接”，然后选择你的 Galaxy Watch。",
+  "chestStrapStep1": "任何 BLE 心率设备（Polar、Garmin、Wahoo 等）都可自动使用。",
+  "chestStrapStep2": "只需佩戴胸带或臂带，然后点击“连接”。",
+  "chestStrapStep3": "你的设备会显示在扫描列表中。",
+
+  "hrDevicePickerTitle": "心率监测设备",
+  "scanning": "正在扫描设备...",
+  "noDevicesFound": "未找到心率监测设备。请确认设备正在广播——对于 Apple Watch，请在启用“广播心率”后开始一次锻炼。",
+  "scanAgain": "重新扫描",
+  "setupHelp": "设置帮助",
+
+  "templatesTitle": "模板",
+  "noTemplatesYet": "还没有模板",
+  "noTemplatesYetSubtitle": "创建模板以快速开始训练。",
+  "failedToLoadTemplates": "加载模板失败：{error}",
+  "@failedToLoadTemplates": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "newTemplate": "新建模板",
+  "newTemplateTitle": "新建模板",
+  "templateNameLabel": "模板名称",
+  "deleteTemplateTitle": "删除模板？",
+  "deleteTemplateContent": "你确定要删除“{name}”吗？",
+  "@deleteTemplateContent": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "exerciseCount": "{count} 个动作",
+  "@exerciseCount": {
+    "placeholders": { "count": { "type": "int" } }
+  }
+}

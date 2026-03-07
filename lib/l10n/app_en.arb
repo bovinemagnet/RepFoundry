@@ -102,6 +102,19 @@
   "zoneColourBands": "Zone Colour Bands",
   "zoneColourBandsSubtitle": "Show coloured zone bands on HR chart",
 
+  "sectionMaxHrAlert": "Max Heart Rate Alert",
+  "maxHrAlertVibration": "Vibration on Max HR",
+  "maxHrAlertVibrationSubtitle": "Vibrate when heart rate reaches the recommended maximum",
+  "maxHrAlertSound": "Sound on Max HR",
+  "maxHrAlertSoundSubtitle": "Play a warning sound when heart rate reaches the recommended maximum",
+  "maxHrAlertCooldown": "Alert Cooldown",
+  "maxHrAlertCooldownSubtitle": "Minimum seconds between repeated alerts",
+  "maxHrAlertCooldownValue": "{seconds}s",
+  "@maxHrAlertCooldownValue": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "maxHrReached": "Heart rate at or above recommended maximum",
+
   "disclaimerLabel": "Disclaimer",
 
   "themeLabel": "Theme",
