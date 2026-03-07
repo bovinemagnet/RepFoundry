@@ -24,6 +24,10 @@ class ScaffoldWithNavBar extends StatelessWidget {
             label: 'History',
           ),
           NavigationDestination(
+            icon: Icon(Icons.directions_run),
+            label: 'Cardio',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),
@@ -36,7 +40,8 @@ class ScaffoldWithNavBar extends StatelessWidget {
     final location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/workout')) return 0;
     if (location.startsWith('/history')) return 1;
-    return 2;
+    if (location.startsWith('/cardio')) return 2;
+    return 3;
   }
 
   void _onDestinationSelected(int index, BuildContext context) {
@@ -46,6 +51,8 @@ class ScaffoldWithNavBar extends StatelessWidget {
       case 1:
         context.go('/history');
       case 2:
+        context.go('/cardio');
+      case 3:
         context.go('/settings');
     }
   }

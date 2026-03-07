@@ -59,7 +59,8 @@ void main() {
       addTearDown(container.dispose);
 
       final notifier = container.read(restTimerSettingsProvider.notifier);
-      expect(container.read(restTimerSettingsProvider).vibrationEnabled, isTrue);
+      expect(
+          container.read(restTimerSettingsProvider).vibrationEnabled, isTrue);
 
       await notifier.toggleVibration();
       expect(

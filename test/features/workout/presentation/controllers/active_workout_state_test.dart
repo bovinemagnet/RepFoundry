@@ -67,8 +67,8 @@ void main() {
     });
 
     test('nextGhostSet returns null for exercise with no ghosts', () {
-      final state = ActiveWorkoutState(
-        ghostSetsByExercise: const {},
+      const state = ActiveWorkoutState(
+        ghostSetsByExercise: {},
         setsByExercise: {'e1': []},
       );
 
@@ -108,8 +108,8 @@ void main() {
     });
 
     test('remainingGhosts returns empty for exercise with no ghosts', () {
-      final state = ActiveWorkoutState(
-        ghostSetsByExercise: const {},
+      const state = ActiveWorkoutState(
+        ghostSetsByExercise: {},
         setsByExercise: {'e1': []},
       );
 

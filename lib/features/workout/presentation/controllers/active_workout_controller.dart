@@ -72,9 +72,8 @@ class ActiveWorkoutState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       latestPR: clearPR ? null : (latestPR ?? this.latestPR),
-      latestPRExerciseName: clearPR
-          ? null
-          : (latestPRExerciseName ?? this.latestPRExerciseName),
+      latestPRExerciseName:
+          clearPR ? null : (latestPRExerciseName ?? this.latestPRExerciseName),
     );
   }
 }

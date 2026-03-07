@@ -1,0 +1,150 @@
+import 'package:flutter/material.dart';
+
+import '../../data/heart_rate_service.dart';
+
+class HrDevicePickerDialog extends StatefulWidget {
+  final HeartRateService heartRateService;
+
+  const HrDevicePickerDialog({
+    super.key,
+    required this.heartRateService,
+  });
+
+  @override
+  State<HrDevicePickerDialog> createState() => _HrDevicePickerDialogState();
+}
+
+class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
+  List<DiscoveredHrDevice>? _devices;
+  bool _scanning = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _startScan();
+  }
+
+  Future<void> _startScan() async {
+    setState(() {
+      _scanning = true;
+      _error = null;
+      _devices = null;
+    });
+
+    try {
+      final devices = await widget.heartRateService
+          .scanForDevices(timeout: const Duration(seconds: 10));
+      if (!mounted) return;
+      setState(() {
+        _devices = devices;
+        _scanning = false;
+      });
+    } on Exception catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _scanning = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.4,
+      minChildSize: 0.25,
+      maxChildSize: 0.6,
+      expand: false,
+      builder: (context, scrollController) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 32,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Text(
+                'Heart Rate Monitors',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              if (_scanning) ...[
+                const Center(child: CircularProgressIndicator()),
+                const SizedBox(height: 8),
+                Center(
+                  child: Text(
+                    'Scanning for devices...',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ] else if (_error != null) ...[
+                Text(
+                  _error!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: _startScan,
+                  child: const Text('Retry'),
+                ),
+              ] else if (_devices != null && _devices!.isEmpty) ...[
+                const Center(
+                  child: Text('No heart rate monitors found'),
+                ),
+                const SizedBox(height: 8),
+                Center(
+                  child: TextButton(
+                    onPressed: _startScan,
+                    child: const Text('Scan Again'),
+                  ),
+                ),
+              ] else ...[
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: _devices!.length,
+                    itemBuilder: (context, index) {
+                      final device = _devices![index];
+                      return ListTile(
+                        leading: const Icon(Icons.bluetooth),
+                        title: Text(device.name),
+                        subtitle: Text(device.id),
+                        onTap: () => Navigator.of(context).pop(device),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+Future<DiscoveredHrDevice?> showHrDevicePicker({
+  required BuildContext context,
+  required HeartRateService heartRateService,
+}) {
+  return showModalBottomSheet<DiscoveredHrDevice>(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => HrDevicePickerDialog(
+      heartRateService: heartRateService,
+    ),
+  );
+}

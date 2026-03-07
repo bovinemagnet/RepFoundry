@@ -69,7 +69,7 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
-          _SectionHeader(title: 'Appearance'),
+          const _SectionHeader(title: 'Appearance'),
           ListTile(
             leading: const Icon(Icons.palette_outlined),
             title: const Text('Theme'),
@@ -97,7 +97,7 @@ class SettingsScreen extends ConsumerWidget {
               },
             ),
           ),
-          _SectionHeader(title: 'Units'),
+          const _SectionHeader(title: 'Units'),
           ListTile(
             leading: const Icon(Icons.scale_outlined),
             title: const Text('Weight Unit'),
@@ -137,7 +137,7 @@ class SettingsScreen extends ConsumerWidget {
               ref.read(restTimerSettingsProvider.notifier).toggleSound();
             },
           ),
-          _SectionHeader(title: 'Data'),
+          const _SectionHeader(title: 'Data'),
           ListTile(
             leading: const Icon(Icons.delete_forever_outlined),
             title: const Text('Clear All Data'),
@@ -148,11 +148,11 @@ class SettingsScreen extends ConsumerWidget {
             iconColor: Theme.of(context).colorScheme.error,
             onTap: () => _confirmClearData(context),
           ),
-          _SectionHeader(title: 'About'),
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: const Text('RepFoundry'),
-            subtitle: const Text('Version 1.0.0'),
+          const _SectionHeader(title: 'About'),
+          const ListTile(
+            leading: Icon(Icons.info_outline),
+            title: Text('RepFoundry'),
+            subtitle: Text('Version 1.0.0'),
           ),
         ],
       ),

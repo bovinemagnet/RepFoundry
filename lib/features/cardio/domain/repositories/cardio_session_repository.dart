@@ -10,5 +10,7 @@ abstract class CardioSessionRepository {
   });
   Future<void> deleteSession(String id);
 
+  Future<CardioSession?> getLastSessionForExercise(String exerciseId);
+
   Stream<List<CardioSession>> watchSessionsForWorkout(String workoutId);
 }

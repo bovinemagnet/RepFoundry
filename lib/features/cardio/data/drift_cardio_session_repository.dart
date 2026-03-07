@@ -53,6 +53,22 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
   }
 
   @override
+  Future<CardioSession?> getLastSessionForExercise(String exerciseId) async {
+    final q = _db.select(_db.cardioSessions).join([
+      innerJoin(
+        _db.workouts,
+        _db.workouts.id.equalsExp(_db.cardioSessions.workoutId),
+      ),
+    ])
+      ..where(_db.cardioSessions.exerciseId.equals(exerciseId))
+      ..orderBy([OrderingTerm.desc(_db.workouts.startedAt)])
+      ..limit(1);
+    final rows = await q.get();
+    if (rows.isEmpty) return null;
+    return _toDomain(rows.first.readTable(_db.cardioSessions));
+  }
+
+  @override
   Future<void> deleteSession(String id) async {
     await (_db.delete(_db.cardioSessions)..where((t) => t.id.equals(id))).go();
   }

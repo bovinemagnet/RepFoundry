@@ -47,6 +47,10 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>RepFoundry uses your location to track distance during outdoor cardio sessions.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>RepFoundry uses Bluetooth to connect to heart rate monitors during cardio sessions.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

@@ -59,8 +59,7 @@ void main() {
               builder: (context) => Scaffold(
                 body: ElevatedButton(
                   onPressed: () async {
-                    final result =
-                        await Navigator.of(context).push<Exercise>(
+                    final result = await Navigator.of(context).push<Exercise>(
                       MaterialPageRoute(
                         builder: (_) => const CreateExerciseScreen(),
                       ),
@@ -111,8 +110,7 @@ void main() {
               builder: (context) => Scaffold(
                 body: ElevatedButton(
                   onPressed: () async {
-                    final result =
-                        await Navigator.of(context).push<Exercise>(
+                    final result = await Navigator.of(context).push<Exercise>(
                       MaterialPageRoute(
                         builder: (_) => const CreateExerciseScreen(),
                       ),

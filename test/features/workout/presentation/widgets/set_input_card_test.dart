@@ -10,7 +10,8 @@ void main() {
         home: Scaffold(
           body: SetInputCard(
             key: key,
-            onLogSet: ({required double weight, required int reps, double? rpe}) {},
+            onLogSet: (
+                {required double weight, required int reps, double? rpe}) {},
             suggestion: suggestion,
           ),
         ),

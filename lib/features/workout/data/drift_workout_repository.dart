@@ -164,8 +164,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
     // Fetch all sets for that exercise in that workout, ordered by setOrder.
     final q = _db.select(_db.workoutSets)
       ..where(
-        (t) =>
-            t.workoutId.equals(workoutId) & t.exerciseId.equals(exerciseId),
+        (t) => t.workoutId.equals(workoutId) & t.exerciseId.equals(exerciseId),
       )
       ..orderBy([(t) => OrderingTerm.asc(t.setOrder)]);
     final rows = await q.get();

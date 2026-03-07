@@ -90,6 +90,55 @@ void main() {
       });
     });
 
+    group('getLastSessionForExercise', () {
+      test('returns null when no sessions exist', () async {
+        final result = await repo.getLastSessionForExercise('16');
+        expect(result, isNull);
+      });
+
+      test('returns the most recent session by workout start time', () async {
+        // Create two workouts at different times.
+        final olderWorkout = Workout(
+          id: 'older',
+          startedAt: DateTime.utc(2026, 1, 1),
+          completedAt: DateTime.utc(2026, 1, 1, 0, 30),
+        );
+        final newerWorkout = Workout(
+          id: 'newer',
+          startedAt: DateTime.utc(2026, 3, 1),
+          completedAt: DateTime.utc(2026, 3, 1, 0, 30),
+        );
+        await workoutRepo.createWorkout(olderWorkout);
+        await workoutRepo.createWorkout(newerWorkout);
+
+        await repo.createSession(
+          newSession(
+              workoutId: 'older', exerciseId: '16', durationSeconds: 600),
+        );
+        final newerSession = newSession(
+          workoutId: 'newer',
+          exerciseId: '16',
+          durationSeconds: 900,
+        );
+        await repo.createSession(newerSession);
+
+        final result = await repo.getLastSessionForExercise('16');
+        expect(result, isNotNull);
+        expect(result!.id, newerSession.id);
+        expect(result.durationSeconds, 900);
+      });
+
+      test('only returns sessions for the given exercise', () async {
+        final workout = await createParentWorkout();
+        await repo.createSession(
+          newSession(workoutId: workout.id, exerciseId: '17'),
+        );
+
+        final result = await repo.getLastSessionForExercise('16');
+        expect(result, isNull);
+      });
+    });
+
     group('deleteSession', () {
       test('hard-deletes a session', () async {
         final workout = await createParentWorkout();

@@ -8,8 +8,7 @@ import '../../../settings/presentation/providers/rest_timer_settings_provider.da
 
 /// Provider that holds the current rest timer state in seconds remaining.
 /// A value of null means the timer is not running.
-final restTimerProvider =
-    StateNotifierProvider<RestTimerNotifier, int?>((ref) {
+final restTimerProvider = StateNotifierProvider<RestTimerNotifier, int?>((ref) {
   return RestTimerNotifier();
 });
 

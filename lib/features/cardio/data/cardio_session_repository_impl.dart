@@ -37,6 +37,14 @@ class InMemoryCardioSessionRepository implements CardioSessionRepository {
   }
 
   @override
+  Future<CardioSession?> getLastSessionForExercise(String exerciseId) async {
+    final matching =
+        _sessions.where((s) => s.exerciseId == exerciseId).toList();
+    if (matching.isEmpty) return null;
+    return matching.last;
+  }
+
+  @override
   Future<void> deleteSession(String id) async {
     _sessions.removeWhere((s) => s.id == id);
     _controller.add(null);

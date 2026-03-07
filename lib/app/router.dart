@@ -34,6 +34,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
           GoRoute(
+            path: '/cardio',
+            builder: (context, state) => const CardioTrackingScreen(),
+          ),
+          GoRoute(
             path: '/settings',
             builder: (context, state) => const SettingsScreen(),
           ),
@@ -46,10 +50,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/exercises',
         builder: (context, state) => const ExercisePickerScreen(),
-      ),
-      GoRoute(
-        path: '/cardio',
-        builder: (context, state) => const CardioTrackingScreen(),
       ),
       GoRoute(
         path: '/history/exercise/:id',
