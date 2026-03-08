@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../settings/presentation/providers/show_exercise_images_provider.dart';
 import '../../domain/models/exercise.dart';
 import '../helpers/exercise_labels.dart';
 
-class ExerciseListTile extends StatelessWidget {
+class ExerciseListTile extends ConsumerWidget {
   const ExerciseListTile({
     super.key,
     required this.exercise,
@@ -15,15 +17,22 @@ class ExerciseListTile extends StatelessWidget {
   final Widget? trailing;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final showImages = ref.watch(showExerciseImagesProvider);
+    final hasImage = showImages && exercise.imageAsset != null;
+
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        child: Icon(
-          _iconForCategory(exercise.category),
-          color: Theme.of(context).colorScheme.onPrimaryContainer,
-          size: 20,
-        ),
+        backgroundImage:
+            hasImage ? AssetImage(exercise.imageAsset!) : null,
+        child: hasImage
+            ? null
+            : Icon(
+                _iconForCategory(exercise.category),
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                size: 20,
+              ),
       ),
       title: Text(exercise.name),
       subtitle: Text(

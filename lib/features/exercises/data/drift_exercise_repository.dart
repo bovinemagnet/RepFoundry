@@ -62,6 +62,7 @@ class DriftExerciseRepository implements ExerciseRepository {
             muscleGroup: exercise.muscleGroup.name,
             equipmentType: exercise.equipmentType.name,
             isCustom: Value(exercise.isCustom),
+            imageAsset: Value(exercise.imageAsset),
           ),
         );
     return exercise;
@@ -77,6 +78,7 @@ class DriftExerciseRepository implements ExerciseRepository {
         muscleGroup: Value(exercise.muscleGroup.name),
         equipmentType: Value(exercise.equipmentType.name),
         isCustom: Value(exercise.isCustom),
+        imageAsset: Value(exercise.imageAsset),
         deletedAt: Value(nullableDateTimeToEpochMs(exercise.deletedAt)),
       ),
     );
@@ -106,6 +108,7 @@ class DriftExerciseRepository implements ExerciseRepository {
       muscleGroup: enumFromString(MuscleGroup.values, row.muscleGroup),
       equipmentType: enumFromString(EquipmentType.values, row.equipmentType),
       isCustom: row.isCustom,
+      imageAsset: row.imageAsset,
       deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );
   }

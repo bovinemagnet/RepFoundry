@@ -117,6 +117,9 @@
 
   "disclaimerLabel": "免责声明",
 
+  "settingsShowExerciseImages": "显示动作图片",
+  "settingsShowExerciseImagesSubtitle": "在列表中显示动作插图",
+
   "themeLabel": "主题",
   "themeLight": "浅色",
   "themeDark": "深色",

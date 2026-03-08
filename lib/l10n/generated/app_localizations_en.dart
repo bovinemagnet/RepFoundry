@@ -252,6 +252,13 @@ class SEn extends S {
   String get disclaimerLabel => 'Disclaimer';
 
   @override
+  String get settingsShowExerciseImages => 'Show Exercise Images';
+
+  @override
+  String get settingsShowExerciseImagesSubtitle =>
+      'Display exercise illustrations in lists';
+
+  @override
   String get themeLabel => 'Theme';
 
   @override

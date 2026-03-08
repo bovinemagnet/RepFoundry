@@ -10,6 +10,7 @@ import '../../../heart_rate/presentation/providers/zone_bands_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../../heart_rate/presentation/widgets/health_profile_onboarding.dart';
 import '../providers/rest_timer_settings_provider.dart';
+import '../providers/show_exercise_images_provider.dart';
 import '../providers/user_age_provider.dart';
 
 final _themeModeProvider = StateNotifierProvider<_ThemeModeNotifier, ThemeMode>(
@@ -271,6 +272,14 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: Text(s.warningGeneralDisclaimer),
           ),
           _SectionHeader(title: s.sectionAppearance),
+          SwitchListTile(
+            secondary: const Icon(Icons.image_outlined),
+            title: Text(s.settingsShowExerciseImages),
+            subtitle: Text(s.settingsShowExerciseImagesSubtitle),
+            value: ref.watch(showExerciseImagesProvider),
+            onChanged: (_) =>
+                ref.read(showExerciseImagesProvider.notifier).toggle(),
+          ),
           ListTile(
             leading: const Icon(Icons.palette_outlined),
             title: Text(s.themeLabel),

@@ -117,6 +117,9 @@
 
   "disclaimerLabel": "Disclaimer",
 
+  "settingsShowExerciseImages": "Show Exercise Images",
+  "settingsShowExerciseImagesSubtitle": "Display exercise illustrations in lists",
+
   "themeLabel": "Theme",
   "themeLight": "Light",
   "themeDark": "Dark",

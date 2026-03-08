@@ -42,6 +42,7 @@ class Exercise {
   final MuscleGroup muscleGroup;
   final EquipmentType equipmentType;
   final bool isCustom;
+  final String? imageAsset;
   final DateTime? deletedAt;
 
   const Exercise({
@@ -51,6 +52,7 @@ class Exercise {
     required this.muscleGroup,
     required this.equipmentType,
     this.isCustom = false,
+    this.imageAsset,
     this.deletedAt,
   });
 
@@ -63,6 +65,7 @@ class Exercise {
     MuscleGroup? muscleGroup,
     EquipmentType? equipmentType,
     bool? isCustom,
+    String? imageAsset,
     DateTime? deletedAt,
   }) {
     return Exercise(
@@ -72,6 +75,7 @@ class Exercise {
       muscleGroup: muscleGroup ?? this.muscleGroup,
       equipmentType: equipmentType ?? this.equipmentType,
       isCustom: isCustom ?? this.isCustom,
+      imageAsset: imageAsset ?? this.imageAsset,
       deletedAt: deletedAt ?? this.deletedAt,
     );
   }
@@ -82,6 +86,7 @@ class Exercise {
     required MuscleGroup muscleGroup,
     required EquipmentType equipmentType,
     bool isCustom = false,
+    String? imageAsset,
   }) {
     return Exercise(
       id: const Uuid().v4(),
@@ -90,6 +95,7 @@ class Exercise {
       muscleGroup: muscleGroup,
       equipmentType: equipmentType,
       isCustom: isCustom,
+      imageAsset: imageAsset,
     );
   }
 
