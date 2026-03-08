@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../features/body_metrics/presentation/screens/body_metrics_screen.dart';
 import '../features/workout/presentation/screens/active_workout_screen.dart';
 import '../features/history/presentation/screens/history_list_screen.dart';
 import '../features/history/presentation/screens/workout_detail_screen.dart';
@@ -75,6 +76,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => ExerciseProgressScreen(
           exerciseId: state.pathParameters['id']!,
         ),
+      ),
+      GoRoute(
+        path: '/body-metrics',
+        builder: (context, state) => const BodyMetricsScreen(),
       ),
     ],
   );

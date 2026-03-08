@@ -149,6 +149,8 @@ class ExportDataUseCase {
         'timestamp': s.timestamp.toIso8601String(),
         'volume': s.volume,
         'estimatedOneRepMax': s.estimatedOneRepMax,
+        'isWarmUp': s.isWarmUp,
+        'groupId': s.groupId,
       };
 
   Map<String, dynamic> _cardioToMap(CardioSession c) => {

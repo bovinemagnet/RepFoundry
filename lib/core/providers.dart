@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'database/database_provider.dart';
+import '../features/body_metrics/data/drift_body_metric_repository.dart';
+import '../features/body_metrics/domain/models/body_metric.dart';
+import '../features/body_metrics/domain/repositories/body_metric_repository.dart';
 import '../features/exercises/data/drift_exercise_repository.dart';
 import '../features/exercises/domain/repositories/exercise_repository.dart';
 import '../features/workout/data/drift_workout_repository.dart';
@@ -8,6 +11,7 @@ import '../features/workout/application/log_set_use_case.dart';
 import '../features/workout/application/start_workout_use_case.dart';
 import '../features/history/application/calculate_progress_use_case.dart';
 import '../features/settings/application/export_data_use_case.dart';
+import '../features/settings/application/import_data_use_case.dart';
 import '../features/cardio/data/drift_cardio_session_repository.dart';
 import '../features/cardio/data/flutter_blue_heart_rate_service.dart';
 import '../features/cardio/data/heart_rate_service.dart';
@@ -22,6 +26,15 @@ import '../features/templates/data/drift_workout_template_repository.dart';
 import '../features/templates/domain/repositories/workout_template_repository.dart';
 
 // Repositories
+final bodyMetricRepositoryProvider = Provider<BodyMetricRepository>((ref) {
+  return DriftBodyMetricRepository(ref.watch(databaseProvider));
+});
+
+final bodyMetricsStreamProvider =
+    StreamProvider.autoDispose<List<BodyMetric>>((ref) {
+  return ref.watch(bodyMetricRepositoryProvider).watchAll();
+});
+
 final exerciseRepositoryProvider = Provider<ExerciseRepository>((ref) {
   return DriftExerciseRepository(ref.watch(databaseProvider));
 });
@@ -92,6 +105,14 @@ final exportDataUseCaseProvider = Provider<ExportDataUseCase>((ref) {
     workoutRepository: ref.watch(workoutRepositoryProvider),
     exerciseRepository: ref.watch(exerciseRepositoryProvider),
     cardioSessionRepository: ref.watch(cardioSessionRepositoryProvider),
+    personalRecordRepository: ref.watch(personalRecordRepositoryProvider),
+  );
+});
+
+final importDataUseCaseProvider = Provider<ImportDataUseCase>((ref) {
+  return ImportDataUseCase(
+    workoutRepository: ref.watch(workoutRepositoryProvider),
+    exerciseRepository: ref.watch(exerciseRepositoryProvider),
     personalRecordRepository: ref.watch(personalRecordRepositoryProvider),
   );
 });

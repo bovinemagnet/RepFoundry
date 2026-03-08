@@ -45,6 +45,9 @@ class _FakeWorkoutRepository implements WorkoutRepository {
   @override
   Future<WorkoutSet?> getLastSetForExercise(String exerciseId) async => null;
   @override
+  @override
+  Future<WorkoutSet> updateSet(WorkoutSet set) async => set;
+  @override
   Future<void> deleteSet(String setId) async {}
   @override
   Future<List<WorkoutSet>> getSetsFromLastSession(String exerciseId) async =>

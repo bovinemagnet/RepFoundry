@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
+import 'package:uuid/uuid.dart';
 import '../../domain/models/workout_template.dart';
 import '../../../../core/providers.dart';
 
@@ -61,6 +62,31 @@ class TemplateListScreen extends ConsumerWidget {
                     onDelete: () => ref
                         .read(workoutTemplateRepositoryProvider)
                         .deleteTemplate(template.id),
+                    onDuplicate: () async {
+                      final s = S.of(context)!;
+                      final newId = const Uuid().v4();
+                      final copiedExercises = template.exercises
+                          .map((e) => TemplateExercise(
+                                id: const Uuid().v4(),
+                                templateId: newId,
+                                exerciseId: e.exerciseId,
+                                exerciseName: e.exerciseName,
+                                targetSets: e.targetSets,
+                                targetReps: e.targetReps,
+                                orderIndex: e.orderIndex,
+                              ))
+                          .toList();
+                      final copy = WorkoutTemplate(
+                        id: newId,
+                        name: '${template.name} (${s.copyLabel})',
+                        createdAt: DateTime.now().toUtc(),
+                        updatedAt: DateTime.now().toUtc(),
+                        exercises: copiedExercises,
+                      );
+                      await ref
+                          .read(workoutTemplateRepositoryProvider)
+                          .createTemplate(copy);
+                    },
                   );
                 },
               ),
@@ -121,10 +147,12 @@ class _TemplateTile extends StatelessWidget {
   const _TemplateTile({
     required this.template,
     required this.onDelete,
+    required this.onDuplicate,
   });
 
   final WorkoutTemplate template;
   final VoidCallback onDelete;
+  final VoidCallback onDuplicate;
 
   @override
   Widget build(BuildContext context) {
@@ -151,9 +179,19 @@ class _TemplateTile extends StatelessWidget {
           onSelected: (value) {
             if (value == 'delete') {
               _confirmDelete(context);
+            } else if (value == 'duplicate') {
+              onDuplicate();
             }
           },
           itemBuilder: (_) => [
+            PopupMenuItem(
+              value: 'duplicate',
+              child: ListTile(
+                leading: const Icon(Icons.copy_outlined),
+                title: Text(s.duplicateTemplate),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
             PopupMenuItem(
               value: 'delete',
               child: ListTile(

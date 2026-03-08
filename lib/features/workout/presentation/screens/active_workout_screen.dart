@@ -5,6 +5,7 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../controllers/active_workout_controller.dart';
 import '../models/ghost_set.dart';
 import '../widgets/pr_celebration_overlay.dart';
+import '../widgets/edit_set_dialog.dart';
 import '../widgets/set_input_card.dart';
 import '../widgets/rest_timer_widget.dart';
 import '../../domain/models/workout_set.dart';
@@ -13,6 +14,11 @@ import '../../../templates/domain/models/workout_template.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/widgets/loading_widget.dart';
+
+final _templatePickerProvider =
+    StreamProvider.autoDispose<List<WorkoutTemplate>>((ref) {
+  return ref.watch(workoutTemplateRepositoryProvider).watchAllTemplates();
+});
 
 class ActiveWorkoutScreen extends ConsumerWidget {
   const ActiveWorkoutScreen({super.key});
@@ -127,13 +133,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => Consumer(
         builder: (ctx, ref, _) {
-          final templatesAsync = ref.watch(
-            StreamProvider.autoDispose<List<WorkoutTemplate>>((ref) {
-              return ref
-                  .watch(workoutTemplateRepositoryProvider)
-                  .watchAllTemplates();
-            }),
-          );
+          final templatesAsync = ref.watch(_templatePickerProvider);
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -242,15 +242,18 @@ class ActiveWorkoutScreen extends ConsumerWidget {
               required double weight,
               required int reps,
               double? rpe,
+              bool isWarmUp = false,
             }) {
               controller.logSet(
                 exerciseId: exercise.id,
                 weight: weight,
                 reps: reps,
                 rpe: rpe,
+                isWarmUp: isWarmUp,
               );
             },
             onDeleteSet: (setId) => controller.deleteSet(setId, exercise.id),
+            onEditSet: (updatedSet) => controller.updateSet(updatedSet),
           ),
       ],
     );
@@ -320,6 +323,7 @@ class _ExerciseSection extends StatelessWidget {
     required this.suggestion,
     required this.onLogSet,
     required this.onDeleteSet,
+    required this.onEditSet,
   });
 
   final Exercise exercise;
@@ -330,8 +334,10 @@ class _ExerciseSection extends StatelessWidget {
     required double weight,
     required int reps,
     double? rpe,
+    bool isWarmUp,
   }) onLogSet;
   final void Function(String setId) onDeleteSet;
+  final void Function(WorkoutSet updatedSet) onEditSet;
 
   @override
   Widget build(BuildContext context) {
@@ -372,6 +378,7 @@ class _ExerciseSection extends StatelessWidget {
                   index: i,
                   set: sets[i],
                   onDelete: () => onDeleteSet(sets[i].id),
+                  onEdit: onEditSet,
                 ),
               for (int i = 0; i < ghostSets.length; i++)
                 _GhostSetRow(
@@ -430,33 +437,51 @@ class _SetRow extends StatelessWidget {
     required this.index,
     required this.set,
     required this.onDelete,
+    required this.onEdit,
   });
 
   final int index;
   final WorkoutSet set;
   final VoidCallback onDelete;
+  final void Function(WorkoutSet updatedSet) onEdit;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return InkWell(
+      onTap: () async {
+        final updated = await showEditSetDialog(context, set);
+        if (updated != null) onEdit(updated);
+      },
+      child: Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           SizedBox(
             width: 32,
-            child: Text(
-              '${index + 1}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+            child: set.isWarmUp
+                ? Text(
+                    'W',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.orange,
+                          fontWeight: FontWeight.bold,
+                        ),
+                    textAlign: TextAlign.center,
+                  )
+                : Text(
+                    '${index + 1}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                    textAlign: TextAlign.center,
                   ),
-              textAlign: TextAlign.center,
-            ),
           ),
           Expanded(
             child: Text(
               '${set.weight} kg',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontStyle: set.isWarmUp ? FontStyle.italic : null,
+                  ),
             ),
           ),
           Expanded(
@@ -486,6 +511,7 @@ class _SetRow extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

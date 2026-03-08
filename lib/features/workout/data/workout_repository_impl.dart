@@ -129,6 +129,16 @@ class InMemoryWorkoutRepository implements WorkoutRepository {
   }
 
   @override
+  Future<WorkoutSet> updateSet(WorkoutSet set) async {
+    final index = _sets.indexWhere((s) => s.id == set.id);
+    if (index != -1) {
+      _sets[index] = set;
+      _notifySetListeners(set.workoutId);
+    }
+    return set;
+  }
+
+  @override
   Future<void> deleteSet(String setId) async {
     final index = _sets.indexWhere((s) => s.id == setId);
     if (index != -1) {

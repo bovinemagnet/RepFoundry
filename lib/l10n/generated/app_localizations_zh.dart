@@ -962,6 +962,125 @@ class SZh extends S {
   String exportFailed(String error) {
     return 'Export failed: $error';
   }
+
+  @override
+  String get editSet => 'Edit Set';
+
+  @override
+  String get editExerciseTitle => 'Edit Exercise';
+
+  @override
+  String get calendarHeatmapTitle => 'Workout Calendar';
+
+  @override
+  String get calendarHeatmapLess => 'Less';
+
+  @override
+  String get calendarHeatmapMore => 'More';
+
+  @override
+  String currentStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count day streak',
+      one: '1 day streak',
+      zero: 'No current streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String longestStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'days',
+      one: 'day',
+    );
+    return 'Longest: $count $_temp0';
+  }
+
+  @override
+  String get durationTrendTitle => 'Workout Duration (mins)';
+
+  @override
+  String get warmUpLabel => 'Warm-up';
+
+  @override
+  String get bodyMetricsTitle => 'Body Metrics';
+
+  @override
+  String get bodyMetricsSubtitle => 'Track body weight and composition';
+
+  @override
+  String get noBodyMetricsYet => 'No body metrics yet';
+
+  @override
+  String get noBodyMetricsYetSubtitle =>
+      'Tap + to record your first measurement.';
+
+  @override
+  String get addBodyMetric => 'Add Measurement';
+
+  @override
+  String get bodyWeightLabel => 'Body Weight';
+
+  @override
+  String get bodyFatPercentLabel => 'Body Fat %';
+
+  @override
+  String get bodyFatLabel => 'body fat';
+
+  @override
+  String get notesLabel => 'Notes';
+
+  @override
+  String get bodyWeightTrendTitle => 'Body Weight Trend';
+
+  @override
+  String get latestWeight => 'Latest Weight';
+
+  @override
+  String get bodyMetricsHistory => 'History';
+
+  @override
+  String get importFromJson => 'Import from JSON';
+
+  @override
+  String get importFromJsonSubtitle => 'Restore data from a previous export';
+
+  @override
+  String get importDataTitle => 'Import Data';
+
+  @override
+  String get importDataConfirmContent =>
+      'This will add data from a JSON export to your existing data. Duplicates will be skipped.';
+
+  @override
+  String get importDataButton => 'Import';
+
+  @override
+  String get importPasteJsonTitle => 'Paste JSON Data';
+
+  @override
+  String get importPasteJsonHint => 'Paste your exported JSON here…';
+
+  @override
+  String importComplete(int workouts, int sets) {
+    return 'Import complete: $workouts workouts, $sets sets';
+  }
+
+  @override
+  String importFailed(String error) {
+    return 'Import failed: $error';
+  }
+
+  @override
+  String get duplicateTemplate => 'Duplicate';
+
+  @override
+  String get copyLabel => 'Copy';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).

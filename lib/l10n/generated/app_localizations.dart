@@ -1867,6 +1867,198 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Export failed: {error}'**
   String exportFailed(String error);
+
+  /// No description provided for @editSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Set'**
+  String get editSet;
+
+  /// No description provided for @editExerciseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Exercise'**
+  String get editExerciseTitle;
+
+  /// No description provided for @calendarHeatmapTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout Calendar'**
+  String get calendarHeatmapTitle;
+
+  /// No description provided for @calendarHeatmapLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Less'**
+  String get calendarHeatmapLess;
+
+  /// No description provided for @calendarHeatmapMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get calendarHeatmapMore;
+
+  /// No description provided for @currentStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No current streak} =1{1 day streak} other{{count} day streak}}'**
+  String currentStreak(int count);
+
+  /// No description provided for @longestStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest: {count} {count, plural, =1{day} other{days}}'**
+  String longestStreak(int count);
+
+  /// No description provided for @durationTrendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout Duration (mins)'**
+  String get durationTrendTitle;
+
+  /// No description provided for @warmUpLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm-up'**
+  String get warmUpLabel;
+
+  /// No description provided for @bodyMetricsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Body Metrics'**
+  String get bodyMetricsTitle;
+
+  /// No description provided for @bodyMetricsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track body weight and composition'**
+  String get bodyMetricsSubtitle;
+
+  /// No description provided for @noBodyMetricsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No body metrics yet'**
+  String get noBodyMetricsYet;
+
+  /// No description provided for @noBodyMetricsYetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to record your first measurement.'**
+  String get noBodyMetricsYetSubtitle;
+
+  /// No description provided for @addBodyMetric.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Measurement'**
+  String get addBodyMetric;
+
+  /// No description provided for @bodyWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Body Weight'**
+  String get bodyWeightLabel;
+
+  /// No description provided for @bodyFatPercentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Body Fat %'**
+  String get bodyFatPercentLabel;
+
+  /// No description provided for @bodyFatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'body fat'**
+  String get bodyFatLabel;
+
+  /// No description provided for @notesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notesLabel;
+
+  /// No description provided for @bodyWeightTrendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Body Weight Trend'**
+  String get bodyWeightTrendTitle;
+
+  /// No description provided for @latestWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Weight'**
+  String get latestWeight;
+
+  /// No description provided for @bodyMetricsHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get bodyMetricsHistory;
+
+  /// No description provided for @importFromJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from JSON'**
+  String get importFromJson;
+
+  /// No description provided for @importFromJsonSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore data from a previous export'**
+  String get importFromJsonSubtitle;
+
+  /// No description provided for @importDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Data'**
+  String get importDataTitle;
+
+  /// No description provided for @importDataConfirmContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This will add data from a JSON export to your existing data. Duplicates will be skipped.'**
+  String get importDataConfirmContent;
+
+  /// No description provided for @importDataButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get importDataButton;
+
+  /// No description provided for @importPasteJsonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste JSON Data'**
+  String get importPasteJsonTitle;
+
+  /// No description provided for @importPasteJsonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your exported JSON here…'**
+  String get importPasteJsonHint;
+
+  /// No description provided for @importComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Import complete: {workouts} workouts, {sets} sets'**
+  String importComplete(int workouts, int sets);
+
+  /// No description provided for @importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed: {error}'**
+  String importFailed(String error);
+
+  /// No description provided for @duplicateTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get duplicateTemplate;
+
+  /// No description provided for @copyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copyLabel;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

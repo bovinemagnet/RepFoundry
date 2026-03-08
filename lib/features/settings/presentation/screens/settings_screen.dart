@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../heart_rate/domain/zone_calculator.dart';
@@ -9,6 +10,7 @@ import '../../../heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_bands_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../../heart_rate/presentation/widgets/health_profile_onboarding.dart';
+import '../../../../core/providers.dart' show importDataUseCaseProvider;
 import '../providers/export_provider.dart';
 import '../providers/rest_timer_settings_provider.dart';
 import '../providers/show_exercise_images_provider.dart';
@@ -349,8 +351,16 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           _SectionHeader(title: s.sectionData),
+          ListTile(
+            leading: const Icon(Icons.monitor_weight_outlined),
+            title: Text(s.bodyMetricsTitle),
+            subtitle: Text(s.bodyMetricsSubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/body-metrics'),
+          ),
           _ExportJsonTile(),
           _ExportCsvTile(),
+          _ImportJsonTile(),
           ListTile(
             leading: const Icon(Icons.delete_forever_outlined),
             title: Text(s.clearAllData),
@@ -592,6 +602,123 @@ class _ExportCsvTile extends ConsumerWidget {
       onTap: exportState.status == ExportStatus.exporting
           ? null
           : () => ref.read(exportProvider.notifier).exportCsv(),
+    );
+  }
+}
+
+class _ImportJsonTile extends ConsumerStatefulWidget {
+  @override
+  ConsumerState<_ImportJsonTile> createState() => _ImportJsonTileState();
+}
+
+class _ImportJsonTileState extends ConsumerState<_ImportJsonTile> {
+  bool _importing = false;
+
+  Future<void> _import() async {
+    final s = S.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.importDataTitle),
+        content: Text(s.importDataConfirmContent),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(s.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(s.importDataButton),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _importing = true);
+
+    try {
+      // Use file_picker to select a JSON file.
+      final result = await _pickJsonFile();
+      if (result != null) {
+        final useCase = ref.read(importDataUseCaseProvider);
+        final importResult = await useCase.importFromJson(result);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(s.importComplete(
+                importResult.workoutsImported,
+                importResult.setsImported,
+              )),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.importFailed(e.toString()))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _importing = false);
+    }
+  }
+
+  Future<String?> _pickJsonFile() async {
+    // Use file_picker package if available, otherwise fall back.
+    // For now, show a text input dialog for pasting JSON.
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        final s = S.of(ctx)!;
+        return AlertDialog(
+          title: Text(s.importPasteJsonTitle),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: TextField(
+              controller: controller,
+              maxLines: 10,
+              decoration: InputDecoration(
+                hintText: s.importPasteJsonHint,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(s.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, controller.text),
+              child: Text(s.importDataButton),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+    return result?.isNotEmpty == true ? result : null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context)!;
+    return ListTile(
+      leading: const Icon(Icons.file_upload_outlined),
+      title: Text(s.importFromJson),
+      subtitle: Text(s.importFromJsonSubtitle),
+      trailing: _importing
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : null,
+      onTap: _importing ? null : _import,
     );
   }
 }

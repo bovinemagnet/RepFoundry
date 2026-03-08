@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../domain/models/exercise.dart';
 import '../screens/create_exercise_screen.dart';
+import '../screens/edit_exercise_screen.dart';
 import '../widgets/exercise_list_tile.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/widgets/loading_widget.dart';
@@ -100,7 +101,13 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                         return ExerciseListTile(
                           exercise: exercise,
                           onTap: () => Navigator.of(context).pop(exercise),
-                          trailing: const Icon(Icons.chevron_right),
+                          trailing: exercise.isCustom
+                              ? IconButton(
+                                  icon: const Icon(Icons.edit, size: 20),
+                                  onPressed: () =>
+                                      _editExercise(context, exercise),
+                                )
+                              : const Icon(Icons.chevron_right),
                         );
                       },
                     ),
@@ -116,6 +123,18 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
         label: Text(s.customExercise),
       ),
     );
+  }
+
+  Future<void> _editExercise(BuildContext context, Exercise exercise) async {
+    final updated = await Navigator.of(context).push<Exercise>(
+      MaterialPageRoute(
+        builder: (_) => EditExerciseScreen(exercise: exercise),
+      ),
+    );
+
+    if (updated != null) {
+      ref.invalidate(_filteredExercisesProvider);
+    }
   }
 
   Future<void> _showCreateExerciseDialog(BuildContext context) async {

@@ -17,6 +17,7 @@ class LogSetInput {
   final double weight;
   final int reps;
   final double? rpe;
+  final bool isWarmUp;
 
   const LogSetInput({
     required this.workoutId,
@@ -25,6 +26,7 @@ class LogSetInput {
     required this.weight,
     required this.reps,
     this.rpe,
+    this.isWarmUp = false,
   });
 }
 
@@ -56,10 +58,15 @@ class LogSetUseCase {
       weight: input.weight,
       reps: input.reps,
       rpe: input.rpe,
+      isWarmUp: input.isWarmUp,
     );
 
     final savedSet = await _workoutRepository.addSet(set);
-    final prs = await _checkForPersonalRecords(savedSet);
+
+    // Warm-up sets do not count towards personal records.
+    final prs = input.isWarmUp
+        ? <PersonalRecord>[]
+        : await _checkForPersonalRecords(savedSet);
 
     for (final pr in prs) {
       await _personalRecordRepository?.createRecord(pr);
@@ -86,7 +93,7 @@ class LogSetUseCase {
       limit: 100,
     );
 
-    final others = previousSets.where((s) => s.id != set.id);
+    final others = previousSets.where((s) => s.id != set.id && !s.isWarmUp);
     final records = <PersonalRecord>[];
 
     // e1RM PR

@@ -10,6 +10,7 @@ class SetInputCard extends StatefulWidget {
     required double weight,
     required int reps,
     double? rpe,
+    bool isWarmUp,
   }) onLogSet;
 
   final GhostSet? suggestion;
@@ -24,6 +25,7 @@ class _SetInputCardState extends State<SetInputCard> {
   final _rpeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _showRpe = false;
+  bool _isWarmUp = false;
 
   @override
   void initState() {
@@ -76,10 +78,11 @@ class _SetInputCardState extends State<SetInputCard> {
     final reps = int.tryParse(_repsController.text) ?? 0;
     final rpe = _showRpe ? double.tryParse(_rpeController.text) : null;
 
-    widget.onLogSet(weight: weight, reps: reps, rpe: rpe);
+    widget.onLogSet(weight: weight, reps: reps, rpe: rpe, isWarmUp: _isWarmUp);
 
     _repsController.text = '0';
     _rpeController.clear();
+    if (_isWarmUp) setState(() => _isWarmUp = false);
   }
 
   @override
@@ -144,6 +147,16 @@ class _SetInputCardState extends State<SetInputCard> {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
+              ),
+              const SizedBox(width: 4),
+              FilterChip(
+                label: Text(s.warmUpLabel),
+                selected: _isWarmUp,
+                onSelected: (v) => setState(() => _isWarmUp = v),
+                padding: EdgeInsets.zero,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
               ),
               const Spacer(),
               FilledButton.icon(

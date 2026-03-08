@@ -7,8 +7,11 @@ import '../../../../core/widgets/progress_chart_widget.dart';
 import '../providers/trained_exercises_provider.dart';
 import '../providers/workout_volume_chart_provider.dart';
 import '../providers/workout_frequency_provider.dart';
+import '../providers/workout_duration_chart_provider.dart';
+import 'calendar_heatmap.dart';
 import 'exercise_progress_tile.dart';
 import 'muscle_group_chart.dart';
+import 'streak_card.dart';
 
 class ProgressView extends ConsumerWidget {
   const ProgressView({super.key});
@@ -18,16 +21,36 @@ class ProgressView extends ConsumerWidget {
     final s = S.of(context)!;
     final volumeAsync = ref.watch(workoutVolumeChartProvider);
     final frequencyAsync = ref.watch(workoutFrequencyProvider);
+    final durationAsync = ref.watch(workoutDurationChartProvider);
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // Streak tracker
+        const StreakCard(),
+        const SizedBox(height: 16),
+        // Calendar heatmap
+        const CalendarHeatmap(),
+        const SizedBox(height: 24),
         // Volume trend chart
         volumeAsync.when(
           data: (data) {
             if (data.isEmpty) return const SizedBox.shrink();
             return ProgressChartWidget(
               label: s.volumeTrendTitle,
+              dataPoints: data,
+            );
+          },
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
+        const SizedBox(height: 24),
+        // Duration trend chart
+        durationAsync.when(
+          data: (data) {
+            if (data.isEmpty) return const SizedBox.shrink();
+            return ProgressChartWidget(
+              label: s.durationTrendTitle,
               dataPoints: data,
             );
           },

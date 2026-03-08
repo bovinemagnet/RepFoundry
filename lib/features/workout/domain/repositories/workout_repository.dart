@@ -16,6 +16,7 @@ abstract class WorkoutRepository {
     int limit = 50,
   });
   Future<WorkoutSet?> getLastSetForExercise(String exerciseId);
+  Future<WorkoutSet> updateSet(WorkoutSet set);
   Future<void> deleteSet(String setId);
   Future<List<WorkoutSet>> getSetsFromLastSession(String exerciseId);
 

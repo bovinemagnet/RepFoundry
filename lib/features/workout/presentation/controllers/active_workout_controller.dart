@@ -248,6 +248,7 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
     required double weight,
     required int reps,
     double? rpe,
+    bool isWarmUp = false,
   }) async {
     final workout = state.activeWorkout;
     if (workout == null) return;
@@ -263,6 +264,7 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
           weight: weight,
           reps: reps,
           rpe: rpe,
+          isWarmUp: isWarmUp,
         ),
       );
 
@@ -285,6 +287,20 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
       } else {
         state = state.copyWith(setsByExercise: updated);
       }
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  Future<void> updateSet(WorkoutSet updatedSet) async {
+    try {
+      await _workoutRepository.updateSet(updatedSet);
+      final updated = Map<String, List<WorkoutSet>>.from(state.setsByExercise);
+      final exerciseSets = updated[updatedSet.exerciseId] ?? [];
+      updated[updatedSet.exerciseId] = exerciseSets
+          .map((s) => s.id == updatedSet.id ? updatedSet : s)
+          .toList();
+      state = state.copyWith(setsByExercise: updated);
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }

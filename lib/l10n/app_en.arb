@@ -441,5 +441,60 @@
   "exportFailed": "Export failed: {error}",
   "@exportFailed": {
     "placeholders": { "error": { "type": "String" } }
-  }
+  },
+
+  "editSet": "Edit Set",
+  "editExerciseTitle": "Edit Exercise",
+
+  "calendarHeatmapTitle": "Workout Calendar",
+  "calendarHeatmapLess": "Less",
+  "calendarHeatmapMore": "More",
+
+  "currentStreak": "{count, plural, =0{No current streak} =1{1 day streak} other{{count} day streak}}",
+  "@currentStreak": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "longestStreak": "Longest: {count} {count, plural, =1{day} other{days}}",
+  "@longestStreak": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "durationTrendTitle": "Workout Duration (mins)",
+
+  "warmUpLabel": "Warm-up",
+
+  "bodyMetricsTitle": "Body Metrics",
+  "bodyMetricsSubtitle": "Track body weight and composition",
+  "noBodyMetricsYet": "No body metrics yet",
+  "noBodyMetricsYetSubtitle": "Tap + to record your first measurement.",
+  "addBodyMetric": "Add Measurement",
+  "bodyWeightLabel": "Body Weight",
+  "bodyFatPercentLabel": "Body Fat %",
+  "bodyFatLabel": "body fat",
+  "notesLabel": "Notes",
+  "bodyWeightTrendTitle": "Body Weight Trend",
+  "latestWeight": "Latest Weight",
+  "bodyMetricsHistory": "History",
+
+  "importFromJson": "Import from JSON",
+  "importFromJsonSubtitle": "Restore data from a previous export",
+  "importDataTitle": "Import Data",
+  "importDataConfirmContent": "This will add data from a JSON export to your existing data. Duplicates will be skipped.",
+  "importDataButton": "Import",
+  "importPasteJsonTitle": "Paste JSON Data",
+  "importPasteJsonHint": "Paste your exported JSON here\u2026",
+  "importComplete": "Import complete: {workouts} workouts, {sets} sets",
+  "@importComplete": {
+    "placeholders": {
+      "workouts": { "type": "int" },
+      "sets": { "type": "int" }
+    }
+  },
+  "importFailed": "Import failed: {error}",
+  "@importFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "duplicateTemplate": "Duplicate",
+  "copyLabel": "Copy"
 }

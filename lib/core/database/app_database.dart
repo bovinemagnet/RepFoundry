@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
+import 'tables/body_metrics_table.dart';
 import 'tables/cardio_sessions_table.dart';
 import 'tables/exercises_table.dart';
 import 'tables/personal_records_table.dart';
@@ -12,6 +13,7 @@ import 'tables/workouts_table.dart';
 part 'app_database.g.dart';
 
 @DriftDatabase(tables: [
+  BodyMetrics,
   Exercises,
   Workouts,
   WorkoutSets,
@@ -27,7 +29,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -65,6 +67,23 @@ class AppDatabase extends _$AppDatabase {
                 );
               }
             }
+          }
+          if (from < 4) {
+            await customStatement(
+              'ALTER TABLE workout_sets ADD COLUMN is_warm_up INTEGER NOT NULL DEFAULT 0',
+            );
+            await customStatement(
+              'ALTER TABLE workout_sets ADD COLUMN group_id TEXT',
+            );
+            await customStatement(
+              'CREATE TABLE IF NOT EXISTS body_metrics ('
+              'id TEXT NOT NULL PRIMARY KEY, '
+              'date INTEGER NOT NULL, '
+              'weight REAL NOT NULL, '
+              'body_fat_percent REAL, '
+              'notes TEXT'
+              ')',
+            );
           }
         },
       );

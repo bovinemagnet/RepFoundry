@@ -101,6 +101,8 @@ class DriftWorkoutRepository implements WorkoutRepository {
             reps: set.reps,
             rpe: Value(set.rpe),
             timestamp: dateTimeToEpochMs(set.timestamp),
+            isWarmUp: Value(set.isWarmUp),
+            groupId: Value(set.groupId),
           ),
         );
     return set;
@@ -136,6 +138,25 @@ class DriftWorkoutRepository implements WorkoutRepository {
       ..limit(1);
     final row = await q.getSingleOrNull();
     return row == null ? null : _setToDomain(row);
+  }
+
+  @override
+  Future<WorkoutSet> updateSet(WorkoutSet set) async {
+    await (_db.update(_db.workoutSets)..where((t) => t.id.equals(set.id)))
+        .write(
+      db.WorkoutSetsCompanion(
+        workoutId: Value(set.workoutId),
+        exerciseId: Value(set.exerciseId),
+        setOrder: Value(set.setOrder),
+        weight: Value(set.weight),
+        reps: Value(set.reps),
+        rpe: Value(set.rpe),
+        timestamp: Value(dateTimeToEpochMs(set.timestamp)),
+        isWarmUp: Value(set.isWarmUp),
+        groupId: Value(set.groupId),
+      ),
+    );
+    return set;
   }
 
   @override
@@ -214,6 +235,8 @@ class DriftWorkoutRepository implements WorkoutRepository {
       reps: row.reps,
       rpe: row.rpe,
       timestamp: dateTimeFromEpochMs(row.timestamp),
+      isWarmUp: row.isWarmUp,
+      groupId: row.groupId,
     );
   }
 }
