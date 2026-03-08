@@ -373,5 +373,52 @@
   "exerciseCount": "{count} exercises",
   "@exerciseCount": {
     "placeholders": { "count": { "type": "int" } }
-  }
+  },
+
+  "editTemplate": "Edit Template",
+  "targetSets": "Sets",
+  "targetReps": "Reps",
+  "addExerciseToTemplate": "Add Exercise",
+  "saveTemplate": "Save",
+  "removeExercise": "Remove Exercise",
+  "reorderHint": "Drag to reorder exercises",
+  "templateSaved": "Template saved",
+
+  "prTypeWeight": "New Weight PR!",
+  "prTypeReps": "New Rep PR!",
+  "prTypeVolume": "New Volume PR!",
+  "prTypeE1rm": "New e1RM PR!",
+  "prHistoryTitle": "Personal Records",
+  "prHistoryEmpty": "No personal records yet",
+  "prHistoryEmptySubtitle": "Set new records by logging sets in your workouts.",
+  "prAchievedOn": "Achieved {date}",
+  "@prAchievedOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "prValueWeight": "{value} kg",
+  "@prValueWeight": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "prValueReps": "{value} reps",
+  "@prValueReps": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "prValueVolume": "{value} kg volume",
+  "@prValueVolume": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "prValueE1rm": "{value} kg e1RM",
+  "@prValueE1rm": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+
+  "historyTab": "History",
+  "progressTab": "Progress",
+  "volumeTrendTitle": "Volume Trend",
+  "frequencyTitle": "Workouts per Week",
+  "workoutsPerWeek": "workouts",
+
+  "startFromTemplate": "Start from Template",
+  "chooseTemplate": "Choose Template",
+  "noTemplatesAvailable": "No templates available"
 }

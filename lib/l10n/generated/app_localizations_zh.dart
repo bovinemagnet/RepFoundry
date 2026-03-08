@@ -827,6 +827,100 @@ class SZh extends S {
   String exerciseCount(int count) {
     return '$count 个动作';
   }
+
+  @override
+  String get editTemplate => '编辑模板';
+
+  @override
+  String get targetSets => '组数';
+
+  @override
+  String get targetReps => '次数';
+
+  @override
+  String get addExerciseToTemplate => '添加动作';
+
+  @override
+  String get saveTemplate => '保存';
+
+  @override
+  String get removeExercise => '移除动作';
+
+  @override
+  String get reorderHint => '拖动以重新排序动作';
+
+  @override
+  String get templateSaved => '模板已保存';
+
+  @override
+  String get prTypeWeight => '新重量纪录！';
+
+  @override
+  String get prTypeReps => '新次数纪录！';
+
+  @override
+  String get prTypeVolume => '新容量纪录！';
+
+  @override
+  String get prTypeE1rm => '新e1RM纪录！';
+
+  @override
+  String get prHistoryTitle => '个人纪录';
+
+  @override
+  String get prHistoryEmpty => '暂无个人纪录';
+
+  @override
+  String get prHistoryEmptySubtitle => '在训练中记录组数来创建新纪录。';
+
+  @override
+  String prAchievedOn(String date) {
+    return '达成于 $date';
+  }
+
+  @override
+  String prValueWeight(String value) {
+    return '$value kg';
+  }
+
+  @override
+  String prValueReps(String value) {
+    return '$value 次';
+  }
+
+  @override
+  String prValueVolume(String value) {
+    return '$value kg 容量';
+  }
+
+  @override
+  String prValueE1rm(String value) {
+    return '$value kg e1RM';
+  }
+
+  @override
+  String get historyTab => '历史';
+
+  @override
+  String get progressTab => '进度';
+
+  @override
+  String get volumeTrendTitle => '训练量趋势';
+
+  @override
+  String get frequencyTitle => '每周训练次数';
+
+  @override
+  String get workoutsPerWeek => '次训练';
+
+  @override
+  String get startFromTemplate => '从模板开始';
+
+  @override
+  String get chooseTemplate => '选择模板';
+
+  @override
+  String get noTemplatesAvailable => '暂无可用模板';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1652,4 +1746,98 @@ class SZhHans extends SZh {
   String exerciseCount(int count) {
     return '$count 个动作';
   }
+
+  @override
+  String get editTemplate => '编辑模板';
+
+  @override
+  String get targetSets => '组数';
+
+  @override
+  String get targetReps => '次数';
+
+  @override
+  String get addExerciseToTemplate => '添加动作';
+
+  @override
+  String get saveTemplate => '保存';
+
+  @override
+  String get removeExercise => '移除动作';
+
+  @override
+  String get reorderHint => '拖动以重新排序动作';
+
+  @override
+  String get templateSaved => '模板已保存';
+
+  @override
+  String get prTypeWeight => '新重量纪录！';
+
+  @override
+  String get prTypeReps => '新次数纪录！';
+
+  @override
+  String get prTypeVolume => '新容量纪录！';
+
+  @override
+  String get prTypeE1rm => '新e1RM纪录！';
+
+  @override
+  String get prHistoryTitle => '个人纪录';
+
+  @override
+  String get prHistoryEmpty => '暂无个人纪录';
+
+  @override
+  String get prHistoryEmptySubtitle => '在训练中记录组数来创建新纪录。';
+
+  @override
+  String prAchievedOn(String date) {
+    return '达成于 $date';
+  }
+
+  @override
+  String prValueWeight(String value) {
+    return '$value kg';
+  }
+
+  @override
+  String prValueReps(String value) {
+    return '$value 次';
+  }
+
+  @override
+  String prValueVolume(String value) {
+    return '$value kg 容量';
+  }
+
+  @override
+  String prValueE1rm(String value) {
+    return '$value kg e1RM';
+  }
+
+  @override
+  String get historyTab => '历史';
+
+  @override
+  String get progressTab => '进度';
+
+  @override
+  String get volumeTrendTitle => '训练量趋势';
+
+  @override
+  String get frequencyTitle => '每周训练次数';
+
+  @override
+  String get workoutsPerWeek => '次训练';
+
+  @override
+  String get startFromTemplate => '从模板开始';
+
+  @override
+  String get chooseTemplate => '选择模板';
+
+  @override
+  String get noTemplatesAvailable => '暂无可用模板';
 }

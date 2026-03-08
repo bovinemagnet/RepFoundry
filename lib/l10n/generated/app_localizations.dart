@@ -1627,6 +1627,174 @@ abstract class S {
   /// In en, this message translates to:
   /// **'{count} exercises'**
   String exerciseCount(int count);
+
+  /// No description provided for @editTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Template'**
+  String get editTemplate;
+
+  /// No description provided for @targetSets.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets'**
+  String get targetSets;
+
+  /// No description provided for @targetReps.
+  ///
+  /// In en, this message translates to:
+  /// **'Reps'**
+  String get targetReps;
+
+  /// No description provided for @addExerciseToTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Exercise'**
+  String get addExerciseToTemplate;
+
+  /// No description provided for @saveTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveTemplate;
+
+  /// No description provided for @removeExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Exercise'**
+  String get removeExercise;
+
+  /// No description provided for @reorderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder exercises'**
+  String get reorderHint;
+
+  /// No description provided for @templateSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Template saved'**
+  String get templateSaved;
+
+  /// No description provided for @prTypeWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'New Weight PR!'**
+  String get prTypeWeight;
+
+  /// No description provided for @prTypeReps.
+  ///
+  /// In en, this message translates to:
+  /// **'New Rep PR!'**
+  String get prTypeReps;
+
+  /// No description provided for @prTypeVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'New Volume PR!'**
+  String get prTypeVolume;
+
+  /// No description provided for @prTypeE1rm.
+  ///
+  /// In en, this message translates to:
+  /// **'New e1RM PR!'**
+  String get prTypeE1rm;
+
+  /// No description provided for @prHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Records'**
+  String get prHistoryTitle;
+
+  /// No description provided for @prHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No personal records yet'**
+  String get prHistoryEmpty;
+
+  /// No description provided for @prHistoryEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set new records by logging sets in your workouts.'**
+  String get prHistoryEmptySubtitle;
+
+  /// No description provided for @prAchievedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Achieved {date}'**
+  String prAchievedOn(String date);
+
+  /// No description provided for @prValueWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} kg'**
+  String prValueWeight(String value);
+
+  /// No description provided for @prValueReps.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} reps'**
+  String prValueReps(String value);
+
+  /// No description provided for @prValueVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} kg volume'**
+  String prValueVolume(String value);
+
+  /// No description provided for @prValueE1rm.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} kg e1RM'**
+  String prValueE1rm(String value);
+
+  /// No description provided for @historyTab.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get historyTab;
+
+  /// No description provided for @progressTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get progressTab;
+
+  /// No description provided for @volumeTrendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume Trend'**
+  String get volumeTrendTitle;
+
+  /// No description provided for @frequencyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts per Week'**
+  String get frequencyTitle;
+
+  /// No description provided for @workoutsPerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'workouts'**
+  String get workoutsPerWeek;
+
+  /// No description provided for @startFromTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from Template'**
+  String get startFromTemplate;
+
+  /// No description provided for @chooseTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Template'**
+  String get chooseTemplate;
+
+  /// No description provided for @noTemplatesAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No templates available'**
+  String get noTemplatesAvailable;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

@@ -81,16 +81,18 @@ void main() {
     expect(result.set.reps, 5);
   });
 
-  test('execute() detects a PR on first set', () async {
+  test('execute() detects all PR types on first set', () async {
     final result = await useCase.execute(validInput);
-    // First set ever → any positive e1RM should trigger PR
-    expect(result.newPersonalRecord, isNotNull);
-    expect(result.newPersonalRecord!.exerciseId, 'e1');
-    expect(result.newPersonalRecord!.recordType, RecordType.estimatedOneRepMax);
-    expect(result.newPersonalRecord!.value, greaterThan(0));
+    expect(result.newPersonalRecords, isNotEmpty);
+
+    final types = result.newPersonalRecords.map((pr) => pr.recordType).toSet();
+    expect(types, contains(RecordType.estimatedOneRepMax));
+    expect(types, contains(RecordType.maxWeight));
+    expect(types, contains(RecordType.maxReps));
+    expect(types, contains(RecordType.maxVolume));
   });
 
-  test('execute() detects PR when e1RM exceeds previous', () async {
+  test('execute() detects e1RM PR when e1RM exceeds previous', () async {
     // Log a light set first
     await useCase.execute(
       const LogSetInput(
@@ -111,8 +113,134 @@ void main() {
         reps: 5,
       ),
     );
-    expect(result.newPersonalRecord, isNotNull);
-    expect(result.newPersonalRecord!.value, greaterThan(50 * (1 + 5 / 30.0)));
+    final e1rmPR = result.newPersonalRecords
+        .where((pr) => pr.recordType == RecordType.estimatedOneRepMax)
+        .firstOrNull;
+    expect(e1rmPR, isNotNull);
+    expect(e1rmPR!.value, greaterThan(50 * (1 + 5 / 30.0)));
+  });
+
+  test('execute() detects maxWeight PR', () async {
+    await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e3',
+        setOrder: 1,
+        weight: 80,
+        reps: 10,
+      ),
+    );
+    final result = await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e3',
+        setOrder: 2,
+        weight: 100,
+        reps: 3,
+      ),
+    );
+    final weightPR = result.newPersonalRecords
+        .where((pr) => pr.recordType == RecordType.maxWeight)
+        .firstOrNull;
+    expect(weightPR, isNotNull);
+    expect(weightPR!.value, 100.0);
+  });
+
+  test('execute() detects maxReps PR', () async {
+    await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e4',
+        setOrder: 1,
+        weight: 60,
+        reps: 5,
+      ),
+    );
+    final result = await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e4',
+        setOrder: 2,
+        weight: 40,
+        reps: 15,
+      ),
+    );
+    final repsPR = result.newPersonalRecords
+        .where((pr) => pr.recordType == RecordType.maxReps)
+        .firstOrNull;
+    expect(repsPR, isNotNull);
+    expect(repsPR!.value, 15.0);
+  });
+
+  test('execute() detects maxVolume PR', () async {
+    await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e5',
+        setOrder: 1,
+        weight: 100,
+        reps: 3, // volume = 300
+      ),
+    );
+    final result = await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e5',
+        setOrder: 2,
+        weight: 60,
+        reps: 10, // volume = 600
+      ),
+    );
+    final volumePR = result.newPersonalRecords
+        .where((pr) => pr.recordType == RecordType.maxVolume)
+        .firstOrNull;
+    expect(volumePR, isNotNull);
+    expect(volumePR!.value, 600.0);
+  });
+
+  test('execute() can return multiple PRs in one set', () async {
+    await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e6',
+        setOrder: 1,
+        weight: 50,
+        reps: 5,
+      ),
+    );
+    // Heavier + more reps = PRs in all categories
+    final result = await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e6',
+        setOrder: 2,
+        weight: 100,
+        reps: 10,
+      ),
+    );
+    expect(result.newPersonalRecords.length, 4);
+  });
+
+  test('execute() does not detect PR when below previous', () async {
+    await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e7',
+        setOrder: 1,
+        weight: 100,
+        reps: 10,
+      ),
+    );
+    final result = await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e7',
+        setOrder: 2,
+        weight: 50,
+        reps: 5,
+      ),
+    );
+    expect(result.newPersonalRecords, isEmpty);
   });
 
   test('throws LogSetException for zero reps', () async {

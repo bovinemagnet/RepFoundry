@@ -373,5 +373,52 @@
   "exerciseCount": "{count} 个动作",
   "@exerciseCount": {
     "placeholders": { "count": { "type": "int" } }
-  }
+  },
+
+  "prTypeWeight": "新重量纪录！",
+  "prTypeReps": "新次数纪录！",
+  "prTypeVolume": "新容量纪录！",
+  "prTypeE1rm": "新e1RM纪录！",
+  "prHistoryTitle": "个人纪录",
+  "prHistoryEmpty": "暂无个人纪录",
+  "prHistoryEmptySubtitle": "在训练中记录组数来创建新纪录。",
+  "prAchievedOn": "达成于 {date}",
+  "@prAchievedOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "prValueWeight": "{value} kg",
+  "@prValueWeight": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "prValueReps": "{value} 次",
+  "@prValueReps": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "prValueVolume": "{value} kg 容量",
+  "@prValueVolume": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "prValueE1rm": "{value} kg e1RM",
+  "@prValueE1rm": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+
+  "editTemplate": "编辑模板",
+  "targetSets": "组数",
+  "targetReps": "次数",
+  "addExerciseToTemplate": "添加动作",
+  "saveTemplate": "保存",
+  "removeExercise": "移除动作",
+  "reorderHint": "拖动以重新排序动作",
+  "templateSaved": "模板已保存",
+
+  "historyTab": "历史",
+  "progressTab": "进度",
+  "volumeTrendTitle": "训练量趋势",
+  "frequencyTitle": "每周训练次数",
+  "workoutsPerWeek": "次训练",
+
+  "startFromTemplate": "从模板开始",
+  "chooseTemplate": "选择模板",
+  "noTemplatesAvailable": "暂无可用模板"
 }

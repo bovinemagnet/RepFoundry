@@ -6,9 +6,11 @@ import '../features/history/presentation/screens/workout_detail_screen.dart';
 import '../features/history/presentation/screens/exercise_progress_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/templates/presentation/screens/template_list_screen.dart';
+import '../features/templates/presentation/screens/template_edit_screen.dart';
 import '../features/exercises/presentation/screens/exercise_picker_screen.dart';
 import '../features/cardio/presentation/screens/cardio_tracking_screen.dart';
 import '../features/heart_rate/presentation/screens/heart_rate_panel_screen.dart';
+import '../features/history/presentation/screens/pr_history_screen.dart';
 import '../core/widgets/scaffold_with_nav_bar.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -51,10 +53,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/templates',
         builder: (context, state) => const TemplateListScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (context, state) => TemplateEditScreen(
+              templateId: state.pathParameters['id']!,
+            ),
+          ),
+        ],
       ),
       GoRoute(
         path: '/exercises',
         builder: (context, state) => const ExercisePickerScreen(),
+      ),
+      GoRoute(
+        path: '/pr-history',
+        builder: (context, state) => const PrHistoryScreen(),
       ),
       GoRoute(
         path: '/history/exercise/:id',

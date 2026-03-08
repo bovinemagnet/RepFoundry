@@ -13,11 +13,13 @@ class _WorkoutDetailData {
   final Workout workout;
   final Map<String, List<WorkoutSet>> setsByExercise;
   final Map<String, Exercise> exercisesById;
+  final Set<String> prSetIds;
 
   const _WorkoutDetailData({
     required this.workout,
     required this.setsByExercise,
     required this.exercisesById,
+    this.prSetIds = const {},
   });
 }
 
@@ -41,10 +43,19 @@ final _workoutDetailProvider =
       for (final e in allExercises) e.id: e,
     };
 
+    final prRepo = ref.watch(personalRecordRepositoryProvider);
+    final allPrs = await prRepo.getAllRecords(limit: 500);
+    final setIds = sets.map((s) => s.id).toSet();
+    final prSetIds = allPrs
+        .where((pr) => pr.workoutSetId != null && setIds.contains(pr.workoutSetId))
+        .map((pr) => pr.workoutSetId!)
+        .toSet();
+
     return _WorkoutDetailData(
       workout: workout,
       setsByExercise: byExercise,
       exercisesById: exercisesById,
+      prSetIds: prSetIds,
     );
   },
 );
@@ -145,6 +156,7 @@ class _WorkoutDetailBody extends StatelessWidget {
             exercise: data.exercisesById[entry.key],
             exerciseId: entry.key,
             sets: entry.value,
+            prSetIds: data.prSetIds,
           ),
       ],
     );
@@ -183,17 +195,20 @@ class _ExerciseSetsCard extends StatelessWidget {
     required this.exercise,
     required this.exerciseId,
     required this.sets,
+    required this.prSetIds,
   });
 
   final Exercise? exercise;
   final String exerciseId;
   final List<WorkoutSet> sets;
+  final Set<String> prSetIds;
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
     final name = exercise?.name ?? exerciseId;
     final volume = sets.fold<double>(0, (sum, s) => sum + s.volume);
+    final hasPr = sets.any((s) => prSetIds.contains(s.id));
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -204,12 +219,25 @@ class _ExerciseSetsCard extends StatelessWidget {
           children: [
             Row(
               children: [
+                if (hasPr) ...[
+                  Icon(
+                    Icons.emoji_events,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.tertiary,
+                  ),
+                  const SizedBox(width: 6),
+                ],
                 Expanded(
-                  child: Text(
-                    name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                  child: GestureDetector(
+                    onTap: () =>
+                        context.push('/history/exercise/$exerciseId'),
+                    child: Text(
+                      name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                    ),
                   ),
                 ),
                 Text(

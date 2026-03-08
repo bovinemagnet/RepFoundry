@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../domain/models/workout_template.dart';
 import '../../../../core/providers.dart';
@@ -104,10 +105,14 @@ class TemplateListScreen extends ConsumerWidget {
       ),
     );
 
-    if (result != null && result.isNotEmpty) {
+    if (result != null && result.isNotEmpty && context.mounted) {
+      final template = WorkoutTemplate.create(name: result);
       await ref
           .read(workoutTemplateRepositoryProvider)
-          .createTemplate(WorkoutTemplate.create(name: result));
+          .createTemplate(template);
+      if (context.mounted) {
+        context.push('/templates/${template.id}');
+      }
     }
   }
 }
@@ -127,6 +132,7 @@ class _TemplateTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: ListTile(
+        onTap: () => context.push('/templates/${template.id}'),
         leading: CircleAvatar(
           backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
           child: Icon(

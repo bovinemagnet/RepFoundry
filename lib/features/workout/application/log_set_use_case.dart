@@ -5,9 +5,9 @@ import '../../history/domain/repositories/personal_record_repository.dart';
 
 class LogSetResult {
   final WorkoutSet set;
-  final PersonalRecord? newPersonalRecord;
+  final List<PersonalRecord> newPersonalRecords;
 
-  const LogSetResult({required this.set, this.newPersonalRecord});
+  const LogSetResult({required this.set, this.newPersonalRecords = const []});
 }
 
 class LogSetInput {
@@ -59,13 +59,13 @@ class LogSetUseCase {
     );
 
     final savedSet = await _workoutRepository.addSet(set);
-    final pr = await _checkForPersonalRecord(savedSet);
+    final prs = await _checkForPersonalRecords(savedSet);
 
-    if (pr != null) {
+    for (final pr in prs) {
       await _personalRecordRepository?.createRecord(pr);
     }
 
-    return LogSetResult(set: savedSet, newPersonalRecord: pr);
+    return LogSetResult(set: savedSet, newPersonalRecords: prs);
   }
 
   void _validate(LogSetInput input) {
@@ -80,26 +80,71 @@ class LogSetUseCase {
     }
   }
 
-  Future<PersonalRecord?> _checkForPersonalRecord(WorkoutSet set) async {
+  Future<List<PersonalRecord>> _checkForPersonalRecords(WorkoutSet set) async {
     final previousSets = await _workoutRepository.getSetsForExercise(
       set.exerciseId,
       limit: 100,
     );
 
-    final previousBest = previousSets.where((s) => s.id != set.id).fold<double>(
-          0,
-          (max, s) => s.estimatedOneRepMax > max ? s.estimatedOneRepMax : max,
-        );
+    final others = previousSets.where((s) => s.id != set.id);
+    final records = <PersonalRecord>[];
 
-    if (set.estimatedOneRepMax > previousBest) {
-      return PersonalRecord.create(
+    // e1RM PR
+    final bestE1rm = others.fold<double>(
+      0,
+      (max, s) => s.estimatedOneRepMax > max ? s.estimatedOneRepMax : max,
+    );
+    if (set.estimatedOneRepMax > bestE1rm) {
+      records.add(PersonalRecord.create(
         exerciseId: set.exerciseId,
         recordType: RecordType.estimatedOneRepMax,
         value: set.estimatedOneRepMax,
         workoutSetId: set.id,
-      );
+      ));
     }
 
-    return null;
+    // Max weight PR
+    final bestWeight = others.fold<double>(
+      0,
+      (max, s) => s.weight > max ? s.weight : max,
+    );
+    if (set.weight > bestWeight) {
+      records.add(PersonalRecord.create(
+        exerciseId: set.exerciseId,
+        recordType: RecordType.maxWeight,
+        value: set.weight,
+        workoutSetId: set.id,
+      ));
+    }
+
+    // Max reps PR
+    final bestReps = others.fold<int>(
+      0,
+      (max, s) => s.reps > max ? s.reps : max,
+    );
+    if (set.reps > bestReps) {
+      records.add(PersonalRecord.create(
+        exerciseId: set.exerciseId,
+        recordType: RecordType.maxReps,
+        value: set.reps.toDouble(),
+        workoutSetId: set.id,
+      ));
+    }
+
+    // Max volume PR
+    final bestVolume = others.fold<double>(
+      0,
+      (max, s) => s.volume > max ? s.volume : max,
+    );
+    if (set.volume > bestVolume) {
+      records.add(PersonalRecord.create(
+        exerciseId: set.exerciseId,
+        recordType: RecordType.maxVolume,
+        value: set.volume,
+        workoutSetId: set.id,
+      ));
+    }
+
+    return records;
   }
 }

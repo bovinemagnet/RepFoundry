@@ -3,17 +3,20 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
+import '../../../history/domain/models/personal_record.dart';
 
 class PRCelebrationOverlay extends StatefulWidget {
   const PRCelebrationOverlay({
     super.key,
     required this.exerciseName,
     required this.value,
+    required this.recordType,
     required this.onDismiss,
   });
 
   final String exerciseName;
   final double value;
+  final RecordType recordType;
   final VoidCallback onDismiss;
 
   @override
@@ -69,9 +72,37 @@ class _PRCelebrationOverlayState extends State<PRCelebrationOverlay>
     super.dispose();
   }
 
+  String _titleForType(S s, RecordType type) {
+    switch (type) {
+      case RecordType.maxWeight:
+        return s.prTypeWeight;
+      case RecordType.maxReps:
+        return s.prTypeReps;
+      case RecordType.maxVolume:
+        return s.prTypeVolume;
+      case RecordType.estimatedOneRepMax:
+        return s.prTypeE1rm;
+    }
+  }
+
+  String _formattedValue(S s, RecordType type, double value) {
+    final formatted = value.toStringAsFixed(1);
+    switch (type) {
+      case RecordType.maxWeight:
+        return s.prValueWeight(formatted);
+      case RecordType.maxReps:
+        return s.prValueReps(value.round().toString());
+      case RecordType.maxVolume:
+        return s.prValueVolume(formatted);
+      case RecordType.estimatedOneRepMax:
+        return s.prValueE1rm(formatted);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final s = S.of(context)!;
 
     return GestureDetector(
       onTap: _dismiss,
@@ -101,7 +132,7 @@ class _PRCelebrationOverlayState extends State<PRCelebrationOverlay>
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      S.of(context)!.newPersonalRecord,
+                      _titleForType(s, widget.recordType),
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -115,7 +146,7 @@ class _PRCelebrationOverlayState extends State<PRCelebrationOverlay>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'e1RM: ${widget.value.toStringAsFixed(1)} kg',
+                      _formattedValue(s, widget.recordType, widget.value),
                       style: theme.textTheme.headlineSmall?.copyWith(
                         color: theme.colorScheme.primary,
                         fontWeight: FontWeight.bold,

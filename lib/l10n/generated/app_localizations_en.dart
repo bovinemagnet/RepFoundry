@@ -849,4 +849,99 @@ class SEn extends S {
   String exerciseCount(int count) {
     return '$count exercises';
   }
+
+  @override
+  String get editTemplate => 'Edit Template';
+
+  @override
+  String get targetSets => 'Sets';
+
+  @override
+  String get targetReps => 'Reps';
+
+  @override
+  String get addExerciseToTemplate => 'Add Exercise';
+
+  @override
+  String get saveTemplate => 'Save';
+
+  @override
+  String get removeExercise => 'Remove Exercise';
+
+  @override
+  String get reorderHint => 'Drag to reorder exercises';
+
+  @override
+  String get templateSaved => 'Template saved';
+
+  @override
+  String get prTypeWeight => 'New Weight PR!';
+
+  @override
+  String get prTypeReps => 'New Rep PR!';
+
+  @override
+  String get prTypeVolume => 'New Volume PR!';
+
+  @override
+  String get prTypeE1rm => 'New e1RM PR!';
+
+  @override
+  String get prHistoryTitle => 'Personal Records';
+
+  @override
+  String get prHistoryEmpty => 'No personal records yet';
+
+  @override
+  String get prHistoryEmptySubtitle =>
+      'Set new records by logging sets in your workouts.';
+
+  @override
+  String prAchievedOn(String date) {
+    return 'Achieved $date';
+  }
+
+  @override
+  String prValueWeight(String value) {
+    return '$value kg';
+  }
+
+  @override
+  String prValueReps(String value) {
+    return '$value reps';
+  }
+
+  @override
+  String prValueVolume(String value) {
+    return '$value kg volume';
+  }
+
+  @override
+  String prValueE1rm(String value) {
+    return '$value kg e1RM';
+  }
+
+  @override
+  String get historyTab => 'History';
+
+  @override
+  String get progressTab => 'Progress';
+
+  @override
+  String get volumeTrendTitle => 'Volume Trend';
+
+  @override
+  String get frequencyTitle => 'Workouts per Week';
+
+  @override
+  String get workoutsPerWeek => 'workouts';
+
+  @override
+  String get startFromTemplate => 'Start from Template';
+
+  @override
+  String get chooseTemplate => 'Choose Template';
+
+  @override
+  String get noTemplatesAvailable => 'No templates available';
 }

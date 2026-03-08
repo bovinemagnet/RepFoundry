@@ -9,7 +9,9 @@ import '../widgets/set_input_card.dart';
 import '../widgets/rest_timer_widget.dart';
 import '../../domain/models/workout_set.dart';
 import '../../../exercises/domain/models/exercise.dart';
+import '../../../templates/domain/models/workout_template.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
+import '../../../../core/providers.dart';
 import '../../../../core/widgets/loading_widget.dart';
 
 class ActiveWorkoutScreen extends ConsumerWidget {
@@ -64,7 +66,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
           ? LoadingWidget(message: s.loadingWorkout)
           : state.hasActiveWorkout
               ? _buildActiveWorkout(context, ref, state, controller)
-              : _buildNoWorkout(context, controller),
+              : _buildNoWorkout(context, ref, controller),
       floatingActionButton: state.hasActiveWorkout
           ? FloatingActionButton.extended(
               onPressed: () => _pickExercise(context, ref),
@@ -77,6 +79,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
 
   Widget _buildNoWorkout(
     BuildContext context,
+    WidgetRef ref,
     ActiveWorkoutController controller,
   ) {
     final s = S.of(context)!;
@@ -107,9 +110,87 @@ class ActiveWorkoutScreen extends ConsumerWidget {
             icon: const Icon(Icons.play_arrow),
             label: Text(s.startWorkout),
           ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () => _showTemplatePicker(context, ref),
+            icon: const Icon(Icons.view_list),
+            label: Text(s.startFromTemplate),
+          ),
         ],
       ),
     );
+  }
+
+  void _showTemplatePicker(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
+    showModalBottomSheet<WorkoutTemplate>(
+      context: context,
+      builder: (ctx) => Consumer(
+        builder: (ctx, ref, _) {
+          final templatesAsync = ref.watch(
+            StreamProvider.autoDispose<List<WorkoutTemplate>>((ref) {
+              return ref
+                  .watch(workoutTemplateRepositoryProvider)
+                  .watchAllTemplates();
+            }),
+          );
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  s.chooseTemplate,
+                  style: Theme.of(ctx).textTheme.titleMedium,
+                ),
+              ),
+              const Divider(height: 1),
+              templatesAsync.when(
+                data: (templates) {
+                  if (templates.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Text(s.noTemplatesAvailable),
+                    );
+                  }
+                  return Flexible(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: templates.length,
+                      itemBuilder: (ctx, index) {
+                        final template = templates[index];
+                        return ListTile(
+                          leading: const Icon(Icons.view_list),
+                          title: Text(template.name),
+                          subtitle: Text(
+                            s.exerciseCount(template.exercises.length),
+                          ),
+                          onTap: () => Navigator.pop(ctx, template),
+                        );
+                      },
+                    ),
+                  );
+                },
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: CircularProgressIndicator(),
+                ),
+                error: (_, __) => Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Text(s.noTemplatesAvailable),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    ).then((template) {
+      if (template != null) {
+        ref
+            .read(activeWorkoutControllerProvider.notifier)
+            .startFromTemplate(template);
+      }
+    });
   }
 
   Widget _buildActiveWorkout(
@@ -193,6 +274,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
       builder: (_) => PRCelebrationOverlay(
         exerciseName: state.latestPRExerciseName ?? 'Exercise',
         value: state.latestPR!.value,
+        recordType: state.latestPR!.recordType,
         onDismiss: () {
           entry.remove();
           ref.read(activeWorkoutControllerProvider.notifier).clearPR();

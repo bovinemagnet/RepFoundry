@@ -5,6 +5,7 @@ import '../../domain/models/workout_set.dart';
 import '../../domain/repositories/workout_repository.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../history/domain/models/personal_record.dart';
+import '../../../templates/domain/models/workout_template.dart';
 import '../models/ghost_set.dart';
 import '../../../../core/providers.dart';
 
@@ -141,6 +142,34 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
     }
   }
 
+  Future<void> startFromTemplate(WorkoutTemplate template) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final useCase = _ref.read(startWorkoutUseCaseProvider);
+      final workout = await useCase.execute(templateId: template.id);
+      state = state.copyWith(
+        activeWorkout: workout,
+        setsByExercise: {},
+        exercises: [],
+        isLoading: false,
+      );
+
+      // Add each exercise from the template
+      final exerciseRepo = _ref.read(exerciseRepositoryProvider);
+      final allExercises = await exerciseRepo.getAllExercises();
+      final exercisesById = {for (final e in allExercises) e.id: e};
+
+      for (final templateExercise in template.exercises) {
+        final exercise = exercisesById[templateExercise.exerciseId];
+        if (exercise != null) {
+          await addExercise(exercise);
+        }
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
   Future<void> finishWorkout() async {
     final workout = state.activeWorkout;
     if (workout == null) return;
@@ -243,14 +272,14 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
         result.set,
       ];
 
-      if (result.newPersonalRecord != null) {
+      if (result.newPersonalRecords.isNotEmpty) {
         final exerciseName = state.exercises
             .where((e) => e.id == exerciseId)
             .map((e) => e.name)
             .firstOrNull;
         state = state.copyWith(
           setsByExercise: updated,
-          latestPR: result.newPersonalRecord,
+          latestPR: result.newPersonalRecords.first,
           latestPRExerciseName: exerciseName,
         );
       } else {
