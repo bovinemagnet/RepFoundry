@@ -27,7 +27,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -50,6 +50,21 @@ class AppDatabase extends _$AppDatabase {
               'CREATE INDEX IF NOT EXISTS idx_workout_sets_workout_order '
               'ON workout_sets (workout_id, set_order)',
             );
+          }
+          if (from < 3) {
+            await customStatement(
+              'ALTER TABLE exercises ADD COLUMN image_asset TEXT',
+            );
+            for (final ex in _defaultExercises) {
+              final id = ex.id.value;
+              final img = ex.imageAsset;
+              if (img.present && img.value != null) {
+                await customStatement(
+                  "UPDATE exercises SET image_asset = '${img.value}' "
+                  "WHERE id = '$id'",
+                );
+              }
+            }
           }
         },
       );
@@ -74,6 +89,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('chest'),
     equipmentType: Value('barbell'),
+    imageAsset: Value('assets/images/exercises/1.webp'),
   ),
   ExercisesCompanion(
     id: Value('2'),
@@ -81,6 +97,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('quadriceps'),
     equipmentType: Value('barbell'),
+    imageAsset: Value('assets/images/exercises/2.webp'),
   ),
   ExercisesCompanion(
     id: Value('3'),
@@ -88,6 +105,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('back'),
     equipmentType: Value('barbell'),
+    imageAsset: Value('assets/images/exercises/3.webp'),
   ),
   ExercisesCompanion(
     id: Value('4'),
@@ -95,6 +113,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('back'),
     equipmentType: Value('bodyweight'),
+    imageAsset: Value('assets/images/exercises/4.webp'),
   ),
   ExercisesCompanion(
     id: Value('5'),
@@ -102,6 +121,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('shoulders'),
     equipmentType: Value('barbell'),
+    imageAsset: Value('assets/images/exercises/5.webp'),
   ),
   ExercisesCompanion(
     id: Value('6'),
@@ -109,6 +129,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('back'),
     equipmentType: Value('barbell'),
+    imageAsset: Value('assets/images/exercises/6.webp'),
   ),
   ExercisesCompanion(
     id: Value('7'),
@@ -116,6 +137,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('biceps'),
     equipmentType: Value('dumbbell'),
+    imageAsset: Value('assets/images/exercises/7.webp'),
   ),
   ExercisesCompanion(
     id: Value('8'),
@@ -123,6 +145,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('triceps'),
     equipmentType: Value('cable'),
+    imageAsset: Value('assets/images/exercises/8.webp'),
   ),
   ExercisesCompanion(
     id: Value('9'),
@@ -130,6 +153,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('chest'),
     equipmentType: Value('dumbbell'),
+    imageAsset: Value('assets/images/exercises/9.webp'),
   ),
   ExercisesCompanion(
     id: Value('10'),
@@ -137,6 +161,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('quadriceps'),
     equipmentType: Value('machine'),
+    imageAsset: Value('assets/images/exercises/10.webp'),
   ),
   ExercisesCompanion(
     id: Value('11'),
@@ -144,6 +169,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('hamstrings'),
     equipmentType: Value('barbell'),
+    imageAsset: Value('assets/images/exercises/11.webp'),
   ),
   ExercisesCompanion(
     id: Value('12'),
@@ -151,6 +177,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('glutes'),
     equipmentType: Value('barbell'),
+    imageAsset: Value('assets/images/exercises/12.webp'),
   ),
   ExercisesCompanion(
     id: Value('13'),
@@ -158,6 +185,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('back'),
     equipmentType: Value('cable'),
+    imageAsset: Value('assets/images/exercises/13.webp'),
   ),
   ExercisesCompanion(
     id: Value('14'),
@@ -165,6 +193,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('chest'),
     equipmentType: Value('cable'),
+    imageAsset: Value('assets/images/exercises/14.webp'),
   ),
   ExercisesCompanion(
     id: Value('15'),
@@ -172,6 +201,7 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('core'),
     equipmentType: Value('bodyweight'),
+    imageAsset: Value('assets/images/exercises/15.webp'),
   ),
   ExercisesCompanion(
     id: Value('16'),
@@ -179,6 +209,7 @@ const _defaultExercises = [
     category: Value('cardio'),
     muscleGroup: Value('cardio'),
     equipmentType: Value('cardioMachine'),
+    imageAsset: Value('assets/images/exercises/16.webp'),
   ),
   ExercisesCompanion(
     id: Value('17'),
@@ -186,6 +217,7 @@ const _defaultExercises = [
     category: Value('cardio'),
     muscleGroup: Value('cardio'),
     equipmentType: Value('cardioMachine'),
+    imageAsset: Value('assets/images/exercises/17.webp'),
   ),
   ExercisesCompanion(
     id: Value('18'),
@@ -193,5 +225,6 @@ const _defaultExercises = [
     category: Value('cardio'),
     muscleGroup: Value('fullBody'),
     equipmentType: Value('cardioMachine'),
+    imageAsset: Value('assets/images/exercises/18.webp'),
   ),
 ];

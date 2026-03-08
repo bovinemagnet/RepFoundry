@@ -50,6 +50,12 @@ class $ExercisesTable extends Exercises
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("is_custom" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _imageAssetMeta =
+      const VerificationMeta('imageAsset');
+  @override
+  late final GeneratedColumn<String> imageAsset = GeneratedColumn<String>(
+      'image_asset', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _deletedAtMeta =
       const VerificationMeta('deletedAt');
   @override
@@ -57,8 +63,16 @@ class $ExercisesTable extends Exercises
       'deleted_at', aliasedName, true,
       type: DriftSqlType.int, requiredDuringInsert: false);
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, name, category, muscleGroup, equipmentType, isCustom, deletedAt];
+  List<GeneratedColumn> get $columns => [
+        id,
+        name,
+        category,
+        muscleGroup,
+        equipmentType,
+        isCustom,
+        imageAsset,
+        deletedAt
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -106,6 +120,12 @@ class $ExercisesTable extends Exercises
       context.handle(_isCustomMeta,
           isCustom.isAcceptableOrUnknown(data['is_custom']!, _isCustomMeta));
     }
+    if (data.containsKey('image_asset')) {
+      context.handle(
+          _imageAssetMeta,
+          imageAsset.isAcceptableOrUnknown(
+              data['image_asset']!, _imageAssetMeta));
+    }
     if (data.containsKey('deleted_at')) {
       context.handle(_deletedAtMeta,
           deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
@@ -131,6 +151,8 @@ class $ExercisesTable extends Exercises
           .read(DriftSqlType.string, data['${effectivePrefix}equipment_type'])!,
       isCustom: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_custom'])!,
+      imageAsset: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}image_asset']),
       deletedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}deleted_at']),
     );
@@ -149,6 +171,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
   final String muscleGroup;
   final String equipmentType;
   final bool isCustom;
+  final String? imageAsset;
   final int? deletedAt;
   const Exercise(
       {required this.id,
@@ -157,6 +180,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       required this.muscleGroup,
       required this.equipmentType,
       required this.isCustom,
+      this.imageAsset,
       this.deletedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -167,6 +191,9 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     map['muscle_group'] = Variable<String>(muscleGroup);
     map['equipment_type'] = Variable<String>(equipmentType);
     map['is_custom'] = Variable<bool>(isCustom);
+    if (!nullToAbsent || imageAsset != null) {
+      map['image_asset'] = Variable<String>(imageAsset);
+    }
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<int>(deletedAt);
     }
@@ -181,6 +208,9 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       muscleGroup: Value(muscleGroup),
       equipmentType: Value(equipmentType),
       isCustom: Value(isCustom),
+      imageAsset: imageAsset == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imageAsset),
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
@@ -197,6 +227,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       muscleGroup: serializer.fromJson<String>(json['muscleGroup']),
       equipmentType: serializer.fromJson<String>(json['equipmentType']),
       isCustom: serializer.fromJson<bool>(json['isCustom']),
+      imageAsset: serializer.fromJson<String?>(json['imageAsset']),
       deletedAt: serializer.fromJson<int?>(json['deletedAt']),
     );
   }
@@ -210,6 +241,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       'muscleGroup': serializer.toJson<String>(muscleGroup),
       'equipmentType': serializer.toJson<String>(equipmentType),
       'isCustom': serializer.toJson<bool>(isCustom),
+      'imageAsset': serializer.toJson<String?>(imageAsset),
       'deletedAt': serializer.toJson<int?>(deletedAt),
     };
   }
@@ -221,6 +253,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           String? muscleGroup,
           String? equipmentType,
           bool? isCustom,
+          Value<String?> imageAsset = const Value.absent(),
           Value<int?> deletedAt = const Value.absent()}) =>
       Exercise(
         id: id ?? this.id,
@@ -229,6 +262,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
         muscleGroup: muscleGroup ?? this.muscleGroup,
         equipmentType: equipmentType ?? this.equipmentType,
         isCustom: isCustom ?? this.isCustom,
+        imageAsset: imageAsset.present ? imageAsset.value : this.imageAsset,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
   Exercise copyWithCompanion(ExercisesCompanion data) {
@@ -242,6 +276,8 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           ? data.equipmentType.value
           : this.equipmentType,
       isCustom: data.isCustom.present ? data.isCustom.value : this.isCustom,
+      imageAsset:
+          data.imageAsset.present ? data.imageAsset.value : this.imageAsset,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
@@ -255,14 +291,15 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           ..write('muscleGroup: $muscleGroup, ')
           ..write('equipmentType: $equipmentType, ')
           ..write('isCustom: $isCustom, ')
+          ..write('imageAsset: $imageAsset, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, name, category, muscleGroup, equipmentType, isCustom, deletedAt);
+  int get hashCode => Object.hash(id, name, category, muscleGroup,
+      equipmentType, isCustom, imageAsset, deletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -273,6 +310,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           other.muscleGroup == this.muscleGroup &&
           other.equipmentType == this.equipmentType &&
           other.isCustom == this.isCustom &&
+          other.imageAsset == this.imageAsset &&
           other.deletedAt == this.deletedAt);
 }
 
@@ -283,6 +321,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
   final Value<String> muscleGroup;
   final Value<String> equipmentType;
   final Value<bool> isCustom;
+  final Value<String?> imageAsset;
   final Value<int?> deletedAt;
   final Value<int> rowid;
   const ExercisesCompanion({
@@ -292,6 +331,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     this.muscleGroup = const Value.absent(),
     this.equipmentType = const Value.absent(),
     this.isCustom = const Value.absent(),
+    this.imageAsset = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -302,6 +342,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     required String muscleGroup,
     required String equipmentType,
     this.isCustom = const Value.absent(),
+    this.imageAsset = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
@@ -316,6 +357,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     Expression<String>? muscleGroup,
     Expression<String>? equipmentType,
     Expression<bool>? isCustom,
+    Expression<String>? imageAsset,
     Expression<int>? deletedAt,
     Expression<int>? rowid,
   }) {
@@ -326,6 +368,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
       if (muscleGroup != null) 'muscle_group': muscleGroup,
       if (equipmentType != null) 'equipment_type': equipmentType,
       if (isCustom != null) 'is_custom': isCustom,
+      if (imageAsset != null) 'image_asset': imageAsset,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -338,6 +381,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
       Value<String>? muscleGroup,
       Value<String>? equipmentType,
       Value<bool>? isCustom,
+      Value<String?>? imageAsset,
       Value<int?>? deletedAt,
       Value<int>? rowid}) {
     return ExercisesCompanion(
@@ -347,6 +391,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
       muscleGroup: muscleGroup ?? this.muscleGroup,
       equipmentType: equipmentType ?? this.equipmentType,
       isCustom: isCustom ?? this.isCustom,
+      imageAsset: imageAsset ?? this.imageAsset,
       deletedAt: deletedAt ?? this.deletedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -373,6 +418,9 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     if (isCustom.present) {
       map['is_custom'] = Variable<bool>(isCustom.value);
     }
+    if (imageAsset.present) {
+      map['image_asset'] = Variable<String>(imageAsset.value);
+    }
     if (deletedAt.present) {
       map['deleted_at'] = Variable<int>(deletedAt.value);
     }
@@ -391,6 +439,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
           ..write('muscleGroup: $muscleGroup, ')
           ..write('equipmentType: $equipmentType, ')
           ..write('isCustom: $isCustom, ')
+          ..write('imageAsset: $imageAsset, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -2695,6 +2744,7 @@ typedef $$ExercisesTableCreateCompanionBuilder = ExercisesCompanion Function({
   required String muscleGroup,
   required String equipmentType,
   Value<bool> isCustom,
+  Value<String?> imageAsset,
   Value<int?> deletedAt,
   Value<int> rowid,
 });
@@ -2705,6 +2755,7 @@ typedef $$ExercisesTableUpdateCompanionBuilder = ExercisesCompanion Function({
   Value<String> muscleGroup,
   Value<String> equipmentType,
   Value<bool> isCustom,
+  Value<String?> imageAsset,
   Value<int?> deletedAt,
   Value<int> rowid,
 });
@@ -2804,6 +2855,9 @@ class $$ExercisesTableFilterComposer
 
   ColumnFilters<bool> get isCustom => $composableBuilder(
       column: $table.isCustom, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get imageAsset => $composableBuilder(
+      column: $table.imageAsset, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<int> get deletedAt => $composableBuilder(
       column: $table.deletedAt, builder: (column) => ColumnFilters(column));
@@ -2921,6 +2975,9 @@ class $$ExercisesTableOrderingComposer
   ColumnOrderings<bool> get isCustom => $composableBuilder(
       column: $table.isCustom, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get imageAsset => $composableBuilder(
+      column: $table.imageAsset, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<int> get deletedAt => $composableBuilder(
       column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
 }
@@ -2951,6 +3008,9 @@ class $$ExercisesTableAnnotationComposer
 
   GeneratedColumn<bool> get isCustom =>
       $composableBuilder(column: $table.isCustom, builder: (column) => column);
+
+  GeneratedColumn<String> get imageAsset => $composableBuilder(
+      column: $table.imageAsset, builder: (column) => column);
 
   GeneratedColumn<int> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
@@ -3074,6 +3134,7 @@ class $$ExercisesTableTableManager extends RootTableManager<
             Value<String> muscleGroup = const Value.absent(),
             Value<String> equipmentType = const Value.absent(),
             Value<bool> isCustom = const Value.absent(),
+            Value<String?> imageAsset = const Value.absent(),
             Value<int?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -3084,6 +3145,7 @@ class $$ExercisesTableTableManager extends RootTableManager<
             muscleGroup: muscleGroup,
             equipmentType: equipmentType,
             isCustom: isCustom,
+            imageAsset: imageAsset,
             deletedAt: deletedAt,
             rowid: rowid,
           ),
@@ -3094,6 +3156,7 @@ class $$ExercisesTableTableManager extends RootTableManager<
             required String muscleGroup,
             required String equipmentType,
             Value<bool> isCustom = const Value.absent(),
+            Value<String?> imageAsset = const Value.absent(),
             Value<int?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -3104,6 +3167,7 @@ class $$ExercisesTableTableManager extends RootTableManager<
             muscleGroup: muscleGroup,
             equipmentType: equipmentType,
             isCustom: isCustom,
+            imageAsset: imageAsset,
             deletedAt: deletedAt,
             rowid: rowid,
           ),

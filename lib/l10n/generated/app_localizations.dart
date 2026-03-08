@@ -554,6 +554,18 @@ abstract class S {
   /// **'Disclaimer'**
   String get disclaimerLabel;
 
+  /// No description provided for @settingsShowExerciseImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Exercise Images'**
+  String get settingsShowExerciseImages;
+
+  /// No description provided for @settingsShowExerciseImagesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Display exercise illustrations in lists'**
+  String get settingsShowExerciseImagesSubtitle;
+
   /// No description provided for @themeLabel.
   ///
   /// In en, this message translates to:

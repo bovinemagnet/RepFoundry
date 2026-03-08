@@ -249,6 +249,12 @@ class SZh extends S {
   String get disclaimerLabel => '免责声明';
 
   @override
+  String get settingsShowExerciseImages => '显示动作图片';
+
+  @override
+  String get settingsShowExerciseImagesSubtitle => '在列表中显示动作插图';
+
+  @override
   String get themeLabel => '主题';
 
   @override
@@ -1166,6 +1172,12 @@ class SZhHans extends SZh {
 
   @override
   String get disclaimerLabel => '免责声明';
+
+  @override
+  String get settingsShowExerciseImages => '显示动作图片';
+
+  @override
+  String get settingsShowExerciseImagesSubtitle => '在列表中显示动作插图';
 
   @override
   String get themeLabel => '主题';
