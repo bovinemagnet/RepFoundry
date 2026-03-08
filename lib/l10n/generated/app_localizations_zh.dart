@@ -927,6 +927,41 @@ class SZh extends S {
 
   @override
   String get noTemplatesAvailable => '暂无可用模板';
+
+  @override
+  String get muscleGroupDistributionTitle => 'Muscle Group Distribution';
+
+  @override
+  String get exerciseProgressListTitle => 'Exercise Progress';
+
+  @override
+  String setsLogged(int count) {
+    return '$count sets logged';
+  }
+
+  @override
+  String get exportAsJson => 'Export as JSON';
+
+  @override
+  String get exportAsJsonSubtitle => 'Full workout data in JSON format';
+
+  @override
+  String get exportAsCsv => 'Export as CSV';
+
+  @override
+  String get exportAsCsvSubtitle =>
+      'Sets, cardio, and personal records as CSV files';
+
+  @override
+  String get exportingData => 'Exporting data…';
+
+  @override
+  String get exportComplete => 'Export complete';
+
+  @override
+  String exportFailed(String error) {
+    return 'Export failed: $error';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).

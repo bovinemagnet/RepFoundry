@@ -1807,6 +1807,66 @@ abstract class S {
   /// In en, this message translates to:
   /// **'No templates available'**
   String get noTemplatesAvailable;
+
+  /// No description provided for @muscleGroupDistributionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Muscle Group Distribution'**
+  String get muscleGroupDistributionTitle;
+
+  /// No description provided for @exerciseProgressListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise Progress'**
+  String get exerciseProgressListTitle;
+
+  /// No description provided for @setsLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sets logged'**
+  String setsLogged(int count);
+
+  /// No description provided for @exportAsJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as JSON'**
+  String get exportAsJson;
+
+  /// No description provided for @exportAsJsonSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Full workout data in JSON format'**
+  String get exportAsJsonSubtitle;
+
+  /// No description provided for @exportAsCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as CSV'**
+  String get exportAsCsv;
+
+  /// No description provided for @exportAsCsvSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets, cardio, and personal records as CSV files'**
+  String get exportAsCsvSubtitle;
+
+  /// No description provided for @exportingData.
+  ///
+  /// In en, this message translates to:
+  /// **'Exporting data…'**
+  String get exportingData;
+
+  /// No description provided for @exportComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Export complete'**
+  String get exportComplete;
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed: {error}'**
+  String exportFailed(String error);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

@@ -37,6 +37,11 @@ class InMemoryCardioSessionRepository implements CardioSessionRepository {
   }
 
   @override
+  Future<List<CardioSession>> getAllSessions() async {
+    return List.unmodifiable(_sessions);
+  }
+
+  @override
   Future<CardioSession?> getLastSessionForExercise(String exerciseId) async {
     final matching =
         _sessions.where((s) => s.exerciseId == exerciseId).toList();

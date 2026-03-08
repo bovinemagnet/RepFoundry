@@ -4,8 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../../core/widgets/progress_chart_widget.dart';
+import '../providers/trained_exercises_provider.dart';
 import '../providers/workout_volume_chart_provider.dart';
 import '../providers/workout_frequency_provider.dart';
+import 'exercise_progress_tile.dart';
+import 'muscle_group_chart.dart';
 
 class ProgressView extends ConsumerWidget {
   const ProgressView({super.key});
@@ -38,6 +41,12 @@ class ProgressView extends ConsumerWidget {
           loading: () => const SizedBox.shrink(),
           error: (_, __) => const SizedBox.shrink(),
         ),
+        const SizedBox(height: 24),
+        // Muscle group distribution
+        const MuscleGroupChart(),
+        const SizedBox(height: 24),
+        // Exercise progress list
+        _ExerciseProgressList(),
       ],
     );
   }
@@ -167,6 +176,37 @@ class _FrequencyChart extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ExerciseProgressList extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
+    final async = ref.watch(trainedExercisesProvider);
+
+    return async.when(
+      data: (exercises) {
+        if (exercises.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              s.exerciseProgressListTitle,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            ...exercises.map(
+              (e) => ExerciseProgressTile(trainedExercise: e),
+            ),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }

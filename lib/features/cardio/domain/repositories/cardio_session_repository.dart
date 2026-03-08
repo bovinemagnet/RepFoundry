@@ -10,6 +10,7 @@ abstract class CardioSessionRepository {
   });
   Future<void> deleteSession(String id);
 
+  Future<List<CardioSession>> getAllSessions();
   Future<CardioSession?> getLastSessionForExercise(String exerciseId);
 
   Stream<List<CardioSession>> watchSessionsForWorkout(String workoutId);

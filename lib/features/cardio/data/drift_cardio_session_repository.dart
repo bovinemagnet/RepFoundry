@@ -53,6 +53,12 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
   }
 
   @override
+  Future<List<CardioSession>> getAllSessions() async {
+    final rows = await _db.select(_db.cardioSessions).get();
+    return rows.map(_toDomain).toList();
+  }
+
+  @override
   Future<CardioSession?> getLastSessionForExercise(String exerciseId) async {
     final q = _db.select(_db.cardioSessions).join([
       innerJoin(

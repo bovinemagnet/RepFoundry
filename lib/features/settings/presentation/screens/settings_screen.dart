@@ -9,6 +9,7 @@ import '../../../heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_bands_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../../heart_rate/presentation/widgets/health_profile_onboarding.dart';
+import '../providers/export_provider.dart';
 import '../providers/rest_timer_settings_provider.dart';
 import '../providers/show_exercise_images_provider.dart';
 import '../providers/user_age_provider.dart';
@@ -348,6 +349,8 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           _SectionHeader(title: s.sectionData),
+          _ExportJsonTile(),
+          _ExportCsvTile(),
           ListTile(
             leading: const Icon(Icons.delete_forever_outlined),
             title: Text(s.clearAllData),
@@ -525,6 +528,68 @@ class SettingsScreen extends ConsumerWidget {
         );
       }
     }
+  }
+}
+
+class _ExportJsonTile extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
+    final exportState = ref.watch(exportProvider);
+
+    ref.listen<ExportState>(exportProvider, (_, state) {
+      if (state.status == ExportStatus.completed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.exportComplete)),
+        );
+        ref.read(exportProvider.notifier).reset();
+      } else if (state.status == ExportStatus.failed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.exportFailed(state.error ?? ''))),
+        );
+        ref.read(exportProvider.notifier).reset();
+      }
+    });
+
+    return ListTile(
+      leading: const Icon(Icons.data_object_outlined),
+      title: Text(s.exportAsJson),
+      subtitle: Text(s.exportAsJsonSubtitle),
+      trailing: exportState.status == ExportStatus.exporting
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : null,
+      onTap: exportState.status == ExportStatus.exporting
+          ? null
+          : () => ref.read(exportProvider.notifier).exportJson(),
+    );
+  }
+}
+
+class _ExportCsvTile extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
+    final exportState = ref.watch(exportProvider);
+
+    return ListTile(
+      leading: const Icon(Icons.table_chart_outlined),
+      title: Text(s.exportAsCsv),
+      subtitle: Text(s.exportAsCsvSubtitle),
+      trailing: exportState.status == ExportStatus.exporting
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : null,
+      onTap: exportState.status == ExportStatus.exporting
+          ? null
+          : () => ref.read(exportProvider.notifier).exportCsv(),
+    );
   }
 }
 

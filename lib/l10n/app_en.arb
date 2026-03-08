@@ -423,5 +423,23 @@
 
   "startFromTemplate": "Start from Template",
   "chooseTemplate": "Choose Template",
-  "noTemplatesAvailable": "No templates available"
+  "noTemplatesAvailable": "No templates available",
+
+  "muscleGroupDistributionTitle": "Muscle Group Distribution",
+  "exerciseProgressListTitle": "Exercise Progress",
+  "setsLogged": "{count} sets logged",
+  "@setsLogged": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "exportAsJson": "Export as JSON",
+  "exportAsJsonSubtitle": "Full workout data in JSON format",
+  "exportAsCsv": "Export as CSV",
+  "exportAsCsvSubtitle": "Sets, cardio, and personal records as CSV files",
+  "exportingData": "Exporting data\u2026",
+  "exportComplete": "Export complete",
+  "exportFailed": "Export failed: {error}",
+  "@exportFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  }
 }

@@ -7,6 +7,7 @@ import '../features/workout/domain/repositories/workout_repository.dart';
 import '../features/workout/application/log_set_use_case.dart';
 import '../features/workout/application/start_workout_use_case.dart';
 import '../features/history/application/calculate_progress_use_case.dart';
+import '../features/settings/application/export_data_use_case.dart';
 import '../features/cardio/data/drift_cardio_session_repository.dart';
 import '../features/cardio/data/flutter_blue_heart_rate_service.dart';
 import '../features/cardio/data/heart_rate_service.dart';
@@ -83,5 +84,14 @@ final calculateProgressUseCaseProvider =
     Provider<CalculateProgressUseCase>((ref) {
   return CalculateProgressUseCase(
     workoutRepository: ref.watch(workoutRepositoryProvider),
+  );
+});
+
+final exportDataUseCaseProvider = Provider<ExportDataUseCase>((ref) {
+  return ExportDataUseCase(
+    workoutRepository: ref.watch(workoutRepositoryProvider),
+    exerciseRepository: ref.watch(exerciseRepositoryProvider),
+    cardioSessionRepository: ref.watch(cardioSessionRepositoryProvider),
+    personalRecordRepository: ref.watch(personalRecordRepositoryProvider),
   );
 });
