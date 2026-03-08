@@ -11,8 +11,13 @@ enum ExportStatus { idle, exporting, completed, failed }
 class ExportState {
   final ExportStatus status;
   final String? error;
+  final String? savedPath;
 
-  const ExportState({this.status = ExportStatus.idle, this.error});
+  const ExportState({
+    this.status = ExportStatus.idle,
+    this.error,
+    this.savedPath,
+  });
 }
 
 class ExportNotifier extends StateNotifier<ExportState> {
@@ -26,12 +31,11 @@ class ExportNotifier extends StateNotifier<ExportState> {
       final useCase = _ref.read(exportDataUseCaseProvider);
       final json = await useCase.exportAsJson();
 
-      final dir = await getTemporaryDirectory();
+      final dir = await _exportDirectory();
       final file = File('${dir.path}/repfoundry_export.json');
       await file.writeAsString(json);
 
-      await Share.shareXFiles([XFile(file.path)]);
-      state = const ExportState(status: ExportStatus.completed);
+      await _shareOrSave([XFile(file.path)], dir.path);
     } catch (e) {
       state = ExportState(status: ExportStatus.failed, error: e.toString());
     }
@@ -43,7 +47,7 @@ class ExportNotifier extends StateNotifier<ExportState> {
       final useCase = _ref.read(exportDataUseCaseProvider);
       final csvFiles = await useCase.exportAsCsv();
 
-      final dir = await getTemporaryDirectory();
+      final dir = await _exportDirectory();
       final files = <XFile>[];
       for (final entry in csvFiles.entries) {
         final file = File('${dir.path}/${entry.key}');
@@ -51,10 +55,29 @@ class ExportNotifier extends StateNotifier<ExportState> {
         files.add(XFile(file.path));
       }
 
-      await Share.shareXFiles(files);
-      state = const ExportState(status: ExportStatus.completed);
+      await _shareOrSave(files, dir.path);
     } catch (e) {
       state = ExportState(status: ExportStatus.failed, error: e.toString());
+    }
+  }
+
+  Future<Directory> _exportDirectory() async {
+    if (Platform.isLinux || Platform.isWindows) {
+      final downloads = await getDownloadsDirectory();
+      if (downloads != null) return downloads;
+    }
+    return getTemporaryDirectory();
+  }
+
+  Future<void> _shareOrSave(List<XFile> files, String dirPath) async {
+    if (Platform.isLinux || Platform.isWindows) {
+      state = ExportState(
+        status: ExportStatus.completed,
+        savedPath: dirPath,
+      );
+    } else {
+      await Share.shareXFiles(files);
+      state = const ExportState(status: ExportStatus.completed);
     }
   }
 

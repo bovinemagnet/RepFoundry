@@ -539,8 +539,11 @@ class _ExportJsonTile extends ConsumerWidget {
 
     ref.listen<ExportState>(exportProvider, (_, state) {
       if (state.status == ExportStatus.completed) {
+        final message = state.savedPath != null
+            ? '${s.exportComplete} — ${state.savedPath}'
+            : s.exportComplete;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.exportComplete)),
+          SnackBar(content: Text(message)),
         );
         ref.read(exportProvider.notifier).reset();
       } else if (state.status == ExportStatus.failed) {
