@@ -1,0 +1,175 @@
+= Programme Builder
+Paul Snow
+0.0.0
+:description: Guide to creating and running structured training programmes in RepFoundry.
+
+The Programme Builder lets users create multi-week training plans by assigning workout templates to specific days and defining automatic progression rules for each exercise.
+
+== Overview
+
+A *programme* is a named, time-bounded training plan divided into weeks and days.
+Each day references an existing xref:features/workout.adoc[workout template] and can carry progression rules that automatically adjust target weights as the programme advances.
+
+When the user starts a workout and a programme is active, RepFoundry finds today's template and applies the relevant progression rules to produce adjusted target weights.
+
+== Domain Models
+
+=== Programme
+
+[source,dart]
+----
+class Programme {
+  final String id;               // UUID v4
+  final String name;
+  final int durationWeeks;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final List<ProgrammeDay> days;
+  final List<ProgressionRule> rules;
+}
+----
+
+`Programme.create({required String name, required int durationWeeks})` generates a UUID, sets `createdAt` and `updatedAt` to `DateTime.now().toUtc()`, and returns a programme with empty `days` and `rules` lists.
+
+=== ProgrammeDay
+
+[source,dart]
+----
+class ProgrammeDay {
+  final String id;
+  final String programmeId;
+  final int weekNumber;     // 1-based
+  final int dayOfWeek;      // DateTime.monday (1) through DateTime.sunday (7)
+  final String templateId;
+  final String templateName; // denormalised for display
+}
+----
+
+A `ProgrammeDay` maps a specific week and weekday combination to a workout template.
+`templateName` is stored directly on the record so the schedule grid can render without an extra repository query.
+
+=== ProgressionRule
+
+[source,dart]
+----
+class ProgressionRule {
+  final String id;
+  final String programmeId;
+  final String exerciseId;
+  final ProgressionType type;
+  final double value;
+  final int frequencyWeeks; // apply every N weeks (default: 1)
+}
+----
+
+==== ProgressionType Enum
+
+[cols="1,2,2"]
+|===
+| Value | Description | Formula
+
+| `fixedIncrement`
+| Add a fixed amount to the base weight
+| `baseWeight + value`
+
+| `percentage`
+| Increase the base weight by a percentage
+| `baseWeight × (1 + value / 100)`
+
+| `deload`
+| Reduce the base weight by a percentage
+| `baseWeight × (1 − value / 100)`
+|===
+
+==== applyProgression
+
+[source,dart]
+----
+double applyProgression(double baseWeight) {
+  return switch (type) {
+    ProgressionType.fixedIncrement => baseWeight + value,
+    ProgressionType.percentage     => baseWeight * (1 + value / 100),
+    ProgressionType.deload         => baseWeight * (1 - value / 100),
+  };
+}
+----
+
+*Example:* A `fixedIncrement` rule with `value = 2.5` applied to a base weight of 80 kg produces a target of 82.5 kg.
+
+== Target Weight Calculation
+
+When `StartWorkoutUseCase` detects an active programme for today's date, it:
+
+. Locates the `ProgrammeDay` whose `weekNumber` and `dayOfWeek` match the current programme week and day.
+. Loads the assigned template.
+. For each `TemplateExercise` in the template, fetches the most recent logged weight for that exercise.
+. Finds the matching `ProgressionRule` (by `exerciseId`) and calls `applyProgression(lastWeight)`.
+. Passes the computed target weight to the active workout controller as the ghost set suggestion.
+
+If no `ProgressionRule` exists for an exercise, the last logged weight is used unchanged (standard ghost set behaviour).
+
+== Programme List Screen
+
+The programme list screen displays all programmes as cards with name and duration.
+Actions available:
+
+* *Create* — opens a name and duration dialog; `Programme.create()` is called and the new record is persisted.
+* *Delete* — soft-deletes (or hard-deletes, depending on implementation) the programme and its days and rules.
+* *Select* — marks a programme as active; subsequent workout starts will use it.
+
+Programmes are loaded as a reactive stream so the list updates immediately after any mutation.
+
+== Programme Edit Screen
+
+The programme edit screen presents a week / day grid.
+Each cell in the grid represents a `(weekNumber, dayOfWeek)` slot.
+
+=== Assigning a Template
+
+Tapping an empty slot opens the template picker.
+On selection, a `ProgrammeDay` is created and the slot is filled with the template name.
+
+=== Removing a Day
+
+Long-pressing (or tapping a remove icon on) a filled slot deletes the `ProgrammeDay`.
+
+=== Managing Progression Rules
+
+A *Rules* section below the grid lists the `ProgressionRule` records for the programme.
+Each rule shows the exercise name, progression type, increment/percentage value, and frequency.
+New rules are added via an exercise picker followed by type and value inputs.
+
+== Programme-Aware Workout Start
+
+`StartWorkoutUseCase` follows this logic:
+
+. Check whether an active programme exists.
+. If yes, find the `ProgrammeDay` matching today.
+. Load the template from that day.
+. For each exercise, compute the adjusted target weight from the applicable `ProgressionRule`.
+. Initialise the active workout with the template's exercise list and progression-adjusted ghost sets.
+. If no programme is active (or today has no scheduled day), fall back to the standard empty-workout or manual template flow.
+
+NOTE: `frequencyWeeks` controls how often a rule is applied.
+A rule with `frequencyWeeks = 2` only increases the weight on even-numbered weeks within the programme; on odd weeks the previous week's weight is repeated.
+
+== Key Files
+
+[cols="1,2"]
+|===
+| File | Purpose
+
+| `lib/features/programmes/domain/models/programme.dart`
+| `Programme`, `ProgrammeDay`, `ProgressionRule`, and `ProgressionType` definitions
+
+| `lib/features/workout/application/start_workout_use_case.dart`
+| Programme-aware workout initialisation
+
+| `lib/features/templates/domain/models/workout_template.dart`
+| `WorkoutTemplate` and `TemplateExercise` models
+|===
+
+== Related Features
+
+* xref:features/workout.adoc[Workout Logging] — programmes drive the workout start flow
+* xref:features/analytics.adoc[Advanced Analytics] — track volume trends across a programme block

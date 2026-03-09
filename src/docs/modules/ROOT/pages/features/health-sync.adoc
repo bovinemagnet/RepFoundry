@@ -1,0 +1,221 @@
+= Health Sync
+Paul Snow
+0.0.0
+:description: Guide to Apple Health and Google Health Connect integration in RepFoundry.
+
+Health Sync lets RepFoundry exchange data with the platform health stores — Apple HealthKit on iOS and Google Health Connect on Android — so workout, body metric, and heart rate data is available in other health apps and vice versa.
+
+== Overview
+
+Integration is provided by the `health` Flutter package.
+The `HealthSyncService` class wraps the platform API and exposes write operations for workouts, weight, body fat, and heart rate, plus a read operation for weight.
+All sync operations are opt-in and controlled by granular settings toggles.
+
+== HealthSyncSettings
+
+Settings are persisted via SharedPreferences through `HealthSyncSettingsNotifier`.
+
+[source,dart]
+----
+class HealthSyncSettings {
+  final bool enabled;           // master toggle; no sync occurs when false
+  final bool writeWorkouts;     // push completed workouts to the health store
+  final bool writeWeight;       // push body weight and body fat entries
+  final bool writeHeartRate;    // push BPM samples recorded during monitoring
+  final bool readWeight;        // pull the latest weight entry from the health store
+}
+----
+
+Default values:
+
+[cols="1,1"]
+|===
+| Setting | Default
+
+| `enabled`
+| `false`
+
+| `writeWorkouts`
+| `true`
+
+| `writeWeight`
+| `true`
+
+| `writeHeartRate`
+| `false`
+
+| `readWeight`
+| `false`
+|===
+
+== HealthSyncService
+
+=== Requesting Permissions
+
+[source,dart]
+----
+Future<bool> requestAuthorisation({
+  bool writeWorkouts = true,
+  bool writeWeight = true,
+  bool writeHeartRate = true,
+  bool readWeight = true,
+})
+----
+
+Builds the required `HealthDataType` and `HealthDataAccess` lists based on the active settings toggles, then calls `Health.requestAuthorization()`.
+The method returns `true` when the platform grants all requested permissions.
+
+=== Writing Workouts
+
+[source,dart]
+----
+Future<bool> writeWorkout({
+  required DateTime startTime,
+  required DateTime endTime,
+  required int totalCalories,
+  bool isCardio = false,
+  double? distanceMeters,
+})
+----
+
+* Strength workouts are written as `HealthWorkoutActivityType.FUNCTIONAL_STRENGTH_TRAINING`.
+* Cardio sessions are written as `HealthWorkoutActivityType.RUNNING`.
+* Energy is recorded in kilocalories; distance (when available) is recorded in metres.
+
+=== Writing Body Weight
+
+[source,dart]
+----
+Future<bool> writeWeight({required double weightKg, required DateTime dateTime})
+----
+
+Writes a single weight sample in kilograms to `HealthDataType.WEIGHT`.
+
+=== Writing Body Fat Percentage
+
+[source,dart]
+----
+Future<bool> writeBodyFat({required double percent, required DateTime dateTime})
+----
+
+Writes a body fat percentage sample to `HealthDataType.BODY_FAT_PERCENTAGE`.
+
+=== Writing Heart Rate Samples
+
+[source,dart]
+----
+Future<bool> writeHeartRate({required int bpm, required DateTime dateTime})
+----
+
+Writes a single BPM sample to `HealthDataType.HEART_RATE` with `RecordingMethod.automatic`.
+
+=== Reading Weight
+
+[source,dart]
+----
+Future<double?> readLatestWeight()
+----
+
+Queries `HealthDataType.WEIGHT` for the past 30 days, sorts by date descending, and returns the most recent value in kg.
+Returns `null` when no data is available or permission has not been granted.
+
+== Auto-Sync Hooks
+
+When Health Sync is enabled, writes are triggered automatically at two points:
+
+[cols="1,2"]
+|===
+| Trigger | Data written
+
+| Workout completion (`completedAt` is set)
+| Workout session (start/end time, estimated calories)
+
+| Body metric save
+| Body weight (kg) and body fat percentage (if available)
+|===
+
+Heart rate samples are written during the heart rate monitoring session if `writeHeartRate` is enabled — each BPM reading is pushed as an individual sample.
+
+== Weight Import
+
+When `readWeight` is enabled, users can trigger a weight import from the *Body Metrics* screen or *Settings → Health Sync → Import Weight*.
+`healthWeightImportProvider` calls `HealthSyncService.readLatestWeight()` and, if a value is returned, pre-fills the weight entry form.
+
+== Platform Permissions
+
+=== iOS — HealthKit
+
+Requires the following keys in `Info.plist`:
+
+[cols="1,2"]
+|===
+| Key | Usage description
+
+| `NSHealthShareUsageDescription`
+| Shown when requesting read access
+
+| `NSHealthUpdateUsageDescription`
+| Shown when requesting write access
+|===
+
+The `health` package handles the HealthKit entitlement and permission request dialog.
+
+=== Android — Health Connect
+
+Health Connect permissions are declared in `AndroidManifest.xml`.
+The required permissions depend on the active settings:
+
+[cols="1,2"]
+|===
+| Permission | Required for
+
+| `android.permission.health.WRITE_EXERCISE`
+| `writeWorkouts`
+
+| `android.permission.health.READ_WEIGHT`, `WRITE_WEIGHT`
+| `writeWeight` / `readWeight`
+
+| `android.permission.health.WRITE_BODY_FAT`
+| `writeWeight` (body fat)
+
+| `android.permission.health.WRITE_HEART_RATE`
+| `writeHeartRate`
+|===
+
+NOTE: Health Connect requires Android 9+ and the Health Connect app to be installed.
+On devices running Android 14+, Health Connect is bundled with the OS.
+
+== Settings UI
+
+The *Health Sync* section in the Settings screen contains:
+
+* Master enable toggle
+* *Write workouts* toggle
+* *Write weight and body fat* toggle
+* *Write heart rate* toggle
+* *Import weight from health store* toggle
+* *Connect / Re-authorise* button — opens the platform permission sheet
+
+Toggling the master switch to `enabled` immediately triggers `requestAuthorisation()` with the current per-feature settings.
+
+== Key Files
+
+[cols="1,2"]
+|===
+| File | Purpose
+
+| `lib/features/health_sync/data/health_sync_service.dart`
+| `HealthSyncService` — wraps the `health` package
+
+| `lib/features/health_sync/presentation/providers/health_sync_settings_provider.dart`
+| `HealthSyncSettings` model and `HealthSyncSettingsNotifier`
+
+| `lib/features/health_sync/presentation/providers/health_weight_import_provider.dart`
+| Weight import from health store
+|===
+
+== Related Features
+
+* xref:features/body-metrics.adoc[Body Metrics] — source of weight and body fat writes
+* xref:features/heart-rate.adoc[Heart Rate Monitoring] — source of BPM sample writes
+* xref:features/workout.adoc[Workout Logging] — source of workout session writes

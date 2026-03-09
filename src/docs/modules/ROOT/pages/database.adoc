@@ -1,0 +1,441 @@
+= Database
+Paul Snow
+:description: Drift/SQLite schema, design decisions, key files, and migration strategy for RepFoundry
+:keywords: database, drift, sqlite, schema, migration
+
+RepFoundry uses https://drift.simonbinder.eu/[Drift] (formerly Moor) as its SQLite persistence layer.
+Drift provides type-safe Dart query builders, generated companion classes, and reactive `Stream`-based query watchers.
+The database is the single source of truth for all user data; no feature requires network connectivity.
+
+== Key Files
+
+[cols="2,3",options="header"]
+|===
+| File | Purpose
+
+| `lib/core/database/app_database.dart`
+| `@DriftDatabase` class with all seven table registrations, a `forTesting(QueryExecutor)` constructor, and 18 default exercise seed records
+
+| `lib/core/database/tables/`
+| Directory containing one Dart file per Drift table definition
+
+| `lib/core/database/converters.dart`
+| Conversion helpers: `DateTime` ↔ epoch milliseconds, enum ↔ `.name` string
+
+| `lib/core/database/database_provider.dart`
+| Riverpod `Provider<AppDatabase>` — defaults to `UnimplementedError`, overridden in `main()` with the real instance
+
+| `build.yaml`
+| Drift build_runner configuration controlling generated output locations
+|===
+
+The generated code lives in `lib/core/database/app_database.g.dart`.
+Regenerate it after modifying any table definition:
+
+[source,bash]
+----
+dart run build_runner build --delete-conflicting-outputs
+----
+
+== Design Decisions
+
+=== Epoch Millisecond Timestamps
+
+All datetime columns use `IntColumn` storing UTC epoch milliseconds.
+Manual conversion is handled by `converters.dart`.
+This approach provides millisecond precision, consistent sort order, and straightforward comparisons without time-zone ambiguity.
+
+=== Enums as Strings
+
+Enum columns use `TextColumn` storing the enum's `.name` value (e.g. `"chest"`, `"barbell"`).
+This is human-readable when inspecting the database directly and is safe against enum reordering — unlike storing integer indices.
+
+=== String UUID Primary Keys
+
+All primary keys are `TextColumn` holding UUID v4 values.
+This matches the existing domain model pattern and enables client-side ID generation without database round-trips.
+
+=== Foreign Keys Enabled
+
+`PRAGMA foreign_keys = ON` is set inside `beforeOpen` in `AppDatabase`.
+This enforces referential integrity at the SQLite level, ensuring orphaned child records cannot be created.
+
+=== Lazy Database Initialisation
+
+`driftDatabase()` from the `drift_flutter` package provides a `LazyDatabase`.
+The SQLite file is not opened until the first query is executed, which avoids blocking startup with a loading screen.
+
+=== Import Aliasing
+
+Drift generates data classes (`Exercise`, `Workout`, `WorkoutSet`) whose names collide with domain model classes of the same name.
+Repository files resolve this with an import alias:
+
+[source,dart]
+----
+import 'package:repfoundry/core/database/app_database.dart' as db;
+----
+
+Domain model types are then used unqualified while Drift-generated types are referenced as `db.Exercise`, `db.Workout`, etc.
+
+=== Soft Deletes
+
+Workouts and exercises include a nullable `deleted_at` column (`IntColumn`, epoch ms).
+Soft deletes support undo operations and data recovery without permanently losing records.
+Queries filter out non-null `deleted_at` values by default.
+
+=== Seed Data
+
+On first run, 18 default exercises (IDs `'1'` through `'18'`) are inserted via the `beforeOpen` hook in `AppDatabase`.
+These cover common compound and isolation movements across major equipment categories.
+
+== Schema
+
+All seven tables are defined as Drift table classes in `lib/core/database/tables/`.
+All primary keys are text (UUID v4).
+All datetime columns use `IntColumn` (UTC epoch ms).
+All enum columns use `TextColumn` (enum `.name`).
+
+=== exercises
+
+[cols="1,1,1,3",options="header"]
+|===
+| Column | Type | Constraints | Notes
+
+| id
+| TEXT
+| PK
+| UUID v4
+
+| name
+| TEXT
+| NOT NULL
+|
+
+| category
+| TEXT
+| NOT NULL
+| Enum `.name` (e.g. `"strength"`, `"cardio"`)
+
+| muscle_group
+| TEXT
+| NOT NULL
+| Enum `.name` (e.g. `"chest"`, `"back"`)
+
+| equipment_type
+| TEXT
+| NOT NULL
+| Enum `.name` (e.g. `"barbell"`, `"dumbbell"`)
+
+| is_custom
+| BOOLEAN
+| NOT NULL
+| `false` for seeded exercises
+
+| deleted_at
+| INTEGER
+| NULLABLE
+| Epoch ms; non-null = soft deleted
+|===
+
+Repository: `DriftExerciseRepository`
+
+=== workouts
+
+[cols="1,1,1,3",options="header"]
+|===
+| Column | Type | Constraints | Notes
+
+| id
+| TEXT
+| PK
+| UUID v4
+
+| started_at
+| INTEGER
+| NOT NULL
+| Epoch ms (UTC)
+
+| completed_at
+| INTEGER
+| NULLABLE
+| Null while in progress
+
+| template_id
+| TEXT
+| FK → workout_templates(id), NULLABLE
+|
+
+| notes
+| TEXT
+| NULLABLE
+|
+
+| deleted_at
+| INTEGER
+| NULLABLE
+| Epoch ms; non-null = soft deleted
+|===
+
+Repository: `DriftWorkoutRepository`
+
+=== workout_sets
+
+[cols="1,1,1,3",options="header"]
+|===
+| Column | Type | Constraints | Notes
+
+| id
+| TEXT
+| PK
+| UUID v4
+
+| workout_id
+| TEXT
+| FK → workouts(id), NOT NULL
+|
+
+| exercise_id
+| TEXT
+| FK → exercises(id), NOT NULL
+|
+
+| set_order
+| INTEGER
+| NOT NULL
+| 1-based position within the exercise block
+
+| weight
+| REAL
+| NOT NULL
+| Stored in the user's preferred unit
+
+| reps
+| INTEGER
+| NOT NULL
+|
+
+| rpe
+| REAL
+| NULLABLE
+| 1.0–10.0
+
+| timestamp
+| INTEGER
+| NOT NULL
+| Epoch ms when the set was logged
+|===
+
+Repository: `DriftWorkoutRepository`
+
+=== cardio_sessions
+
+[cols="1,1,1,3",options="header"]
+|===
+| Column | Type | Constraints | Notes
+
+| id
+| TEXT
+| PK
+| UUID v4
+
+| workout_id
+| TEXT
+| FK → workouts(id), NOT NULL
+|
+
+| exercise_id
+| TEXT
+| FK → exercises(id), NOT NULL
+|
+
+| duration_seconds
+| INTEGER
+| NOT NULL
+|
+
+| distance_meters
+| REAL
+| NULLABLE
+|
+
+| incline
+| REAL
+| NULLABLE
+| Percentage gradient
+
+| avg_heart_rate
+| INTEGER
+| NULLABLE
+| BPM
+|===
+
+Status: table defined; repository implementation deferred.
+
+=== personal_records
+
+[cols="1,1,1,3",options="header"]
+|===
+| Column | Type | Constraints | Notes
+
+| id
+| TEXT
+| PK
+| UUID v4
+
+| exercise_id
+| TEXT
+| FK → exercises(id), NOT NULL
+|
+
+| record_type
+| TEXT
+| NOT NULL
+| Enum `.name` (e.g. `"oneRepMax"`, `"maxReps"`)
+
+| value
+| REAL
+| NOT NULL
+|
+
+| achieved_at
+| INTEGER
+| NOT NULL
+| Epoch ms
+
+| workout_set_id
+| TEXT
+| FK → workout_sets(id), NULLABLE
+| Link back to the set that set the record
+|===
+
+Status: table defined; repository implementation deferred.
+
+=== workout_templates
+
+[cols="1,1,1,3",options="header"]
+|===
+| Column | Type | Constraints | Notes
+
+| id
+| TEXT
+| PK
+| UUID v4
+
+| name
+| TEXT
+| NOT NULL
+|
+
+| created_at
+| INTEGER
+| NOT NULL
+| Epoch ms
+
+| updated_at
+| INTEGER
+| NOT NULL
+| Epoch ms
+|===
+
+Status: table defined; repository implementation deferred.
+
+=== template_exercises
+
+[cols="1,1,1,3",options="header"]
+|===
+| Column | Type | Constraints | Notes
+
+| id
+| TEXT
+| PK
+| UUID v4
+
+| template_id
+| TEXT
+| FK → workout_templates(id), NOT NULL
+|
+
+| exercise_id
+| TEXT
+| FK → exercises(id), NOT NULL
+|
+
+| exercise_name
+| TEXT
+| NOT NULL
+| Denormalised for display without a join
+
+| target_sets
+| INTEGER
+| NOT NULL
+|
+
+| target_reps
+| INTEGER
+| NOT NULL
+|
+
+| order_index
+| INTEGER
+| NOT NULL
+| Display order within the template
+|===
+
+Status: table defined; repository implementation deferred.
+
+== Migration Strategy
+
+Drift migrations are defined in `AppDatabase.migration`.
+Each schema version increment adds a `MigrationStep` that applies the required DDL changes.
+
+[cols="1,3",options="header"]
+|===
+| Version | Changes
+
+| v1
+| Initial schema: `exercises`, `workouts`, `workout_sets`
+
+| v2
+| Added `cardio_sessions`
+
+| v3
+| Added `personal_records`, `workout_templates`, `template_exercises`
+
+| v4
+| Added `deleted_at` soft-delete column to `exercises` and `workouts`
+
+| v5
+| Added `rpe` column to `workout_sets`
+|===
+
+NOTE: Always run `dart run build_runner build --delete-conflicting-outputs` after adding a new migration step to regenerate the schema version hash used by Drift's migration verification tests.
+
+== Reactive Queries
+
+Drift's `watch()` method returns a `Stream<T>` that re-emits whenever the underlying table data changes.
+Repository methods that return `Stream` use this mechanism so that Riverpod `StreamProvider` consumers automatically rebuild when data is modified.
+
+[source,dart]
+----
+Stream<List<db.Workout>> watchAllWorkouts() {
+  return (select(workouts)
+    ..where((w) => w.deletedAt.isNull())
+    ..orderBy([(w) => OrderingTerm.desc(w.startedAt)]))
+    .watch();
+}
+----
+
+Only the streams whose underlying tables are affected by a write are invalidated — unrelated providers are not disturbed.
+
+== Testing
+
+For unit and integration tests, `AppDatabase.forTesting(QueryExecutor executor)` accepts a `NativeDatabase.memory()` executor.
+This creates a fully functional in-memory SQLite instance that is fast, isolated, and automatically destroyed at the end of each test.
+
+[source,dart]
+----
+final db = AppDatabase.forTesting(NativeDatabase.memory());
+addTearDown(db.close);
+----
+
+See xref:testing.adoc[Testing] for the full testing strategy.

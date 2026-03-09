@@ -1,0 +1,164 @@
+= Notifications
+Paul Snow
+0.0.0
+:description: Guide to workout reminder and streak notifications in RepFoundry.
+
+RepFoundry can send scheduled push notifications to remind users to work out on chosen days and to protect active training streaks.
+
+== Overview
+
+Notifications are delivered via the `flutter_local_notifications` package using timezone-aware scheduling from the `timezone` package.
+`NotificationService` is a singleton that manages all scheduling.
+User preferences are stored in `ReminderSettings` and persisted via SharedPreferences through `ReminderSettingsNotifier`.
+
+== ReminderSettings Model
+
+[source,dart]
+----
+class ReminderSettings {
+  final Set<int> enabledDays;        // DateTime.monday (1) through DateTime.sunday (7)
+  final int hour;                    // 0–23; default 18
+  final int minute;                  // 0–59; default 0
+  final bool streakReminderEnabled;  // default false
+}
+----
+
+The `hasReminders` computed property returns `true` when `enabledDays` is non-empty.
+
+== NotificationService
+
+`NotificationService` is a singleton accessible via its factory constructor (`NotificationService()`).
+
+=== Initialisation
+
+[source,dart]
+----
+Future<void> init()
+----
+
+Must be called once during app startup (before any scheduling).
+Initialises timezone data (`tzdata.initializeTimeZones()`) and configures the `FlutterLocalNotificationsPlugin`:
+
+* Android — uses `@mipmap/ic_launcher` as the notification icon
+* iOS — requests alert, badge, and sound permissions via `DarwinInitializationSettings`
+
+=== Scheduling Weekly Reminders
+
+[source,dart]
+----
+Future<void> scheduleWeeklyReminders(ReminderSettings reminderSettings)
+----
+
+Cancels all existing reminders, then schedules one notification per enabled day using `FlutterLocalNotificationsPlugin.zonedSchedule()`.
+
+Notifications repeat weekly (`matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime`).
+
+[cols="1,2"]
+|===
+| Android channel | Details
+
+| ID
+| `workout_reminders`
+
+| Name
+| Workout Reminders
+
+| Importance
+| High
+|===
+
+=== Scheduling the Streak Reminder
+
+[source,dart]
+----
+Future<void> scheduleStreakReminder(int hour, int minute)
+----
+
+Schedules a single daily notification (notification ID `100`) that fires at the given time each day (`matchDateTimeComponents: DateTimeComponents.time`).
+The notification message warns the user that they have not yet logged a workout today.
+
+[cols="1,2"]
+|===
+| Android channel | Details
+
+| ID
+| `streak_reminders`
+
+| Name
+| Streak Reminders
+
+| Importance
+| Default
+|===
+
+=== Cancellation
+
+[source,dart]
+----
+Future<void> cancelStreakReminder()   // cancels notification ID 100
+Future<void> cancelAllReminders()    // cancels IDs 1–7 and 100
+----
+
+Weekly reminder notifications use IDs 1–7 (one per day of week).
+
+== Scheduling Algorithm
+
+The `_nextInstanceOfDayAndTime` helper finds the next calendar occurrence of the target `(weekday, hour, minute)` tuple in the device's local timezone.
+If the computed time has already passed today, the schedule is advanced by 7 days.
+The `_nextInstanceOfTime` helper performs the same calculation for the daily streak reminder without a weekday constraint.
+
+== Android Permissions
+
+Declare the following in `AndroidManifest.xml`:
+
+[cols="1,2"]
+|===
+| Permission | Purpose
+
+| `POST_NOTIFICATIONS`
+| Required on Android 13+ (API 33) to show notifications
+
+| `SCHEDULE_EXACT_ALARM` or `USE_EXACT_ALARM`
+| Required for exact alarm scheduling; `inexactAllowWhileIdle` is used for battery efficiency but still requires the permission on some OEM configurations
+
+| `RECEIVE_BOOT_COMPLETED`
+| Re-schedules notifications after device restart
+|===
+
+NOTE: RepFoundry uses `AndroidScheduleMode.inexactAllowWhileIdle` for all reminders.
+This balances battery life against delivery reliability; reminders may fire a few minutes late during Doze mode.
+
+== iOS Permissions
+
+iOS permissions (`alert`, `badge`, `sound`) are requested at initialisation time via `DarwinInitializationSettings`.
+No additional `Info.plist` keys are required beyond those added by the `flutter_local_notifications` package.
+
+== Settings UI
+
+The notifications section in the Settings screen contains:
+
+* *Day picker* — a row of toggle chips for Monday through Sunday
+* *Time picker* — opens the platform time picker; updates `hour` and `minute`
+* *Streak reminder toggle* — enables or disables the daily streak protection notification
+
+Changes are saved immediately via `ReminderSettingsNotifier`, which reschedules all active notifications to reflect the updated preferences.
+
+== Key Files
+
+[cols="1,2"]
+|===
+| File | Purpose
+
+| `lib/features/notifications/domain/models/reminder_settings.dart`
+| `ReminderSettings` model
+
+| `lib/features/notifications/data/notification_service.dart`
+| `NotificationService` singleton — scheduling and cancellation
+
+| `lib/features/notifications/presentation/providers/reminder_settings_provider.dart`
+| `ReminderSettingsNotifier` — SharedPreferences-backed settings state
+|===
+
+== Related Features
+
+* xref:features/workout.adoc[Workout Logging] — completing a workout satisfies the streak and prevents the streak reminder from firing

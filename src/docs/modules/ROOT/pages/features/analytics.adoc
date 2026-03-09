@@ -1,0 +1,187 @@
+= Advanced Analytics
+Paul Snow
+0.0.0
+:description: Guide to the advanced analytics charts and metrics in RepFoundry.
+
+The advanced analytics feature provides data-driven insight into training history through weekly volume trends, muscle group balance, PR timelines, and training load measurements.
+
+== Overview
+
+Analytics screens and providers sit under `lib/features/analytics/`.
+All calculations are performed by pure functions that are independently testable.
+Providers query the `WorkoutRepository` and `ExerciseRepository`, filter out warm-up sets, and pass the results to computation functions that return structured data objects for the chart widgets.
+
+NOTE: Warm-up sets (where `WorkoutSet.isWarmUp == true`) are excluded from all analytics calculations.
+
+== Weekly Volume Trend
+
+The weekly volume chart shows total training volume (kg × reps) per calendar week as a line chart, with percentage change indicators between consecutive weeks.
+
+=== WeeklyVolume Model
+
+[source,dart]
+----
+class WeeklyVolume {
+  final DateTime weekStart;    // Monday of the ISO week
+  final double totalVolume;    // sum of weight × reps for all working sets
+  final double? percentChange; // null for the first data point
+}
+----
+
+=== computeWeeklyVolume
+
+[source,dart]
+----
+List<WeeklyVolume> computeWeeklyVolume(List<SetData> sets)
+----
+
+The function groups `SetData` entries by their ISO week start (Monday), totals the volume per week, then calculates the percentage change against the prior week:
+
+----
+percentChange = ((thisWeek − lastWeek) / lastWeek) × 100
+----
+
+`percentChange` is `null` for the first week and whenever `lastWeek == 0`.
+
+=== weeklyVolumeProvider
+
+[source,dart]
+----
+final weeklyVolumeProvider =
+    FutureProvider.autoDispose<List<WeeklyVolume>>((ref) async { ... });
+----
+
+Fetches up to 200 completed workouts, collects all non-warm-up sets, and delegates to `computeWeeklyVolume`.
+
+== Muscle Group Balance
+
+The muscle group balance chart visualises how training volume is distributed across muscle groups, enabling users to spot imbalances.
+
+=== MuscleBalance Model
+
+[source,dart]
+----
+class MuscleBalance {
+  final MuscleGroup group;
+  final double volumePercent; // this group's share of total volume (0–100)
+}
+----
+
+=== muscleBalanceProvider
+
+The provider:
+
+. Loads the last 100 completed workouts.
+. Resolves each set's `MuscleGroup` by joining against the exercise library.
+. Accumulates volume per `MuscleGroup`.
+. Calculates each group's percentage of the total.
+. Excludes `MuscleGroup.cardio` from the output (cardio volume is tracked separately).
+. Returns entries sorted by `MuscleGroup.index` for consistent legend ordering.
+
+== PR Timeline
+
+The PR timeline displays personal records as a horizontally scrollable set of cards, ordered by date achieved, allowing users to see their progression over time.
+
+=== prTimelineProvider
+
+The provider reads from the `PersonalRecord` repository and returns records sorted by `achievedAt` in reverse chronological order.
+Each card shows:
+
+* Exercise name
+* PR type (estimated 1RM, max weight, max reps, or max volume)
+* Value achieved
+* Date achieved
+
+== Training Load
+
+The training load chart measures subjective workout intensity over time.
+Load is defined as the number of working sets multiplied by the average RPE for that week.
+
+=== WeeklyLoad Model
+
+[source,dart]
+----
+class WeeklyLoad {
+  final DateTime weekStart;
+  final int setCount;     // total working sets in the week
+  final double avgRpe;    // average RPE across sets that have RPE logged
+  final double load;      // setCount × avgRpe
+}
+----
+
+=== computeTrainingLoad
+
+[source,dart]
+----
+List<WeeklyLoad> computeTrainingLoad(List<SetData> sets)
+----
+
+Sets without an RPE value are counted in `setCount` but contribute a value of `0` to the RPE average.
+Weeks where no sets have RPE logged will show `avgRpe = 0.0` and `load = 0.0`.
+
+=== trainingLoadProvider
+
+Follows the same pattern as `weeklyVolumeProvider` — fetches up to 200 completed workouts, collects non-warm-up sets, and delegates to `computeTrainingLoad`.
+
+== Provider Summary
+
+[cols="1,2,1"]
+|===
+| Provider | Returns | Auto-dispose
+
+| `weeklyVolumeProvider`
+| `List<WeeklyVolume>`
+| Yes
+
+| `muscleBalanceProvider`
+| `List<MuscleBalance>`
+| Yes
+
+| `prTimelineProvider`
+| `List<PersonalRecord>`
+| Yes
+
+| `trainingLoadProvider`
+| `List<WeeklyLoad>`
+| Yes
+|===
+
+== SetData Input Type
+
+Both `computeWeeklyVolume` and `computeTrainingLoad` accept `List<SetData>`:
+
+[source,dart]
+----
+class SetData {
+  final DateTime date;
+  final double volume;  // weight × reps
+  final double? rpe;
+}
+----
+
+This decoupling means the pure functions can be unit-tested without any repository or Riverpod dependency.
+
+== Key Files
+
+[cols="1,2"]
+|===
+| File | Purpose
+
+| `lib/features/analytics/presentation/providers/weekly_volume_provider.dart`
+| Volume trend provider and `computeWeeklyVolume` function
+
+| `lib/features/analytics/presentation/providers/muscle_balance_provider.dart`
+| Muscle group balance provider
+
+| `lib/features/analytics/presentation/providers/pr_timeline_provider.dart`
+| PR timeline provider
+
+| `lib/features/analytics/presentation/providers/training_load_provider.dart`
+| Training load provider and `computeTrainingLoad` function
+|===
+
+== Related Features
+
+* xref:features/workout.adoc[Workout Logging] — volume and RPE data source
+* xref:features/programmes.adoc[Programme Builder] — compare load across programme blocks
+* xref:features/body-metrics.adoc[Body Metrics] — complement training data with body composition trends

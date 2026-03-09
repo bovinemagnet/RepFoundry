@@ -1,0 +1,303 @@
+= Workout Logging
+Paul Snow
+0.0.0
+:description: Comprehensive guide to the workout logging feature in RepFoundry.
+
+The workout logging feature is the core of RepFoundry.
+It lets users record sets with weight, reps, and optional RPE; manage an exercise library; organise sessions with templates; and track personal records automatically.
+
+== Overview
+
+A workout session is represented by the `Workout` domain model, which acts as a container for one or more `WorkoutSet` records.
+Sessions begin when the user taps *Start Workout* and are marked complete when they tap *Finish*.
+All sets are persisted to SQLite immediately on entry — never batched — so data is never lost if the app is killed mid-session.
+
+== Exercise Library
+
+RepFoundry ships 18 default exercises, seeded into the database on first run (IDs `'1'` through `'18'`).
+Users can add unlimited custom exercises.
+
+=== Exercise Model
+
+[source,dart]
+----
+class Exercise {
+  final String id;               // UUID v4
+  final String name;
+  final ExerciseCategory category;
+  final MuscleGroup muscleGroup;
+  final EquipmentType equipmentType;
+  final bool isCustom;
+  final String? imageAsset;
+  final DateTime? deletedAt;     // null = active; non-null = soft-deleted
+}
+----
+
+=== MuscleGroup Enum
+
+|===
+| Value | Value | Value
+
+| `chest`
+| `back`
+| `shoulders`
+
+| `biceps`
+| `triceps`
+| `forearms`
+
+| `core`
+| `quadriceps`
+| `hamstrings`
+
+| `glutes`
+| `calves`
+| `fullBody`
+
+| `cardio`
+|
+|
+|===
+
+=== EquipmentType Enum
+
+|===
+| Value | Value | Value
+
+| `barbell`
+| `dumbbell`
+| `machine`
+
+| `cable`
+| `bodyweight`
+| `kettlebell`
+
+| `resistanceBand`
+| `cardioMachine`
+| `other`
+|===
+
+=== ExerciseCategory Enum
+
+`strength`, `cardio`, `flexibility`, `custom`
+
+=== Creating a Custom Exercise
+
+Custom exercises are created via the *Create Exercise* screen and persisted through `DriftExerciseRepository`.
+The `isCustom` flag distinguishes them from seeded exercises in the library view.
+Soft deletes are used so history referencing a deleted exercise remains valid.
+
+== Logging Sets
+
+Each entry is a `WorkoutSet`:
+
+[source,dart]
+----
+class WorkoutSet {
+  final String id;          // UUID v4
+  final String workoutId;
+  final String exerciseId;
+  final int setOrder;
+  final double weight;      // kg (>= 0)
+  final int reps;           // > 0
+  final double? rpe;        // 1.0–10.0, optional
+  final DateTime timestamp; // UTC, stored as epoch ms
+  final bool isWarmUp;      // excluded from volume and PR checks
+  final String? groupId;    // non-null when part of a superset/circuit
+}
+----
+
+=== Input Validation
+
+[cols="1,2"]
+|===
+| Field | Rule
+
+| `weight`
+| Must be >= 0
+
+| `reps`
+| Must be > 0
+
+| `rpe`
+| Optional; if provided must be 1–10
+|===
+
+=== Warm-Up Sets
+
+Setting `isWarmUp = true` excludes the set from:
+
+* volume calculations
+* PR detection
+* training load analytics
+
+Warm-up rows are visually distinguished in the set list with a *W* badge.
+
+=== Editing Logged Sets
+
+After a set is persisted, users can open the *Edit Set* dialog from any set row to correct weight, reps, RPE, or warm-up status.
+Changes are written immediately through `DriftWorkoutRepository`.
+
+== Ghost Set Auto-Fill
+
+When an exercise is added to a workout, `ActiveWorkoutController` queries the most recent completed session containing that exercise via `WorkoutRepository.getSetsFromLastSession()`.
+The returned sets are converted into lightweight `GhostSet` objects — stripped of IDs and timestamps — and stored in `ActiveWorkoutState.ghostSetsByExercise`.
+
+`SetInputCard` accepts a `GhostSet? suggestion` parameter that pre-populates the weight, reps, and RPE fields, saving the user from re-entering the same values each session.
+Remaining ghosts beyond the logged count render as dimmed placeholder rows beneath the confirmed sets.
+Unconsumed ghosts are discarded (never persisted) when the workout finishes.
+
+=== Ghost State Helpers
+
+[source,dart]
+----
+// Returns the ghost at index == loggedSetCount, or null when all are consumed
+GhostSet? nextGhostSet(String exerciseId)
+
+// Returns ghosts beyond the logged count for dimmed placeholder rendering
+List<GhostSet> remainingGhosts(String exerciseId)
+----
+
+== Superset and Circuit Grouping
+
+Sets can be linked into a superset or circuit by sharing the same `groupId` UUID.
+The UI presents a *Link / Unlink* action on each set row.
+Sets with the same `groupId` are visually grouped and can be navigated sequentially during the rest period.
+Unlinking a set clears its `groupId` via `copyWith(clearGroupId: true)`.
+
+== Rest Timer
+
+The rest timer counts down from a user-selected duration between sets.
+When the countdown completes (non-null → null transition), `RestTimerWidget` detects the change via `ref.listen()` and fires alerts according to `RestTimerSettings`:
+
+* *Haptic feedback* — `HapticFeedback.heavyImpact()` (no external package)
+* *Audio alert* — a bundled 0.5-second 440 Hz sine-wave beep via the `audioplayers` package (`assets/sounds/timer_complete.wav`)
+
+Both alerts are independently togglable.
+Settings are persisted via SharedPreferences through `restTimerSettingsProvider`.
+
+== Personal Record Detection
+
+PR detection runs on every logged set (excluding warm-ups) inside `LogSetUseCase`.
+Four PR types are tracked:
+
+[cols="1,2,2"]
+|===
+| PR Type | Definition | Formula
+
+| Estimated 1RM
+| Highest estimated one-rep maximum
+| Epley: `weight × (1 + reps / 30.0)`
+
+| Max weight
+| Heaviest single-rep lift
+| `weight` where `reps == 1`
+
+| Max reps
+| Most reps at any weight
+| `reps`
+
+| Max volume
+| Highest volume in a single set
+| `weight × reps`
+|===
+
+NOTE: The Epley formula special-cases single-rep sets: if `reps == 1`, the estimated 1RM is simply `weight`.
+
+When a new PR is detected, a `PersonalRecord` is created and a `PrCelebrationOverlay` is shown on screen.
+
+=== Epley Formula
+
+----
+estimatedOneRepMax = weight × (1 + reps / 30.0)
+----
+
+*Example:* 100 kg × 5 reps → `100 × (1 + 5/30)` = **116.7 kg**
+
+== Templates
+
+Templates are reusable workout blueprints stored as `WorkoutTemplate` records.
+Each template contains an ordered list of `TemplateExercise` entries specifying target sets and reps.
+
+=== Using a Template
+
+. Navigate to *Templates* and select a template.
+. Tap *Start Workout* — `StartWorkoutUseCase` creates a `Workout` with `templateId` set.
+. The exercise list is pre-populated from the template; ghost sets are loaded for each exercise.
+
+=== Creating a Template
+
+Templates can be created from scratch via the *Template Edit* screen, or saved from a completed workout.
+Each `TemplateExercise` stores:
+
+[cols="1,2"]
+|===
+| Field | Description
+
+| `exerciseId`
+| Reference to the `Exercise`
+
+| `exerciseName`
+| Denormalised name for display without a join
+
+| `targetSets`
+| Suggested number of sets
+
+| `targetReps`
+| Suggested rep count per set
+
+| `orderIndex`
+| Position within the template
+|===
+
+== Active Workout State Flow
+
+. User taps *Start Workout*
+. `ActiveWorkoutController` creates a `Workout` record in the repository
+. User adds an exercise — ghost sets are loaded from the last session
+. Dimmed ghost rows appear beneath confirmed sets
+. `SetInputCard` pre-fills the next ghost's weight / reps / RPE
+. Each confirmed set is persisted immediately
+. Rest timer runs between sets
+. User taps *Finish* — workout is marked `completedAt`; history providers refresh via broadcast streams
+
+== Key Files
+
+[cols="1,2"]
+|===
+| File | Purpose
+
+| `lib/features/workout/domain/models/workout_set.dart`
+| `WorkoutSet` model with Epley formula
+
+| `lib/features/workout/domain/models/workout.dart`
+| `Workout` model
+
+| `lib/features/workout/presentation/models/ghost_set.dart`
+| Presentation-only `GhostSet`
+
+| `lib/features/workout/presentation/controllers/active_workout_controller.dart`
+| Active session state notifier
+
+| `lib/features/workout/application/log_set_use_case.dart`
+| Validates, persists, and checks PRs
+
+| `lib/features/workout/application/start_workout_use_case.dart`
+| Creates workout record and loads template
+
+| `lib/features/workout/presentation/widgets/set_input_card.dart`
+| Set entry widget with ghost suggestion
+
+| `lib/features/workout/presentation/widgets/rest_timer_widget.dart`
+| Countdown timer with haptic / audio alerts
+
+| `lib/features/workout/data/drift_workout_repository.dart`
+| SQLite persistence for workouts and sets
+|===
+
+== Related Features
+
+* xref:features/cardio.adoc[Cardio Tracking] — log cardio sessions within a workout
+* xref:features/heart-rate.adoc[Heart Rate Monitoring] — BLE HR during training
+* xref:features/programmes.adoc[Programme Builder] — apply progression rules to templates
+* xref:features/analytics.adoc[Advanced Analytics] — volume trends and PR timeline

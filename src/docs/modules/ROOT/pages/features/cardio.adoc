@@ -1,0 +1,205 @@
+= Cardio Tracking
+Paul Snow
+0.0.0
+:description: Guide to the cardio session tracking feature in RepFoundry.
+
+The cardio tracking feature records duration-based activities — running, cycling, rowing, and similar exercises — with optional GPS distance, incline input, and live BLE heart rate monitoring.
+
+== Overview
+
+A cardio session is wrapped inside a standard `Workout` record so that it integrates with workout history, streaks, and analytics without a separate data model.
+When the user saves a session, `SaveCardioSessionUseCase` creates the enclosing `Workout` retroactively with the recorded start and end time, then attaches a `CardioSession` record to it.
+
+== CardioSession Model
+
+[source,dart]
+----
+class CardioSession {
+  final String id;                 // UUID v4
+  final String workoutId;          // FK → Workout.id
+  final String exerciseId;         // FK → Exercise.id
+  final int durationSeconds;       // total active duration
+  final double? distanceMeters;    // null when GPS unavailable or not tracked
+  final double? incline;           // treadmill / machine incline in percent
+  final int? avgHeartRate;         // BPM average for the session; null if no HR monitor
+}
+----
+
+=== Derived Properties
+
+[source,dart]
+----
+Duration get duration => Duration(seconds: durationSeconds);
+
+// Returns null when distanceMeters is null or zero
+double? get paceMinutesPerKm {
+  if (distanceMeters == null || distanceMeters! <= 0) return null;
+  final distanceKm = distanceMeters! / 1000;
+  return (durationSeconds / 60) / distanceKm;
+}
+----
+
+== Tracking Screen
+
+The `CardioTrackingScreen` provides a live dashboard during an active session.
+
+=== Live Display
+
+* Elapsed time (stopwatch)
+* Distance covered (when GPS is active)
+* Current pace (minutes per km, recalculated on each GPS fix)
+* Live BPM from a connected BLE heart rate monitor
+* Reconnecting indicator when the BLE link is temporarily lost
+
+=== Incline Input
+
+Users can enter or update the current incline at any point during the session.
+The value is stored on the `CardioSession` as a percentage (e.g. `5.0` = 5 %).
+
+== GPS Distance Tracking
+
+RepFoundry uses the `geolocator` package to stream GPS position fixes.
+Distance is accumulated by summing the great-circle distance between successive fixes.
+
+=== Location Service
+
+`LocationService` (in `lib/features/cardio/data/location_service.dart`) wraps `geolocator` and exposes a position stream.
+The service requests *While in Use* location permission on first launch.
+
+[cols="1,2"]
+|===
+| Platform | Permission requested
+
+| iOS
+| `NSLocationWhenInUseUsageDescription`
+
+| Android
+| `ACCESS_FINE_LOCATION`
+|===
+
+NOTE: GPS tracking is optional.
+If the user declines location permission or taps *Skip GPS*, distance and pace fields remain `null` and the session saves successfully.
+
+== BLE Heart Rate Monitor
+
+The cardio feature integrates live BLE heart rate streaming via the `HeartRateService` interface and `FlutterBlueHeartRateService` implementation.
+This is the same BLE layer shared with the xref:features/heart-rate.adoc[Heart Rate Monitoring] panel.
+
+=== Supported Devices
+
+* Standard chest straps (Polar, Garmin, Wahoo) — BLE HR Service UUID `0x180D`
+* Apple Watch — requires *Broadcast Heart Rate* enabled in the Workout app
+* Samsung Galaxy Watch — requires BLE broadcast enabled in Samsung Health
+
+=== Connection Flow
+
+. Tap the *HR Monitor* button to open the device picker (`HrDevicePickerDialog`).
+. `FlutterBlueHeartRateService` scans for devices advertising service `0x180D`.
+. On selection, the service connects and subscribes to HR Measurement characteristic `0x2A37`.
+. Live BPM readings stream to `CardioTrackingController.heartRateStream`.
+
+=== Connection State
+
+`HrConnectionState` drives the UI indicator:
+
+[cols="1,2"]
+|===
+| State | UI
+
+| `connected`
+| BPM shown in green
+
+| `reconnecting`
+| "Reconnecting…" amber indicator; BPM display paused
+
+| `disconnected`
+| "Not connected" message; connect button shown
+|===
+
+*Auto-reconnect:* on unexpected disconnection the service retries up to 2 times with a 2-second delay between attempts.
+Intentional disconnects (via `disconnect()`) bypass reconnection.
+
+=== Setup Help
+
+An in-app setup guide (`HrSetupGuideDialog`) provides device-specific pairing instructions for Apple Watch and Samsung Galaxy Watch.
+It is accessible via the help icon on the HR monitor card.
+
+== Save Flow
+
+When the user taps *Finish*:
+
+. `SaveCardioSessionUseCase` is called with the accumulated metrics.
+. A `Workout` is created retroactively with the session's `startedAt` and `completedAt` timestamps.
+. A `CardioSession` is attached to the workout via its `workoutId`.
+. Navigation moves to the workout history list.
+
+[source,dart]
+----
+// Simplified save flow
+final workout = await workoutRepo.createWorkout(
+  startedAt: sessionStart,
+  completedAt: sessionEnd,
+);
+
+final session = CardioSession.create(
+  workoutId: workout.id,
+  exerciseId: selectedExercise.id,
+  durationSeconds: elapsed.inSeconds,
+  distanceMeters: accumulatedDistance,
+  incline: inclineValue,
+  avgHeartRate: computedAvgBpm,
+);
+
+await cardioRepo.saveSession(session);
+----
+
+== Cardio in Workout History
+
+Saved cardio sessions appear in the history list alongside strength workouts.
+The history tile shows exercise name, duration, distance (if available), and average heart rate (if available).
+
+== Key Files
+
+[cols="1,2"]
+|===
+| File | Purpose
+
+| `lib/features/cardio/domain/models/cardio_session.dart`
+| `CardioSession` domain model
+
+| `lib/features/cardio/domain/repositories/cardio_session_repository.dart`
+| Repository interface
+
+| `lib/features/cardio/data/drift_cardio_session_repository.dart`
+| SQLite persistence
+
+| `lib/features/cardio/application/save_cardio_session_use_case.dart`
+| Orchestrates workout creation and session save
+
+| `lib/features/cardio/data/location_service.dart`
+| GPS position stream via `geolocator`
+
+| `lib/features/cardio/data/heart_rate_service.dart`
+| `HeartRateService` interface
+
+| `lib/features/cardio/data/flutter_blue_heart_rate_service.dart`
+| BLE HR implementation
+
+| `lib/features/cardio/presentation/screens/cardio_tracking_screen.dart`
+| Live tracking dashboard
+
+| `lib/features/cardio/presentation/controllers/cardio_tracking_state.dart`
+| Tracking state model
+
+| `lib/features/cardio/presentation/widgets/hr_device_picker_dialog.dart`
+| BLE device selection UI
+
+| `lib/features/cardio/presentation/widgets/hr_setup_guide_dialog.dart`
+| Device pairing instructions
+|===
+
+== Related Features
+
+* xref:features/workout.adoc[Workout Logging] — strength session recording
+* xref:features/heart-rate.adoc[Heart Rate Monitoring] — dedicated HR panel shares the BLE service
+* xref:features/analytics.adoc[Advanced Analytics] — volume and training load trends

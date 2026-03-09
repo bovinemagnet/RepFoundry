@@ -1,0 +1,172 @@
+= Localisation
+Paul Snow
+:description: ARB workflow, generated class usage, and how to add new strings in RepFoundry
+:keywords: localisation, l10n, gen-l10n, ARB, flutter, internationalisation
+
+RepFoundry externalises all user-facing strings using Flutter's built-in `gen-l10n` code generation tool.
+This keeps translatable text out of widget files and makes the app ready for additional locales in the future.
+
+== Overview
+
+[cols="2,3",options="header"]
+|===
+| Item | Detail
+
+| Source file
+| `lib/l10n/app_en.arb`
+
+| Generated class
+| `S` (in `lib/l10n/generated/`)
+
+| Configuration file
+| `l10n.yaml`
+
+| Output class name
+| `S`
+
+| Output directory
+| `lib/l10n/generated/`
+|===
+
+The `l10n.yaml` at the project root configures `gen-l10n`:
+
+[source,yaml]
+----
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: S
+output-dir: lib/l10n/generated
+----
+
+== ARB File Format
+
+Each string is defined as a key-value pair in `lib/l10n/app_en.arb`.
+Optional metadata keys (prefixed with `@`) document the string's description and any placeholder parameters.
+
+[source,json]
+----
+{
+  "@@locale": "en",
+
+  "startWorkout": "Start Workout",
+  "@startWorkout": {
+    "description": "Button label to begin a new workout session"
+  },
+
+  "setsCompleted": "{count} sets completed",
+  "@setsCompleted": {
+    "description": "Summary line showing how many sets have been logged",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}
+----
+
+== Generated Class Usage
+
+After running `flutter gen-l10n`, the generated `S` class provides type-safe accessors for every string defined in the ARB file.
+
+Access strings in widget `build` methods via `S.of(context)!`:
+
+[source,dart]
+----
+import 'package:repfoundry/l10n/generated/app_localizations.dart';
+
+class StartWorkoutButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () { /* … */ },
+      child: Text(S.of(context)!.startWorkout),
+    );
+  }
+}
+----
+
+For strings with placeholders, pass the required arguments as named parameters:
+
+[source,dart]
+----
+Text(S.of(context)!.setsCompleted(controller.setCount))
+----
+
+== Registering Delegates in the App
+
+Localisation delegates must be registered on the root `MaterialApp` (or `CupertinoApp`).
+This is done once in `lib/app/app.dart`:
+
+[source,dart]
+----
+MaterialApp.router(
+  localizationsDelegates: S.localizationsDelegates,
+  supportedLocales: S.supportedLocales,
+  routerConfig: router,
+  // …
+);
+----
+
+== Widget Test Setup
+
+Widget tests that render any localised string must also configure the delegates on their `MaterialApp`; otherwise the test will throw a `MissingPluginException` or render fallback keys.
+
+[source,dart]
+----
+await tester.pumpWidget(
+  ProviderScope(
+    overrides: [/* … */],
+    child: MaterialApp(
+      localizationsDelegates: S.localizationsDelegates,
+      supportedLocales: S.supportedLocales,
+      home: const MyScreen(),
+    ),
+  ),
+);
+----
+
+See xref:testing.adoc[Testing] for the full widget test approach.
+
+== Domain Warning Messages
+
+The domain layer's `lib/features/heart_rate/domain/warning_messages.dart` contains static string constants for medical disclaimers, beta blocker/heart condition warnings, symptom prompts, and stop-exercise text.
+These strings are retained as a non-Flutter fallback for use in pure-Dart contexts (e.g. logging or analytics) where a `BuildContext` is unavailable.
+Presentation widgets use `S` instead for all user-visible text.
+
+== Adding New Strings
+
+Follow these steps when adding a new user-facing string:
+
+. *Add the string to the ARB file* — open `lib/l10n/app_en.arb` and add the key, value, and `@` metadata entry:
++
+[source,json]
+----
+"myNewString": "My new label",
+"@myNewString": {
+  "description": "Brief description of where and how this string is used"
+}
+----
+
+. *Regenerate the localisation class*:
++
+[source,bash]
+----
+flutter gen-l10n
+----
+
+. *Use the string in your widget* — reference it via `S.of(context)!.myNewString`.
+
+. *Do not hardcode strings in widget files* — even strings that appear only once should go through the ARB file to keep the codebase translation-ready.
+
+== Adding a New Locale
+
+To add support for an additional locale (e.g. French):
+
+. Create `lib/l10n/app_fr.arb` with translated key-value pairs.
+. Add the locale to `l10n.yaml` if required (Flutter auto-discovers ARB files in the configured `arb-dir`).
+. Run `flutter gen-l10n` to regenerate the `S` class with the new locale.
+. Add the locale to the `supportedLocales` list in `app.dart` (the generated `S.supportedLocales` already includes it automatically).
+
+NOTE: British English spelling is used throughout all user-facing strings in `app_en.arb` — for example "colour" not "color", "favourite" not "favorite", "grey" not "gray".

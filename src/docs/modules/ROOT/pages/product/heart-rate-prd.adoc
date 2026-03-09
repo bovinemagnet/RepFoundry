@@ -1,0 +1,462 @@
+= Heart Rate Monitoring PRD
+Paul Snow
+:description: Product requirements for heart rate monitoring during exercise, covering zone calculation, onboarding, safety requirements, and UI behaviour.
+:keywords: heart rate, BPM, zones, HRR, Karvonen, PRD, product requirements
+
+*Version 1.0 | 07 March 2026* +
+*Prepared for: Product, Design, Engineering, and QA*
+
+[cols="1,3",options="header"]
+|===
+| Field | Value
+
+| Document date
+| 07 March 2026
+
+| Primary objective
+| Provide safe, understandable heart-rate guidance during exercise using estimated zones, personalised calculations, and caution handling for medical edge cases.
+
+| Release target
+| MVP with age-based and HRR zone calculations, onboarding, warnings, and chart overlays.
+|===
+
+IMPORTANT: The application must present heart-rate zones as estimated training guidance, not medical diagnosis or emergency monitoring.
+
+== 1. Purpose and Scope
+
+This product provides live heart-rate monitoring during exercise, colour-coded intensity zones, and post-session summaries.
+It must support general fitness users while handling medical caveats carefully.
+The scope includes onboarding, calculation methods, graph behaviour, warnings, user education, and engineering rules for zone computation and UI behaviour.
+
+=== Objectives
+
+* Help users understand current exercise intensity through clear graph overlays and time-in-zone summaries.
+* Support multiple heart-rate calculation methods so the app is not dependent on a single age-based formula.
+* Protect users by reducing overconfident coaching when medication, heart disease, or user-reported symptoms make heart-rate guidance less reliable.
+* Create a foundation that can be extended later to wearables, clinician-defined programmes, and advanced training analytics.
+
+=== Out of Scope for MVP
+
+* Diagnosis, treatment recommendations, or automated detection of heart disease.
+* Emergency response workflows beyond warning messages and stop-exercise prompts.
+* Full cardiac rehabilitation workflows or regulatory medical-device features.
+* Personalised training plans generated from historical performance.
+
+== 2. User Problems and Personas
+
+Users want a simple answer to the question, _"How hard am I working right now?"_
+Many also want reassurance that the app is not encouraging unsafe intensity.
+The product must serve casual exercisers, regular exercisers, and users with medical caution flags.
+
+=== Primary Personas
+
+[cols="1,2,2,2",options="header"]
+|===
+| Persona | Context | Needs | Default mode
+
+| Casual exerciser
+| Walking, jogging, cycling
+| Understand easy, moderate, and hard effort quickly
+| Age-based zones
+
+| Regular exerciser
+| Structured workouts, wearable data
+| More personalised intensity guidance and summaries
+| HRR if resting HR is known
+
+| Medical caution user
+| Beta blocker, heart condition, clinician cap
+| Safer defaults, warning visibility, manual caps
+| Caution mode with reduced coaching
+|===
+
+== 3. Product Principles
+
+* *Estimated rather than absolute.* The app must clearly distinguish estimated maximum heart rate, measured peak heart rate, and clinician-provided limits.
+* *Safety before performance.* Caution mode must suppress aggressive coaching when reliability is low.
+* *Progressive personalisation.* Start simple, improve when the user provides resting heart rate, measured max heart rate, or custom limits.
+* *Transparent confidence.* The UI should communicate when calculations are high, medium, or low reliability.
+
+== 4. Functional Requirements
+
+=== 4.1 Onboarding Questions
+
+The application must ask the following onboarding questions before showing personalised zones.
+
+[cols="2,1,2,1,2",options="header"]
+|===
+| Field | Required | Purpose | MVP | Status
+
+| Age
+| Yes
+| Baseline for age-estimated maximum heart rate
+| Yes
+| *Done* — `HealthProfileNotifier.updateAge()`
+
+| Resting heart rate
+| No
+| Enables HRR/Karvonen calculation
+| Yes
+| *Done* — `HealthProfileNotifier.updateRestingHeartRate()`
+
+| Known measured max heart rate
+| No
+| Improves personalisation versus age estimate
+| Yes
+| *Done* — `HealthProfileNotifier.updateMeasuredMaxHeartRate()`
+
+| Taking beta blocker or heart-rate-lowering medication
+| No
+| Triggers caution mode and reduced reliability
+| Yes
+| *Done* — `HealthProfileNotifier.setTakingBetaBlocker()`
+
+| Heart condition, arrhythmia, angina, heart failure, or exercise chest pain history
+| No
+| Triggers caution mode and custom limit workflow
+| Yes
+| *Done* — `HealthProfileNotifier.setHasHeartCondition()`
+
+| Clinician-provided max exercise HR or custom cap
+| No
+| Overrides standard calculations when supplied
+| Yes
+| *Done* — `HealthProfileNotifier.setClinicianMaxHr()`
+
+| Primary goal: general fitness / endurance / intervals
+| No
+| Tones copy and summary emphasis
+| Future
+| Not started
+|===
+
+==== Onboarding Requirements
+
+* The app must explain why each optional field improves guidance. *Done* — each onboarding step includes explanatory text.
+* The app must allow users to skip non-required fields. *Done* — Skip button on each step.
+* The app must allow users to return later and edit health and zone preferences. *Done* — Settings screen "Health Profile" section and "Set Up Heart Rate Zones" tile.
+* If a user selects medication or heart-condition flags, the app must enter caution mode immediately. *Done* — `HealthProfile.isCautionMode` is reactive; `CautionBadge` appears instantly.
+* The app must never imply that skipping health fields makes the app unsafe to use; instead it should explain that estimates will be less personalised. *Done* — copy says "less personalised", not "unsafe".
+
+=== 4.2 Zone Calculation Methods
+
+The product must support the following zone methods and choose the safest applicable method in this priority order.
+
+[cols="1,2,2,1,2",options="header"]
+|===
+| Priority | Method | When used | Reliability | Status
+
+| 1
+| Custom zones
+| User or clinician enters exact zone boundaries
+| High
+| *Done* — `ZoneMethod.custom`
+
+| 2
+| Clinician cap / custom max HR
+| User has prescribed or trusted maximum exercise HR
+| High
+| *Done* — `ZoneMethod.clinicianCap`
+
+| 3
+| HRR (Karvonen)
+| Resting HR exists and no caution flags reduce validity
+| Medium to high
+| *Done* — `ZoneMethod.hrr`
+
+| 4
+| Percent of known measured max HR
+| Measured max exists but HRR is not used
+| High
+| *Done* — `ZoneMethod.percentOfMeasuredMax`
+
+| 5
+| Percent of estimated max HR
+| Fallback when only age is available
+| Medium
+| *Done* — `ZoneMethod.percentOfEstimatedMax`
+|===
+
+==== Default Five-Zone Model
+
+* *Zone 1:* 50–60% of reference maximum or HRR target
+* *Zone 2:* 60–70%
+* *Zone 3:* 70–80%
+* *Zone 4:* 80–90%
+* *Zone 5:* 90–100%
+
+The chart legend uses practical labels such as *Easy / Recovery*, *Light Aerobic*, *Moderate*, *Hard*, and *Very Hard*.
+Claims such as _"optimal heart rate"_ or _"safe zone"_ must not be used unless the source is clinician-defined.
+
+NOTE: Dual labels are implemented (e.g., "Easy (Recovery)", "Moderate (Aerobic)", "Hard (Anaerobic)", "Very Hard (VO₂ Max)") via `CalculatedZone.displayLabel`.
+
+==== Calculation Rules
+
+* The calculator must preserve both the percentage boundaries and the resulting BPM thresholds. *Done* — `CalculatedZone` stores `lowerPercent`, `upperPercent`, `lowerBpm`, `upperBpm`.
+* The system must distinguish between:
+** estimated max HR — `ZoneMethod.percentOfEstimatedMax`
+** known measured max HR — `ZoneMethod.percentOfMeasuredMax`
+** clinician-provided max HR — `ZoneMethod.clinicianCap`
+** custom zones — `ZoneMethod.custom`
+* For caution-mode users, the app must still be able to display HR values but must reduce confidence and suppress aggressive coaching. *Done* — caution mode sets `ZoneReliability.low`, shows `CautionBadge`, and no "push harder" coaching exists.
+* If resting HR is available and caution mode is not active, HRR/Karvonen should be the default personalised method. *Done* — priority chain in `calculateZones()`.
+* A fixed formula such as `(220 - age) × 0.8` must not be described as the user's "best heart rate"; it is only one estimated intensity target. *Done* — no such claims in code or UI.
+
+=== 4.3 Example Calculations
+
+Engineering must use explicit formulae and preserve the percentage range used to derive each zone.
+
+[cols="2,3,2,1",options="header"]
+|===
+| Example | Formula | Inputs | Result
+
+| Estimated max HR
+| `220 − age`
+| age = 49
+| 171 bpm
+
+| 80% of estimated max
+| `171 × 0.80`
+| max = 171
+| 137 bpm
+
+| HRR target at 80%
+| `resting + 0.80 × (max − resting)`
+| resting = 58, max = 171
+| 148 bpm
+
+| Zone 3 HRR lower bound
+| `58 + 0.70 × (171 − 58)`
+| 70%
+| 137 bpm
+
+| Zone 3 HRR upper bound
+| `58 + 0.80 × (171 − 58)`
+| 80%
+| 148 bpm
+|===
+
+==== Worked Example
+
+For a 49-year-old user with a resting heart rate of 58 bpm:
+
+. Estimated max HR = `220 - 49 = 171 bpm`
+. A simple 80% line using percent-of-max = `171 × 0.80 = 136.8`, rounded to *137 bpm*
+. An HRR/Karvonen 80% target:
++
+[source]
+----
+58 + 0.80 × (171 - 58)
+= 58 + 0.80 × 113
+= 58 + 90.4
+= 148 bpm
+----
+. Zone 3 using HRR becomes *137–148 bpm*
+
+This example shows why a fixed line such as `(220 − age) × 0.8` must not be described as the user's best heart rate.
+It is one intensity target, not a universal prescription.
+
+== 5. UI and Graph Requirements
+
+=== 5.1 Live Exercise Graphs
+
+The application must provide two simultaneous heart rate charts during active monitoring.
+
+[cols="1,3,2",options="header"]
+|===
+| Chart | Description | Status
+
+| Recent (sliding window)
+| Shows the most recent N seconds of readings. Default window is 60 seconds. User-configurable: 30s, 60s, 90s, 120s, 300s via a dropdown. Provides a zoomed-in view of current effort.
+| *Done* — `HeartRateChart` with `windowSeconds` parameter; `ChartWindowNotifier` persists selection.
+
+| Full session
+| Shows all readings from session start. Provides the big-picture view of the entire workout. No sliding window.
+| *Done* — `HeartRateChart` without `windowSeconds`.
+|===
+
+Both charts must:
+
+* Display the current heart-rate line over coloured background bands representing active zones. *Done* — `_zoneAnnotations()` reads from `ZoneConfiguration.zones`.
+* Show zone bands derived from the selected calculation method (not hardcoded). *Done* — bands from `ZoneConfiguration`.
+* Expose threshold lines for at least 50%, 60%, 70%, 80%, 90%, and 100% of the selected method reference. *Done* — dashed horizontal threshold lines at zone boundaries with percentage and BPM labels via `_thresholdLines()` in `HeartRateChart`.
+* Show the current heart rate, current zone label, session average heart rate, session peak heart rate, and elapsed time. *Done* — HR display card and stats card.
+* Apply smoothing to reduce flicker from short-lived sensor spikes. *Done* — `curveSmoothness: 0.15` on the line chart.
+* Allow users to disable red-zone colour or set a custom cap if they prefer conservative visual behaviour. *Done* — clinician cap overrides zones; zone colour bands toggle via `ZoneBandsNotifier` in Settings and HR panel.
+
+=== 5.2 Session Summaries
+
+The session summary must include:
+
+* Time spent in each zone — *Done* — `TimeInZoneSummary.zoneTime` with per-zone progress bars (`_ZoneTimeBar`)
+* Total time in moderate-or-higher intensity — *Done* — `TimeInZoneSummary.moderateOrHigher`
+* Average heart rate — *Done* — stats card
+* Peak heart rate — *Done* — stats card
+* Recovery heart-rate drop after exercise, if available — *Done* — `TimeInZoneSummary.recoveryHrDrop`
+
+=== 5.3 Reliability and Caution Indicators
+
+The UI must show a reliability indicator (*Done* — `ReliabilityIndicator` widget with colour-coded icon and tooltip):
+
+* *High:* custom zones, clinician cap, or measured max HR with good supporting data
+* *Medium:* age-estimated max HR or HRR using estimated max
+* *Low:* medication affecting heart rate, heart-condition mode, or missing key personalisation data
+
+When caution mode is active, the UI must:
+
+* Display a visible caution badge — *Done* — `CautionBadge` widget (amber card with warning icon)
+* Suppress "push harder" style coaching — *Done* — no coaching copy exists; caution badge shown instead
+* Encourage the use of effort level, talk test, and clinician advice — *Done* — caution badge copy references RPE, talk test, and clinician advice
+* Clearly mark when clinician-provided caps are in use — *Done* — "Clinician-provided limits in use" marker in `HeartRateZoneLegend`
+
+== 6. Warning and Safety Requirements
+
+=== 6.1 General Warning Policy
+
+The product must present warnings clearly without creating false reassurance or medical claims.
+
+[cols="2,3,2",options="header"]
+|===
+| Scenario | Required message behaviour | Status
+
+| General onboarding
+| State that zones are estimates for exercise guidance and are not medical advice or emergency monitoring.
+| *Done* — `disclaimer_dialog.dart` shown on first visit
+
+| Beta blocker or HR-lowering medication selected
+| Show that heart-rate targets may be less reliable and recommend using effort level and clinician advice.
+| *Done* — `WarningMessages.betaBlockerWarning` shown in `CautionBadge`
+
+| Heart condition selected
+| State that clinician-provided limits should override standard zone formulae where available.
+| *Done* — `WarningMessages.heartConditionWarning` shown in `CautionBadge`
+
+| Chest pain, severe dizziness, fainting, or unusual shortness of breath reported during exercise
+| Immediately show a stop-exercise prompt and urgent-help messaging appropriate to severity and locale.
+| *Done* — `SymptomReportButton` → symptom selection → stop-exercise dialog
+
+| Custom clinician cap entered
+| Visibly mark that the session is using clinician-provided limits.
+| *Done* — "Clinician-provided limits in use" in zone legend
+|===
+
+=== 6.2 In-Exercise Warnings
+
+If the user reports or the UI prompts for symptoms such as chest pain, severe dizziness, fainting, or unusual shortness of breath:
+
+* Immediately interrupt coaching-oriented UI — *Done* — `onStopRequested` callback stops monitoring
+* Show a stop-exercise message — *Done* — `WarningMessages.stopExercisePrompt` in stop-exercise dialog
+* Show urgent-help guidance appropriate to locale and severity — *Done* — "I need help" and "I'm OK, stopping exercise" options
+* Do not continue encouraging intensity progression in the same session — *Done* — monitoring stopped on symptom report
+
+=== 6.3 Restricted Claims
+
+WARNING: The product must not claim to:
+
+* diagnose heart disease
+* determine exercise safety for a specific medical condition
+* detect emergencies solely from consumer heart-rate data
+* prescribe a medically safe maximum heart rate unless explicitly configured from clinician-provided input
+
+== 7. Decision Logic
+
+[cols="2,2,2,1",options="header"]
+|===
+| Condition | System behaviour | UX effect | Status
+
+| Custom zones exist
+| Use custom zones
+| High-confidence, exact thresholds displayed
+| *Done*
+
+| Clinician cap exists
+| Use clinician cap
+| Marked as clinician-provided
+| *Done*
+
+| Beta blocker or heart condition
+| Enable caution mode
+| Low reliability, use RPE and suppress aggressive coaching
+| *Done*
+
+| Resting HR exists and no caution flags
+| Use HRR/Karvonen by default
+| More personalised training zones
+| *Done*
+
+| Only age known
+| Use age-estimated maximum
+| Medium reliability estimated zones
+| *Done*
+|===
+
+=== Selection Logic
+
+All implemented in `calculateZones()` in `lib/features/heart_rate/domain/zone_calculator.dart`:
+
+. If custom zones exist, use them.
+. Else if a clinician-provided cap exists, use it.
+. Else if caution mode is active, use the safest available display mode and lower reliability.
+. Else if resting HR exists, use HRR/Karvonen.
+. Else use age-estimated maximum HR.
+
+== 8. Non-Functional Requirements
+
+* Calculations must be deterministic and testable. *Done* — pure Dart functions with 32 unit tests.
+* Rounding rules must be consistent across platforms. *Done* — `round()` used consistently in zone calculator.
+* The product must support localisation of warnings and urgent-help text. *Done* — all user-facing strings externalised to `lib/l10n/app_en.arb` using Flutter's `gen-l10n` infrastructure; `S.of(context)!` used throughout the presentation layer.
+* Accessibility must support colour-blind-friendly rendering; zone labels must not rely on colour alone. *Done* — zones have textual labels alongside colour swatches.
+* The graph must remain readable under rapid sensor updates and low-connectivity conditions. *Done* — chart uses 200ms animation duration and curved smoothing.
+
+== 9. Analytics and Telemetry
+
+For MVP, capture anonymous product telemetry where permitted:
+
+* Onboarding completion rate — *Done* — `HrAnalyticsEvent.onboardingCompleted`
+* Optional health-field completion rate — *Done* — `HrAnalyticsEvent.healthFieldCompleted`
+* Frequency of caution mode activation — *Done* — `HrAnalyticsEvent.cautionModeActivated`
+* Selected zone method — *Done* — `HrAnalyticsEvent.zoneMethodSelected`
+* Frequency of custom cap usage — *Done* — `HrAnalyticsEvent.customCapUsed`
+* Time-in-zone summary usage — *Done* — `HrAnalyticsEvent.timeInZoneSummaryViewed`
+* Warning prompt display counts — *Done* — `HrAnalyticsEvent.warningDisplayed`
+
+IMPORTANT: Do not log sensitive free-text medical details unless specifically designed, consented, and secured for that purpose.
+
+NOTE: Analytics event infrastructure is done (`HrAnalyticsReporter` interface + `NoopAnalyticsReporter` for MVP). All 7 events are wired to their firing points: onboarding completion, health field updates, caution mode activation, zone method selection, clinician cap usage, time-in-zone summary views, and warning/symptom displays. A production reporter can be swapped in via `hrAnalyticsReporterProvider`.
+
+== 10. Acceptance Criteria
+
+=== Onboarding
+
+* Users can complete onboarding with age only. *Done* — tested manually and via onboarding flow.
+* Users can optionally add resting HR, measured max HR, medication, heart-condition flags, and clinician cap. *Done*
+* Medication or heart-condition selection immediately affects the chosen calculation mode and warning copy. *Done*
+
+=== Calculations
+
+* Given age 49, percent-of-max estimated max HR returns 171 bpm. *Done* — `zone_calculator_test.dart`
+* Given age 49 and resting HR 58, HRR at 80% returns 148 bpm. *Done* — `zone_calculator_test.dart`
+* Given custom zones, the system ignores age-based and HRR calculations for graph thresholds. *Done* — `zone_calculator_test.dart`
+* Given a clinician cap, the graph displays clinician-provided thresholds and marks them accordingly. *Done* — `zone_calculator_test.dart` and "Clinician-provided limits in use" marker
+
+=== Warnings
+
+* General disclaimer appears during onboarding and in settings. *Done*
+* Caution-mode users see reduced-reliability messaging. *Done*
+* Symptom-triggered warnings interrupt normal workout coaching. *Done*
+
+=== UI
+
+* The graph displays coloured zone bands plus textual zone labels. *Done*
+* Two charts: recent sliding window (configurable 30s–5m) and full session. *Done*
+* Time-in-zone and peak/average HR are present in session summary. *Done*
+* Reliability level is visible in the session UI or settings detail. *Done*
+
+== 11. Future Enhancements
+
+* Wearable-specific sensor confidence scoring
+* Talk-test and perceived-exertion overlays
+* Coach mode tuned to workout type
+* Advanced recovery metrics
+* Clinician-shared programmes and exported reports
+* Adaptive zones based on validated historical performance

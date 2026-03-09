@@ -1,0 +1,11 @@
+plugins {
+    id 'org.antora' version '1.0.0'
+}
+
+antora {
+    playbook = 'antora-playbook.yml'
+    options = ['--fetch']
+    environment = [
+        'SITE_URL': 'https://repfoundry.dev'
+    ]
+}

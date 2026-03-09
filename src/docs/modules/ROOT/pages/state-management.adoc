@@ -1,0 +1,248 @@
+= State Management
+Paul Snow
+:description: Riverpod provider hierarchy, key state patterns, and data flow in RepFoundry
+:keywords: riverpod, state management, provider, stream, notifier
+
+RepFoundry uses https://riverpod.dev/[Riverpod 2.x] throughout for reactive state management and dependency injection.
+All providers are defined at module level (not inside widgets) and accessed via `ref.watch()`, `ref.read()`, or `ref.listen()`.
+
+== Provider Hierarchy
+
+Riverpod provider types are chosen based on the nature of the data they expose:
+
+[cols="1,2,2",options="header"]
+|===
+| Provider Type | Use Case | Examples
+
+| `Provider`
+| Static dependencies — synchronous, never changes
+| Database instance, repository instances, use case instances
+
+| `FutureProvider`
+| One-shot async data — loads once, may reload
+| Exercise library initial load, single workout fetch
+
+| `StreamProvider`
+| Reactive data — re-emits when underlying data changes
+| Workout history list, active workout sets (powered by Drift query watchers)
+
+| `NotifierProvider` / `StateNotifierProvider`
+| Mutable UI state — driven by user interaction
+| Active workout controller, rest timer, exercise search filter, health profile
+|===
+
+=== Database Provider
+
+The `databaseProvider` is a special case: it is declared with an `UnimplementedError` default and overridden in the `ProviderScope` inside `main()` with the real `AppDatabase` instance.
+This keeps the domain and application layers decoupled from the concrete database implementation and makes testing straightforward.
+
+[source,dart]
+----
+// lib/core/database/database_provider.dart
+final databaseProvider = Provider<AppDatabase>(
+  (ref) => throw UnimplementedError('Override databaseProvider in ProviderScope'),
+);
+
+// lib/main.dart
+runApp(
+  ProviderScope(
+    overrides: [
+      databaseProvider.overrideWithValue(AppDatabase()),
+    ],
+    child: const RepFoundryApp(),
+  ),
+);
+----
+
+Repository providers read from `databaseProvider` to obtain their database instance.
+
+== Active Workout State Flow
+
+The most complex state in the app is the active workout.
+When a user starts a workout, an `ActiveWorkoutController` (`StateNotifier`) is created that holds the in-progress workout, its sets, and the rest timer state.
+
+Sets are persisted to the repository *immediately on entry* (not batched at the end) so that data is never lost if the app is killed mid-workout.
+
+The flow through a workout session:
+
+. User taps *Start Workout*
+. `ActiveWorkoutController` creates a `Workout` record in the repository
+. User adds an exercise — the controller fetches sets from the last completed session for that exercise via `WorkoutRepository.getSetsFromLastSession()` and stores them as `GhostSet` objects in state
+. Ghost rows appear as dimmed placeholders beneath confirmed sets; `SetInputCard` is pre-populated with the next ghost set's weight/reps/RPE
+. User confirms each set — it is persisted immediately and the ghost list advances automatically
+. Rest timer runs between sets
+. User taps *Finish*
+. The notifier marks the workout as completed; unconsumed ghosts are discarded (never persisted)
+. History providers auto-refresh via broadcast streams
+
+Key files:
+
+* `lib/features/workout/presentation/controllers/active_workout_controller.dart`
+* `lib/features/workout/presentation/models/ghost_set.dart`
+
+== Ghost Set Auto-Fill
+
+When an exercise is added to a workout, the controller queries the most recently completed session containing that exercise.
+The returned sets are converted to lightweight `GhostSet` objects (weight, reps, RPE, setOrder) — deliberately stripped of IDs and timestamps to prevent accidental persistence.
+
+`ActiveWorkoutState` exposes two helpers:
+
+* `nextGhostSet(exerciseId)` — returns the ghost at index `loggedSetCount`, or `null` if all ghosts are consumed
+* `remainingGhosts(exerciseId)` — returns the ghost list beyond the logged set count, used to render dimmed placeholder rows
+
+`SetInputCard` accepts an optional `GhostSet? suggestion` parameter.
+When non-null, the weight, reps, and RPE fields are pre-populated with the ghost values, displayed in a muted style to indicate they are suggestions rather than confirmed entries.
+
+== Rest Timer Alerts
+
+The rest timer (`restTimerProvider`) counts down from a user-selected duration.
+When the countdown transitions from a non-null value to `null`, the `RestTimerWidget` (a `ConsumerStatefulWidget`) detects this via `ref.listen()` and fires:
+
+* *Haptic feedback* — `HapticFeedback.heavyImpact()` via Flutter's built-in `dart:services`; no external package required
+* *Sound alert* — `AudioPlayer.play(AssetSource('sounds/timer_complete.wav'))` — a bundled 0.5s 440 Hz sine-wave beep via the `audioplayers` package
+
+Both alerts are independently gated by `RestTimerSettings` (vibration and sound toggles).
+Settings are persisted via SharedPreferences through `restTimerSettingsProvider`, which follows the same `StateNotifier` + SharedPreferences pattern as the theme and weight-unit providers.
+
+[source,dart]
+----
+// Listening for timer completion inside RestTimerWidget
+ref.listen<Duration?>(restTimerProvider, (previous, next) {
+  if (previous != null && next == null) {
+    final settings = ref.read(restTimerSettingsProvider);
+    if (settings.vibrationEnabled) {
+      HapticFeedback.heavyImpact();
+    }
+    if (settings.soundEnabled) {
+      _audioPlayer.play(AssetSource('sounds/timer_complete.wav'));
+    }
+  }
+});
+----
+
+Key files:
+
+* `lib/features/workout/presentation/widgets/rest_timer_widget.dart`
+* `lib/features/settings/presentation/providers/rest_timer_settings_provider.dart`
+* `assets/sounds/timer_complete.wav`
+
+== BLE Heart Rate Streaming
+
+The cardio feature supports live heart rate streaming from any device that advertises the standard BLE Heart Rate Service (UUID `0x180D`).
+Supported devices include Polar/Garmin/Wahoo chest straps, arm bands, Apple Watch (via Broadcast Heart Rate), and Samsung Galaxy Watch (via Samsung Health BLE broadcast).
+
+=== Architecture
+
+The BLE heart rate subsystem uses a clean abstraction boundary:
+
+* `HeartRateService` (abstract) — defines the BLE contract: `scan()`, `connectToDevice()`, `disconnect()`, `heartRateStream`, and `connectionStateStream`. The `HrConnectionState` enum (`connected`, `reconnecting`, `disconnected`) enables the UI to reflect connection lifecycle.
+* `FlutterBlueHeartRateService` — production implementation using `flutter_blue_plus`. Scans for devices advertising `0x180D`, connects, discovers the HR Measurement characteristic (`0x2A37`), and subscribes to notifications. Parses both 8-bit and 16-bit HR value formats per the BLE specification.
+* `FakeHeartRateService` — test double with controllable streams for unit testing.
+
+=== Auto-Reconnect
+
+When an unexpected BLE disconnection is detected (e.g. a watch briefly goes out of range), the service automatically attempts up to two reconnections with a two-second delay between attempts.
+If reconnection succeeds, services are re-discovered and the HR characteristic is re-subscribed.
+If all retries fail, a `disconnected` event is emitted.
+Intentional disconnects (via `disconnect()`) set an internal flag that skips the reconnection logic.
+
+=== Connection State Flow
+
+[source]
+----
+connectToDevice() → connected
+  ↓ unexpected disconnect
+reconnecting → retry 1
+  ↓ success
+connected
+  ↓ unexpected disconnect
+reconnecting → retry 2
+  ↓ failure
+disconnected
+----
+
+`CardioTrackingController` subscribes to both `heartRateStream` (for BPM readings) and `connectionStateStream` (for UI state).
+The `hrReconnecting` field in `CardioTrackingState` drives a "Reconnecting..." indicator in the UI.
+
+An in-app setup guide (`hr_setup_guide_dialog.dart`) provides device-specific instructions for enabling BLE broadcast on Apple Watch and Samsung Galaxy Watch.
+
+Key files:
+
+* `lib/features/cardio/data/heart_rate_service.dart`
+* `lib/features/cardio/data/flutter_blue_heart_rate_service.dart`
+* `lib/features/cardio/presentation/controllers/cardio_tracking_controller.dart`
+* `lib/features/cardio/presentation/widgets/hr_setup_guide_dialog.dart`
+
+== Heart Rate Panel
+
+A dedicated heart rate monitoring feature (`lib/features/heart_rate/`) provides a focused view for tracking heart rate during any activity.
+It shares the `HeartRateService` singleton with the cardio feature — if cardio already has a BLE connection, the panel auto-syncs on navigation.
+
+=== Domain Layer
+
+The heart rate panel has its own pure-Dart domain layer:
+
+* `HealthProfile` — user health data: age, resting HR, measured max HR, clinician cap, beta blocker flag, heart condition flag, and custom zones. The computed property `isCautionMode` is true when any medical flag is set. `estimatedMaxHr` uses the 220 − age formula.
+* `ZoneCalculator` — multi-method zone engine with a priority chain: custom zones → clinician cap → caution mode → HRR/Karvonen → measured max HR → age-estimated max HR. Returns a `ZoneConfiguration` containing `List<CalculatedZone>`, `ZoneMethod`, `ZoneReliability` (high/medium/low), and a human-readable reason string. The HRR formula is `restingHR + pct × (maxHR − restingHR)`. The 5-zone model uses dual labels (e.g. "Moderate (Aerobic)").
+* `TimeInZoneCalculator` — calculates per-zone time distribution from timestamped readings, total moderate-or-higher duration, and recovery HR drop (peak to 60s post-exercise).
+* `WarningMessages` — static string constants for disclaimers, medical warnings, symptom prompts, and stop-exercise text.
+
+=== Providers
+
+* `HealthProfileNotifier` (`StateNotifier`) — SharedPreferences-backed health profile. Migrates the legacy `user_age` key to `hr_age` on first load.
+* `zoneConfigurationProvider` (derived `Provider`) — watches `healthProfileProvider` and calls `calculateZones()`.
+* `cautionModeProvider` (derived `Provider`) — reads `healthProfileProvider.isCautionMode`.
+* `chartWindowProvider` (`StateNotifier`) — configurable sliding window duration (30s, 60s, 90s, 120s, 300s). Persisted via SharedPreferences.
+* `userAgeProvider` — delegates to `healthProfileProvider.age` for backwards compatibility.
+
+=== Presentation Components
+
+* `HeartRatePanelController` (`StateNotifier`) — manages monitoring state, timestamped readings (`HrReading`), elapsed timer, and BLE connection lifecycle. Declared non-autoDispose so monitoring survives tab switches.
+* `HeartRateChart` — real-time fl_chart `LineChart` plotting BPM against elapsed time, with zone band annotations and optional sliding window view.
+* `HeartRateZoneLegend` — displays five training zones with dual labels, BPM ranges, and an inline `ReliabilityIndicator`. Highlights the current zone. Shows "Clinician-provided limits in use" when applicable.
+* `HealthProfileOnboarding` — four-step bottom sheet: age → resting HR + measured max → medical flags → clinician cap. Triggered on first HR panel visit or from Settings.
+* `DisclaimerDialog` — first-use disclaimer dialog (shown once via SharedPreferences flag).
+* `CautionBadge` — amber warning card shown when `isCautionMode` is true.
+* `ReliabilityIndicator` — colour-coded High (green) / Medium (amber) / Low (red) badge with tooltip explaining the reasoning.
+* `SymptomReportButton` — symptom selection dialog leading to a stop-exercise dialog with urgent-help guidance.
+
+=== Screen Layout
+
+The `HeartRatePanelScreen` shows (top to bottom): caution badge (if applicable), live BPM display with zone label, Start/Pause/Reset controls, recent chart (sliding window with configurable dropdown), full session chart, stats card (avg/min/max/readings count), time-in-zone summary bars, symptom report button (during monitoring), and zone legend.
+
+Key files:
+
+* `lib/features/heart_rate/domain/models/health_profile.dart`
+* `lib/features/heart_rate/domain/zone_calculator.dart`
+* `lib/features/heart_rate/presentation/providers/health_profile_provider.dart`
+* `lib/features/heart_rate/presentation/screens/heart_rate_panel_screen.dart`
+* `lib/features/heart_rate/presentation/controllers/heart_rate_panel_controller.dart`
+
+== SharedPreferences for Settings
+
+Several settings are persisted outside the Drift database using SharedPreferences:
+
+[cols="2,2",options="header"]
+|===
+| Setting | Provider
+
+| Rest timer vibration and sound toggles
+| `restTimerSettingsProvider`
+
+| Theme (light/dark)
+| `themeProvider`
+
+| Weight unit (kg/lb)
+| `weightUnitProvider`
+
+| Health profile (age, resting HR, max HR, medical flags)
+| `healthProfileProvider` / `HealthProfileNotifier`
+
+| Chart window duration
+| `chartWindowProvider`
+
+| First-use disclaimer shown flag
+| Read directly in `DisclaimerDialog`
+|===
+
+All SharedPreferences-backed providers follow the same pattern: a `StateNotifier` loads the persisted value in its constructor and writes updates through a dedicated update method that both mutates in-memory state and persists the new value.

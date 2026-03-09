@@ -1,0 +1,128 @@
+= Body Metrics
+Paul Snow
+0.0.0
+:description: Guide to the body metrics tracking feature in RepFoundry.
+
+The body metrics feature lets users record and track body weight, body fat percentage, and optional notes over time.
+Entries can be imported from the platform health store and are exported alongside workout data.
+
+== Overview
+
+Body metrics are stored as `BodyMetric` records in the local SQLite database via `DriftBodyMetricRepository`.
+The history screen shows a chronological list of entries and a weight trend chart.
+When xref:features/health-sync.adoc[Health Sync] is enabled, weight and body fat entries are automatically pushed to Apple HealthKit or Google Health Connect on save.
+
+== BodyMetric Model
+
+[source,dart]
+----
+class BodyMetric {
+  final String id;                 // UUID v4
+  final DateTime date;             // UTC timestamp of the measurement
+  final double weight;             // kg
+  final double? bodyFatPercent;    // optional; 0–100
+  final String? notes;             // optional free-text notes
+}
+----
+
+=== Factory Constructor
+
+[source,dart]
+----
+static BodyMetric create({
+  required double weight,
+  DateTime? date,          // defaults to DateTime.now().toUtc()
+  double? bodyFatPercent,
+  String? notes,
+})
+----
+
+=== copyWith
+
+The `copyWith` method supports clearing optional fields via dedicated boolean parameters:
+
+[source,dart]
+----
+BodyMetric copyWith({
+  ...
+  bool clearBodyFat = false,  // pass true to set bodyFatPercent to null
+  bool clearNotes = false,    // pass true to set notes to null
+})
+----
+
+== Body Metrics Screen
+
+The body metrics screen (`BodyMetricsScreen`) contains two sections:
+
+=== Add Entry Form
+
+* *Weight* (kg) — required numeric input
+* *Body fat %* — optional numeric input
+* *Date* — defaults to today; editable via a date picker
+* *Notes* — optional free-text field
+* *Save* button — persists the entry and, if Health Sync is enabled with `writeWeight`, pushes to the health store
+
+=== History List
+
+Entries are displayed in reverse chronological order.
+Each row shows date, weight, body fat percentage (if present), and notes (if present).
+Swipe-to-delete removes an entry from the local database.
+
+=== Weight Trend Chart
+
+A `fl_chart` line chart plots weight over time, connecting all recorded entries chronologically.
+The chart helps users visualise progress towards weight goals.
+
+== Health Sync Integration
+
+When `HealthSyncSettings.writeWeight` is `true`:
+
+. After saving a `BodyMetric`, `HealthSyncService.writeWeight()` is called with the recorded kg value.
+. If `bodyFatPercent` is non-null, `HealthSyncService.writeBodyFat()` is called with the percentage.
+
+When `HealthSyncSettings.readWeight` is `true`, users can tap *Import from health store* to pre-fill the weight field with the most recent value from the platform health store (last 30 days).
+
+== Database Persistence
+
+`DriftBodyMetricRepository` implements the `BodyMetricRepository` interface against the `body_metrics` SQLite table.
+
+[cols="1,2"]
+|===
+| Column | Type
+
+| `id`
+| `TEXT PRIMARY KEY` (UUID v4)
+
+| `date`
+| `INTEGER` (UTC epoch milliseconds)
+
+| `weight`
+| `REAL` (kg)
+
+| `body_fat_percent`
+| `REAL NULLABLE`
+
+| `notes`
+| `TEXT NULLABLE`
+|===
+
+== Key Files
+
+[cols="1,2"]
+|===
+| File | Purpose
+
+| `lib/features/body_metrics/domain/models/body_metric.dart`
+| `BodyMetric` domain model
+
+| `lib/features/body_metrics/domain/repositories/body_metric_repository.dart`
+| Repository interface
+
+| `lib/features/body_metrics/data/drift_body_metric_repository.dart`
+| SQLite persistence
+|===
+
+== Related Features
+
+* xref:features/health-sync.adoc[Health Sync] — auto-push weight and body fat to health stores
+* xref:features/analytics.adoc[Advanced Analytics] — complement training trends with body composition data

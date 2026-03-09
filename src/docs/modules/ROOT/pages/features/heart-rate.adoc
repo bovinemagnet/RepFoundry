@@ -1,0 +1,359 @@
+= Heart Rate Monitoring
+Paul Snow
+0.0.0
+:description: Guide to the real-time heart rate monitoring panel in RepFoundry.
+
+The heart rate monitoring panel provides live BPM readings, colour-coded training zones, session summaries, and safety-first handling of medical edge cases.
+
+IMPORTANT: Heart rate zones are estimated training guidance only — not medical diagnosis or emergency monitoring.
+
+== Overview
+
+The dedicated `HeartRatePanelScreen` can be reached from the bottom navigation bar at any time, independent of an active cardio or workout session.
+It shares the `HeartRateService` BLE singleton with the xref:features/cardio.adoc[Cardio Tracking] feature, so if cardio is already connected to a monitor the panel auto-syncs on navigation.
+
+== BLE Connection
+
+Heart rate data is streamed from any device advertising the standard BLE Heart Rate Service (`0x180D`) via the `FlutterBlueHeartRateService` implementation.
+
+=== Supported Devices
+
+* Dedicated chest straps — Polar, Garmin, Wahoo (standard BLE HR broadcast)
+* Apple Watch — requires *Broadcast Heart Rate* enabled in the Workout app
+* Samsung Galaxy Watch — requires BLE broadcast enabled in Samsung Health
+
+=== HR Measurement Parsing
+
+The service subscribes to characteristic `0x2A37` and parses both 8-bit and 16-bit heart rate value formats per the BLE specification.
+
+=== Auto-Reconnect
+
+On unexpected disconnection the service retries up to 2 times with a 2-second delay.
+`HrConnectionState` (`connected`, `reconnecting`, `disconnected`) drives the UI state.
+Calling `disconnect()` sets an intentional-disconnect flag so no reconnection is attempted.
+
+== Health Profile
+
+The `HealthProfile` model captures user health data needed to personalise zone calculations.
+It is persisted via SharedPreferences through `HealthProfileNotifier`.
+
+[source,dart]
+----
+class HealthProfile {
+  final int? age;
+  final int? restingHeartRate;    // bpm
+  final int? measuredMaxHeartRate;// bpm — user-measured peak
+  final int? clinicianMaxHr;      // bpm — prescribed cap
+  final bool takingBetaBlocker;
+  final bool hasHeartCondition;
+  final List<CustomZone>? customZones;
+}
+----
+
+`isCautionMode` is a computed property that is `true` when either `takingBetaBlocker` or `hasHeartCondition` is set.
+
+=== Onboarding Flow
+
+A 4-step bottom sheet (`HealthProfileOnboarding`) guides new users through profile setup:
+
+. *Age* — required for the age-estimated maximum HR formula
+. *Resting HR + measured max HR* — optional; enables HRR/Karvonen calculations
+. *Medical flags* — beta blocker or heart condition toggles; activates caution mode immediately
+. *Clinician cap* — optional prescribed maximum exercise HR
+
+Users may skip any optional step.
+The onboarding wizard is triggered automatically on the first visit to the HR panel when age is `null`, and can be re-launched at any time from *Settings → Health Profile → Set Up Heart Rate Zones*.
+
+A first-use disclaimer dialog (`DisclaimerDialog`) is shown once and confirms that zones are exercise guidance, not medical advice.
+
+== Zone Calculation
+
+`ZoneCalculator` selects the most personalised and safest applicable method using the following priority chain:
+
+[cols="1,2,1"]
+|===
+| Priority | Method | Reliability
+
+| 1
+| Custom zones — user or clinician enters exact BPM boundaries
+| High
+
+| 2
+| Clinician cap — prescribed maximum exercise HR scales all zones
+| High
+
+| 3
+| HRR / Karvonen — uses resting HR and max HR for personalised targets
+| Medium–High
+
+| 4
+| Percent of measured max HR — measured peak HR without resting HR
+| High
+
+| 5
+| Percent of estimated max HR — fallback when only age is available
+| Medium
+|===
+
+NOTE: When caution mode is active the zone method is still applied, but `ZoneReliability` is set to `Low` regardless of the method used.
+
+=== Five-Zone Model
+
+[cols="1,1,1"]
+|===
+| Zone | % Range | Label
+
+| 1
+| 50–60 %
+| Easy (Recovery)
+
+| 2
+| 60–70 %
+| Light Aerobic
+
+| 3
+| 70–80 %
+| Moderate (Aerobic)
+
+| 4
+| 80–90 %
+| Hard (Anaerobic)
+
+| 5
+| 90–100 %
+| Very Hard (VO₂ Max)
+|===
+
+=== HRR / Karvonen Formula
+
+----
+target_bpm = restingHR + percentage × (maxHR − restingHR)
+----
+
+*Example* (age 49, resting HR 58 bpm):
+
+. Estimated max HR = 220 − 49 = *171 bpm*
+. Zone 3 lower bound (70 %) = 58 + 0.70 × (171 − 58) = *137 bpm*
+. Zone 3 upper bound (80 %) = 58 + 0.80 × (171 − 58) = *148 bpm*
+
+=== Estimated Max HR
+
+----
+estimated_max_hr = 220 − age
+----
+
+=== ZoneConfiguration Output
+
+`ZoneCalculator.calculateZones()` returns a `ZoneConfiguration` containing:
+
+* `List<CalculatedZone>` — each zone with `lowerPercent`, `upperPercent`, `lowerBpm`, `upperBpm`, `displayLabel`
+* `ZoneMethod` — which method was selected
+* `ZoneReliability` — `high`, `medium`, or `low`
+* `reason` — human-readable explanation of the method choice
+
+== Live Charts
+
+Two simultaneous `fl_chart` line charts are displayed during monitoring:
+
+[cols="1,2"]
+|===
+| Chart | Description
+
+| Recent (sliding window)
+| Most recent N seconds of readings. Configurable via dropdown: 30 s, 60 s, 90 s, 120 s, 300 s. Default: 60 s. Provides a zoomed-in view of current effort.
+
+| Full session
+| All readings from session start. No sliding window — shows the complete picture.
+|===
+
+Both charts display:
+
+* BPM line over coloured zone-band background annotations
+* Dashed threshold lines at each zone boundary with percentage and BPM labels
+* Curve smoothing (`curveSmoothness: 0.15`) to reduce sensor spike flicker
+* Adaptive X-axis labels in `M:SS` format
+
+The sliding window duration is persisted via `ChartWindowNotifier` (SharedPreferences).
+
+== Session Statistics
+
+The stats card shows:
+
+* Current BPM (live)
+* Current zone label
+* Session average BPM
+* Session minimum BPM
+* Session maximum BPM
+* Total readings count
+* Elapsed session time
+
+== Time-in-Zone Summary
+
+`TimeInZoneCalculator` processes the timestamped `HrReading` list to produce per-zone duration, total moderate-or-higher time, and recovery HR drop (peak BPM minus BPM at 60 seconds post-exercise).
+Progress bars (`_ZoneTimeBar`) visualise each zone's share of session time.
+
+== Caution Mode
+
+When `HealthProfile.isCautionMode` is `true` (beta blocker or heart condition flag set):
+
+* The amber `CautionBadge` widget is displayed at the top of the screen
+* Zone reliability is set to `ZoneReliability.low`
+* No "push harder" coaching copy appears
+* The badge text references RPE (rate of perceived exertion), the talk test, and clinician advice
+* When a clinician cap is in use, the zone legend shows *"Clinician-provided limits in use"*
+
+`CautionBadge` copy varies by flag:
+
+* Beta blocker only — explains that HR targets may be less reliable
+* Heart condition only — advises using clinician-provided limits
+* Both flags — combines both messages
+
+== Reliability Indicator
+
+`ReliabilityIndicator` is a colour-coded widget displayed alongside the zone legend:
+
+[cols="1,1,2"]
+|===
+| Level | Colour | When shown
+
+| High
+| Green
+| Custom zones, clinician cap, or measured max HR
+
+| Medium
+| Amber
+| Age-estimated max HR or HRR using estimated max
+
+| Low
+| Red
+| Caution mode active (medical flags set) or missing key personalisation data
+|===
+
+A tooltip explains the reasoning for the current reliability level.
+
+== Symptom Reporting
+
+The *Report Symptoms* button (`SymptomReportButton`) is visible during active monitoring.
+Tapping it opens a symptom selection dialog (chest pain, severe dizziness, fainting, unusual shortness of breath).
+On selection, a stop-exercise dialog presents urgent-help guidance and two actions:
+
+* *I need help* — urgent assistance prompt
+* *I'm OK, stopping exercise* — calls `controller.stopMonitoring()` and dismisses
+
+Monitoring stops immediately on symptom report; no further coaching-oriented UI is shown.
+
+== Screen Layout
+
+Top to bottom:
+
+. Caution badge (when `isCautionMode`)
+. Live BPM display with current zone label
+. Connect / Start / Pause / Reset controls
+. Recent chart (sliding window, configurable dropdown)
+. Full session chart
+. Stats card (avg / min / max / readings count)
+. Time-in-zone summary bars
+. Symptom report button (during active monitoring)
+. Zone legend with reliability indicator
+
+== Analytics Events
+
+HR-related analytics events (`HrAnalyticsEvent`) are fired through `HrAnalyticsReporter`.
+The MVP uses `NoopAnalyticsReporter` (debug log only); a production reporter can be swapped in via `hrAnalyticsReporterProvider`.
+
+[cols="1,2"]
+|===
+| Event | When fired
+
+| `onboardingCompleted`
+| User finishes the 4-step onboarding sheet
+
+| `healthFieldCompleted`
+| User saves an optional health field
+
+| `cautionModeActivated`
+| A medical flag is set
+
+| `zoneMethodSelected`
+| Zone method changes
+
+| `customCapUsed`
+| Clinician cap is entered
+
+| `timeInZoneSummaryViewed`
+| Time-in-zone section is displayed
+
+| `warningDisplayed`
+| A warning or symptom dialog is shown
+|===
+
+== Settings Integration
+
+The Settings screen includes a *Health Profile* section with tiles for:
+
+* Age
+* Resting HR
+* Measured max HR
+* Beta blocker toggle
+* Heart condition toggle
+* Clinician max HR
+* Zone method summary with reliability level
+* *Set Up Heart Rate Zones* wizard link
+* General disclaimer text
+
+== Key Files
+
+[cols="1,2"]
+|===
+| File | Purpose
+
+| `lib/features/heart_rate/domain/models/health_profile.dart`
+| `HealthProfile` model and `isCautionMode` logic
+
+| `lib/features/heart_rate/domain/zone_calculator.dart`
+| Priority-chain zone calculation engine
+
+| `lib/features/heart_rate/domain/time_in_zone_calculator.dart`
+| Per-zone duration and recovery drop
+
+| `lib/features/heart_rate/domain/warning_messages.dart`
+| Static warning and disclaimer string constants
+
+| `lib/features/heart_rate/presentation/providers/health_profile_provider.dart`
+| `HealthProfileNotifier` — SharedPreferences-backed state
+
+| `lib/features/heart_rate/presentation/providers/zone_configuration_provider.dart`
+| Derived provider watching `healthProfileProvider`
+
+| `lib/features/heart_rate/presentation/providers/chart_window_provider.dart`
+| Sliding window duration state
+
+| `lib/features/heart_rate/presentation/screens/heart_rate_panel_screen.dart`
+| Main monitoring screen
+
+| `lib/features/heart_rate/presentation/controllers/heart_rate_panel_controller.dart`
+| Monitoring state notifier (non-autoDispose)
+
+| `lib/features/heart_rate/presentation/widgets/heart_rate_chart.dart`
+| `fl_chart` line chart with zone bands
+
+| `lib/features/heart_rate/presentation/widgets/heart_rate_zones.dart`
+| Zone legend with dual labels
+
+| `lib/features/heart_rate/presentation/widgets/health_profile_onboarding.dart`
+| 4-step onboarding bottom sheet
+
+| `lib/features/heart_rate/presentation/widgets/caution_badge.dart`
+| Amber caution warning card
+
+| `lib/features/heart_rate/presentation/widgets/reliability_indicator.dart`
+| Colour-coded reliability badge
+
+| `lib/features/heart_rate/presentation/widgets/symptom_report_button.dart`
+| In-exercise symptom reporting
+|===
+
+== Related Features
+
+* xref:features/cardio.adoc[Cardio Tracking] — shares the `HeartRateService` BLE singleton
+* xref:features/workout.adoc[Workout Logging] — heart rate context alongside strength training

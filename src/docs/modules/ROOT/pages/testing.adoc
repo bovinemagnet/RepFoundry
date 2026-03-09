@@ -1,0 +1,201 @@
+= Testing
+Paul Snow
+:description: Test structure, tooling, coverage targets, and how to run tests in RepFoundry
+:keywords: testing, flutter_test, mockito, drift, unit tests, widget tests
+
+RepFoundry follows a layered testing strategy that mirrors the clean architecture of the production code.
+Tests live in the `test/` directory, mirroring the structure of `lib/`.
+
+== Test Structure
+
+[source]
+----
+test/
+├── features/
+│   ├── workout/
+│   │   ├── domain/
+│   │   │   └── workout_test.dart
+│   │   ├── application/
+│   │   │   └── log_set_use_case_test.dart
+│   │   ├── data/
+│   │   │   └── drift_workout_repository_test.dart
+│   │   └── presentation/
+│   │       └── active_workout_controller_test.dart
+│   ├── exercises/
+│   ├── history/
+│   ├── cardio/
+│   ├── heart_rate/
+│   └── settings/
+└── core/
+    └── database/
+        └── app_database_test.dart
+----
+
+== Tooling
+
+[cols="2,3",options="header"]
+|===
+| Tool | Purpose
+
+| `flutter_test`
+| Core test framework — unit, widget, and integration tests
+
+| `mockito`
+| Mock and stub generation via `@GenerateMocks` annotation; generates `.mocks.dart` files via build_runner
+
+| `drift/native` (`NativeDatabase.memory()`)
+| In-memory SQLite instance for Drift repository tests — fast and fully isolated
+
+| `riverpod` testing utilities (`ProviderContainer`)
+| Test Riverpod providers without a Flutter widget tree
+|===
+
+Generate mock files after annotating a test with `@GenerateMocks`:
+
+[source,bash]
+----
+dart run build_runner build --delete-conflicting-outputs
+----
+
+== Test Levels
+
+=== Unit Tests — Domain and Application Layers
+
+Domain model tests verify immutability, `copyWith` behaviour, value equality, and business logic (e.g. the Epley 1RM formula).
+Application use case tests use hand-written in-memory repository fakes for full isolation from the database and Flutter.
+
+[source,dart]
+----
+// Example: use case test with an in-memory fake
+void main() {
+  late InMemoryWorkoutRepository workoutRepo;
+  late InMemoryExerciseRepository exerciseRepo;
+  late LogSetUseCase logSetUseCase;
+
+  setUp(() {
+    workoutRepo = InMemoryWorkoutRepository();
+    exerciseRepo = InMemoryExerciseRepository();
+    logSetUseCase = LogSetUseCase(workoutRepo, exerciseRepo);
+  });
+
+  test('persists a valid set and detects a PR', () async {
+    // arrange …
+    final result = await logSetUseCase.execute(input);
+    expect(result.isSuccess, isTrue);
+    expect(result.personalRecord, isNotNull);
+  });
+}
+----
+
+=== Unit Tests — Data Layer (Drift)
+
+Drift repository tests use `NativeDatabase.memory()` via the `AppDatabase.forTesting()` constructor.
+This creates a fully functional in-memory SQLite instance that applies all migrations, seeds default exercises, and is destroyed at the end of each test.
+
+[source,dart]
+----
+void main() {
+  late AppDatabase db;
+
+  setUp(() {
+    db = AppDatabase.forTesting(NativeDatabase.memory());
+  });
+
+  tearDown(() async {
+    await db.close();
+  });
+
+  test('inserts and retrieves a workout', () async {
+    final repo = DriftWorkoutRepository(db);
+    // arrange, act, assert …
+  });
+}
+----
+
+=== Widget Tests
+
+Widget tests use `WidgetTester` to pump individual screens or components with mocked Riverpod providers.
+They verify rendering, user interaction (taps, text input), and state transitions without running the full app.
+
+Widget tests that render user-facing strings must configure localisation delegates:
+
+[source,dart]
+----
+await tester.pumpWidget(
+  ProviderScope(
+    overrides: [/* provider overrides */],
+    child: MaterialApp(
+      localizationsDelegates: S.localizationsDelegates,
+      supportedLocales: S.supportedLocales,
+      home: const ActiveWorkoutScreen(),
+    ),
+  ),
+);
+----
+
+See xref:localisation.adoc[Localisation] for details on the `S` class.
+
+=== Integration Tests
+
+Integration tests cover full user flows — for example, starting a workout, logging sets, finishing, and verifying the session appears in history.
+They run on a real emulator (Android) or simulator (iOS) using `flutter_test`'s integration test runner.
+
+Integration tests live under `integration_test/` (separate from `test/`).
+
+== Running Tests
+
+[source,bash]
+----
+flutter test                                          # Run all unit and widget tests
+flutter test test/features/workout/domain/            # Run a specific directory
+flutter test test/features/workout/domain/workout_test.dart   # Run a single file
+flutter test --coverage                               # Generate coverage report to coverage/lcov.info
+----
+
+To run integration tests on a connected device:
+
+[source,bash]
+----
+flutter test integration_test/app_test.dart -d <device>
+----
+
+== Coverage Targets
+
+[cols="2,1",options="header"]
+|===
+| Layer | Target Coverage
+
+| Domain
+| 80%
+
+| Application (use cases)
+| 80%
+
+| Presentation (screens, controllers)
+| 60%
+|===
+
+NOTE: All tests should pass cleanly with no known failures. Run `flutter test` before raising a pull request to verify.
+
+== In-Memory Repository Fakes
+
+The `InMemoryExerciseRepository` and `InMemoryWorkoutRepository` are hand-written fakes (not generated mocks) that implement the same domain-layer interfaces as the Drift repositories.
+They store data in plain Dart `List` and `Map` structures and provide synchronous-style behaviour with `Stream.fromIterable` for reactive methods.
+
+These fakes are kept alongside the production code (in the `data/` sub-layer of each feature) rather than in `test/` so that they can be used in both test files and any future development tooling.
+
+== Test Data and Seed Records
+
+The 18 default exercises seeded by `AppDatabase` are available in all `forTesting()` instances.
+Test data that is specific to a test should be inserted in `setUp` and will be automatically cleaned up when the in-memory database is closed in `tearDown`.
+
+Use `addTearDown(db.close)` as an alternative to an explicit `tearDown` block when setting up the database inside a test body:
+
+[source,dart]
+----
+test('example', () async {
+  final db = AppDatabase.forTesting(NativeDatabase.memory());
+  addTearDown(db.close);
+  // test body …
+});
+----

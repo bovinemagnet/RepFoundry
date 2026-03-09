@@ -1,0 +1,75 @@
+= RepFoundry Documentation
+Paul Snow
+:description: Overview of the RepFoundry Flutter workout tracking application
+:keywords: repfoundry, flutter, workout, tracking
+
+RepFoundry is a cross-platform Flutter/Dart workout tracking application targeting iOS 15+ and Android 10+.
+It is built from a single codebase and follows clean architecture with feature-first modularisation, Riverpod for state management, and an offline-first design with SQLite persistence via Drift.
+The architecture prioritises fast startup, testability, and full offline operation — all data is stored locally so the app works reliably in gym environments with poor connectivity.
+
+== Key Features
+
+The following capabilities are available or planned in RepFoundry:
+
+* *Workout logging* — log sets, reps, weight, and RPE with ghost-set auto-fill from the previous session
+* *Cardio tracking* — track duration, distance, incline, and live heart rate during cardio sessions
+* *Heart rate monitoring* — real-time BLE heart rate streaming with zone charts, session stats, and time-in-zone analysis
+* *Workout templates* — create and reuse workout blueprints
+* *Analytics* — estimated one-rep max, personal records, volume trends, and progress charts
+* *Programme builder* — structured training programmes with progression rules (planned)
+* *Health sync* — integration with platform health APIs (planned)
+* *Body metrics* — track weight and other body measurements over time (planned)
+* *Notifications* — rest timer alerts and workout reminders (partially implemented via in-app haptics and audio)
+
+== Technology Stack
+
+[cols="1,2,3",options="header"]
+|===
+| Layer | Technology | Purpose
+
+| Framework
+| Flutter 3.x / Dart 3.x
+| Cross-platform UI and application framework
+
+| State Management
+| Riverpod 2.x
+| Reactive state management with built-in dependency injection
+
+| Local Database
+| Drift 2.x (SQLite)
+| Offline-first persistence with type-safe queries
+
+| Navigation
+| GoRouter
+| Declarative routing with deep link support
+
+| Charts
+| fl_chart
+| High-performance charting for progress visualisation
+
+| Audio
+| audioplayers 6.x
+| Cross-platform audio playback for rest timer alerts
+
+| BLE
+| flutter_blue_plus
+| Bluetooth Low Energy scanning for heart rate monitors
+
+| Location
+| geolocator
+| GPS position stream for outdoor cardio distance tracking
+|===
+
+== Target Platforms
+
+* *iOS 15+* — iPhone and iPad
+* *Android 10+* — Android namespace `com.repfoundry.app`, three build flavours: `dev`, `staging`, `prod`
+
+== Documentation Sections
+
+* xref:getting-started.adoc[Getting Started] — prerequisites, build commands, and project layout for developers
+* xref:architecture.adoc[Architecture] — clean architecture overview, layer responsibilities, and design decisions
+* xref:database.adoc[Database] — Drift/SQLite schema, design decisions, and migration strategy
+* xref:state-management.adoc[State Management] — Riverpod provider hierarchy and key state patterns
+* xref:testing.adoc[Testing] — test structure, tooling, and coverage targets
+* xref:localisation.adoc[Localisation] — ARB workflow, generated class usage, and adding new strings

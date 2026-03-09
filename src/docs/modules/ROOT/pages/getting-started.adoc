@@ -1,0 +1,170 @@
+= Getting Started
+Paul Snow
+:description: Developer guide for setting up and building RepFoundry
+:keywords: setup, build, flutter, dart, prerequisites
+
+This guide covers everything a developer needs to get RepFoundry building and running locally.
+
+== Prerequisites
+
+You will need the following tools installed before working with this project:
+
+* https://docs.flutter.dev/get-started/install[Flutter SDK] — version 3.x or later
+* Dart 3.x (bundled with the Flutter SDK)
+* Android SDK (for Android development and emulation)
+* Xcode (for iOS and macOS builds; macOS only)
+* A connected device or running emulator/simulator
+
+Verify your Flutter installation is healthy before proceeding:
+
+[source,bash]
+----
+flutter doctor
+----
+
+== Installing Dependencies
+
+After cloning the repository, fetch all Dart/Flutter package dependencies:
+
+[source,bash]
+----
+flutter pub get
+----
+
+== Build Commands
+
+=== Running the App
+
+[source,bash]
+----
+flutter run -d <device>          # Run on a specific device or emulator
+flutter run                      # Run on the first available connected device
+----
+
+To list available devices:
+
+[source,bash]
+----
+flutter devices
+----
+
+=== Building for Release
+
+[source,bash]
+----
+flutter build apk                # Build Android APK
+flutter build appbundle          # Build Android App Bundle (recommended for Play Store)
+flutter build ios                # Build iOS archive (macOS only)
+----
+
+Android builds support three flavours — `dev`, `staging`, and `prod` — which can be specified via `--flavor`:
+
+[source,bash]
+----
+flutter build apk --flavor dev
+flutter build apk --flavor staging
+flutter build apk --flavor prod
+----
+
+The Android application namespace is `com.repfoundry.app`.
+
+=== Code Quality
+
+[source,bash]
+----
+dart analyze                              # Static analysis — CI enforces zero issues
+dart format --set-exit-if-changed .       # Format check (used in CI)
+dart format .                             # Auto-format all Dart files
+----
+
+=== Code Generation
+
+Drift requires generated code for type-safe queries and companion classes.
+Run code generation after modifying any Drift table definition:
+
+[source,bash]
+----
+dart run build_runner build --delete-conflicting-outputs
+----
+
+The generated file is `lib/core/database/app_database.g.dart`.
+This file is checked in to the repository; regenerate it only when table definitions change.
+
+=== Localisation
+
+After modifying the ARB file at `lib/l10n/app_en.arb`, regenerate the localisation class:
+
+[source,bash]
+----
+flutter gen-l10n
+----
+
+See xref:localisation.adoc[Localisation] for the full workflow.
+
+== Running Tests
+
+[source,bash]
+----
+flutter test                                                         # Run all tests
+flutter test test/features/workout/domain/workout_test.dart          # Run a single test file
+flutter test --coverage                                              # Run tests with coverage report
+----
+
+See xref:testing.adoc[Testing] for the full test strategy, coverage targets, and how tests are structured.
+
+== Project Structure
+
+The project uses a feature-first directory layout under `lib/features/`. Each feature contains its own sub-layers. Shared utilities and the database live in `lib/core/`.
+
+[source]
+----
+lib/
+├── app/                      # App-level config, theme, router
+│   ├── app.dart
+│   ├── router.dart
+│   └── theme.dart
+├── features/
+│   ├── workout/              # Workout logging feature
+│   │   ├── presentation/     # Screens, widgets, controllers
+│   │   ├── application/      # Use cases, state notifiers
+│   │   ├── domain/           # Models, repository interfaces
+│   │   └── data/             # Repository implementations
+│   ├── exercises/            # Exercise library feature
+│   ├── history/              # Workout history and progress
+│   ├── cardio/               # Cardio tracking feature
+│   ├── heart_rate/           # Real-time HR monitoring panel
+│   ├── templates/            # Workout templates
+│   └── settings/             # App preferences
+├── core/                     # Shared utilities
+│   ├── database/             # Drift database, tables, converters
+│   ├── extensions/           # Dart extension methods
+│   └── widgets/              # Reusable UI components
+└── main.dart
+----
+
+See xref:architecture.adoc[Architecture] for a full description of each layer and the dependency rules that govern them.
+
+== Key Configuration Files
+
+[cols="2,3",options="header"]
+|===
+| File | Purpose
+
+| `pubspec.yaml`
+| Flutter package manifest and dependency declarations
+
+| `build.yaml`
+| Drift build_runner configuration
+
+| `l10n.yaml`
+| Localisation configuration (output class `S`, output dir `lib/l10n/generated/`)
+
+| `analysis_options.yaml`
+| Linting rules (flutter_lints with additional strict rules)
+
+| `lib/app/router.dart`
+| GoRouter route definitions
+
+| `lib/core/database/app_database.dart`
+| Drift database class, table registrations, and seed data
+|===
