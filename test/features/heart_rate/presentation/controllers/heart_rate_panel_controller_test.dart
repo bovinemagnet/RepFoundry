@@ -1,4 +1,6 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/controllers/heart_rate_panel_controller.dart';
 
@@ -6,17 +8,21 @@ import '../../../cardio/data/fake_heart_rate_service.dart';
 
 void main() {
   late FakeHeartRateService heartRateService;
+  late ProviderContainer container;
   late HeartRatePanelController controller;
 
   setUp(() {
     heartRateService = FakeHeartRateService();
-    controller = HeartRatePanelController(
-      heartRateService: heartRateService,
+    container = ProviderContainer(
+      overrides: [
+        heartRateServiceProvider.overrideWithValue(heartRateService),
+      ],
     );
+    controller = container.read(heartRatePanelProvider.notifier);
   });
 
   tearDown(() {
-    controller.dispose();
+    container.dispose();
     heartRateService.dispose();
   });
 

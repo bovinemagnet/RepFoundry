@@ -1,23 +1,24 @@
 import 'dart:convert';
 
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/providers.dart';
 import '../../domain/analytics_events.dart';
 import '../../domain/models/health_profile.dart';
 
-class HealthProfileNotifier extends StateNotifier<HealthProfile> {
-  HealthProfileNotifier({this.analyticsReporter})
-      : super(const HealthProfile()) {
+class HealthProfileNotifier extends Notifier<HealthProfile> {
+  @override
+  HealthProfile build() {
     _load();
+    return const HealthProfile();
   }
 
-  final HrAnalyticsReporter? analyticsReporter;
+  HrAnalyticsReporter? get analyticsReporter =>
+      ref.watch(hrAnalyticsReporterProvider);
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
 
     // Migrate legacy user_age key if present
     int? age = prefs.getInt('hr_age');
@@ -151,8 +152,6 @@ class HealthProfileNotifier extends StateNotifier<HealthProfile> {
 }
 
 final healthProfileProvider =
-    StateNotifierProvider<HealthProfileNotifier, HealthProfile>(
-  (ref) => HealthProfileNotifier(
-    analyticsReporter: ref.watch(hrAnalyticsReporterProvider),
-  ),
+    NotifierProvider<HealthProfileNotifier, HealthProfile>(
+  HealthProfileNotifier.new,
 );

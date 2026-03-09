@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:uuid/uuid.dart';
 import '../../application/log_set_use_case.dart';
 import '../../domain/models/workout.dart';
@@ -138,13 +137,13 @@ class ActiveWorkoutState {
   }
 }
 
-class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
-  final WorkoutRepository _workoutRepository;
-  final Ref _ref;
+class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
+  WorkoutRepository get _workoutRepository => ref.watch(workoutRepositoryProvider);
 
-  ActiveWorkoutController(this._workoutRepository, this._ref)
-      : super(const ActiveWorkoutState()) {
+  @override
+  ActiveWorkoutState build() {
     _init();
+    return const ActiveWorkoutState();
   }
 
   Future<void> _init() async {
@@ -168,7 +167,7 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
       byExercise.putIfAbsent(s.exerciseId, () => []).add(s);
     }
 
-    final exerciseRepo = _ref.read(exerciseRepositoryProvider);
+    final exerciseRepo = ref.read(exerciseRepositoryProvider);
     final allExercises = await exerciseRepo.getAllExercises();
     final usedExercises =
         allExercises.where((e) => byExercise.containsKey(e.id)).toList();
@@ -188,7 +187,7 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
   Future<void> startWorkout() async {
     state = state.copyWith(isLoading: true);
     try {
-      final useCase = _ref.read(startWorkoutUseCaseProvider);
+      final useCase = ref.read(startWorkoutUseCaseProvider);
       final workout = await useCase.execute();
       state = state.copyWith(
         activeWorkout: workout,
@@ -204,7 +203,7 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
   Future<void> startFromTemplate(WorkoutTemplate template) async {
     state = state.copyWith(isLoading: true);
     try {
-      final useCase = _ref.read(startWorkoutUseCaseProvider);
+      final useCase = ref.read(startWorkoutUseCaseProvider);
       final workout = await useCase.execute(templateId: template.id);
       state = state.copyWith(
         activeWorkout: workout,
@@ -214,7 +213,7 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
       );
 
       // Add each exercise from the template
-      final exerciseRepo = _ref.read(exerciseRepositoryProvider);
+      final exerciseRepo = ref.read(exerciseRepositoryProvider);
       final allExercises = await exerciseRepo.getAllExercises();
       final exercisesById = {for (final e in allExercises) e.id: e};
 
@@ -244,7 +243,7 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
     if (todayDay == null) return false;
 
     // Fetch the full template so we can pass it to startFromTemplate.
-    final templateRepo = _ref.read(workoutTemplateRepositoryProvider);
+    final templateRepo = ref.read(workoutTemplateRepositoryProvider);
     final template = await templateRepo.getTemplate(todayDay.templateId);
     if (template == null) return false;
 
@@ -286,9 +285,9 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
 
       // Sync to health store if enabled
       try {
-        final healthSettings = _ref.read(healthSyncSettingsProvider);
+        final healthSettings = ref.read(healthSyncSettingsProvider);
         if (healthSettings.enabled && healthSettings.writeWorkouts) {
-          final healthService = _ref.read(healthSyncServiceProvider);
+          final healthService = ref.read(healthSyncServiceProvider);
           final sets =
               await _workoutRepository.getSetsForWorkout(workout.id);
           final totalVolume = sets
@@ -308,9 +307,9 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
 
       // Cloud sync after workout — fire-and-forget
       try {
-        final syncSettings = _ref.read(syncSettingsProvider);
+        final syncSettings = ref.read(syncSettingsProvider);
         if (syncSettings.enabled) {
-          final orchestrator = _ref.read(syncOrchestratorProvider);
+          final orchestrator = ref.read(syncOrchestratorProvider);
           unawaited(orchestrator.sync());
         }
       } catch (_) {
@@ -394,7 +393,7 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
 
     try {
       final existingSets = state.setsByExercise[exerciseId] ?? [];
-      final useCase = _ref.read(logSetUseCaseProvider);
+      final useCase = ref.read(logSetUseCaseProvider);
       final result = await useCase.execute(
         LogSetInput(
           workoutId: workout.id,
@@ -494,9 +493,6 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
 }
 
 final activeWorkoutControllerProvider =
-    StateNotifierProvider<ActiveWorkoutController, ActiveWorkoutState>((ref) {
-  return ActiveWorkoutController(
-    ref.watch(workoutRepositoryProvider),
-    ref,
-  );
-});
+    NotifierProvider<ActiveWorkoutController, ActiveWorkoutState>(
+  ActiveWorkoutController.new,
+);

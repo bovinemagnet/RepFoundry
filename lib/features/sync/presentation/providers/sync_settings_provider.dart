@@ -1,23 +1,24 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../domain/models/sync_settings.dart';
 import '../../domain/models/sync_state.dart';
 
-class SyncSettingsNotifier extends StateNotifier<SyncSettings> {
+class SyncSettingsNotifier extends Notifier<SyncSettings> {
   static const _keyEnabled = 'cloud_sync_enabled';
   static const _keyLastSyncAt = 'cloud_sync_last_sync_at';
   static const _keyDeviceId = 'cloud_sync_device_id';
   static const _keyConsentGiven = 'cloud_sync_consent_given';
 
-  SyncSettingsNotifier() : super(SyncSettings(deviceId: const Uuid().v4())) {
+  @override
+  SyncSettings build() {
     _load();
+    return SyncSettings(deviceId: const Uuid().v4());
   }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
 
     final deviceId = prefs.getString(_keyDeviceId) ?? state.deviceId;
     // Persist device ID on first load
@@ -64,12 +65,13 @@ class SyncSettingsNotifier extends StateNotifier<SyncSettings> {
 }
 
 final syncSettingsProvider =
-    StateNotifierProvider<SyncSettingsNotifier, SyncSettings>(
-  (ref) => SyncSettingsNotifier(),
+    NotifierProvider<SyncSettingsNotifier, SyncSettings>(
+  SyncSettingsNotifier.new,
 );
 
-class SyncStateNotifier extends StateNotifier<SyncState> {
-  SyncStateNotifier() : super(const SyncState());
+class SyncStateNotifier extends Notifier<SyncState> {
+  @override
+  SyncState build() => const SyncState();
 
   void setStatus(SyncStatus status, {String? error, DateTime? lastSyncAt}) {
     state = SyncState(
@@ -81,6 +83,6 @@ class SyncStateNotifier extends StateNotifier<SyncState> {
 }
 
 final syncStateProvider =
-    StateNotifierProvider<SyncStateNotifier, SyncState>(
-  (ref) => SyncStateNotifier(),
+    NotifierProvider<SyncStateNotifier, SyncState>(
+  SyncStateNotifier.new,
 );

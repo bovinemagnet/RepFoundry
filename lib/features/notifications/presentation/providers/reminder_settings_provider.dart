@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/models/reminder_settings.dart';
 import '../../data/notification_service.dart';
@@ -13,14 +13,15 @@ Set<int> stringToDays(String value) {
   return value.split(',').map(int.parse).toSet();
 }
 
-class ReminderSettingsNotifier extends StateNotifier<ReminderSettings> {
-  ReminderSettingsNotifier() : super(const ReminderSettings()) {
+class ReminderSettingsNotifier extends Notifier<ReminderSettings> {
+  @override
+  ReminderSettings build() {
     _load();
+    return const ReminderSettings();
   }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
     state = ReminderSettings(
       enabledDays: stringToDays(prefs.getString('reminder_days') ?? ''),
       hour: prefs.getInt('reminder_hour') ?? 18,
@@ -76,6 +77,6 @@ class ReminderSettingsNotifier extends StateNotifier<ReminderSettings> {
 }
 
 final reminderSettingsProvider =
-    StateNotifierProvider<ReminderSettingsNotifier, ReminderSettings>(
-  (ref) => ReminderSettingsNotifier(),
+    NotifierProvider<ReminderSettingsNotifier, ReminderSettings>(
+  ReminderSettingsNotifier.new,
 );

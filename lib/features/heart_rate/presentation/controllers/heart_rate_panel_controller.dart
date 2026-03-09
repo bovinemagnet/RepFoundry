@@ -1,21 +1,27 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/providers.dart';
 import '../../../cardio/data/heart_rate_service.dart';
 import 'heart_rate_panel_state.dart';
 
-class HeartRatePanelController extends StateNotifier<HeartRatePanelState> {
-  final HeartRateService _heartRateService;
+class HeartRatePanelController extends Notifier<HeartRatePanelState> {
   Timer? _timer;
   StreamSubscription<int>? _hrSub;
   StreamSubscription<HrConnectionState>? _hrConnectionSub;
 
-  HeartRatePanelController({
-    required HeartRateService heartRateService,
-  })  : _heartRateService = heartRateService,
-        super(const HeartRatePanelState());
+  HeartRateService get _heartRateService => ref.read(heartRateServiceProvider);
+
+  @override
+  HeartRatePanelState build() {
+    ref.onDispose(() {
+      _timer?.cancel();
+      _hrSub?.cancel();
+      _hrConnectionSub?.cancel();
+    });
+    return const HeartRatePanelState();
+  }
 
   Future<void> connectAndStart(String deviceId, String deviceName) async {
     state = state.copyWith(hrConnecting: true, clearError: true);
@@ -143,19 +149,10 @@ class HeartRatePanelController extends StateNotifier<HeartRatePanelState> {
     });
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _hrSub?.cancel();
-    _hrConnectionSub?.cancel();
-    super.dispose();
-  }
 }
 
 /// NON-autoDispose so monitoring survives tab switches.
 final heartRatePanelProvider =
-    StateNotifierProvider<HeartRatePanelController, HeartRatePanelState>(
-  (ref) => HeartRatePanelController(
-    heartRateService: ref.watch(heartRateServiceProvider),
-  ),
+    NotifierProvider<HeartRatePanelController, HeartRatePanelState>(
+  HeartRatePanelController.new,
 );

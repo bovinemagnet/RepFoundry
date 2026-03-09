@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -21,15 +20,14 @@ class ExportState {
   });
 }
 
-class ExportNotifier extends StateNotifier<ExportState> {
-  final Ref _ref;
-
-  ExportNotifier(this._ref) : super(const ExportState());
+class ExportNotifier extends Notifier<ExportState> {
+  @override
+  ExportState build() => const ExportState();
 
   Future<void> exportJson() async {
     state = const ExportState(status: ExportStatus.exporting);
     try {
-      final useCase = _ref.read(exportDataUseCaseProvider);
+      final useCase = ref.read(exportDataUseCaseProvider);
       final json = await useCase.exportAsJson();
 
       final dir = await _exportDirectory();
@@ -45,7 +43,7 @@ class ExportNotifier extends StateNotifier<ExportState> {
   Future<void> exportCsv() async {
     state = const ExportState(status: ExportStatus.exporting);
     try {
-      final useCase = _ref.read(exportDataUseCaseProvider);
+      final useCase = ref.read(exportDataUseCaseProvider);
       final csvFiles = await useCase.exportAsCsv();
 
       final dir = await _exportDirectory();
@@ -87,7 +85,6 @@ class ExportNotifier extends StateNotifier<ExportState> {
   }
 }
 
-final exportProvider =
-    StateNotifierProvider<ExportNotifier, ExportState>((ref) {
-  return ExportNotifier(ref);
-});
+final exportProvider = NotifierProvider<ExportNotifier, ExportState>(
+  ExportNotifier.new,
+);

@@ -1,4 +1,7 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/core/providers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rep_foundry/features/cardio/application/save_cardio_session_use_case.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
 import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
@@ -17,9 +20,12 @@ void main() {
   late SaveCardioSessionUseCase useCase;
   late FakeLocationService locationService;
   late FakeHeartRateService heartRateService;
+  late ProviderContainer container;
   late CardioTrackingController controller;
 
   setUp(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
     cardioRepo = InMemoryCardioSessionRepository();
     workoutRepo = InMemoryWorkoutRepository();
     useCase = SaveCardioSessionUseCase(
@@ -28,18 +34,21 @@ void main() {
     );
     locationService = FakeLocationService();
     heartRateService = FakeHeartRateService();
-    controller = CardioTrackingController(
-      cardioRepository: cardioRepo,
-      saveUseCase: useCase,
-      locationService: locationService,
-      heartRateService: heartRateService,
-      healthSyncService: HealthSyncService(),
-      healthSyncSettings: const HealthSyncSettings(),
+    container = ProviderContainer(
+      overrides: [
+        cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
+        saveCardioSessionUseCaseProvider.overrideWithValue(useCase),
+        locationServiceProvider.overrideWithValue(locationService),
+        heartRateServiceProvider.overrideWithValue(heartRateService),
+        healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+        healthSyncSettingsProvider.overrideWith(() => HealthSyncSettingsNotifier()),
+      ],
     );
+    controller = container.read(cardioTrackingProvider.notifier);
   });
 
   tearDown(() {
-    controller.dispose();
+    container.dispose();
     locationService.dispose();
     heartRateService.dispose();
   });

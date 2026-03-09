@@ -1,14 +1,15 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ShowExerciseImagesNotifier extends StateNotifier<bool> {
-  ShowExerciseImagesNotifier() : super(true) {
+class ShowExerciseImagesNotifier extends Notifier<bool> {
+  @override
+  bool build() {
     _load();
+    return true;
   }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
     state = prefs.getBool('show_exercise_images') ?? true;
   }
 
@@ -21,6 +22,6 @@ class ShowExerciseImagesNotifier extends StateNotifier<bool> {
 }
 
 final showExerciseImagesProvider =
-    StateNotifierProvider<ShowExerciseImagesNotifier, bool>(
-  (ref) => ShowExerciseImagesNotifier(),
+    NotifierProvider<ShowExerciseImagesNotifier, bool>(
+  ShowExerciseImagesNotifier.new,
 );
