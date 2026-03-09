@@ -9,7 +9,6 @@ import '../../../heart_rate/presentation/providers/health_profile_provider.dart'
 class UserAgeNotifier extends Notifier<int?> {
   @override
   int? build() {
-    // Reactively watch age from HealthProfile so this provider stays in sync.
     return ref.watch(healthProfileProvider.select((p) => p.age));
   }
 

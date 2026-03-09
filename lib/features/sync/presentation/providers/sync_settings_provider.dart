@@ -13,9 +13,8 @@ class SyncSettingsNotifier extends Notifier<SyncSettings> {
 
   @override
   SyncSettings build() {
-    final initial = SyncSettings(deviceId: const Uuid().v4());
     _load();
-    return initial;
+    return SyncSettings(deviceId: const Uuid().v4());
   }
 
   Future<void> _load() async {
@@ -72,9 +71,7 @@ final syncSettingsProvider =
 
 class SyncStateNotifier extends Notifier<SyncState> {
   @override
-  SyncState build() {
-    return const SyncState();
-  }
+  SyncState build() => const SyncState();
 
   void setStatus(SyncStatus status, {String? error, DateTime? lastSyncAt}) {
     state = SyncState(

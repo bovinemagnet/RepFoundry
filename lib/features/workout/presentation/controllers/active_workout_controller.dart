@@ -138,8 +138,7 @@ class ActiveWorkoutState {
 }
 
 class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
-  WorkoutRepository get _workoutRepository =>
-      ref.read(workoutRepositoryProvider);
+  WorkoutRepository get _workoutRepository => ref.watch(workoutRepositoryProvider);
 
   @override
   ActiveWorkoutState build() {

@@ -8,17 +8,18 @@ import '../../domain/analytics_events.dart';
 import '../../domain/models/health_profile.dart';
 
 class HealthProfileNotifier extends Notifier<HealthProfile> {
-  late final HrAnalyticsReporter? analyticsReporter;
-
   @override
   HealthProfile build() {
-    analyticsReporter = ref.watch(hrAnalyticsReporterProvider);
     _load();
     return const HealthProfile();
   }
 
+  HrAnalyticsReporter? get analyticsReporter =>
+      ref.watch(hrAnalyticsReporterProvider);
+
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
+
     // Migrate legacy user_age key if present
     int? age = prefs.getInt('hr_age');
     if (age == null) {

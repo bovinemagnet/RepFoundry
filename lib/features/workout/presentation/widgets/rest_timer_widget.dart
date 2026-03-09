@@ -3,6 +3,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../settings/presentation/providers/rest_timer_settings_provider.dart';
@@ -18,9 +19,7 @@ class RestTimerNotifier extends Notifier<int?> {
 
   @override
   int? build() {
-    ref.onDispose(() {
-      _timer?.cancel();
-    });
+    ref.onDispose(() => _timer?.cancel());
     return null;
   }
 

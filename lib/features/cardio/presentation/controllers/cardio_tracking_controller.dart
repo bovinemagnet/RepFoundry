@@ -13,28 +13,24 @@ import '../../domain/repositories/cardio_session_repository.dart';
 import 'cardio_tracking_state.dart';
 
 class CardioTrackingController extends Notifier<CardioTrackingState> {
-  CardioSessionRepository get _cardioRepository =>
-      ref.read(cardioSessionRepositoryProvider);
-  SaveCardioSessionUseCase get _saveUseCase =>
-      ref.read(saveCardioSessionUseCaseProvider);
-  LocationService get _locationService => ref.read(locationServiceProvider);
-  HeartRateService get _heartRateService => ref.read(heartRateServiceProvider);
-  HealthSyncService get _healthSyncService =>
-      ref.read(healthSyncServiceProvider);
-  HealthSyncSettings get _healthSyncSettings =>
-      ref.read(healthSyncSettingsProvider);
-
   Timer? _timer;
   StreamSubscription<Position>? _positionSub;
   Position? _lastPosition;
   StreamSubscription<int>? _hrSub;
   StreamSubscription<HrConnectionState>? _hrConnectionSub;
 
+  CardioSessionRepository get _cardioRepository => ref.read(cardioSessionRepositoryProvider);
+  SaveCardioSessionUseCase get _saveUseCase => ref.read(saveCardioSessionUseCaseProvider);
+  LocationService get _locationService => ref.read(locationServiceProvider);
+  HeartRateService get _heartRateService => ref.read(heartRateServiceProvider);
+  HealthSyncService get _healthSyncService => ref.read(healthSyncServiceProvider);
+  HealthSyncSettings get _healthSyncSettings => ref.read(healthSyncSettingsProvider);
+
   @override
   CardioTrackingState build() {
     ref.onDispose(() {
       _timer?.cancel();
-      _stopGpsTracking();
+      _positionSub?.cancel();
       _hrSub?.cancel();
       _hrConnectionSub?.cancel();
     });
@@ -277,6 +273,7 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       state = state.copyWith(isSaving: false, error: e.message);
     }
   }
+
 }
 
 /// NON-autoDispose so the timer survives tab switches.

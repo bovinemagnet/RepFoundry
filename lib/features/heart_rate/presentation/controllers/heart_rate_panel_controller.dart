@@ -7,11 +7,11 @@ import '../../../cardio/data/heart_rate_service.dart';
 import 'heart_rate_panel_state.dart';
 
 class HeartRatePanelController extends Notifier<HeartRatePanelState> {
-  HeartRateService get _heartRateService => ref.read(heartRateServiceProvider);
-
   Timer? _timer;
   StreamSubscription<int>? _hrSub;
   StreamSubscription<HrConnectionState>? _hrConnectionSub;
+
+  HeartRateService get _heartRateService => ref.read(heartRateServiceProvider);
 
   @override
   HeartRatePanelState build() {
@@ -148,6 +148,7 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
       }
     });
   }
+
 }
 
 /// NON-autoDispose so monitoring survives tab switches.

@@ -85,5 +85,6 @@ class ExportNotifier extends Notifier<ExportState> {
   }
 }
 
-final exportProvider =
-    NotifierProvider<ExportNotifier, ExportState>(ExportNotifier.new);
+final exportProvider = NotifierProvider<ExportNotifier, ExportState>(
+  ExportNotifier.new,
+);

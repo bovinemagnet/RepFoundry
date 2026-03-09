@@ -49,15 +49,13 @@ void main() {
       final notifier = container.read(maxHrAlertProvider.notifier);
       await notifier.toggleVibration();
       await notifier.toggleSound();
-      final state = container.read(maxHrAlertProvider);
-      expect(state.isEnabled, isFalse);
+      expect(container.read(maxHrAlertProvider).isEnabled, isFalse);
     });
 
     test('setCooldown updates cooldown seconds', () async {
       final notifier = container.read(maxHrAlertProvider.notifier);
       await notifier.setCooldown(30);
-      final state = container.read(maxHrAlertProvider);
-      expect(state.cooldownSeconds, 30);
+      expect(container.read(maxHrAlertProvider).cooldownSeconds, 30);
     });
 
     test('persists values via SharedPreferences', () async {
@@ -68,9 +66,9 @@ void main() {
 
       // Create a new container — should load persisted values
       container = ProviderContainer();
-      // Trigger the provider so build() and _load() run
+      // Trigger the provider so build() and _load() are called.
       container.read(maxHrAlertProvider);
-      // Allow multiple microtask ticks for SharedPreferences.getInstance()
+      // Allow the async _load() chain to fully complete (multiple microtasks).
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
       final state = container.read(maxHrAlertProvider);
