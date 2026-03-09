@@ -55,6 +55,7 @@ void main() {
         id: 'w1',
         startedAt: DateTime(2024, 1, 1),
         completedAt: DateTime(2024, 1, 1, 1),
+        updatedAt: DateTime.utc(2024),
       );
       await workoutRepo.createWorkout(workout);
       await workoutRepo.addSet(WorkoutSet(
@@ -65,6 +66,7 @@ void main() {
         weight: 100,
         reps: 5,
         timestamp: DateTime(2024, 1, 1),
+        updatedAt: DateTime.utc(2024),
       ));
 
       final json = await useCase.exportAsJson();
@@ -102,6 +104,7 @@ void main() {
         id: 'w1',
         startedAt: DateTime(2024, 1, 1),
         completedAt: DateTime(2024, 1, 1, 1),
+        updatedAt: DateTime.utc(2024),
       );
       await workoutRepo.createWorkout(workout);
       await workoutRepo.addSet(WorkoutSet(
@@ -113,6 +116,7 @@ void main() {
         reps: 5,
         rpe: 8.0,
         timestamp: DateTime(2024, 1, 1, 0, 30),
+        updatedAt: DateTime.utc(2024),
       ));
 
       final csvFiles = await useCase.exportAsCsv();
@@ -124,13 +128,14 @@ void main() {
 
     test('escapes commas in exercise names', () async {
       final exercise = await exerciseRepo.createExercise(
-        const domain.Exercise(
+        domain.Exercise(
           id: 'comma-ex',
           name: 'Press, Bench',
           category: domain.ExerciseCategory.strength,
           muscleGroup: domain.MuscleGroup.chest,
           equipmentType: domain.EquipmentType.barbell,
           isCustom: true,
+          updatedAt: DateTime.utc(2024),
         ),
       );
 
@@ -138,6 +143,7 @@ void main() {
         id: 'w2',
         startedAt: DateTime(2024, 2, 1),
         completedAt: DateTime(2024, 2, 1, 1),
+        updatedAt: DateTime.utc(2024),
       );
       await workoutRepo.createWorkout(workout);
       await workoutRepo.addSet(WorkoutSet(
@@ -148,6 +154,7 @@ void main() {
         weight: 50,
         reps: 10,
         timestamp: DateTime(2024, 2, 1),
+        updatedAt: DateTime.utc(2024),
       ));
 
       final csvFiles = await useCase.exportAsCsv();
@@ -160,14 +167,16 @@ void main() {
         id: 'w3',
         startedAt: DateTime(2024, 3, 1),
         completedAt: DateTime(2024, 3, 1, 1),
+        updatedAt: DateTime.utc(2024),
       );
       await workoutRepo.createWorkout(workout);
-      await cardioRepo.createSession(const CardioSession(
+      await cardioRepo.createSession(CardioSession(
         id: 'c1',
         workoutId: 'w3',
         exerciseId: '16',
         durationSeconds: 1800,
         distanceMeters: 5000,
+        updatedAt: DateTime.utc(2024),
       ));
 
       final csvFiles = await useCase.exportAsCsv();
@@ -183,6 +192,7 @@ void main() {
         recordType: RecordType.estimatedOneRepMax,
         value: 120.0,
         achievedAt: DateTime(2024, 4, 1),
+        updatedAt: DateTime.utc(2024),
       ));
 
       final csvFiles = await useCase.exportAsCsv();

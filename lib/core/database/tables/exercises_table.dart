@@ -8,6 +8,7 @@ class Exercises extends Table {
   TextColumn get equipmentType => text()();
   BoolColumn get isCustom => boolean().withDefault(const Constant(false))();
   TextColumn get imageAsset => text().nullable()();
+  IntColumn get updatedAt => integer().withDefault(const Constant(0))();
   IntColumn get deletedAt => integer().nullable()();
 
   @override

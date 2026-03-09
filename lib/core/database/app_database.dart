@@ -35,7 +35,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -121,6 +121,24 @@ class AppDatabase extends _$AppDatabase {
               'frequency_weeks INTEGER NOT NULL DEFAULT 1'
               ')',
             );
+          }
+          if (from < 6) {
+            const tablesToAddUpdatedAt = [
+              'exercises',
+              'workouts',
+              'workout_sets',
+              'cardio_sessions',
+              'personal_records',
+              'body_metrics',
+              'template_exercises',
+              'programme_days',
+              'progression_rules',
+            ];
+            for (final table in tablesToAddUpdatedAt) {
+              await customStatement(
+                'ALTER TABLE $table ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0',
+              );
+            }
           }
         },
       );

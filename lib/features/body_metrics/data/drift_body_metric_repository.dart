@@ -19,6 +19,7 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
             weight: metric.weight,
             bodyFatPercent: Value(metric.bodyFatPercent),
             notes: Value(metric.notes),
+            updatedAt: Value(dateTimeToEpochMs(metric.updatedAt)),
           ),
         );
     return metric;
@@ -34,6 +35,7 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
         weight: Value(metric.weight),
         bodyFatPercent: Value(metric.bodyFatPercent),
         notes: Value(metric.notes),
+        updatedAt: Value(dateTimeToEpochMs(metric.updatedAt)),
       ),
     );
     return metric;
@@ -76,6 +78,7 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
       weight: row.weight,
       bodyFatPercent: row.bodyFatPercent,
       notes: row.notes,
+      updatedAt: dateTimeFromEpochMs(row.updatedAt),
     );
   }
 }

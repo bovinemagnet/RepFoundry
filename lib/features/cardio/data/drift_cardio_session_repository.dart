@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../../core/database/app_database.dart' as db;
+import '../../../core/database/converters.dart';
 import '../domain/models/cardio_session.dart';
 import '../domain/repositories/cardio_session_repository.dart';
 
@@ -20,6 +21,7 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
             distanceMeters: Value(session.distanceMeters),
             incline: Value(session.incline),
             avgHeartRate: Value(session.avgHeartRate),
+            updatedAt: Value(dateTimeToEpochMs(session.updatedAt)),
           ),
         );
     return session;
@@ -95,6 +97,7 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
       distanceMeters: row.distanceMeters,
       incline: row.incline,
       avgHeartRate: row.avgHeartRate,
+      updatedAt: dateTimeFromEpochMs(row.updatedAt),
     );
   }
 }

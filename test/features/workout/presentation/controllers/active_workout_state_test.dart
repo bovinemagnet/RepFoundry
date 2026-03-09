@@ -21,6 +21,7 @@ void main() {
         weight: 80,
         reps: 5,
         timestamp: DateTime.now().toUtc(),
+        updatedAt: DateTime.utc(2024),
       );
     }
 

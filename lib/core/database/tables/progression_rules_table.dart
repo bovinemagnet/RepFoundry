@@ -7,6 +7,7 @@ class ProgressionRules extends Table {
   TextColumn get type => text()();
   RealColumn get value => real()();
   IntColumn get frequencyWeeks => integer().withDefault(const Constant(1))();
+  IntColumn get updatedAt => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};

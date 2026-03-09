@@ -8,6 +8,7 @@ class TemplateExercise {
   final int targetSets;
   final int targetReps;
   final int orderIndex;
+  final DateTime updatedAt;
 
   const TemplateExercise({
     required this.id,
@@ -17,6 +18,7 @@ class TemplateExercise {
     required this.targetSets,
     required this.targetReps,
     required this.orderIndex,
+    required this.updatedAt,
   });
 }
 

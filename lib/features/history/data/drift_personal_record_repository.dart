@@ -20,6 +20,7 @@ class DriftPersonalRecordRepository implements PersonalRecordRepository {
             value: record.value,
             achievedAt: dateTimeToEpochMs(record.achievedAt),
             workoutSetId: Value(record.workoutSetId),
+            updatedAt: Value(dateTimeToEpochMs(record.updatedAt)),
           ),
         );
     return record;
@@ -85,6 +86,7 @@ class DriftPersonalRecordRepository implements PersonalRecordRepository {
       value: row.value,
       achievedAt: dateTimeFromEpochMs(row.achievedAt),
       workoutSetId: row.workoutSetId,
+      updatedAt: dateTimeFromEpochMs(row.updatedAt),
     );
   }
 }

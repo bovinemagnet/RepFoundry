@@ -43,6 +43,7 @@ void main() {
       targetSets: targetSets,
       targetReps: targetReps,
       orderIndex: orderIndex,
+      updatedAt: DateTime.utc(2024),
     );
   }
 

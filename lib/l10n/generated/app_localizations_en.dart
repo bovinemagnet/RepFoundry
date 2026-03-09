@@ -1408,4 +1408,61 @@ class SEn extends S {
 
   @override
   String get healthSyncNoNewData => 'No new data from Health';
+
+  @override
+  String get syncSectionTitle => 'Cross-Device Sync';
+
+  @override
+  String get syncEnabled => 'Enable Cross-Device Sync';
+
+  @override
+  String get syncEnabledSubtitle => 'Sync your workout data across devices';
+
+  @override
+  String syncLastSynced(String time) {
+    return 'Last synced: $time';
+  }
+
+  @override
+  String get syncNeverSynced => 'Never synced';
+
+  @override
+  String get syncNow => 'Sync Now';
+
+  @override
+  String get syncSyncing => 'Syncing…';
+
+  @override
+  String get syncSuccess => 'Sync complete';
+
+  @override
+  String syncError(String error) {
+    return 'Sync failed: $error';
+  }
+
+  @override
+  String get syncDisableAndDelete => 'Disable Sync & Delete Cloud Data';
+
+  @override
+  String get syncDisableConfirmTitle => 'Disable Sync?';
+
+  @override
+  String get syncDisableConfirmBody =>
+      'This will disable sync and permanently delete your data from cloud storage. Your local data will not be affected.';
+
+  @override
+  String get syncDisableConfirmAction => 'Disable & Delete';
+
+  @override
+  String get syncConsentTitle => 'Cross-Device Sync';
+
+  @override
+  String get syncConsentBody =>
+      'Your workout data will be saved to your own Google Drive or iCloud account. RepFoundry cannot access this data. You can delete it at any time from Settings or directly from your cloud account.';
+
+  @override
+  String get syncConsentCancel => 'Cancel';
+
+  @override
+  String get syncConsentAccept => 'I Understand — Continue';
 }

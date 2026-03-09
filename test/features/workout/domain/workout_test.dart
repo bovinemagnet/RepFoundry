@@ -16,6 +16,7 @@ void main() {
         id: 'test-id',
         startedAt: now.subtract(const Duration(hours: 1)),
         completedAt: now,
+        updatedAt: DateTime.utc(2024),
       );
       expect(workout.status, WorkoutStatus.completed);
     });
@@ -25,6 +26,7 @@ void main() {
         id: 'test-id',
         startedAt: DateTime.now().toUtc(),
         deletedAt: DateTime.now().toUtc(),
+        updatedAt: DateTime.utc(2024),
       );
       expect(workout.isDeleted, isTrue);
     });
@@ -41,9 +43,9 @@ void main() {
     });
 
     test('equality is based on id', () {
-      final a = Workout(id: 'same', startedAt: DateTime.now().toUtc());
-      final b = Workout(id: 'same', startedAt: DateTime.now().toUtc());
-      final c = Workout(id: 'other', startedAt: DateTime.now().toUtc());
+      final a = Workout(id: 'same', startedAt: DateTime.now().toUtc(), updatedAt: DateTime.utc(2024));
+      final b = Workout(id: 'same', startedAt: DateTime.now().toUtc(), updatedAt: DateTime.utc(2024));
+      final c = Workout(id: 'other', startedAt: DateTime.now().toUtc(), updatedAt: DateTime.utc(2024));
       expect(a, equals(b));
       expect(a, isNot(equals(c)));
     });
@@ -55,6 +57,7 @@ void main() {
         id: 'id',
         startedAt: start,
         completedAt: end,
+        updatedAt: DateTime.utc(2024),
       );
       expect(workout.elapsed.inMinutes, 90);
     });

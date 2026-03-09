@@ -31,6 +31,7 @@ void main() {
           id: 'w$i',
           startedAt: date.toUtc(),
           completedAt: date.add(const Duration(hours: 1)).toUtc(),
+          updatedAt: DateTime.utc(2024),
         );
         await repo.createWorkout(workout);
       }
@@ -66,6 +67,7 @@ void main() {
           id: 'w$i',
           startedAt: date.toUtc(),
           completedAt: date.add(const Duration(hours: 1)).toUtc(),
+          updatedAt: DateTime.utc(2024),
         );
         await repo.createWorkout(workout);
       }
@@ -92,6 +94,7 @@ void main() {
           id: 'w$i',
           startedAt: date.toUtc(),
           completedAt: date.add(const Duration(hours: 1)).toUtc(),
+          updatedAt: DateTime.utc(2024),
         );
         await repo.createWorkout(workout);
       }

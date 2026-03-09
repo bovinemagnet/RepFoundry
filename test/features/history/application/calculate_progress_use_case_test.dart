@@ -69,6 +69,7 @@ WorkoutSet _makeSet({
     weight: weight,
     reps: reps,
     timestamp: DateTime.now().toUtc(),
+    updatedAt: DateTime.utc(2024),
   );
 }
 

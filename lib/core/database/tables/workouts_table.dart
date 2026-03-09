@@ -6,6 +6,7 @@ class Workouts extends Table {
   IntColumn get completedAt => integer().nullable()();
   TextColumn get templateId => text().nullable()();
   TextColumn get notes => text().nullable()();
+  IntColumn get updatedAt => integer().withDefault(const Constant(0))();
   IntColumn get deletedAt => integer().nullable()();
 
   @override

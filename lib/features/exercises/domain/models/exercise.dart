@@ -43,6 +43,7 @@ class Exercise {
   final EquipmentType equipmentType;
   final bool isCustom;
   final String? imageAsset;
+  final DateTime updatedAt;
   final DateTime? deletedAt;
 
   const Exercise({
@@ -53,6 +54,7 @@ class Exercise {
     required this.equipmentType,
     this.isCustom = false,
     this.imageAsset,
+    required this.updatedAt,
     this.deletedAt,
   });
 
@@ -66,6 +68,7 @@ class Exercise {
     EquipmentType? equipmentType,
     bool? isCustom,
     String? imageAsset,
+    DateTime? updatedAt,
     DateTime? deletedAt,
   }) {
     return Exercise(
@@ -76,6 +79,7 @@ class Exercise {
       equipmentType: equipmentType ?? this.equipmentType,
       isCustom: isCustom ?? this.isCustom,
       imageAsset: imageAsset ?? this.imageAsset,
+      updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
     );
   }
@@ -96,6 +100,7 @@ class Exercise {
       equipmentType: equipmentType,
       isCustom: isCustom,
       imageAsset: imageAsset,
+      updatedAt: DateTime.now().toUtc(),
     );
   }
 

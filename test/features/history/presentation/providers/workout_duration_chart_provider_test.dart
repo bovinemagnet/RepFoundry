@@ -28,6 +28,7 @@ void main() {
         id: 'w1',
         startedAt: start,
         completedAt: end,
+        updatedAt: DateTime.utc(2024),
       );
       await repo.createWorkout(workout);
 
@@ -49,11 +50,13 @@ void main() {
         id: 'w1',
         startedAt: DateTime.utc(2026, 1, 12, 10, 0),
         completedAt: DateTime.utc(2026, 1, 12, 11, 0), // 60 mins
+        updatedAt: DateTime.utc(2024),
       );
       final w2 = Workout(
         id: 'w2',
         startedAt: DateTime.utc(2026, 1, 10, 10, 0),
         completedAt: DateTime.utc(2026, 1, 10, 10, 45), // 45 mins
+        updatedAt: DateTime.utc(2024),
       );
       await repo.createWorkout(w1);
       await repo.createWorkout(w2);

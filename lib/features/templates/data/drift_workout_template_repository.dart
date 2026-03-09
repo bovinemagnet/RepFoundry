@@ -31,6 +31,7 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
                 targetSets: ex.targetSets,
                 targetReps: ex.targetReps,
                 orderIndex: ex.orderIndex,
+                updatedAt: Value(dateTimeToEpochMs(ex.updatedAt)),
               ),
             );
       }
@@ -84,6 +85,7 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
                 targetSets: ex.targetSets,
                 targetReps: ex.targetReps,
                 orderIndex: ex.orderIndex,
+                updatedAt: Value(dateTimeToEpochMs(ex.updatedAt)),
               ),
             );
       }
@@ -146,6 +148,7 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
       targetSets: row.targetSets,
       targetReps: row.targetReps,
       orderIndex: row.orderIndex,
+      updatedAt: dateTimeFromEpochMs(row.updatedAt),
     );
   }
 }

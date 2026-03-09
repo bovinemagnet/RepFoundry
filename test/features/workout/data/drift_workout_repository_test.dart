@@ -254,6 +254,7 @@ void main() {
           weight: 80,
           reps: 5,
           timestamp: earlyTime,
+          updatedAt: DateTime.utc(2024),
         );
         final s2 = WorkoutSet(
           id: 'set-2',
@@ -263,6 +264,7 @@ void main() {
           weight: 100,
           reps: 5,
           timestamp: laterTime,
+          updatedAt: DateTime.utc(2024),
         );
         await repo.addSet(s1);
         await repo.addSet(s2);

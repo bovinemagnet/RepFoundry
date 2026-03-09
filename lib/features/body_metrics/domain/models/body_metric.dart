@@ -6,6 +6,7 @@ class BodyMetric {
   final double weight;
   final double? bodyFatPercent;
   final String? notes;
+  final DateTime updatedAt;
 
   const BodyMetric({
     required this.id,
@@ -13,6 +14,7 @@ class BodyMetric {
     required this.weight,
     this.bodyFatPercent,
     this.notes,
+    required this.updatedAt,
   });
 
   BodyMetric copyWith({
@@ -23,6 +25,7 @@ class BodyMetric {
     String? notes,
     bool clearBodyFat = false,
     bool clearNotes = false,
+    DateTime? updatedAt,
   }) {
     return BodyMetric(
       id: id ?? this.id,
@@ -30,6 +33,7 @@ class BodyMetric {
       weight: weight ?? this.weight,
       bodyFatPercent: clearBodyFat ? null : (bodyFatPercent ?? this.bodyFatPercent),
       notes: clearNotes ? null : (notes ?? this.notes),
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -39,12 +43,14 @@ class BodyMetric {
     double? bodyFatPercent,
     String? notes,
   }) {
+    final now = DateTime.now().toUtc();
     return BodyMetric(
       id: const Uuid().v4(),
-      date: date ?? DateTime.now().toUtc(),
+      date: date ?? now,
       weight: weight,
       bodyFatPercent: bodyFatPercent,
       notes: notes,
+      updatedAt: now,
     );
   }
 

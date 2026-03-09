@@ -2557,6 +2557,108 @@ abstract class S {
   /// In en, this message translates to:
   /// **'No new data from Health'**
   String get healthSyncNoNewData;
+
+  /// No description provided for @syncSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross-Device Sync'**
+  String get syncSectionTitle;
+
+  /// No description provided for @syncEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Cross-Device Sync'**
+  String get syncEnabled;
+
+  /// No description provided for @syncEnabledSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync your workout data across devices'**
+  String get syncEnabledSubtitle;
+
+  /// No description provided for @syncLastSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Last synced: {time}'**
+  String syncLastSynced(String time);
+
+  /// No description provided for @syncNeverSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Never synced'**
+  String get syncNeverSynced;
+
+  /// No description provided for @syncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Now'**
+  String get syncNow;
+
+  /// No description provided for @syncSyncing.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing…'**
+  String get syncSyncing;
+
+  /// No description provided for @syncSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync complete'**
+  String get syncSuccess;
+
+  /// No description provided for @syncError.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync failed: {error}'**
+  String syncError(String error);
+
+  /// No description provided for @syncDisableAndDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable Sync & Delete Cloud Data'**
+  String get syncDisableAndDelete;
+
+  /// No description provided for @syncDisableConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable Sync?'**
+  String get syncDisableConfirmTitle;
+
+  /// No description provided for @syncDisableConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will disable sync and permanently delete your data from cloud storage. Your local data will not be affected.'**
+  String get syncDisableConfirmBody;
+
+  /// No description provided for @syncDisableConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable & Delete'**
+  String get syncDisableConfirmAction;
+
+  /// No description provided for @syncConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross-Device Sync'**
+  String get syncConsentTitle;
+
+  /// No description provided for @syncConsentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your workout data will be saved to your own Google Drive or iCloud account. RepFoundry cannot access this data. You can delete it at any time from Settings or directly from your cloud account.'**
+  String get syncConsentBody;
+
+  /// No description provided for @syncConsentCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get syncConsentCancel;
+
+  /// No description provided for @syncConsentAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'I Understand — Continue'**
+  String get syncConsentAccept;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

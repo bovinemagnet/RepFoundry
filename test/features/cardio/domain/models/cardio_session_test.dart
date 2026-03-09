@@ -40,44 +40,48 @@ void main() {
 
     group('paceMinutesPerKm', () {
       test('returns null when distanceMeters is null', () {
-        const session = CardioSession(
+        final session = CardioSession(
           id: '1',
           workoutId: 'w1',
           exerciseId: 'e1',
           durationSeconds: 1800,
+          updatedAt: DateTime.utc(2024),
         );
         expect(session.paceMinutesPerKm, isNull);
       });
 
       test('returns null when distanceMeters is zero', () {
-        const session = CardioSession(
+        final session = CardioSession(
           id: '1',
           workoutId: 'w1',
           exerciseId: 'e1',
           durationSeconds: 1800,
           distanceMeters: 0,
+          updatedAt: DateTime.utc(2024),
         );
         expect(session.paceMinutesPerKm, isNull);
       });
 
       test('returns null when distanceMeters is negative', () {
-        const session = CardioSession(
+        final session = CardioSession(
           id: '1',
           workoutId: 'w1',
           exerciseId: 'e1',
           durationSeconds: 1800,
           distanceMeters: -100,
+          updatedAt: DateTime.utc(2024),
         );
         expect(session.paceMinutesPerKm, isNull);
       });
 
       test('calculates correctly (1800s / 5000m = 6.0 min/km)', () {
-        const session = CardioSession(
+        final session = CardioSession(
           id: '1',
           workoutId: 'w1',
           exerciseId: 'e1',
           durationSeconds: 1800,
           distanceMeters: 5000,
+          updatedAt: DateTime.utc(2024),
         );
         expect(session.paceMinutesPerKm, 6.0);
       });
@@ -85,11 +89,12 @@ void main() {
 
     group('duration', () {
       test('returns correct Duration', () {
-        const session = CardioSession(
+        final session = CardioSession(
           id: '1',
           workoutId: 'w1',
           exerciseId: 'e1',
           durationSeconds: 3661,
+          updatedAt: DateTime.utc(2024),
         );
         expect(session.duration, const Duration(seconds: 3661));
         expect(session.duration.inHours, 1);
@@ -99,34 +104,38 @@ void main() {
 
     group('equality', () {
       test('equal when IDs match', () {
-        const a = CardioSession(
+        final a = CardioSession(
           id: 'same',
           workoutId: 'w1',
           exerciseId: 'e1',
           durationSeconds: 100,
+          updatedAt: DateTime.utc(2024),
         );
-        const b = CardioSession(
+        final b = CardioSession(
           id: 'same',
           workoutId: 'w2',
           exerciseId: 'e2',
           durationSeconds: 200,
+          updatedAt: DateTime.utc(2024),
         );
         expect(a, equals(b));
         expect(a.hashCode, b.hashCode);
       });
 
       test('not equal when IDs differ', () {
-        const a = CardioSession(
+        final a = CardioSession(
           id: 'id1',
           workoutId: 'w1',
           exerciseId: 'e1',
           durationSeconds: 100,
+          updatedAt: DateTime.utc(2024),
         );
-        const b = CardioSession(
+        final b = CardioSession(
           id: 'id2',
           workoutId: 'w1',
           exerciseId: 'e1',
           durationSeconds: 100,
+          updatedAt: DateTime.utc(2024),
         );
         expect(a, isNot(equals(b)));
       });
