@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
+
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../domain/models/exercise.dart';
 import '../screens/create_exercise_screen.dart';
@@ -9,8 +9,26 @@ import '../widgets/exercise_list_tile.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/widgets/loading_widget.dart';
 
-final _searchQueryProvider = StateProvider<String>((ref) => '');
-final _selectedMuscleGroupProvider = StateProvider<MuscleGroup?>((ref) => null);
+class _SearchQueryNotifier extends Notifier<String> {
+  @override
+  String build() => '';
+  void set(String value) => state = value;
+}
+
+final _searchQueryProvider = NotifierProvider<_SearchQueryNotifier, String>(
+  _SearchQueryNotifier.new,
+);
+
+class _SelectedMuscleGroupNotifier extends Notifier<MuscleGroup?> {
+  @override
+  MuscleGroup? build() => null;
+  void set(MuscleGroup? value) => state = value;
+}
+
+final _selectedMuscleGroupProvider =
+    NotifierProvider<_SelectedMuscleGroupNotifier, MuscleGroup?>(
+  _SelectedMuscleGroupNotifier.new,
+);
 
 final _filteredExercisesProvider =
     FutureProvider.autoDispose<List<Exercise>>((ref) async {
@@ -73,7 +91,7 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
-                          ref.read(_searchQueryProvider.notifier).state = '';
+                          ref.read(_searchQueryProvider.notifier).set('');
                         },
                       )
                     : null,
@@ -82,7 +100,7 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
                 filled: true,
               ),
               onChanged: (value) {
-                ref.read(_searchQueryProvider.notifier).state = value;
+                ref.read(_searchQueryProvider.notifier).set(value);
               },
             ),
           ),
@@ -174,7 +192,7 @@ class _MuscleGroupFilterBar extends ConsumerWidget {
               label: Text(s.filterAll),
               selected: selectedGroup == null,
               onSelected: (_) {
-                ref.read(_selectedMuscleGroupProvider.notifier).state = null;
+                ref.read(_selectedMuscleGroupProvider.notifier).set(null);
               },
             );
           }
@@ -183,7 +201,7 @@ class _MuscleGroupFilterBar extends ConsumerWidget {
             label: Text(group.name),
             selected: selectedGroup == group,
             onSelected: (_) {
-              ref.read(_selectedMuscleGroupProvider.notifier).state = group;
+              ref.read(_selectedMuscleGroupProvider.notifier).set(group);
             },
           );
         },

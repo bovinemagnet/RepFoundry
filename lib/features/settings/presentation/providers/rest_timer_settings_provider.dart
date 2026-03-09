@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RestTimerSettings {
@@ -21,14 +21,15 @@ class RestTimerSettings {
   }
 }
 
-class RestTimerSettingsNotifier extends StateNotifier<RestTimerSettings> {
-  RestTimerSettingsNotifier() : super(const RestTimerSettings()) {
+class RestTimerSettingsNotifier extends Notifier<RestTimerSettings> {
+  @override
+  RestTimerSettings build() {
     _load();
+    return const RestTimerSettings();
   }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
     state = RestTimerSettings(
       vibrationEnabled: prefs.getBool('rest_timer_vibration') ?? true,
       soundEnabled: prefs.getBool('rest_timer_sound') ?? true,
@@ -51,6 +52,6 @@ class RestTimerSettingsNotifier extends StateNotifier<RestTimerSettings> {
 }
 
 final restTimerSettingsProvider =
-    StateNotifierProvider<RestTimerSettingsNotifier, RestTimerSettings>(
-  (ref) => RestTimerSettingsNotifier(),
+    NotifierProvider<RestTimerSettingsNotifier, RestTimerSettings>(
+  RestTimerSettingsNotifier.new,
 );

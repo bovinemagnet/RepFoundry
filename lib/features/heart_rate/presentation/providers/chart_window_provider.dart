@@ -1,17 +1,18 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ChartWindowNotifier extends StateNotifier<int> {
-  ChartWindowNotifier() : super(60) {
-    _load();
-  }
-
+class ChartWindowNotifier extends Notifier<int> {
   static const _key = 'hr_chart_window_seconds';
   static const allowedValues = [30, 60, 90, 120, 300];
 
+  @override
+  int build() {
+    _load();
+    return 60;
+  }
+
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
     final value = prefs.getInt(_key);
     if (value != null && allowedValues.contains(value)) {
       state = value;
@@ -26,6 +27,6 @@ class ChartWindowNotifier extends StateNotifier<int> {
   }
 }
 
-final chartWindowProvider = StateNotifierProvider<ChartWindowNotifier, int>(
-  (ref) => ChartWindowNotifier(),
+final chartWindowProvider = NotifierProvider<ChartWindowNotifier, int>(
+  ChartWindowNotifier.new,
 );

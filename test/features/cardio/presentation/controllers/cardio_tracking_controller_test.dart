@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/cardio/application/save_cardio_session_use_case.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
@@ -7,9 +8,16 @@ import 'package:rep_foundry/features/cardio/presentation/controllers/cardio_trac
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
+import 'package:rep_foundry/core/providers.dart';
 
 import '../../data/fake_heart_rate_service.dart';
 import '../../data/fake_location_service.dart';
+
+/// A test notifier that returns a fixed [HealthSyncSettings].
+class _FakeHealthSyncSettingsNotifier extends HealthSyncSettingsNotifier {
+  @override
+  HealthSyncSettings build() => const HealthSyncSettings();
+}
 
 void main() {
   late InMemoryCardioSessionRepository cardioRepo;
@@ -17,7 +25,10 @@ void main() {
   late SaveCardioSessionUseCase useCase;
   late FakeLocationService locationService;
   late FakeHeartRateService heartRateService;
-  late CardioTrackingController controller;
+  late ProviderContainer container;
+
+  CardioTrackingController ctrl() =>
+      container.read(cardioTrackingProvider.notifier);
 
   setUp(() {
     cardioRepo = InMemoryCardioSessionRepository();
@@ -28,18 +39,21 @@ void main() {
     );
     locationService = FakeLocationService();
     heartRateService = FakeHeartRateService();
-    controller = CardioTrackingController(
-      cardioRepository: cardioRepo,
-      saveUseCase: useCase,
-      locationService: locationService,
-      heartRateService: heartRateService,
-      healthSyncService: HealthSyncService(),
-      healthSyncSettings: const HealthSyncSettings(),
+    container = ProviderContainer(
+      overrides: [
+        cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
+        saveCardioSessionUseCaseProvider.overrideWithValue(useCase),
+        locationServiceProvider.overrideWithValue(locationService),
+        heartRateServiceProvider.overrideWithValue(heartRateService),
+        healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+        healthSyncSettingsProvider
+            .overrideWith(() => _FakeHealthSyncSettingsNotifier()),
+      ],
     );
   });
 
   tearDown(() {
-    controller.dispose();
+    container.dispose();
     locationService.dispose();
     heartRateService.dispose();
   });
@@ -47,44 +61,45 @@ void main() {
   group('CardioTrackingController', () {
     group('timer state transitions', () {
       test('initial state is not running with zero elapsed', () {
-        expect(controller.state.isRunning, isFalse);
-        expect(controller.state.elapsedSeconds, 0);
+        expect(ctrl().state.isRunning, isFalse);
+        expect(ctrl().state.elapsedSeconds, 0);
       });
 
       test('start() sets isRunning to true', () {
-        controller.start();
-        expect(controller.state.isRunning, isTrue);
+        ctrl().start();
+        expect(ctrl().state.isRunning, isTrue);
       });
 
       test('pause() sets isRunning to false', () {
-        controller.start();
-        controller.pause();
-        expect(controller.state.isRunning, isFalse);
+        ctrl().start();
+        ctrl().pause();
+        expect(ctrl().state.isRunning, isFalse);
       });
 
-      test('reset() clears elapsed but preserves exercise selection', () async {
-        await controller.selectExercise('e1', 'Treadmill');
-        controller.start();
-        controller.reset();
+      test('reset() clears elapsed but preserves exercise selection',
+          () async {
+        await ctrl().selectExercise('e1', 'Treadmill');
+        ctrl().start();
+        ctrl().reset();
 
-        expect(controller.state.isRunning, isFalse);
-        expect(controller.state.elapsedSeconds, 0);
-        expect(controller.state.selectedExerciseId, 'e1');
-        expect(controller.state.selectedExerciseName, 'Treadmill');
+        expect(ctrl().state.isRunning, isFalse);
+        expect(ctrl().state.elapsedSeconds, 0);
+        expect(ctrl().state.selectedExerciseId, 'e1');
+        expect(ctrl().state.selectedExerciseName, 'Treadmill');
       });
 
       test('start() is idempotent when already running', () {
-        controller.start();
-        controller.start();
-        expect(controller.state.isRunning, isTrue);
+        ctrl().start();
+        ctrl().start();
+        expect(ctrl().state.isRunning, isTrue);
       });
     });
 
     group('selectExercise', () {
       test('sets exercise id and name', () async {
-        await controller.selectExercise('e1', 'Treadmill');
-        expect(controller.state.selectedExerciseId, 'e1');
-        expect(controller.state.selectedExerciseName, 'Treadmill');
+        await ctrl().selectExercise('e1', 'Treadmill');
+        expect(ctrl().state.selectedExerciseId, 'e1');
+        expect(ctrl().state.selectedExerciseName, 'Treadmill');
       });
 
       test('loads ghost session when previous session exists', () async {
@@ -97,147 +112,147 @@ void main() {
         );
         await cardioRepo.createSession(session);
 
-        await controller.selectExercise('e1', 'Treadmill');
+        await ctrl().selectExercise('e1', 'Treadmill');
 
-        expect(controller.state.lastSession, isNotNull);
-        expect(controller.state.lastSession!.durationSeconds, 1800);
-        expect(controller.state.lastSession!.distanceMeters, 5000);
+        expect(ctrl().state.lastSession, isNotNull);
+        expect(ctrl().state.lastSession!.durationSeconds, 1800);
+        expect(ctrl().state.lastSession!.distanceMeters, 5000);
       });
 
       test('sets lastSession to null when no previous session', () async {
-        await controller.selectExercise('e2', 'Bike');
-        expect(controller.state.lastSession, isNull);
+        await ctrl().selectExercise('e2', 'Bike');
+        expect(ctrl().state.lastSession, isNull);
       });
     });
 
     group('save()', () {
       test('does nothing when no exercise selected', () async {
-        await controller.save();
-        expect(controller.state.savedSuccessfully, isFalse);
+        await ctrl().save();
+        expect(ctrl().state.savedSuccessfully, isFalse);
       });
 
       test('does nothing when elapsed is zero', () async {
-        await controller.selectExercise('e1', 'Treadmill');
-        await controller.save();
-        expect(controller.state.savedSuccessfully, isFalse);
+        await ctrl().selectExercise('e1', 'Treadmill');
+        await ctrl().save();
+        expect(ctrl().state.savedSuccessfully, isFalse);
       });
 
       test('saves session and resets state on success', () async {
-        await controller.selectExercise('e1', 'Treadmill');
-        controller.start();
+        await ctrl().selectExercise('e1', 'Treadmill');
+        ctrl().start();
         await Future<void>.delayed(
             const Duration(seconds: 1, milliseconds: 100));
-        controller.pause();
+        ctrl().pause();
 
-        expect(controller.state.elapsedSeconds, greaterThan(0));
+        expect(ctrl().state.elapsedSeconds, greaterThan(0));
 
-        await controller.save(
+        await ctrl().save(
           distanceMeters: 5000,
           avgHeartRate: 145,
           incline: 2.0,
         );
 
-        expect(controller.state.savedSuccessfully, isTrue);
-        expect(controller.state.elapsedSeconds, 0);
-        expect(controller.state.isRunning, isFalse);
-        expect(controller.state.selectedExerciseId, isNull);
+        expect(ctrl().state.savedSuccessfully, isTrue);
+        expect(ctrl().state.elapsedSeconds, 0);
+        expect(ctrl().state.isRunning, isFalse);
+        expect(ctrl().state.selectedExerciseId, isNull);
 
         final sessions = await cardioRepo.getSessionsForExercise('e1');
         expect(sessions, hasLength(1));
       });
 
       test('sets error on validation failure', () async {
-        await controller.selectExercise('e1', 'Treadmill');
-        controller.start();
+        await ctrl().selectExercise('e1', 'Treadmill');
+        ctrl().start();
         await Future<void>.delayed(
             const Duration(seconds: 1, milliseconds: 100));
-        controller.pause();
+        ctrl().pause();
 
-        await controller.save(avgHeartRate: 10);
+        await ctrl().save(avgHeartRate: 10);
 
-        expect(controller.state.error, isNotNull);
-        expect(controller.state.isSaving, isFalse);
-        expect(controller.state.savedSuccessfully, isFalse);
+        expect(ctrl().state.error, isNotNull);
+        expect(ctrl().state.isSaving, isFalse);
+        expect(ctrl().state.savedSuccessfully, isFalse);
       });
     });
 
     group('GPS tracking', () {
       test('toggleGps enables GPS when permission granted', () async {
-        await controller.toggleGps();
-        expect(controller.state.gpsEnabled, isTrue);
-        expect(controller.state.gpsDistanceMeters, 0);
+        await ctrl().toggleGps();
+        expect(ctrl().state.gpsEnabled, isTrue);
+        expect(ctrl().state.gpsDistanceMeters, 0);
       });
 
       test('toggleGps sets error when permission denied', () async {
         locationService.permissionGranted = false;
-        await controller.toggleGps();
-        expect(controller.state.gpsEnabled, isFalse);
-        expect(controller.state.error, isNotNull);
+        await ctrl().toggleGps();
+        expect(ctrl().state.gpsEnabled, isFalse);
+        expect(ctrl().state.error, isNotNull);
       });
 
       test('toggleGps disables GPS when already enabled', () async {
-        await controller.toggleGps();
-        expect(controller.state.gpsEnabled, isTrue);
+        await ctrl().toggleGps();
+        expect(ctrl().state.gpsEnabled, isTrue);
 
-        await controller.toggleGps();
-        expect(controller.state.gpsEnabled, isFalse);
-        expect(controller.state.gpsDistanceMeters, 0);
+        await ctrl().toggleGps();
+        expect(ctrl().state.gpsEnabled, isFalse);
+        expect(ctrl().state.gpsDistanceMeters, 0);
       });
 
       test('accumulates distance from position stream', () async {
-        await controller.toggleGps();
-        controller.start();
+        await ctrl().toggleGps();
+        ctrl().start();
 
         // First position — sets baseline, no distance added.
         locationService.emitPosition(latitude: 51.5074, longitude: -0.1278);
         await Future<void>.delayed(const Duration(milliseconds: 50));
-        expect(controller.state.gpsDistanceMeters, 0);
-        expect(controller.state.gpsAcquiring, isFalse);
+        expect(ctrl().state.gpsDistanceMeters, 0);
+        expect(ctrl().state.gpsAcquiring, isFalse);
 
         // Second position — adds fixedDistance (10m).
         locationService.emitPosition(latitude: 51.5075, longitude: -0.1279);
         await Future<void>.delayed(const Duration(milliseconds: 50));
-        expect(controller.state.gpsDistanceMeters, 10.0);
+        expect(ctrl().state.gpsDistanceMeters, 10.0);
 
         // Third position — adds another 10m.
         locationService.emitPosition(latitude: 51.5076, longitude: -0.1280);
         await Future<void>.delayed(const Duration(milliseconds: 50));
-        expect(controller.state.gpsDistanceMeters, 20.0);
+        expect(ctrl().state.gpsDistanceMeters, 20.0);
 
-        controller.pause();
+        ctrl().pause();
       });
 
       test('gpsAcquiring is true until first position', () async {
-        await controller.toggleGps();
-        controller.start();
+        await ctrl().toggleGps();
+        ctrl().start();
 
-        expect(controller.state.gpsAcquiring, isTrue);
+        expect(ctrl().state.gpsAcquiring, isTrue);
 
         locationService.emitPosition();
         await Future<void>.delayed(const Duration(milliseconds: 50));
 
-        expect(controller.state.gpsAcquiring, isFalse);
-        controller.pause();
+        expect(ctrl().state.gpsAcquiring, isFalse);
+        ctrl().pause();
       });
 
       test('reset clears GPS distance but preserves gpsEnabled', () async {
-        await controller.toggleGps();
-        controller.start();
+        await ctrl().toggleGps();
+        ctrl().start();
 
         locationService.emitPosition();
         await Future<void>.delayed(const Duration(milliseconds: 50));
         locationService.emitPosition(latitude: 51.508);
         await Future<void>.delayed(const Duration(milliseconds: 50));
 
-        controller.reset();
-        expect(controller.state.gpsEnabled, isTrue);
-        expect(controller.state.gpsDistanceMeters, 0);
+        ctrl().reset();
+        expect(ctrl().state.gpsEnabled, isTrue);
+        expect(ctrl().state.gpsDistanceMeters, 0);
       });
 
       test('save uses GPS distance when GPS enabled', () async {
-        await controller.selectExercise('e1', 'Treadmill');
-        await controller.toggleGps();
-        controller.start();
+        await ctrl().selectExercise('e1', 'Treadmill');
+        await ctrl().toggleGps();
+        ctrl().start();
 
         locationService.emitPosition();
         await Future<void>.delayed(const Duration(milliseconds: 50));
@@ -247,9 +262,9 @@ void main() {
 
         await Future<void>.delayed(
             const Duration(seconds: 1, milliseconds: 100));
-        controller.pause();
+        ctrl().pause();
 
-        await controller.save();
+        await ctrl().save();
 
         final sessions = await cardioRepo.getSessionsForExercise('e1');
         expect(sessions, hasLength(1));
@@ -259,46 +274,47 @@ void main() {
 
     group('Heart rate monitor', () {
       test('connectHeartRate sets hrConnected and hrDeviceName', () async {
-        await controller.connectHeartRate('dev1', 'Polar H10');
+        await ctrl().connectHeartRate('dev1', 'Polar H10');
 
-        expect(controller.state.hrConnected, isTrue);
-        expect(controller.state.hrConnecting, isFalse);
-        expect(controller.state.hrDeviceName, 'Polar H10');
+        expect(ctrl().state.hrConnected, isTrue);
+        expect(ctrl().state.hrConnecting, isFalse);
+        expect(ctrl().state.hrDeviceName, 'Polar H10');
       });
 
-      test('HR stream updates currentHeartRate and appends readings', () async {
-        await controller.connectHeartRate('dev1', 'Polar H10');
+      test('HR stream updates currentHeartRate and appends readings',
+          () async {
+        await ctrl().connectHeartRate('dev1', 'Polar H10');
 
         heartRateService.emitHeartRate(140);
         await Future<void>.delayed(const Duration(milliseconds: 50));
 
-        expect(controller.state.currentHeartRate, 140);
-        expect(controller.state.heartRateReadings, [140]);
+        expect(ctrl().state.currentHeartRate, 140);
+        expect(ctrl().state.heartRateReadings, [140]);
 
         heartRateService.emitHeartRate(145);
         await Future<void>.delayed(const Duration(milliseconds: 50));
 
-        expect(controller.state.currentHeartRate, 145);
-        expect(controller.state.heartRateReadings, [140, 145]);
+        expect(ctrl().state.currentHeartRate, 145);
+        expect(ctrl().state.heartRateReadings, [140, 145]);
       });
 
       test('disconnectHeartRate clears HR state', () async {
-        await controller.connectHeartRate('dev1', 'Polar H10');
+        await ctrl().connectHeartRate('dev1', 'Polar H10');
         heartRateService.emitHeartRate(140);
         await Future<void>.delayed(const Duration(milliseconds: 50));
 
-        await controller.disconnectHeartRate();
+        await ctrl().disconnectHeartRate();
 
-        expect(controller.state.hrConnected, isFalse);
-        expect(controller.state.currentHeartRate, isNull);
-        expect(controller.state.heartRateReadings, isEmpty);
-        expect(controller.state.hrDeviceName, isNull);
+        expect(ctrl().state.hrConnected, isFalse);
+        expect(ctrl().state.currentHeartRate, isNull);
+        expect(ctrl().state.heartRateReadings, isEmpty);
+        expect(ctrl().state.hrDeviceName, isNull);
       });
 
       test('save computes average from HR readings', () async {
-        await controller.selectExercise('e1', 'Treadmill');
-        await controller.connectHeartRate('dev1', 'Polar H10');
-        controller.start();
+        await ctrl().selectExercise('e1', 'Treadmill');
+        await ctrl().connectHeartRate('dev1', 'Polar H10');
+        ctrl().start();
 
         heartRateService.emitHeartRate(140);
         heartRateService.emitHeartRate(150);
@@ -307,9 +323,9 @@ void main() {
 
         await Future<void>.delayed(
             const Duration(seconds: 1, milliseconds: 100));
-        controller.pause();
+        ctrl().pause();
 
-        await controller.save();
+        await ctrl().save();
 
         final sessions = await cardioRepo.getSessionsForExercise('e1');
         expect(sessions, hasLength(1));
@@ -317,9 +333,9 @@ void main() {
       });
 
       test('save with HR readings overrides manual avgHeartRate', () async {
-        await controller.selectExercise('e1', 'Treadmill');
-        await controller.connectHeartRate('dev1', 'Polar H10');
-        controller.start();
+        await ctrl().selectExercise('e1', 'Treadmill');
+        await ctrl().connectHeartRate('dev1', 'Polar H10');
+        ctrl().start();
 
         heartRateService.emitHeartRate(140);
         heartRateService.emitHeartRate(160);
@@ -327,10 +343,10 @@ void main() {
 
         await Future<void>.delayed(
             const Duration(seconds: 1, milliseconds: 100));
-        controller.pause();
+        ctrl().pause();
 
         // Manual value 100 should be ignored in favour of HR readings.
-        await controller.save(avgHeartRate: 100);
+        await ctrl().save(avgHeartRate: 100);
 
         final sessions = await cardioRepo.getSessionsForExercise('e1');
         expect(sessions, hasLength(1));
@@ -340,58 +356,58 @@ void main() {
       test('connectHeartRate sets error on connection failure', () async {
         heartRateService.shouldThrowOnConnect = true;
 
-        await controller.connectHeartRate('dev1', 'Polar H10');
+        await ctrl().connectHeartRate('dev1', 'Polar H10');
 
-        expect(controller.state.hrConnected, isFalse);
-        expect(controller.state.hrConnecting, isFalse);
-        expect(controller.state.error, isNotNull);
+        expect(ctrl().state.hrConnected, isFalse);
+        expect(ctrl().state.hrConnecting, isFalse);
+        expect(ctrl().state.error, isNotNull);
       });
 
       test('reset preserves HR connection state', () async {
-        await controller.connectHeartRate('dev1', 'Polar H10');
-        controller.start();
-        controller.reset();
+        await ctrl().connectHeartRate('dev1', 'Polar H10');
+        ctrl().start();
+        ctrl().reset();
 
-        expect(controller.state.hrConnected, isTrue);
-        expect(controller.state.hrDeviceName, 'Polar H10');
-        expect(controller.state.heartRateReadings, isEmpty);
+        expect(ctrl().state.hrConnected, isTrue);
+        expect(ctrl().state.hrDeviceName, 'Polar H10');
+        expect(ctrl().state.heartRateReadings, isEmpty);
       });
 
       test('hrReconnecting is set when reconnecting event received', () async {
-        await controller.connectHeartRate('dev1', 'Polar H10');
-        expect(controller.state.hrReconnecting, isFalse);
+        await ctrl().connectHeartRate('dev1', 'Polar H10');
+        expect(ctrl().state.hrReconnecting, isFalse);
 
         heartRateService.emitConnectionState(HrConnectionState.reconnecting);
         await Future<void>.delayed(const Duration(milliseconds: 50));
 
-        expect(controller.state.hrReconnecting, isTrue);
-        expect(controller.state.hrConnected, isTrue);
+        expect(ctrl().state.hrReconnecting, isTrue);
+        expect(ctrl().state.hrConnected, isTrue);
       });
 
       test('hrReconnecting clears when connected event received', () async {
-        await controller.connectHeartRate('dev1', 'Polar H10');
+        await ctrl().connectHeartRate('dev1', 'Polar H10');
 
         heartRateService.emitConnectionState(HrConnectionState.reconnecting);
         await Future<void>.delayed(const Duration(milliseconds: 50));
-        expect(controller.state.hrReconnecting, isTrue);
+        expect(ctrl().state.hrReconnecting, isTrue);
 
         heartRateService.emitConnectionState(HrConnectionState.connected);
         await Future<void>.delayed(const Duration(milliseconds: 50));
 
-        expect(controller.state.hrReconnecting, isFalse);
-        expect(controller.state.hrConnected, isTrue);
+        expect(ctrl().state.hrReconnecting, isFalse);
+        expect(ctrl().state.hrConnected, isTrue);
       });
 
       test('disconnected event clears HR state and sets error', () async {
-        await controller.connectHeartRate('dev1', 'Polar H10');
+        await ctrl().connectHeartRate('dev1', 'Polar H10');
 
         heartRateService.emitConnectionState(HrConnectionState.disconnected);
         await Future<void>.delayed(const Duration(milliseconds: 50));
 
-        expect(controller.state.hrConnected, isFalse);
-        expect(controller.state.hrReconnecting, isFalse);
-        expect(controller.state.currentHeartRate, isNull);
-        expect(controller.state.error, isNotNull);
+        expect(ctrl().state.hrConnected, isFalse);
+        expect(ctrl().state.hrReconnecting, isFalse);
+        expect(ctrl().state.currentHeartRate, isNull);
+        expect(ctrl().state.error, isNotNull);
       });
     });
   });

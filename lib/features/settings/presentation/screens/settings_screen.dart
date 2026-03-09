@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
+
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
@@ -24,13 +24,15 @@ import '../providers/user_age_provider.dart';
 import '../../../notifications/presentation/providers/reminder_settings_provider.dart';
 import '../../../notifications/domain/models/reminder_settings.dart';
 
-final _themeModeProvider = StateNotifierProvider<_ThemeModeNotifier, ThemeMode>(
-  (ref) => _ThemeModeNotifier(),
+final _themeModeProvider = NotifierProvider<_ThemeModeNotifier, ThemeMode>(
+  _ThemeModeNotifier.new,
 );
 
-class _ThemeModeNotifier extends StateNotifier<ThemeMode> {
-  _ThemeModeNotifier() : super(ThemeMode.dark) {
+class _ThemeModeNotifier extends Notifier<ThemeMode> {
+  @override
+  ThemeMode build() {
     _load();
+    return ThemeMode.dark;
   }
 
   Future<void> _load() async {
@@ -57,13 +59,15 @@ class _ThemeModeNotifier extends StateNotifier<ThemeMode> {
   }
 }
 
-final _weightUnitProvider = StateNotifierProvider<_WeightUnitNotifier, String>(
-  (ref) => _WeightUnitNotifier(),
+final _weightUnitProvider = NotifierProvider<_WeightUnitNotifier, String>(
+  _WeightUnitNotifier.new,
 );
 
-class _WeightUnitNotifier extends StateNotifier<String> {
-  _WeightUnitNotifier() : super('kg') {
+class _WeightUnitNotifier extends Notifier<String> {
+  @override
+  String build() {
     _load();
+    return 'kg';
   }
 
   Future<void> _load() async {

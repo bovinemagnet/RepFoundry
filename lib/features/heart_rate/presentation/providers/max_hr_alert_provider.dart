@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MaxHrAlertSettings {
@@ -29,14 +29,15 @@ class MaxHrAlertSettings {
   bool get isEnabled => vibrationEnabled || soundEnabled;
 }
 
-class MaxHrAlertNotifier extends StateNotifier<MaxHrAlertSettings> {
-  MaxHrAlertNotifier() : super(const MaxHrAlertSettings()) {
+class MaxHrAlertNotifier extends Notifier<MaxHrAlertSettings> {
+  @override
+  MaxHrAlertSettings build() {
     _load();
+    return const MaxHrAlertSettings();
   }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
     state = MaxHrAlertSettings(
       vibrationEnabled: prefs.getBool('hr_max_alert_vibration') ?? true,
       soundEnabled: prefs.getBool('hr_max_alert_sound') ?? true,
@@ -66,6 +67,6 @@ class MaxHrAlertNotifier extends StateNotifier<MaxHrAlertSettings> {
 }
 
 final maxHrAlertProvider =
-    StateNotifierProvider<MaxHrAlertNotifier, MaxHrAlertSettings>(
-  (ref) => MaxHrAlertNotifier(),
+    NotifierProvider<MaxHrAlertNotifier, MaxHrAlertSettings>(
+  MaxHrAlertNotifier.new,
 );

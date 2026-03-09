@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HealthSyncSettings {
@@ -33,20 +33,21 @@ class HealthSyncSettings {
   }
 }
 
-class HealthSyncSettingsNotifier extends StateNotifier<HealthSyncSettings> {
+class HealthSyncSettingsNotifier extends Notifier<HealthSyncSettings> {
   static const _keyEnabled = 'health_sync_enabled';
   static const _keyWriteWorkouts = 'health_sync_write_workouts';
   static const _keyWriteWeight = 'health_sync_write_weight';
   static const _keyWriteHeartRate = 'health_sync_write_heart_rate';
   static const _keyReadWeight = 'health_sync_read_weight';
 
-  HealthSyncSettingsNotifier() : super(const HealthSyncSettings()) {
+  @override
+  HealthSyncSettings build() {
     _load();
+    return const HealthSyncSettings();
   }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
     state = HealthSyncSettings(
       enabled: prefs.getBool(_keyEnabled) ?? false,
       writeWorkouts: prefs.getBool(_keyWriteWorkouts) ?? true,
@@ -93,6 +94,6 @@ class HealthSyncSettingsNotifier extends StateNotifier<HealthSyncSettings> {
 }
 
 final healthSyncSettingsProvider =
-    StateNotifierProvider<HealthSyncSettingsNotifier, HealthSyncSettings>(
-  (ref) => HealthSyncSettingsNotifier(),
+    NotifierProvider<HealthSyncSettingsNotifier, HealthSyncSettings>(
+  HealthSyncSettingsNotifier.new,
 );

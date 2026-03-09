@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../../../core/providers.dart';
@@ -12,33 +12,34 @@ import '../../data/location_service.dart';
 import '../../domain/repositories/cardio_session_repository.dart';
 import 'cardio_tracking_state.dart';
 
-class CardioTrackingController extends StateNotifier<CardioTrackingState> {
-  final CardioSessionRepository _cardioRepository;
-  final SaveCardioSessionUseCase _saveUseCase;
-  final LocationService _locationService;
-  final HeartRateService _heartRateService;
-  final HealthSyncService _healthSyncService;
-  final HealthSyncSettings _healthSyncSettings;
+class CardioTrackingController extends Notifier<CardioTrackingState> {
+  CardioSessionRepository get _cardioRepository =>
+      ref.read(cardioSessionRepositoryProvider);
+  SaveCardioSessionUseCase get _saveUseCase =>
+      ref.read(saveCardioSessionUseCaseProvider);
+  LocationService get _locationService => ref.read(locationServiceProvider);
+  HeartRateService get _heartRateService => ref.read(heartRateServiceProvider);
+  HealthSyncService get _healthSyncService =>
+      ref.read(healthSyncServiceProvider);
+  HealthSyncSettings get _healthSyncSettings =>
+      ref.read(healthSyncSettingsProvider);
+
   Timer? _timer;
   StreamSubscription<Position>? _positionSub;
   Position? _lastPosition;
   StreamSubscription<int>? _hrSub;
   StreamSubscription<HrConnectionState>? _hrConnectionSub;
 
-  CardioTrackingController({
-    required CardioSessionRepository cardioRepository,
-    required SaveCardioSessionUseCase saveUseCase,
-    required LocationService locationService,
-    required HeartRateService heartRateService,
-    required HealthSyncService healthSyncService,
-    required HealthSyncSettings healthSyncSettings,
-  })  : _cardioRepository = cardioRepository,
-        _saveUseCase = saveUseCase,
-        _locationService = locationService,
-        _heartRateService = heartRateService,
-        _healthSyncService = healthSyncService,
-        _healthSyncSettings = healthSyncSettings,
-        super(const CardioTrackingState());
+  @override
+  CardioTrackingState build() {
+    ref.onDispose(() {
+      _timer?.cancel();
+      _stopGpsTracking();
+      _hrSub?.cancel();
+      _hrConnectionSub?.cancel();
+    });
+    return const CardioTrackingState();
+  }
 
   void start() {
     if (state.isRunning) return;
@@ -276,26 +277,10 @@ class CardioTrackingController extends StateNotifier<CardioTrackingState> {
       state = state.copyWith(isSaving: false, error: e.message);
     }
   }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _stopGpsTracking();
-    _hrSub?.cancel();
-    _hrConnectionSub?.cancel();
-    super.dispose();
-  }
 }
 
 /// NON-autoDispose so the timer survives tab switches.
 final cardioTrackingProvider =
-    StateNotifierProvider<CardioTrackingController, CardioTrackingState>(
-  (ref) => CardioTrackingController(
-    cardioRepository: ref.watch(cardioSessionRepositoryProvider),
-    saveUseCase: ref.watch(saveCardioSessionUseCaseProvider),
-    locationService: ref.watch(locationServiceProvider),
-    heartRateService: ref.watch(heartRateServiceProvider),
-    healthSyncService: ref.watch(healthSyncServiceProvider),
-    healthSyncSettings: ref.watch(healthSyncSettingsProvider),
-  ),
+    NotifierProvider<CardioTrackingController, CardioTrackingState>(
+  CardioTrackingController.new,
 );

@@ -3,21 +3,26 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../settings/presentation/providers/rest_timer_settings_provider.dart';
 
 /// Provider that holds the current rest timer state in seconds remaining.
 /// A value of null means the timer is not running.
-final restTimerProvider = StateNotifierProvider<RestTimerNotifier, int?>((ref) {
-  return RestTimerNotifier();
-});
+final restTimerProvider = NotifierProvider<RestTimerNotifier, int?>(
+  RestTimerNotifier.new,
+);
 
-class RestTimerNotifier extends StateNotifier<int?> {
+class RestTimerNotifier extends Notifier<int?> {
   Timer? _timer;
 
-  RestTimerNotifier() : super(null);
+  @override
+  int? build() {
+    ref.onDispose(() {
+      _timer?.cancel();
+    });
+    return null;
+  }
 
   void start(int seconds) {
     _timer?.cancel();
@@ -35,12 +40,6 @@ class RestTimerNotifier extends StateNotifier<int?> {
   void stop() {
     _timer?.cancel();
     state = null;
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
   }
 }
 
