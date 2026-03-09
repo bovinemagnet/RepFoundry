@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:rep_foundry/features/sync/domain/models/sync_settings.dart';
 import 'package:rep_foundry/features/sync/domain/models/sync_state.dart';
 import 'package:rep_foundry/features/sync/presentation/providers/sync_settings_provider.dart';
 
