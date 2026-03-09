@@ -9,6 +9,7 @@
 .idea
 .claude
 CLAUDE.md
+.worktrees/
 
 # Flutter repo-specific
 /bin/cache/
