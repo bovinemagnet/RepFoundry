@@ -2059,6 +2059,144 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Copy'**
   String get copyLabel;
+
+  /// No description provided for @supersetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Superset'**
+  String get supersetLabel;
+
+  /// No description provided for @linkAsSuperset.
+  ///
+  /// In en, this message translates to:
+  /// **'Link as Superset'**
+  String get linkAsSuperset;
+
+  /// No description provided for @breakSuperset.
+  ///
+  /// In en, this message translates to:
+  /// **'Break Superset'**
+  String get breakSuperset;
+
+  /// No description provided for @supersetWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Superset with {name}'**
+  String supersetWith(String name);
+
+  /// No description provided for @selectSupersetPartner.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Exercise to Link'**
+  String get selectSupersetPartner;
+
+  /// No description provided for @noOtherExercises.
+  ///
+  /// In en, this message translates to:
+  /// **'Add another exercise first'**
+  String get noOtherExercises;
+
+  /// No description provided for @sectionReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders'**
+  String get sectionReminders;
+
+  /// No description provided for @workoutReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout Reminders'**
+  String get workoutReminders;
+
+  /// No description provided for @workoutRemindersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified on your training days'**
+  String get workoutRemindersSubtitle;
+
+  /// No description provided for @reminderTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder Time'**
+  String get reminderTime;
+
+  /// No description provided for @reminderTimeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to receive workout reminders'**
+  String get reminderTimeSubtitle;
+
+  /// No description provided for @reminderDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Training Days'**
+  String get reminderDays;
+
+  /// No description provided for @streakReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak Reminder'**
+  String get streakReminder;
+
+  /// No description provided for @streakReminderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind me if I haven\'t worked out today'**
+  String get streakReminderSubtitle;
+
+  /// No description provided for @mondayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Mon'**
+  String get mondayShort;
+
+  /// No description provided for @tuesdayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Tue'**
+  String get tuesdayShort;
+
+  /// No description provided for @wednesdayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Wed'**
+  String get wednesdayShort;
+
+  /// No description provided for @thursdayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Thu'**
+  String get thursdayShort;
+
+  /// No description provided for @fridayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Fri'**
+  String get fridayShort;
+
+  /// No description provided for @saturdayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sat'**
+  String get saturdayShort;
+
+  /// No description provided for @sundayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get sundayShort;
+
+  /// No description provided for @notificationPermissionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission is required for reminders'**
+  String get notificationPermissionRequired;
+
+  /// No description provided for @reminderTimeOfDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{hour}:{minute}'**
+  String reminderTimeOfDay(String hour, String minute);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

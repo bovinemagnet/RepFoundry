@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import '../../application/log_set_use_case.dart';
 import '../../domain/models/workout.dart';
 import '../../domain/models/workout_set.dart';
@@ -8,6 +9,58 @@ import '../../../history/domain/models/personal_record.dart';
 import '../../../templates/domain/models/workout_template.dart';
 import '../models/ghost_set.dart';
 import '../../../../core/providers.dart';
+
+/// Pure function: assigns a shared groupId to all sets for two exercises.
+Map<String, List<WorkoutSet>> linkSupersetSets(
+  Map<String, List<WorkoutSet>> setsByExercise,
+  String exerciseId1,
+  String exerciseId2,
+) {
+  final groupId = const Uuid().v4();
+  final updated = Map<String, List<WorkoutSet>>.from(setsByExercise);
+  for (final eid in [exerciseId1, exerciseId2]) {
+    updated[eid] = (updated[eid] ?? [])
+        .map((s) => s.copyWith(groupId: groupId))
+        .toList();
+  }
+  return updated;
+}
+
+/// Pure function: clears groupId from all sets sharing the same group as exerciseId.
+Map<String, List<WorkoutSet>> unlinkSupersetSets(
+  Map<String, List<WorkoutSet>> setsByExercise,
+  String exerciseId,
+) {
+  final sets = setsByExercise[exerciseId] ?? [];
+  if (sets.isEmpty) return setsByExercise;
+  final targetGroupId = sets.first.groupId;
+  if (targetGroupId == null) return setsByExercise;
+
+  final updated = Map<String, List<WorkoutSet>>.from(setsByExercise);
+  for (final entry in updated.entries) {
+    updated[entry.key] = entry.value
+        .map((s) =>
+            s.groupId == targetGroupId ? s.copyWith(clearGroupId: true) : s)
+        .toList();
+  }
+  return updated;
+}
+
+/// Pure function: returns a map of groupId to list of exerciseIds in that superset.
+Map<String, List<String>> getSupersetGroups(
+  Map<String, List<WorkoutSet>> setsByExercise,
+) {
+  final groups = <String, List<String>>{};
+  for (final entry in setsByExercise.entries) {
+    final firstGroupId =
+        entry.value.isNotEmpty ? entry.value.first.groupId : null;
+    if (firstGroupId != null) {
+      groups.putIfAbsent(firstGroupId, () => []).add(entry.key);
+    }
+  }
+  groups.removeWhere((_, ids) => ids.length < 2);
+  return groups;
+}
 
 class ActiveWorkoutState {
   final Workout? activeWorkout;
@@ -315,6 +368,37 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
       state = state.copyWith(setsByExercise: updated);
     } catch (e) {
       state = state.copyWith(error: e.toString());
+    }
+  }
+
+  Future<void> linkSuperset(String exerciseId1, String exerciseId2) async {
+    final updated =
+        linkSupersetSets(state.setsByExercise, exerciseId1, exerciseId2);
+    state = state.copyWith(setsByExercise: updated);
+    for (final eid in [exerciseId1, exerciseId2]) {
+      for (final s in updated[eid] ?? []) {
+        await _workoutRepository.updateSet(s);
+      }
+    }
+  }
+
+  Future<void> unlinkSuperset(String exerciseId) async {
+    final oldSets = state.setsByExercise;
+    final targetGroupId = (oldSets[exerciseId] ?? []).isNotEmpty
+        ? oldSets[exerciseId]!.first.groupId
+        : null;
+    if (targetGroupId == null) return;
+
+    final updated = unlinkSupersetSets(oldSets, exerciseId);
+    state = state.copyWith(setsByExercise: updated);
+    for (final entry in updated.entries) {
+      for (final s in entry.value) {
+        if (oldSets[entry.key]
+                ?.any((old) => old.id == s.id && old.groupId == targetGroupId) ==
+            true) {
+          await _workoutRepository.updateSet(s);
+        }
+      }
     }
   }
 

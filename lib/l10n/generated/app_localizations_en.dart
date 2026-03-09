@@ -1105,4 +1105,79 @@ class SEn extends S {
 
   @override
   String get copyLabel => 'Copy';
+
+  @override
+  String get supersetLabel => 'Superset';
+
+  @override
+  String get linkAsSuperset => 'Link as Superset';
+
+  @override
+  String get breakSuperset => 'Break Superset';
+
+  @override
+  String supersetWith(String name) {
+    return 'Superset with $name';
+  }
+
+  @override
+  String get selectSupersetPartner => 'Select Exercise to Link';
+
+  @override
+  String get noOtherExercises => 'Add another exercise first';
+
+  @override
+  String get sectionReminders => 'Reminders';
+
+  @override
+  String get workoutReminders => 'Workout Reminders';
+
+  @override
+  String get workoutRemindersSubtitle => 'Get notified on your training days';
+
+  @override
+  String get reminderTime => 'Reminder Time';
+
+  @override
+  String get reminderTimeSubtitle => 'Time to receive workout reminders';
+
+  @override
+  String get reminderDays => 'Training Days';
+
+  @override
+  String get streakReminder => 'Streak Reminder';
+
+  @override
+  String get streakReminderSubtitle =>
+      'Remind me if I haven\'t worked out today';
+
+  @override
+  String get mondayShort => 'Mon';
+
+  @override
+  String get tuesdayShort => 'Tue';
+
+  @override
+  String get wednesdayShort => 'Wed';
+
+  @override
+  String get thursdayShort => 'Thu';
+
+  @override
+  String get fridayShort => 'Fri';
+
+  @override
+  String get saturdayShort => 'Sat';
+
+  @override
+  String get sundayShort => 'Sun';
+
+  @override
+  String get notificationPermissionRequired =>
+      'Notification permission is required for reminders';
+
+  @override
+  String reminderTimeOfDay(String hour, String minute) {
+    return '$hour:$minute';
+  }
 }

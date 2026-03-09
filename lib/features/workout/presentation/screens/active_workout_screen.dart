@@ -228,33 +228,64 @@ class ActiveWorkoutScreen extends ConsumerWidget {
       );
     }
 
+    final supersetGroups = getSupersetGroups(state.setsByExercise);
+    final supersetExerciseIds =
+        supersetGroups.values.expand((ids) => ids).toSet();
+    final renderedGroups = <String>{};
+
     return ListView(
       padding: const EdgeInsets.only(bottom: 88),
       children: [
         const RestTimerWidget(),
-        for (final exercise in state.exercises)
-          _ExerciseSection(
-            exercise: exercise,
-            sets: state.setsByExercise[exercise.id] ?? [],
-            ghostSets: state.remainingGhosts(exercise.id),
-            suggestion: state.nextGhostSet(exercise.id),
-            onLogSet: ({
-              required double weight,
-              required int reps,
-              double? rpe,
-              bool isWarmUp = false,
-            }) {
-              controller.logSet(
-                exerciseId: exercise.id,
-                weight: weight,
-                reps: reps,
-                rpe: rpe,
-                isWarmUp: isWarmUp,
-              );
-            },
-            onDeleteSet: (setId) => controller.deleteSet(setId, exercise.id),
-            onEditSet: (updatedSet) => controller.updateSet(updatedSet),
-          ),
+        for (final exercise in state.exercises) ...[
+          if (supersetExerciseIds.contains(exercise.id)) ...[
+            () {
+              final groupId =
+                  state.setsByExercise[exercise.id]?.firstOrNull?.groupId;
+              if (groupId != null && !renderedGroups.contains(groupId)) {
+                renderedGroups.add(groupId);
+                final groupExerciseIds = supersetGroups[groupId]!;
+                final groupExercises = state.exercises
+                    .where((e) => groupExerciseIds.contains(e.id))
+                    .toList();
+                return _SupersetGroup(
+                  exercises: groupExercises,
+                  state: state,
+                  controller: controller,
+                  onUnlink: (exerciseId) =>
+                      controller.unlinkSuperset(exerciseId),
+                );
+              }
+              return const SizedBox.shrink();
+            }(),
+          ] else ...[
+            _ExerciseSection(
+              exercise: exercise,
+              sets: state.setsByExercise[exercise.id] ?? [],
+              ghostSets: state.remainingGhosts(exercise.id),
+              suggestion: state.nextGhostSet(exercise.id),
+              onLogSet: ({
+                required double weight,
+                required int reps,
+                double? rpe,
+                bool isWarmUp = false,
+              }) {
+                controller.logSet(
+                  exerciseId: exercise.id,
+                  weight: weight,
+                  reps: reps,
+                  rpe: rpe,
+                  isWarmUp: isWarmUp,
+                );
+              },
+              onDeleteSet: (setId) =>
+                  controller.deleteSet(setId, exercise.id),
+              onEditSet: (updatedSet) => controller.updateSet(updatedSet),
+              onLinkSuperset: () =>
+                  _showSupersetPicker(context, ref, exercise, state),
+            ),
+          ],
+        ],
       ],
     );
   }
@@ -285,6 +316,57 @@ class ActiveWorkoutScreen extends ConsumerWidget {
       ),
     );
     overlay.insert(entry);
+  }
+
+  void _showSupersetPicker(
+    BuildContext context,
+    WidgetRef ref,
+    Exercise exercise,
+    ActiveWorkoutState state,
+  ) {
+    final s = S.of(context)!;
+    final otherExercises =
+        state.exercises.where((e) => e.id != exercise.id).toList();
+    final supersetGroups = getSupersetGroups(state.setsByExercise);
+    final supersetExerciseIds =
+        supersetGroups.values.expand((ids) => ids).toSet();
+    final available =
+        otherExercises.where((e) => !supersetExerciseIds.contains(e.id)).toList();
+
+    if (available.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.noOtherExercises)),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              s.selectSupersetPartner,
+              style: Theme.of(ctx).textTheme.titleMedium,
+            ),
+          ),
+          const Divider(height: 1),
+          for (final other in available)
+            ListTile(
+              leading: const Icon(Icons.link),
+              title: Text(other.name),
+              onTap: () {
+                Navigator.pop(ctx);
+                ref
+                    .read(activeWorkoutControllerProvider.notifier)
+                    .linkSuperset(exercise.id, other.id);
+              },
+            ),
+        ],
+      ),
+    );
   }
 
   Future<void> _confirmFinish(
@@ -324,6 +406,75 @@ class _ExerciseSection extends StatelessWidget {
     required this.onLogSet,
     required this.onDeleteSet,
     required this.onEditSet,
+    this.onLinkSuperset,
+  });
+
+  final Exercise exercise;
+  final List<WorkoutSet> sets;
+  final List<GhostSet> ghostSets;
+  final GhostSet? suggestion;
+  final void Function({
+    required double weight,
+    required int reps,
+    double? rpe,
+    bool isWarmUp,
+  }) onLogSet;
+  final void Function(String setId) onDeleteSet;
+  final void Function(WorkoutSet updatedSet) onEditSet;
+  final VoidCallback? onLinkSuperset;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context)!;
+    return GestureDetector(
+      onLongPress: onLinkSuperset != null
+          ? () {
+              showModalBottomSheet(
+                context: context,
+                builder: (ctx) => Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.link),
+                      title: Text(s.linkAsSuperset),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        onLinkSuperset!();
+                      },
+                    ),
+                  ],
+                ),
+              );
+            }
+          : null,
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: _ExerciseSectionContent(
+            exercise: exercise,
+            sets: sets,
+            ghostSets: ghostSets,
+            suggestion: suggestion,
+            onLogSet: onLogSet,
+            onDeleteSet: onDeleteSet,
+            onEditSet: onEditSet,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExerciseSectionContent extends StatelessWidget {
+  const _ExerciseSectionContent({
+    required this.exercise,
+    required this.sets,
+    required this.ghostSets,
+    required this.suggestion,
+    required this.onLogSet,
+    required this.onDeleteSet,
+    required this.onEditSet,
   });
 
   final Exercise exercise;
@@ -343,54 +494,48 @@ class _ExerciseSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasTableContent = sets.isNotEmpty || ghostSets.isNotEmpty;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    exercise.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ),
-                Chip(
-                  label: Text(
-                    exercise.muscleGroup.name,
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                  padding: EdgeInsets.zero,
-                ),
-              ],
+            Expanded(
+              child: Text(
+                exercise.name,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
             ),
-            const SizedBox(height: 8),
-            if (hasTableContent) ...[
-              _SetTableHeader(context),
-              const Divider(height: 8),
-              for (int i = 0; i < sets.length; i++)
-                _SetRow(
-                  index: i,
-                  set: sets[i],
-                  onDelete: () => onDeleteSet(sets[i].id),
-                  onEdit: onEditSet,
-                ),
-              for (int i = 0; i < ghostSets.length; i++)
-                _GhostSetRow(
-                  index: sets.length + i,
-                  ghost: ghostSets[i],
-                ),
-              const SizedBox(height: 8),
-            ],
-            SetInputCard(onLogSet: onLogSet, suggestion: suggestion),
+            Chip(
+              label: Text(
+                exercise.muscleGroup.name,
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+              padding: EdgeInsets.zero,
+            ),
           ],
         ),
-      ),
+        const SizedBox(height: 8),
+        if (hasTableContent) ...[
+          _SetTableHeader(context),
+          const Divider(height: 8),
+          for (int i = 0; i < sets.length; i++)
+            _SetRow(
+              index: i,
+              set: sets[i],
+              onDelete: () => onDeleteSet(sets[i].id),
+              onEdit: onEditSet,
+            ),
+          for (int i = 0; i < ghostSets.length; i++)
+            _GhostSetRow(
+              index: sets.length + i,
+              ghost: ghostSets[i],
+            ),
+          const SizedBox(height: 8),
+        ],
+        SetInputCard(onLogSet: onLogSet, suggestion: suggestion),
+      ],
     );
   }
 
@@ -428,6 +573,104 @@ class _ExerciseSection extends StatelessWidget {
         ),
         const SizedBox(width: 36),
       ],
+    );
+  }
+}
+
+class _SupersetGroup extends StatelessWidget {
+  const _SupersetGroup({
+    required this.exercises,
+    required this.state,
+    required this.controller,
+    required this.onUnlink,
+  });
+
+  final List<Exercise> exercises;
+  final ActiveWorkoutState state;
+  final ActiveWorkoutController controller;
+  final void Function(String exerciseId) onUnlink;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context)!;
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.tertiary,
+          width: 2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.tertiaryContainer,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(10)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.link,
+                    size: 16,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onTertiaryContainer),
+                const SizedBox(width: 6),
+                Text(
+                  s.supersetLabel,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onTertiaryContainer,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.link_off, size: 18),
+                  tooltip: s.breakSuperset,
+                  onPressed: () => onUnlink(exercises.first.id),
+                  iconSize: 18,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+          ),
+          for (final exercise in exercises)
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: _ExerciseSectionContent(
+                exercise: exercise,
+                sets: state.setsByExercise[exercise.id] ?? [],
+                ghostSets: state.remainingGhosts(exercise.id),
+                suggestion: state.nextGhostSet(exercise.id),
+                onLogSet: ({
+                  required double weight,
+                  required int reps,
+                  double? rpe,
+                  bool isWarmUp = false,
+                }) {
+                  controller.logSet(
+                    exerciseId: exercise.id,
+                    weight: weight,
+                    reps: reps,
+                    rpe: rpe,
+                    isWarmUp: isWarmUp,
+                  );
+                },
+                onDeleteSet: (setId) =>
+                    controller.deleteSet(setId, exercise.id),
+                onEditSet: (updatedSet) => controller.updateSet(updatedSet),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

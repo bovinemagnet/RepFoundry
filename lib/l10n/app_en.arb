@@ -496,5 +496,39 @@
   },
 
   "duplicateTemplate": "Duplicate",
-  "copyLabel": "Copy"
+  "copyLabel": "Copy",
+
+  "supersetLabel": "Superset",
+  "linkAsSuperset": "Link as Superset",
+  "breakSuperset": "Break Superset",
+  "supersetWith": "Superset with {name}",
+  "@supersetWith": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "selectSupersetPartner": "Select Exercise to Link",
+  "noOtherExercises": "Add another exercise first",
+
+  "sectionReminders": "Reminders",
+  "workoutReminders": "Workout Reminders",
+  "workoutRemindersSubtitle": "Get notified on your training days",
+  "reminderTime": "Reminder Time",
+  "reminderTimeSubtitle": "Time to receive workout reminders",
+  "reminderDays": "Training Days",
+  "streakReminder": "Streak Reminder",
+  "streakReminderSubtitle": "Remind me if I haven\u0027t worked out today",
+  "mondayShort": "Mon",
+  "tuesdayShort": "Tue",
+  "wednesdayShort": "Wed",
+  "thursdayShort": "Thu",
+  "fridayShort": "Fri",
+  "saturdayShort": "Sat",
+  "sundayShort": "Sun",
+  "notificationPermissionRequired": "Notification permission is required for reminders",
+  "reminderTimeOfDay": "{hour}:{minute}",
+  "@reminderTimeOfDay": {
+    "placeholders": {
+      "hour": { "type": "String" },
+      "minute": { "type": "String" }
+    }
+  }
 }

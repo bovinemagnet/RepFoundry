@@ -15,6 +15,8 @@ import '../providers/export_provider.dart';
 import '../providers/rest_timer_settings_provider.dart';
 import '../providers/show_exercise_images_provider.dart';
 import '../providers/user_age_provider.dart';
+import '../../../notifications/presentation/providers/reminder_settings_provider.dart';
+import '../../../notifications/domain/models/reminder_settings.dart';
 
 final _themeModeProvider = StateNotifierProvider<_ThemeModeNotifier, ThemeMode>(
   (ref) => _ThemeModeNotifier(),
@@ -349,6 +351,37 @@ class SettingsScreen extends ConsumerWidget {
             onChanged: (_) {
               ref.read(restTimerSettingsProvider.notifier).toggleSound();
             },
+          ),
+          _SectionHeader(title: s.sectionReminders),
+          _ReminderDaysPicker(ref: ref, settings: ref.watch(reminderSettingsProvider)),
+          ListTile(
+            leading: const Icon(Icons.access_time),
+            title: Text(s.reminderTime),
+            subtitle: Text(s.reminderTimeSubtitle),
+            trailing: Text(
+              s.reminderTimeOfDay(
+                ref.watch(reminderSettingsProvider).hour.toString().padLeft(2, '0'),
+                ref.watch(reminderSettingsProvider).minute.toString().padLeft(2, '0'),
+              ),
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            onTap: () async {
+              final settings = ref.read(reminderSettingsProvider);
+              final time = await showTimePicker(
+                context: context,
+                initialTime: TimeOfDay(hour: settings.hour, minute: settings.minute),
+              );
+              if (time != null) {
+                ref.read(reminderSettingsProvider.notifier).setTime(time.hour, time.minute);
+              }
+            },
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.local_fire_department_outlined),
+            title: Text(s.streakReminder),
+            subtitle: Text(s.streakReminderSubtitle),
+            value: ref.watch(reminderSettingsProvider).streakReminderEnabled,
+            onChanged: (_) => ref.read(reminderSettingsProvider.notifier).toggleStreakReminder(),
           ),
           _SectionHeader(title: s.sectionData),
           ListTile(
@@ -737,6 +770,42 @@ class _SectionHeader extends StatelessWidget {
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),
+      ),
+    );
+  }
+}
+
+class _ReminderDaysPicker extends StatelessWidget {
+  const _ReminderDaysPicker({required this.ref, required this.settings});
+
+  final WidgetRef ref;
+  final ReminderSettings settings;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context)!;
+    final dayLabels = {
+      DateTime.monday: s.mondayShort,
+      DateTime.tuesday: s.tuesdayShort,
+      DateTime.wednesday: s.wednesdayShort,
+      DateTime.thursday: s.thursdayShort,
+      DateTime.friday: s.fridayShort,
+      DateTime.saturday: s.saturdayShort,
+      DateTime.sunday: s.sundayShort,
+    };
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: dayLabels.entries.map((entry) {
+          final selected = settings.enabledDays.contains(entry.key);
+          return FilterChip(
+            label: Text(entry.value),
+            selected: selected,
+            onSelected: (_) => ref.read(reminderSettingsProvider.notifier).toggleDay(entry.key),
+          );
+        }).toList(),
       ),
     );
   }
