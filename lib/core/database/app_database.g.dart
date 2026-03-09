@@ -3099,6 +3099,1035 @@ class TemplateExercisesCompanion extends UpdateCompanion<TemplateExercise> {
   }
 }
 
+class $ProgrammesTable extends Programmes
+    with TableInfo<$ProgrammesTable, Programme> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProgrammesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _durationWeeksMeta =
+      const VerificationMeta('durationWeeks');
+  @override
+  late final GeneratedColumn<int> durationWeeks = GeneratedColumn<int>(
+      'duration_weeks', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, name, durationWeeks, createdAt, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'programmes';
+  @override
+  VerificationContext validateIntegrity(Insertable<Programme> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('duration_weeks')) {
+      context.handle(
+          _durationWeeksMeta,
+          durationWeeks.isAcceptableOrUnknown(
+              data['duration_weeks']!, _durationWeeksMeta));
+    } else if (isInserting) {
+      context.missing(_durationWeeksMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Programme map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Programme(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      durationWeeks: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}duration_weeks'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $ProgrammesTable createAlias(String alias) {
+    return $ProgrammesTable(attachedDatabase, alias);
+  }
+}
+
+class Programme extends DataClass implements Insertable<Programme> {
+  final String id;
+  final String name;
+  final int durationWeeks;
+  final int createdAt;
+  final int updatedAt;
+  const Programme(
+      {required this.id,
+      required this.name,
+      required this.durationWeeks,
+      required this.createdAt,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['duration_weeks'] = Variable<int>(durationWeeks);
+    map['created_at'] = Variable<int>(createdAt);
+    map['updated_at'] = Variable<int>(updatedAt);
+    return map;
+  }
+
+  ProgrammesCompanion toCompanion(bool nullToAbsent) {
+    return ProgrammesCompanion(
+      id: Value(id),
+      name: Value(name),
+      durationWeeks: Value(durationWeeks),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory Programme.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Programme(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      durationWeeks: serializer.fromJson<int>(json['durationWeeks']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'durationWeeks': serializer.toJson<int>(durationWeeks),
+      'createdAt': serializer.toJson<int>(createdAt),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+    };
+  }
+
+  Programme copyWith(
+          {String? id,
+          String? name,
+          int? durationWeeks,
+          int? createdAt,
+          int? updatedAt}) =>
+      Programme(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        durationWeeks: durationWeeks ?? this.durationWeeks,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  Programme copyWithCompanion(ProgrammesCompanion data) {
+    return Programme(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      durationWeeks: data.durationWeeks.present
+          ? data.durationWeeks.value
+          : this.durationWeeks,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Programme(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('durationWeeks: $durationWeeks, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, durationWeeks, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Programme &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.durationWeeks == this.durationWeeks &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ProgrammesCompanion extends UpdateCompanion<Programme> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<int> durationWeeks;
+  final Value<int> createdAt;
+  final Value<int> updatedAt;
+  final Value<int> rowid;
+  const ProgrammesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.durationWeeks = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProgrammesCompanion.insert({
+    required String id,
+    required String name,
+    required int durationWeeks,
+    required int createdAt,
+    required int updatedAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        name = Value(name),
+        durationWeeks = Value(durationWeeks),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt);
+  static Insertable<Programme> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<int>? durationWeeks,
+    Expression<int>? createdAt,
+    Expression<int>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (durationWeeks != null) 'duration_weeks': durationWeeks,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProgrammesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? name,
+      Value<int>? durationWeeks,
+      Value<int>? createdAt,
+      Value<int>? updatedAt,
+      Value<int>? rowid}) {
+    return ProgrammesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      durationWeeks: durationWeeks ?? this.durationWeeks,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (durationWeeks.present) {
+      map['duration_weeks'] = Variable<int>(durationWeeks.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProgrammesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('durationWeeks: $durationWeeks, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ProgrammeDaysTable extends ProgrammeDays
+    with TableInfo<$ProgrammeDaysTable, ProgrammeDay> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProgrammeDaysTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _programmeIdMeta =
+      const VerificationMeta('programmeId');
+  @override
+  late final GeneratedColumn<String> programmeId = GeneratedColumn<String>(
+      'programme_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _weekNumberMeta =
+      const VerificationMeta('weekNumber');
+  @override
+  late final GeneratedColumn<int> weekNumber = GeneratedColumn<int>(
+      'week_number', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _dayOfWeekMeta =
+      const VerificationMeta('dayOfWeek');
+  @override
+  late final GeneratedColumn<int> dayOfWeek = GeneratedColumn<int>(
+      'day_of_week', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _templateIdMeta =
+      const VerificationMeta('templateId');
+  @override
+  late final GeneratedColumn<String> templateId = GeneratedColumn<String>(
+      'template_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _templateNameMeta =
+      const VerificationMeta('templateName');
+  @override
+  late final GeneratedColumn<String> templateName = GeneratedColumn<String>(
+      'template_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, programmeId, weekNumber, dayOfWeek, templateId, templateName];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'programme_days';
+  @override
+  VerificationContext validateIntegrity(Insertable<ProgrammeDay> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('programme_id')) {
+      context.handle(
+          _programmeIdMeta,
+          programmeId.isAcceptableOrUnknown(
+              data['programme_id']!, _programmeIdMeta));
+    } else if (isInserting) {
+      context.missing(_programmeIdMeta);
+    }
+    if (data.containsKey('week_number')) {
+      context.handle(
+          _weekNumberMeta,
+          weekNumber.isAcceptableOrUnknown(
+              data['week_number']!, _weekNumberMeta));
+    } else if (isInserting) {
+      context.missing(_weekNumberMeta);
+    }
+    if (data.containsKey('day_of_week')) {
+      context.handle(
+          _dayOfWeekMeta,
+          dayOfWeek.isAcceptableOrUnknown(
+              data['day_of_week']!, _dayOfWeekMeta));
+    } else if (isInserting) {
+      context.missing(_dayOfWeekMeta);
+    }
+    if (data.containsKey('template_id')) {
+      context.handle(
+          _templateIdMeta,
+          templateId.isAcceptableOrUnknown(
+              data['template_id']!, _templateIdMeta));
+    } else if (isInserting) {
+      context.missing(_templateIdMeta);
+    }
+    if (data.containsKey('template_name')) {
+      context.handle(
+          _templateNameMeta,
+          templateName.isAcceptableOrUnknown(
+              data['template_name']!, _templateNameMeta));
+    } else if (isInserting) {
+      context.missing(_templateNameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ProgrammeDay map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProgrammeDay(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      programmeId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}programme_id'])!,
+      weekNumber: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}week_number'])!,
+      dayOfWeek: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}day_of_week'])!,
+      templateId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}template_id'])!,
+      templateName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}template_name'])!,
+    );
+  }
+
+  @override
+  $ProgrammeDaysTable createAlias(String alias) {
+    return $ProgrammeDaysTable(attachedDatabase, alias);
+  }
+}
+
+class ProgrammeDay extends DataClass implements Insertable<ProgrammeDay> {
+  final String id;
+  final String programmeId;
+  final int weekNumber;
+  final int dayOfWeek;
+  final String templateId;
+  final String templateName;
+  const ProgrammeDay(
+      {required this.id,
+      required this.programmeId,
+      required this.weekNumber,
+      required this.dayOfWeek,
+      required this.templateId,
+      required this.templateName});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['programme_id'] = Variable<String>(programmeId);
+    map['week_number'] = Variable<int>(weekNumber);
+    map['day_of_week'] = Variable<int>(dayOfWeek);
+    map['template_id'] = Variable<String>(templateId);
+    map['template_name'] = Variable<String>(templateName);
+    return map;
+  }
+
+  ProgrammeDaysCompanion toCompanion(bool nullToAbsent) {
+    return ProgrammeDaysCompanion(
+      id: Value(id),
+      programmeId: Value(programmeId),
+      weekNumber: Value(weekNumber),
+      dayOfWeek: Value(dayOfWeek),
+      templateId: Value(templateId),
+      templateName: Value(templateName),
+    );
+  }
+
+  factory ProgrammeDay.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProgrammeDay(
+      id: serializer.fromJson<String>(json['id']),
+      programmeId: serializer.fromJson<String>(json['programmeId']),
+      weekNumber: serializer.fromJson<int>(json['weekNumber']),
+      dayOfWeek: serializer.fromJson<int>(json['dayOfWeek']),
+      templateId: serializer.fromJson<String>(json['templateId']),
+      templateName: serializer.fromJson<String>(json['templateName']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'programmeId': serializer.toJson<String>(programmeId),
+      'weekNumber': serializer.toJson<int>(weekNumber),
+      'dayOfWeek': serializer.toJson<int>(dayOfWeek),
+      'templateId': serializer.toJson<String>(templateId),
+      'templateName': serializer.toJson<String>(templateName),
+    };
+  }
+
+  ProgrammeDay copyWith(
+          {String? id,
+          String? programmeId,
+          int? weekNumber,
+          int? dayOfWeek,
+          String? templateId,
+          String? templateName}) =>
+      ProgrammeDay(
+        id: id ?? this.id,
+        programmeId: programmeId ?? this.programmeId,
+        weekNumber: weekNumber ?? this.weekNumber,
+        dayOfWeek: dayOfWeek ?? this.dayOfWeek,
+        templateId: templateId ?? this.templateId,
+        templateName: templateName ?? this.templateName,
+      );
+  ProgrammeDay copyWithCompanion(ProgrammeDaysCompanion data) {
+    return ProgrammeDay(
+      id: data.id.present ? data.id.value : this.id,
+      programmeId:
+          data.programmeId.present ? data.programmeId.value : this.programmeId,
+      weekNumber:
+          data.weekNumber.present ? data.weekNumber.value : this.weekNumber,
+      dayOfWeek: data.dayOfWeek.present ? data.dayOfWeek.value : this.dayOfWeek,
+      templateId:
+          data.templateId.present ? data.templateId.value : this.templateId,
+      templateName: data.templateName.present
+          ? data.templateName.value
+          : this.templateName,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProgrammeDay(')
+          ..write('id: $id, ')
+          ..write('programmeId: $programmeId, ')
+          ..write('weekNumber: $weekNumber, ')
+          ..write('dayOfWeek: $dayOfWeek, ')
+          ..write('templateId: $templateId, ')
+          ..write('templateName: $templateName')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, programmeId, weekNumber, dayOfWeek, templateId, templateName);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProgrammeDay &&
+          other.id == this.id &&
+          other.programmeId == this.programmeId &&
+          other.weekNumber == this.weekNumber &&
+          other.dayOfWeek == this.dayOfWeek &&
+          other.templateId == this.templateId &&
+          other.templateName == this.templateName);
+}
+
+class ProgrammeDaysCompanion extends UpdateCompanion<ProgrammeDay> {
+  final Value<String> id;
+  final Value<String> programmeId;
+  final Value<int> weekNumber;
+  final Value<int> dayOfWeek;
+  final Value<String> templateId;
+  final Value<String> templateName;
+  final Value<int> rowid;
+  const ProgrammeDaysCompanion({
+    this.id = const Value.absent(),
+    this.programmeId = const Value.absent(),
+    this.weekNumber = const Value.absent(),
+    this.dayOfWeek = const Value.absent(),
+    this.templateId = const Value.absent(),
+    this.templateName = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProgrammeDaysCompanion.insert({
+    required String id,
+    required String programmeId,
+    required int weekNumber,
+    required int dayOfWeek,
+    required String templateId,
+    required String templateName,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        programmeId = Value(programmeId),
+        weekNumber = Value(weekNumber),
+        dayOfWeek = Value(dayOfWeek),
+        templateId = Value(templateId),
+        templateName = Value(templateName);
+  static Insertable<ProgrammeDay> custom({
+    Expression<String>? id,
+    Expression<String>? programmeId,
+    Expression<int>? weekNumber,
+    Expression<int>? dayOfWeek,
+    Expression<String>? templateId,
+    Expression<String>? templateName,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (programmeId != null) 'programme_id': programmeId,
+      if (weekNumber != null) 'week_number': weekNumber,
+      if (dayOfWeek != null) 'day_of_week': dayOfWeek,
+      if (templateId != null) 'template_id': templateId,
+      if (templateName != null) 'template_name': templateName,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProgrammeDaysCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? programmeId,
+      Value<int>? weekNumber,
+      Value<int>? dayOfWeek,
+      Value<String>? templateId,
+      Value<String>? templateName,
+      Value<int>? rowid}) {
+    return ProgrammeDaysCompanion(
+      id: id ?? this.id,
+      programmeId: programmeId ?? this.programmeId,
+      weekNumber: weekNumber ?? this.weekNumber,
+      dayOfWeek: dayOfWeek ?? this.dayOfWeek,
+      templateId: templateId ?? this.templateId,
+      templateName: templateName ?? this.templateName,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (programmeId.present) {
+      map['programme_id'] = Variable<String>(programmeId.value);
+    }
+    if (weekNumber.present) {
+      map['week_number'] = Variable<int>(weekNumber.value);
+    }
+    if (dayOfWeek.present) {
+      map['day_of_week'] = Variable<int>(dayOfWeek.value);
+    }
+    if (templateId.present) {
+      map['template_id'] = Variable<String>(templateId.value);
+    }
+    if (templateName.present) {
+      map['template_name'] = Variable<String>(templateName.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProgrammeDaysCompanion(')
+          ..write('id: $id, ')
+          ..write('programmeId: $programmeId, ')
+          ..write('weekNumber: $weekNumber, ')
+          ..write('dayOfWeek: $dayOfWeek, ')
+          ..write('templateId: $templateId, ')
+          ..write('templateName: $templateName, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ProgressionRulesTable extends ProgressionRules
+    with TableInfo<$ProgressionRulesTable, ProgressionRule> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProgressionRulesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _programmeIdMeta =
+      const VerificationMeta('programmeId');
+  @override
+  late final GeneratedColumn<String> programmeId = GeneratedColumn<String>(
+      'programme_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _exerciseIdMeta =
+      const VerificationMeta('exerciseId');
+  @override
+  late final GeneratedColumn<String> exerciseId = GeneratedColumn<String>(
+      'exercise_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+      'type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<double> value = GeneratedColumn<double>(
+      'value', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _frequencyWeeksMeta =
+      const VerificationMeta('frequencyWeeks');
+  @override
+  late final GeneratedColumn<int> frequencyWeeks = GeneratedColumn<int>(
+      'frequency_weeks', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, programmeId, exerciseId, type, value, frequencyWeeks];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'progression_rules';
+  @override
+  VerificationContext validateIntegrity(Insertable<ProgressionRule> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('programme_id')) {
+      context.handle(
+          _programmeIdMeta,
+          programmeId.isAcceptableOrUnknown(
+              data['programme_id']!, _programmeIdMeta));
+    } else if (isInserting) {
+      context.missing(_programmeIdMeta);
+    }
+    if (data.containsKey('exercise_id')) {
+      context.handle(
+          _exerciseIdMeta,
+          exerciseId.isAcceptableOrUnknown(
+              data['exercise_id']!, _exerciseIdMeta));
+    } else if (isInserting) {
+      context.missing(_exerciseIdMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+          _valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    if (data.containsKey('frequency_weeks')) {
+      context.handle(
+          _frequencyWeeksMeta,
+          frequencyWeeks.isAcceptableOrUnknown(
+              data['frequency_weeks']!, _frequencyWeeksMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ProgressionRule map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProgressionRule(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      programmeId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}programme_id'])!,
+      exerciseId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}exercise_id'])!,
+      type: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}type'])!,
+      value: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}value'])!,
+      frequencyWeeks: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}frequency_weeks'])!,
+    );
+  }
+
+  @override
+  $ProgressionRulesTable createAlias(String alias) {
+    return $ProgressionRulesTable(attachedDatabase, alias);
+  }
+}
+
+class ProgressionRule extends DataClass implements Insertable<ProgressionRule> {
+  final String id;
+  final String programmeId;
+  final String exerciseId;
+  final String type;
+  final double value;
+  final int frequencyWeeks;
+  const ProgressionRule(
+      {required this.id,
+      required this.programmeId,
+      required this.exerciseId,
+      required this.type,
+      required this.value,
+      required this.frequencyWeeks});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['programme_id'] = Variable<String>(programmeId);
+    map['exercise_id'] = Variable<String>(exerciseId);
+    map['type'] = Variable<String>(type);
+    map['value'] = Variable<double>(value);
+    map['frequency_weeks'] = Variable<int>(frequencyWeeks);
+    return map;
+  }
+
+  ProgressionRulesCompanion toCompanion(bool nullToAbsent) {
+    return ProgressionRulesCompanion(
+      id: Value(id),
+      programmeId: Value(programmeId),
+      exerciseId: Value(exerciseId),
+      type: Value(type),
+      value: Value(value),
+      frequencyWeeks: Value(frequencyWeeks),
+    );
+  }
+
+  factory ProgressionRule.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProgressionRule(
+      id: serializer.fromJson<String>(json['id']),
+      programmeId: serializer.fromJson<String>(json['programmeId']),
+      exerciseId: serializer.fromJson<String>(json['exerciseId']),
+      type: serializer.fromJson<String>(json['type']),
+      value: serializer.fromJson<double>(json['value']),
+      frequencyWeeks: serializer.fromJson<int>(json['frequencyWeeks']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'programmeId': serializer.toJson<String>(programmeId),
+      'exerciseId': serializer.toJson<String>(exerciseId),
+      'type': serializer.toJson<String>(type),
+      'value': serializer.toJson<double>(value),
+      'frequencyWeeks': serializer.toJson<int>(frequencyWeeks),
+    };
+  }
+
+  ProgressionRule copyWith(
+          {String? id,
+          String? programmeId,
+          String? exerciseId,
+          String? type,
+          double? value,
+          int? frequencyWeeks}) =>
+      ProgressionRule(
+        id: id ?? this.id,
+        programmeId: programmeId ?? this.programmeId,
+        exerciseId: exerciseId ?? this.exerciseId,
+        type: type ?? this.type,
+        value: value ?? this.value,
+        frequencyWeeks: frequencyWeeks ?? this.frequencyWeeks,
+      );
+  ProgressionRule copyWithCompanion(ProgressionRulesCompanion data) {
+    return ProgressionRule(
+      id: data.id.present ? data.id.value : this.id,
+      programmeId:
+          data.programmeId.present ? data.programmeId.value : this.programmeId,
+      exerciseId:
+          data.exerciseId.present ? data.exerciseId.value : this.exerciseId,
+      type: data.type.present ? data.type.value : this.type,
+      value: data.value.present ? data.value.value : this.value,
+      frequencyWeeks: data.frequencyWeeks.present
+          ? data.frequencyWeeks.value
+          : this.frequencyWeeks,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProgressionRule(')
+          ..write('id: $id, ')
+          ..write('programmeId: $programmeId, ')
+          ..write('exerciseId: $exerciseId, ')
+          ..write('type: $type, ')
+          ..write('value: $value, ')
+          ..write('frequencyWeeks: $frequencyWeeks')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, programmeId, exerciseId, type, value, frequencyWeeks);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProgressionRule &&
+          other.id == this.id &&
+          other.programmeId == this.programmeId &&
+          other.exerciseId == this.exerciseId &&
+          other.type == this.type &&
+          other.value == this.value &&
+          other.frequencyWeeks == this.frequencyWeeks);
+}
+
+class ProgressionRulesCompanion extends UpdateCompanion<ProgressionRule> {
+  final Value<String> id;
+  final Value<String> programmeId;
+  final Value<String> exerciseId;
+  final Value<String> type;
+  final Value<double> value;
+  final Value<int> frequencyWeeks;
+  final Value<int> rowid;
+  const ProgressionRulesCompanion({
+    this.id = const Value.absent(),
+    this.programmeId = const Value.absent(),
+    this.exerciseId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.value = const Value.absent(),
+    this.frequencyWeeks = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProgressionRulesCompanion.insert({
+    required String id,
+    required String programmeId,
+    required String exerciseId,
+    required String type,
+    required double value,
+    this.frequencyWeeks = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        programmeId = Value(programmeId),
+        exerciseId = Value(exerciseId),
+        type = Value(type),
+        value = Value(value);
+  static Insertable<ProgressionRule> custom({
+    Expression<String>? id,
+    Expression<String>? programmeId,
+    Expression<String>? exerciseId,
+    Expression<String>? type,
+    Expression<double>? value,
+    Expression<int>? frequencyWeeks,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (programmeId != null) 'programme_id': programmeId,
+      if (exerciseId != null) 'exercise_id': exerciseId,
+      if (type != null) 'type': type,
+      if (value != null) 'value': value,
+      if (frequencyWeeks != null) 'frequency_weeks': frequencyWeeks,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProgressionRulesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? programmeId,
+      Value<String>? exerciseId,
+      Value<String>? type,
+      Value<double>? value,
+      Value<int>? frequencyWeeks,
+      Value<int>? rowid}) {
+    return ProgressionRulesCompanion(
+      id: id ?? this.id,
+      programmeId: programmeId ?? this.programmeId,
+      exerciseId: exerciseId ?? this.exerciseId,
+      type: type ?? this.type,
+      value: value ?? this.value,
+      frequencyWeeks: frequencyWeeks ?? this.frequencyWeeks,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (programmeId.present) {
+      map['programme_id'] = Variable<String>(programmeId.value);
+    }
+    if (exerciseId.present) {
+      map['exercise_id'] = Variable<String>(exerciseId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<double>(value.value);
+    }
+    if (frequencyWeeks.present) {
+      map['frequency_weeks'] = Variable<int>(frequencyWeeks.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProgressionRulesCompanion(')
+          ..write('id: $id, ')
+          ..write('programmeId: $programmeId, ')
+          ..write('exerciseId: $exerciseId, ')
+          ..write('type: $type, ')
+          ..write('value: $value, ')
+          ..write('frequencyWeeks: $frequencyWeeks, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3113,6 +4142,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $WorkoutTemplatesTable(this);
   late final $TemplateExercisesTable templateExercises =
       $TemplateExercisesTable(this);
+  late final $ProgrammesTable programmes = $ProgrammesTable(this);
+  late final $ProgrammeDaysTable programmeDays = $ProgrammeDaysTable(this);
+  late final $ProgressionRulesTable progressionRules =
+      $ProgressionRulesTable(this);
   late final Index idxWorkoutSetsExerciseTimestamp = Index(
       'idx_workout_sets_exercise_timestamp',
       'CREATE INDEX idx_workout_sets_exercise_timestamp ON workout_sets (exercise_id, timestamp)');
@@ -3132,6 +4165,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         personalRecords,
         workoutTemplates,
         templateExercises,
+        programmes,
+        programmeDays,
+        progressionRules,
         idxWorkoutSetsExerciseTimestamp,
         idxWorkoutSetsWorkoutOrder
       ];
@@ -6076,6 +7112,552 @@ typedef $$TemplateExercisesTableProcessedTableManager = ProcessedTableManager<
     (TemplateExercise, $$TemplateExercisesTableReferences),
     TemplateExercise,
     PrefetchHooks Function({bool templateId, bool exerciseId})>;
+typedef $$ProgrammesTableCreateCompanionBuilder = ProgrammesCompanion Function({
+  required String id,
+  required String name,
+  required int durationWeeks,
+  required int createdAt,
+  required int updatedAt,
+  Value<int> rowid,
+});
+typedef $$ProgrammesTableUpdateCompanionBuilder = ProgrammesCompanion Function({
+  Value<String> id,
+  Value<String> name,
+  Value<int> durationWeeks,
+  Value<int> createdAt,
+  Value<int> updatedAt,
+  Value<int> rowid,
+});
+
+class $$ProgrammesTableFilterComposer
+    extends Composer<_$AppDatabase, $ProgrammesTable> {
+  $$ProgrammesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get durationWeeks => $composableBuilder(
+      column: $table.durationWeeks, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$ProgrammesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProgrammesTable> {
+  $$ProgrammesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get durationWeeks => $composableBuilder(
+      column: $table.durationWeeks,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$ProgrammesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProgrammesTable> {
+  $$ProgrammesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get durationWeeks => $composableBuilder(
+      column: $table.durationWeeks, builder: (column) => column);
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ProgrammesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ProgrammesTable,
+    Programme,
+    $$ProgrammesTableFilterComposer,
+    $$ProgrammesTableOrderingComposer,
+    $$ProgrammesTableAnnotationComposer,
+    $$ProgrammesTableCreateCompanionBuilder,
+    $$ProgrammesTableUpdateCompanionBuilder,
+    (Programme, BaseReferences<_$AppDatabase, $ProgrammesTable, Programme>),
+    Programme,
+    PrefetchHooks Function()> {
+  $$ProgrammesTableTableManager(_$AppDatabase db, $ProgrammesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProgrammesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProgrammesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProgrammesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<int> durationWeeks = const Value.absent(),
+            Value<int> createdAt = const Value.absent(),
+            Value<int> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProgrammesCompanion(
+            id: id,
+            name: name,
+            durationWeeks: durationWeeks,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String name,
+            required int durationWeeks,
+            required int createdAt,
+            required int updatedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProgrammesCompanion.insert(
+            id: id,
+            name: name,
+            durationWeeks: durationWeeks,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ProgrammesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $ProgrammesTable,
+    Programme,
+    $$ProgrammesTableFilterComposer,
+    $$ProgrammesTableOrderingComposer,
+    $$ProgrammesTableAnnotationComposer,
+    $$ProgrammesTableCreateCompanionBuilder,
+    $$ProgrammesTableUpdateCompanionBuilder,
+    (Programme, BaseReferences<_$AppDatabase, $ProgrammesTable, Programme>),
+    Programme,
+    PrefetchHooks Function()>;
+typedef $$ProgrammeDaysTableCreateCompanionBuilder = ProgrammeDaysCompanion
+    Function({
+  required String id,
+  required String programmeId,
+  required int weekNumber,
+  required int dayOfWeek,
+  required String templateId,
+  required String templateName,
+  Value<int> rowid,
+});
+typedef $$ProgrammeDaysTableUpdateCompanionBuilder = ProgrammeDaysCompanion
+    Function({
+  Value<String> id,
+  Value<String> programmeId,
+  Value<int> weekNumber,
+  Value<int> dayOfWeek,
+  Value<String> templateId,
+  Value<String> templateName,
+  Value<int> rowid,
+});
+
+class $$ProgrammeDaysTableFilterComposer
+    extends Composer<_$AppDatabase, $ProgrammeDaysTable> {
+  $$ProgrammeDaysTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get programmeId => $composableBuilder(
+      column: $table.programmeId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get weekNumber => $composableBuilder(
+      column: $table.weekNumber, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get dayOfWeek => $composableBuilder(
+      column: $table.dayOfWeek, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get templateId => $composableBuilder(
+      column: $table.templateId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get templateName => $composableBuilder(
+      column: $table.templateName, builder: (column) => ColumnFilters(column));
+}
+
+class $$ProgrammeDaysTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProgrammeDaysTable> {
+  $$ProgrammeDaysTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get programmeId => $composableBuilder(
+      column: $table.programmeId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get weekNumber => $composableBuilder(
+      column: $table.weekNumber, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get dayOfWeek => $composableBuilder(
+      column: $table.dayOfWeek, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get templateId => $composableBuilder(
+      column: $table.templateId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get templateName => $composableBuilder(
+      column: $table.templateName,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$ProgrammeDaysTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProgrammeDaysTable> {
+  $$ProgrammeDaysTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get programmeId => $composableBuilder(
+      column: $table.programmeId, builder: (column) => column);
+
+  GeneratedColumn<int> get weekNumber => $composableBuilder(
+      column: $table.weekNumber, builder: (column) => column);
+
+  GeneratedColumn<int> get dayOfWeek =>
+      $composableBuilder(column: $table.dayOfWeek, builder: (column) => column);
+
+  GeneratedColumn<String> get templateId => $composableBuilder(
+      column: $table.templateId, builder: (column) => column);
+
+  GeneratedColumn<String> get templateName => $composableBuilder(
+      column: $table.templateName, builder: (column) => column);
+}
+
+class $$ProgrammeDaysTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ProgrammeDaysTable,
+    ProgrammeDay,
+    $$ProgrammeDaysTableFilterComposer,
+    $$ProgrammeDaysTableOrderingComposer,
+    $$ProgrammeDaysTableAnnotationComposer,
+    $$ProgrammeDaysTableCreateCompanionBuilder,
+    $$ProgrammeDaysTableUpdateCompanionBuilder,
+    (
+      ProgrammeDay,
+      BaseReferences<_$AppDatabase, $ProgrammeDaysTable, ProgrammeDay>
+    ),
+    ProgrammeDay,
+    PrefetchHooks Function()> {
+  $$ProgrammeDaysTableTableManager(_$AppDatabase db, $ProgrammeDaysTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProgrammeDaysTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProgrammeDaysTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProgrammeDaysTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> programmeId = const Value.absent(),
+            Value<int> weekNumber = const Value.absent(),
+            Value<int> dayOfWeek = const Value.absent(),
+            Value<String> templateId = const Value.absent(),
+            Value<String> templateName = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProgrammeDaysCompanion(
+            id: id,
+            programmeId: programmeId,
+            weekNumber: weekNumber,
+            dayOfWeek: dayOfWeek,
+            templateId: templateId,
+            templateName: templateName,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String programmeId,
+            required int weekNumber,
+            required int dayOfWeek,
+            required String templateId,
+            required String templateName,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProgrammeDaysCompanion.insert(
+            id: id,
+            programmeId: programmeId,
+            weekNumber: weekNumber,
+            dayOfWeek: dayOfWeek,
+            templateId: templateId,
+            templateName: templateName,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ProgrammeDaysTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $ProgrammeDaysTable,
+    ProgrammeDay,
+    $$ProgrammeDaysTableFilterComposer,
+    $$ProgrammeDaysTableOrderingComposer,
+    $$ProgrammeDaysTableAnnotationComposer,
+    $$ProgrammeDaysTableCreateCompanionBuilder,
+    $$ProgrammeDaysTableUpdateCompanionBuilder,
+    (
+      ProgrammeDay,
+      BaseReferences<_$AppDatabase, $ProgrammeDaysTable, ProgrammeDay>
+    ),
+    ProgrammeDay,
+    PrefetchHooks Function()>;
+typedef $$ProgressionRulesTableCreateCompanionBuilder
+    = ProgressionRulesCompanion Function({
+  required String id,
+  required String programmeId,
+  required String exerciseId,
+  required String type,
+  required double value,
+  Value<int> frequencyWeeks,
+  Value<int> rowid,
+});
+typedef $$ProgressionRulesTableUpdateCompanionBuilder
+    = ProgressionRulesCompanion Function({
+  Value<String> id,
+  Value<String> programmeId,
+  Value<String> exerciseId,
+  Value<String> type,
+  Value<double> value,
+  Value<int> frequencyWeeks,
+  Value<int> rowid,
+});
+
+class $$ProgressionRulesTableFilterComposer
+    extends Composer<_$AppDatabase, $ProgressionRulesTable> {
+  $$ProgressionRulesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get programmeId => $composableBuilder(
+      column: $table.programmeId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get exerciseId => $composableBuilder(
+      column: $table.exerciseId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get value => $composableBuilder(
+      column: $table.value, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get frequencyWeeks => $composableBuilder(
+      column: $table.frequencyWeeks,
+      builder: (column) => ColumnFilters(column));
+}
+
+class $$ProgressionRulesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProgressionRulesTable> {
+  $$ProgressionRulesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get programmeId => $composableBuilder(
+      column: $table.programmeId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get exerciseId => $composableBuilder(
+      column: $table.exerciseId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get value => $composableBuilder(
+      column: $table.value, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get frequencyWeeks => $composableBuilder(
+      column: $table.frequencyWeeks,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$ProgressionRulesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProgressionRulesTable> {
+  $$ProgressionRulesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get programmeId => $composableBuilder(
+      column: $table.programmeId, builder: (column) => column);
+
+  GeneratedColumn<String> get exerciseId => $composableBuilder(
+      column: $table.exerciseId, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<double> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+
+  GeneratedColumn<int> get frequencyWeeks => $composableBuilder(
+      column: $table.frequencyWeeks, builder: (column) => column);
+}
+
+class $$ProgressionRulesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ProgressionRulesTable,
+    ProgressionRule,
+    $$ProgressionRulesTableFilterComposer,
+    $$ProgressionRulesTableOrderingComposer,
+    $$ProgressionRulesTableAnnotationComposer,
+    $$ProgressionRulesTableCreateCompanionBuilder,
+    $$ProgressionRulesTableUpdateCompanionBuilder,
+    (
+      ProgressionRule,
+      BaseReferences<_$AppDatabase, $ProgressionRulesTable, ProgressionRule>
+    ),
+    ProgressionRule,
+    PrefetchHooks Function()> {
+  $$ProgressionRulesTableTableManager(
+      _$AppDatabase db, $ProgressionRulesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProgressionRulesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProgressionRulesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProgressionRulesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> programmeId = const Value.absent(),
+            Value<String> exerciseId = const Value.absent(),
+            Value<String> type = const Value.absent(),
+            Value<double> value = const Value.absent(),
+            Value<int> frequencyWeeks = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProgressionRulesCompanion(
+            id: id,
+            programmeId: programmeId,
+            exerciseId: exerciseId,
+            type: type,
+            value: value,
+            frequencyWeeks: frequencyWeeks,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String programmeId,
+            required String exerciseId,
+            required String type,
+            required double value,
+            Value<int> frequencyWeeks = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ProgressionRulesCompanion.insert(
+            id: id,
+            programmeId: programmeId,
+            exerciseId: exerciseId,
+            type: type,
+            value: value,
+            frequencyWeeks: frequencyWeeks,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ProgressionRulesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $ProgressionRulesTable,
+    ProgressionRule,
+    $$ProgressionRulesTableFilterComposer,
+    $$ProgressionRulesTableOrderingComposer,
+    $$ProgressionRulesTableAnnotationComposer,
+    $$ProgressionRulesTableCreateCompanionBuilder,
+    $$ProgressionRulesTableUpdateCompanionBuilder,
+    (
+      ProgressionRule,
+      BaseReferences<_$AppDatabase, $ProgressionRulesTable, ProgressionRule>
+    ),
+    ProgressionRule,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6096,4 +7678,10 @@ class $AppDatabaseManager {
       $$WorkoutTemplatesTableTableManager(_db, _db.workoutTemplates);
   $$TemplateExercisesTableTableManager get templateExercises =>
       $$TemplateExercisesTableTableManager(_db, _db.templateExercises);
+  $$ProgrammesTableTableManager get programmes =>
+      $$ProgrammesTableTableManager(_db, _db.programmes);
+  $$ProgrammeDaysTableTableManager get programmeDays =>
+      $$ProgrammeDaysTableTableManager(_db, _db.programmeDays);
+  $$ProgressionRulesTableTableManager get progressionRules =>
+      $$ProgressionRulesTableTableManager(_db, _db.progressionRules);
 }

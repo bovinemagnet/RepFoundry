@@ -24,6 +24,8 @@ import '../features/history/data/drift_personal_record_repository.dart';
 import '../features/history/domain/repositories/personal_record_repository.dart';
 import '../features/templates/data/drift_workout_template_repository.dart';
 import '../features/templates/domain/repositories/workout_template_repository.dart';
+import '../features/programmes/data/drift_programme_repository.dart';
+import '../features/programmes/domain/repositories/programme_repository.dart';
 
 // Repositories
 final bodyMetricRepositoryProvider = Provider<BodyMetricRepository>((ref) {
@@ -56,6 +58,10 @@ final personalRecordRepositoryProvider =
 final workoutTemplateRepositoryProvider =
     Provider<WorkoutTemplateRepository>((ref) {
   return DriftWorkoutTemplateRepository(ref.watch(databaseProvider));
+});
+
+final programmeRepositoryProvider = Provider<ProgrammeRepository>((ref) {
+  return DriftProgrammeRepository(ref.watch(databaseProvider));
 });
 
 // Services

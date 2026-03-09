@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../../core/widgets/progress_chart_widget.dart';
@@ -26,6 +27,14 @@ class ProgressView extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // Advanced analytics link
+        ListTile(
+          leading: const Icon(Icons.insights),
+          title: Text(s.viewAdvancedAnalytics),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/analytics'),
+        ),
+        const SizedBox(height: 8),
         // Streak tracker
         const StreakCard(),
         const SizedBox(height: 16),

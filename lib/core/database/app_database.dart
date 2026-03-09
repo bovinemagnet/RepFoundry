@@ -5,6 +5,9 @@ import 'tables/body_metrics_table.dart';
 import 'tables/cardio_sessions_table.dart';
 import 'tables/exercises_table.dart';
 import 'tables/personal_records_table.dart';
+import 'tables/programme_days_table.dart';
+import 'tables/programmes_table.dart';
+import 'tables/progression_rules_table.dart';
 import 'tables/template_exercises_table.dart';
 import 'tables/workout_sets_table.dart';
 import 'tables/workout_templates_table.dart';
@@ -21,6 +24,9 @@ part 'app_database.g.dart';
   PersonalRecords,
   WorkoutTemplates,
   TemplateExercises,
+  Programmes,
+  ProgrammeDays,
+  ProgressionRules,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -29,7 +35,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -82,6 +88,37 @@ class AppDatabase extends _$AppDatabase {
               'weight REAL NOT NULL, '
               'body_fat_percent REAL, '
               'notes TEXT'
+              ')',
+            );
+          }
+          if (from < 5) {
+            await customStatement(
+              'CREATE TABLE IF NOT EXISTS programmes ('
+              'id TEXT NOT NULL PRIMARY KEY, '
+              'name TEXT NOT NULL, '
+              'duration_weeks INTEGER NOT NULL, '
+              'created_at INTEGER NOT NULL, '
+              'updated_at INTEGER NOT NULL'
+              ')',
+            );
+            await customStatement(
+              'CREATE TABLE IF NOT EXISTS programme_days ('
+              'id TEXT NOT NULL PRIMARY KEY, '
+              'programme_id TEXT NOT NULL, '
+              'week_number INTEGER NOT NULL, '
+              'day_of_week INTEGER NOT NULL, '
+              'template_id TEXT NOT NULL, '
+              'template_name TEXT NOT NULL'
+              ')',
+            );
+            await customStatement(
+              'CREATE TABLE IF NOT EXISTS progression_rules ('
+              'id TEXT NOT NULL PRIMARY KEY, '
+              'programme_id TEXT NOT NULL, '
+              'exercise_id TEXT NOT NULL, '
+              'type TEXT NOT NULL, '
+              'value REAL NOT NULL, '
+              'frequency_weeks INTEGER NOT NULL DEFAULT 1'
               ')',
             );
           }

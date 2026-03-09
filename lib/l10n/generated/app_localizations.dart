@@ -2197,6 +2197,270 @@ abstract class S {
   /// In en, this message translates to:
   /// **'{hour}:{minute}'**
   String reminderTimeOfDay(String hour, String minute);
+
+  /// No description provided for @analyticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get analyticsTitle;
+
+  /// No description provided for @weeklyVolumeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Volume Trend'**
+  String get weeklyVolumeTitle;
+
+  /// No description provided for @weeklyVolumeChange.
+  ///
+  /// In en, this message translates to:
+  /// **'{change}% vs previous week'**
+  String weeklyVolumeChange(String change);
+
+  /// No description provided for @muscleBalanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Muscle Group Balance'**
+  String get muscleBalanceTitle;
+
+  /// No description provided for @prTimelineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'PR Timeline'**
+  String get prTimelineTitle;
+
+  /// No description provided for @trainingLoadTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Training Load'**
+  String get trainingLoadTitle;
+
+  /// No description provided for @trainingLoadSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets × avg RPE'**
+  String get trainingLoadSubtitle;
+
+  /// No description provided for @noAnalyticsData.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough data yet'**
+  String get noAnalyticsData;
+
+  /// No description provided for @noAnalyticsDataSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete a few workouts to see your analytics.'**
+  String get noAnalyticsDataSubtitle;
+
+  /// No description provided for @volumeCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume by Category'**
+  String get volumeCategory;
+
+  /// No description provided for @loadScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load: {score}'**
+  String loadScore(String score);
+
+  /// No description provided for @viewAdvancedAnalytics.
+  ///
+  /// In en, this message translates to:
+  /// **'View Advanced Analytics'**
+  String get viewAdvancedAnalytics;
+
+  /// No description provided for @programmesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Programmes'**
+  String get programmesTitle;
+
+  /// No description provided for @noProgrammesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No programmes yet'**
+  String get noProgrammesYet;
+
+  /// No description provided for @noProgrammesYetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a training programme to plan your workouts.'**
+  String get noProgrammesYetSubtitle;
+
+  /// No description provided for @newProgramme.
+  ///
+  /// In en, this message translates to:
+  /// **'New Programme'**
+  String get newProgramme;
+
+  /// No description provided for @newProgrammeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Programme'**
+  String get newProgrammeTitle;
+
+  /// No description provided for @programmeNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Programme Name'**
+  String get programmeNameLabel;
+
+  /// No description provided for @durationWeeksLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration (weeks)'**
+  String get durationWeeksLabel;
+
+  /// No description provided for @editProgramme.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Programme'**
+  String get editProgramme;
+
+  /// No description provided for @deleteProgrammeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Programme?'**
+  String get deleteProgrammeTitle;
+
+  /// No description provided for @deleteProgrammeContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \"{name}\"? This cannot be undone.'**
+  String deleteProgrammeContent(String name);
+
+  /// No description provided for @programmeDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get programmeDashboard;
+
+  /// No description provided for @currentWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {current} of {total}'**
+  String currentWeek(int current, int total);
+
+  /// No description provided for @assignTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign Template'**
+  String get assignTemplate;
+
+  /// No description provided for @noTemplateAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest day'**
+  String get noTemplateAssigned;
+
+  /// No description provided for @progressionRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Progression Rules'**
+  String get progressionRules;
+
+  /// No description provided for @addRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Rule'**
+  String get addRule;
+
+  /// No description provided for @fixedIncrementLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed increment'**
+  String get fixedIncrementLabel;
+
+  /// No description provided for @percentageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Percentage'**
+  String get percentageLabel;
+
+  /// No description provided for @deloadLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Deload'**
+  String get deloadLabel;
+
+  /// No description provided for @ruleValueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get ruleValueLabel;
+
+  /// No description provided for @everyNWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {count} {count, plural, =1{week} other{weeks}}'**
+  String everyNWeeks(int count);
+
+  /// No description provided for @startFromProgramme.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from Programme'**
+  String get startFromProgramme;
+
+  /// No description provided for @targetWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Target: {weight} kg'**
+  String targetWeight(String weight);
+
+  /// No description provided for @programmeSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Programme saved'**
+  String get programmeSaved;
+
+  /// No description provided for @failedToLoadProgrammes.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load programmes: {error}'**
+  String failedToLoadProgrammes(String error);
+
+  /// No description provided for @programmeWeeksCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} {count, plural, =1{week} other{weeks}}'**
+  String programmeWeeksCount(int count);
+
+  /// No description provided for @programmeDaysCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} {count, plural, =1{day} other{days}} assigned'**
+  String programmeDaysCount(int count);
+
+  /// No description provided for @weekLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {number}'**
+  String weekLabel(int number);
+
+  /// No description provided for @dayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{day}'**
+  String dayLabel(String day);
+
+  /// No description provided for @chooseProgramme.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Programme'**
+  String get chooseProgramme;
+
+  /// No description provided for @noProgrammesAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No programmes available'**
+  String get noProgrammesAvailable;
+
+  /// No description provided for @noWorkoutScheduledForToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No workout scheduled for today'**
+  String get noWorkoutScheduledForToday;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

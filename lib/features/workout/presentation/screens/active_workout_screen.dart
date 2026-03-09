@@ -10,6 +10,7 @@ import '../widgets/set_input_card.dart';
 import '../widgets/rest_timer_widget.dart';
 import '../../domain/models/workout_set.dart';
 import '../../../exercises/domain/models/exercise.dart';
+import '../../../programmes/domain/models/programme.dart';
 import '../../../templates/domain/models/workout_template.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
@@ -122,6 +123,12 @@ class ActiveWorkoutScreen extends ConsumerWidget {
             icon: const Icon(Icons.view_list),
             label: Text(s.startFromTemplate),
           ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () => _showProgrammePicker(context, ref),
+            icon: const Icon(Icons.calendar_month),
+            label: Text(s.startFromProgramme),
+          ),
         ],
       ),
     );
@@ -189,6 +196,70 @@ class ActiveWorkoutScreen extends ConsumerWidget {
         ref
             .read(activeWorkoutControllerProvider.notifier)
             .startFromTemplate(template);
+      }
+    });
+  }
+
+  void _showProgrammePicker(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
+    showModalBottomSheet<Programme>(
+      context: context,
+      builder: (ctx) => FutureBuilder<List<Programme>>(
+        future: ref.read(programmeRepositoryProvider).getAllProgrammes(),
+        builder: (ctx, snapshot) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  s.chooseProgramme,
+                  style: Theme.of(ctx).textTheme.titleMedium,
+                ),
+              ),
+              const Divider(height: 1),
+              if (snapshot.connectionState == ConnectionState.waiting)
+                const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: CircularProgressIndicator(),
+                )
+              else if (!snapshot.hasData || snapshot.data!.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Text(s.noProgrammesAvailable),
+                )
+              else
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (ctx, index) {
+                      final programme = snapshot.data![index];
+                      return ListTile(
+                        leading: const Icon(Icons.calendar_month),
+                        title: Text(programme.name),
+                        subtitle: Text(
+                          s.programmeDaysCount(programme.days.length),
+                        ),
+                        onTap: () => Navigator.pop(ctx, programme),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    ).then((programme) async {
+      if (programme != null) {
+        final started = await ref
+            .read(activeWorkoutControllerProvider.notifier)
+            .startFromProgramme(programme);
+        if (!started && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(s.noWorkoutScheduledForToday)),
+          );
+        }
       }
     });
   }

@@ -530,5 +530,88 @@
       "hour": { "type": "String" },
       "minute": { "type": "String" }
     }
-  }
+  },
+
+  "analyticsTitle": "Analytics",
+  "weeklyVolumeTitle": "Weekly Volume Trend",
+  "weeklyVolumeChange": "{change}% vs previous week",
+  "@weeklyVolumeChange": {
+    "placeholders": { "change": { "type": "String" } }
+  },
+  "muscleBalanceTitle": "Muscle Group Balance",
+  "prTimelineTitle": "PR Timeline",
+  "trainingLoadTitle": "Weekly Training Load",
+  "trainingLoadSubtitle": "Sets × avg RPE",
+  "noAnalyticsData": "Not enough data yet",
+  "noAnalyticsDataSubtitle": "Complete a few workouts to see your analytics.",
+  "volumeCategory": "Volume by Category",
+  "loadScore": "Load: {score}",
+  "@loadScore": {
+    "placeholders": { "score": { "type": "String" } }
+  },
+  "viewAdvancedAnalytics": "View Advanced Analytics",
+
+  "programmesTitle": "Programmes",
+  "noProgrammesYet": "No programmes yet",
+  "noProgrammesYetSubtitle": "Create a training programme to plan your workouts.",
+  "newProgramme": "New Programme",
+  "newProgrammeTitle": "New Programme",
+  "programmeNameLabel": "Programme Name",
+  "durationWeeksLabel": "Duration (weeks)",
+  "editProgramme": "Edit Programme",
+  "deleteProgrammeTitle": "Delete Programme?",
+  "deleteProgrammeContent": "Are you sure you want to delete \"{name}\"? This cannot be undone.",
+  "@deleteProgrammeContent": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "programmeDashboard": "Dashboard",
+  "currentWeek": "Week {current} of {total}",
+  "@currentWeek": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "assignTemplate": "Assign Template",
+  "noTemplateAssigned": "Rest day",
+  "progressionRules": "Progression Rules",
+  "addRule": "Add Rule",
+  "fixedIncrementLabel": "Fixed increment",
+  "percentageLabel": "Percentage",
+  "deloadLabel": "Deload",
+  "ruleValueLabel": "Value",
+  "everyNWeeks": "Every {count} {count, plural, =1{week} other{weeks}}",
+  "@everyNWeeks": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "startFromProgramme": "Start from Programme",
+  "targetWeight": "Target: {weight} kg",
+  "@targetWeight": {
+    "placeholders": { "weight": { "type": "String" } }
+  },
+  "programmeSaved": "Programme saved",
+  "failedToLoadProgrammes": "Failed to load programmes: {error}",
+  "@failedToLoadProgrammes": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "programmeWeeksCount": "{count} {count, plural, =1{week} other{weeks}}",
+  "@programmeWeeksCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "programmeDaysCount": "{count} {count, plural, =1{day} other{days}} assigned",
+  "@programmeDaysCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "weekLabel": "Week {number}",
+  "@weekLabel": {
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "dayLabel": "{day}",
+  "@dayLabel": {
+    "placeholders": { "day": { "type": "String" } }
+  },
+
+  "chooseProgramme": "Choose Programme",
+  "noProgrammesAvailable": "No programmes available",
+  "noWorkoutScheduledForToday": "No workout scheduled for today"
 }

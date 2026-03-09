@@ -12,6 +12,9 @@ import '../features/exercises/presentation/screens/exercise_picker_screen.dart';
 import '../features/cardio/presentation/screens/cardio_tracking_screen.dart';
 import '../features/heart_rate/presentation/screens/heart_rate_panel_screen.dart';
 import '../features/history/presentation/screens/pr_history_screen.dart';
+import '../features/analytics/presentation/screens/analytics_screen.dart';
+import '../features/programmes/presentation/screens/programme_list_screen.dart';
+import '../features/programmes/presentation/screens/programme_edit_screen.dart';
 import '../core/widgets/scaffold_with_nav_bar.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -80,6 +83,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/body-metrics',
         builder: (context, state) => const BodyMetricsScreen(),
+      ),
+      GoRoute(
+        path: '/analytics',
+        builder: (context, state) => const AnalyticsScreen(),
+      ),
+      GoRoute(
+        path: '/programmes',
+        builder: (context, state) => const ProgrammeListScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (context, state) => ProgrammeEditScreen(
+              programmeId: state.pathParameters['id']!,
+            ),
+          ),
+        ],
       ),
     ],
   );

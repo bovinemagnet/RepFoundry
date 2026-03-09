@@ -1180,4 +1180,178 @@ class SEn extends S {
   String reminderTimeOfDay(String hour, String minute) {
     return '$hour:$minute';
   }
+
+  @override
+  String get analyticsTitle => 'Analytics';
+
+  @override
+  String get weeklyVolumeTitle => 'Weekly Volume Trend';
+
+  @override
+  String weeklyVolumeChange(String change) {
+    return '$change% vs previous week';
+  }
+
+  @override
+  String get muscleBalanceTitle => 'Muscle Group Balance';
+
+  @override
+  String get prTimelineTitle => 'PR Timeline';
+
+  @override
+  String get trainingLoadTitle => 'Weekly Training Load';
+
+  @override
+  String get trainingLoadSubtitle => 'Sets × avg RPE';
+
+  @override
+  String get noAnalyticsData => 'Not enough data yet';
+
+  @override
+  String get noAnalyticsDataSubtitle =>
+      'Complete a few workouts to see your analytics.';
+
+  @override
+  String get volumeCategory => 'Volume by Category';
+
+  @override
+  String loadScore(String score) {
+    return 'Load: $score';
+  }
+
+  @override
+  String get viewAdvancedAnalytics => 'View Advanced Analytics';
+
+  @override
+  String get programmesTitle => 'Programmes';
+
+  @override
+  String get noProgrammesYet => 'No programmes yet';
+
+  @override
+  String get noProgrammesYetSubtitle =>
+      'Create a training programme to plan your workouts.';
+
+  @override
+  String get newProgramme => 'New Programme';
+
+  @override
+  String get newProgrammeTitle => 'New Programme';
+
+  @override
+  String get programmeNameLabel => 'Programme Name';
+
+  @override
+  String get durationWeeksLabel => 'Duration (weeks)';
+
+  @override
+  String get editProgramme => 'Edit Programme';
+
+  @override
+  String get deleteProgrammeTitle => 'Delete Programme?';
+
+  @override
+  String deleteProgrammeContent(String name) {
+    return 'Are you sure you want to delete \"$name\"? This cannot be undone.';
+  }
+
+  @override
+  String get programmeDashboard => 'Dashboard';
+
+  @override
+  String currentWeek(int current, int total) {
+    return 'Week $current of $total';
+  }
+
+  @override
+  String get assignTemplate => 'Assign Template';
+
+  @override
+  String get noTemplateAssigned => 'Rest day';
+
+  @override
+  String get progressionRules => 'Progression Rules';
+
+  @override
+  String get addRule => 'Add Rule';
+
+  @override
+  String get fixedIncrementLabel => 'Fixed increment';
+
+  @override
+  String get percentageLabel => 'Percentage';
+
+  @override
+  String get deloadLabel => 'Deload';
+
+  @override
+  String get ruleValueLabel => 'Value';
+
+  @override
+  String everyNWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'weeks',
+      one: 'week',
+    );
+    return 'Every $count $_temp0';
+  }
+
+  @override
+  String get startFromProgramme => 'Start from Programme';
+
+  @override
+  String targetWeight(String weight) {
+    return 'Target: $weight kg';
+  }
+
+  @override
+  String get programmeSaved => 'Programme saved';
+
+  @override
+  String failedToLoadProgrammes(String error) {
+    return 'Failed to load programmes: $error';
+  }
+
+  @override
+  String programmeWeeksCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'weeks',
+      one: 'week',
+    );
+    return '$count $_temp0';
+  }
+
+  @override
+  String programmeDaysCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'days',
+      one: 'day',
+    );
+    return '$count $_temp0 assigned';
+  }
+
+  @override
+  String weekLabel(int number) {
+    return 'Week $number';
+  }
+
+  @override
+  String dayLabel(String day) {
+    return '$day';
+  }
+
+  @override
+  String get chooseProgramme => 'Choose Programme';
+
+  @override
+  String get noProgrammesAvailable => 'No programmes available';
+
+  @override
+  String get noWorkoutScheduledForToday => 'No workout scheduled for today';
 }

@@ -6,6 +6,7 @@ import '../../domain/models/workout_set.dart';
 import '../../domain/repositories/workout_repository.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../history/domain/models/personal_record.dart';
+import '../../../programmes/domain/models/programme.dart';
 import '../../../templates/domain/models/workout_template.dart';
 import '../models/ghost_set.dart';
 import '../../../../core/providers.dart';
@@ -221,6 +222,52 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
+  }
+
+  /// Starts a workout from a programme, applying progression rules to ghost
+  /// set weights where applicable.
+  ///
+  /// Returns `true` if a workout was started, `false` if no template was
+  /// found for today's day of the week.
+  Future<bool> startFromProgramme(Programme programme) async {
+    final today = DateTime.now().weekday; // 1 = Monday … 7 = Sunday
+    final todayDay = programme.days.cast<ProgrammeDay?>().firstWhere(
+          (d) => d!.dayOfWeek == today,
+          orElse: () => null,
+        );
+
+    if (todayDay == null) return false;
+
+    // Fetch the full template so we can pass it to startFromTemplate.
+    final templateRepo = _ref.read(workoutTemplateRepositoryProvider);
+    final template = await templateRepo.getTemplate(todayDay.templateId);
+    if (template == null) return false;
+
+    await startFromTemplate(template);
+
+    // Apply progression rules to ghost set weights.
+    if (programme.rules.isNotEmpty) {
+      final updatedGhosts =
+          Map<String, List<GhostSet>>.from(state.ghostSetsByExercise);
+      for (final rule in programme.rules) {
+        final ghosts = updatedGhosts[rule.exerciseId];
+        if (ghosts != null && ghosts.isNotEmpty) {
+          updatedGhosts[rule.exerciseId] = ghosts
+              .map((g) => GhostSet(
+                    weight: double.parse(
+                      rule.applyProgression(g.weight).toStringAsFixed(2),
+                    ),
+                    reps: g.reps,
+                    rpe: g.rpe,
+                    setOrder: g.setOrder,
+                  ))
+              .toList();
+        }
+      }
+      state = state.copyWith(ghostSetsByExercise: updatedGhosts);
+    }
+
+    return true;
   }
 
   Future<void> finishWorkout() async {
