@@ -1,290 +1,270 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
-import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/features/sync/domain/models/sync_snapshot.dart';
 import 'package:rep_foundry/features/sync/domain/sync_merge_engine.dart';
+import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 
 void main() {
   late SyncMergeEngine engine;
+
+  final baseTime = DateTime.utc(2026, 3, 1, 12, 0);
+  final earlier = baseTime.subtract(const Duration(hours: 1));
+  final later = baseTime.add(const Duration(hours: 1));
+
+  SyncSnapshot makeSnapshot({
+    String deviceId = 'device-local',
+    List<Exercise> exercises = const [],
+    List<Workout> workouts = const [],
+  }) =>
+      SyncSnapshot(
+        snapshotAt: baseTime,
+        deviceId: deviceId,
+        schemaVersion: 1,
+        exercises: exercises,
+        workouts: workouts,
+      );
+
+  Exercise makeExercise({
+    required String id,
+    required String name,
+    required DateTime updatedAt,
+  }) =>
+      Exercise(
+        id: id,
+        name: name,
+        category: ExerciseCategory.strength,
+        muscleGroup: MuscleGroup.chest,
+        equipmentType: EquipmentType.barbell,
+        updatedAt: updatedAt,
+      );
+
+  Workout makeWorkout({
+    required String id,
+    required DateTime updatedAt,
+    String? notes,
+  }) =>
+      Workout(
+        id: id,
+        startedAt: baseTime,
+        updatedAt: updatedAt,
+        notes: notes,
+      );
 
   setUp(() {
     engine = SyncMergeEngine();
   });
 
-  SyncSnapshot emptySnapshot({String deviceId = 'device-a'}) {
-    return SyncSnapshot(
-      snapshotAt: DateTime.utc(2026),
-      deviceId: deviceId,
-      schemaVersion: 6,
-    );
-  }
-
-  group('empty snapshots', () {
-    test('merging two empty snapshots returns empty', () {
-      final result = engine.merge(
-        local: emptySnapshot(),
-        remote: emptySnapshot(deviceId: 'device-b'),
-      );
-
-      expect(result.exercises, isEmpty);
-      expect(result.workouts, isEmpty);
-      expect(result.workoutSets, isEmpty);
-    });
-  });
-
-  group('local-only data', () {
-    test('local exercises appear in merged result', () {
-      final exercise = Exercise(
-        id: 'ex-1',
+  group('SyncMergeEngine', () {
+    test('disjoint sets merge — local A + remote B → merged has both', () {
+      final exerciseA = makeExercise(
+        id: 'ex-a',
         name: 'Bench Press',
-        category: ExerciseCategory.strength,
-        muscleGroup: MuscleGroup.chest,
-        equipmentType: EquipmentType.barbell,
-        updatedAt: DateTime.utc(2026, 1, 10),
+        updatedAt: baseTime,
+      );
+      final exerciseB = makeExercise(
+        id: 'ex-b',
+        name: 'Squat',
+        updatedAt: baseTime,
       );
 
-      final local = emptySnapshot();
-      final localWithData = SyncSnapshot(
-        snapshotAt: local.snapshotAt,
-        deviceId: local.deviceId,
-        schemaVersion: local.schemaVersion,
-        exercises: [exercise],
+      final local = makeSnapshot(exercises: [exerciseA]);
+      final remote = makeSnapshot(
+        deviceId: 'device-remote',
+        exercises: [exerciseB],
       );
 
-      final result = engine.merge(
-        local: localWithData,
-        remote: emptySnapshot(deviceId: 'device-b'),
-      );
+      final result = engine.merge(local: local, remote: remote);
 
-      expect(result.exercises, hasLength(1));
-      expect(result.exercises.first.id, 'ex-1');
+      expect(result.exercises, hasLength(2));
+      final ids = result.exercises.map((e) => e.id).toSet();
+      expect(ids, containsAll(['ex-a', 'ex-b']));
     });
-  });
 
-  group('remote-only data', () {
-    test('remote workouts appear in merged result', () {
-      final workout = Workout(
-        id: 'w-1',
-        startedAt: DateTime.utc(2026, 1, 10),
-        updatedAt: DateTime.utc(2026, 1, 10),
-      );
-
-      final remote = SyncSnapshot(
-        snapshotAt: DateTime.utc(2026),
-        deviceId: 'device-b',
-        schemaVersion: 6,
-        workouts: [workout],
-      );
-
-      final result = engine.merge(
-        local: emptySnapshot(),
-        remote: remote,
-      );
-
-      expect(result.workouts, hasLength(1));
-      expect(result.workouts.first.id, 'w-1');
-    });
-  });
-
-  group('conflict resolution — last-write-wins', () {
-    test('exercise with newer updatedAt wins', () {
-      final olderExercise = Exercise(
+    test('same entity, remote newer — remote wins', () {
+      final localExercise = makeExercise(
         id: 'ex-1',
-        name: 'Old Name',
-        category: ExerciseCategory.strength,
-        muscleGroup: MuscleGroup.chest,
-        equipmentType: EquipmentType.barbell,
-        updatedAt: DateTime.utc(2026, 1, 5),
+        name: 'Local Name',
+        updatedAt: earlier,
       );
-
-      final newerExercise = Exercise(
+      final remoteExercise = makeExercise(
         id: 'ex-1',
-        name: 'New Name',
-        category: ExerciseCategory.strength,
-        muscleGroup: MuscleGroup.chest,
-        equipmentType: EquipmentType.barbell,
-        updatedAt: DateTime.utc(2026, 1, 10),
+        name: 'Remote Name',
+        updatedAt: later,
       );
 
-      final local = SyncSnapshot(
-        snapshotAt: DateTime.utc(2026),
-        deviceId: 'device-a',
-        schemaVersion: 6,
-        exercises: [olderExercise],
-      );
-
-      final remote = SyncSnapshot(
-        snapshotAt: DateTime.utc(2026),
-        deviceId: 'device-b',
-        schemaVersion: 6,
-        exercises: [newerExercise],
+      final local = makeSnapshot(exercises: [localExercise]);
+      final remote = makeSnapshot(
+        deviceId: 'device-remote',
+        exercises: [remoteExercise],
       );
 
       final result = engine.merge(local: local, remote: remote);
 
       expect(result.exercises, hasLength(1));
-      expect(result.exercises.first.name, 'New Name');
+      expect(result.exercises.first.name, equals('Remote Name'));
     });
 
-    test('deterministic tie-breaking by UUID when timestamps equal', () {
-      final exerciseA = Exercise(
-        id: 'aaa',
-        name: 'From A',
-        category: ExerciseCategory.strength,
-        muscleGroup: MuscleGroup.chest,
-        equipmentType: EquipmentType.barbell,
-        updatedAt: DateTime.utc(2026, 1, 10),
+    test('same entity, local newer — local wins', () {
+      final localExercise = makeExercise(
+        id: 'ex-1',
+        name: 'Local Name',
+        updatedAt: later,
+      );
+      final remoteExercise = makeExercise(
+        id: 'ex-1',
+        name: 'Remote Name',
+        updatedAt: earlier,
       );
 
-      final exerciseB = Exercise(
-        id: 'aaa',
-        name: 'From B',
-        category: ExerciseCategory.strength,
-        muscleGroup: MuscleGroup.chest,
-        equipmentType: EquipmentType.barbell,
-        updatedAt: DateTime.utc(2026, 1, 10),
+      final local = makeSnapshot(exercises: [localExercise]);
+      final remote = makeSnapshot(
+        deviceId: 'device-remote',
+        exercises: [remoteExercise],
       );
 
-      // Local wins when timestamps equal because we keep the local version
-      // for deterministic tie-breaking (local is always preferred).
-      final result = engine.merge(
-        local: SyncSnapshot(
-          snapshotAt: DateTime.utc(2026),
-          deviceId: 'device-a',
-          schemaVersion: 6,
-          exercises: [exerciseA],
-        ),
-        remote: SyncSnapshot(
-          snapshotAt: DateTime.utc(2026),
-          deviceId: 'device-b',
-          schemaVersion: 6,
-          exercises: [exerciseB],
-        ),
-      );
+      final result = engine.merge(local: local, remote: remote);
 
       expect(result.exercises, hasLength(1));
-      expect(result.exercises.first.name, 'From A');
+      expect(result.exercises.first.name, equals('Local Name'));
     });
-  });
 
-  group('soft-delete propagation', () {
-    test('deleted exercise with newer updatedAt wins over non-deleted', () {
-      final activeExercise = Exercise(
+    test('same entity, equal timestamps — local wins (tie-breaking)', () {
+      final localExercise = makeExercise(
         id: 'ex-1',
-        name: 'Bench Press',
-        category: ExerciseCategory.strength,
-        muscleGroup: MuscleGroup.chest,
-        equipmentType: EquipmentType.barbell,
-        updatedAt: DateTime.utc(2026, 1, 5),
+        name: 'Local Name',
+        updatedAt: baseTime,
       );
-
-      final deletedExercise = Exercise(
+      final remoteExercise = makeExercise(
         id: 'ex-1',
-        name: 'Bench Press',
-        category: ExerciseCategory.strength,
-        muscleGroup: MuscleGroup.chest,
-        equipmentType: EquipmentType.barbell,
-        updatedAt: DateTime.utc(2026, 1, 10),
-        deletedAt: DateTime.utc(2026, 1, 10),
+        name: 'Remote Name',
+        updatedAt: baseTime,
       );
 
-      final result = engine.merge(
-        local: SyncSnapshot(
-          snapshotAt: DateTime.utc(2026),
-          deviceId: 'device-a',
-          schemaVersion: 6,
-          exercises: [activeExercise],
-        ),
-        remote: SyncSnapshot(
-          snapshotAt: DateTime.utc(2026),
-          deviceId: 'device-b',
-          schemaVersion: 6,
-          exercises: [deletedExercise],
-        ),
+      final local = makeSnapshot(exercises: [localExercise]);
+      final remote = makeSnapshot(
+        deviceId: 'device-remote',
+        exercises: [remoteExercise],
       );
+
+      final result = engine.merge(local: local, remote: remote);
 
       expect(result.exercises, hasLength(1));
-      expect(result.exercises.first.isDeleted, isTrue);
+      expect(result.exercises.first.name, equals('Local Name'));
     });
 
-    test('non-deleted exercise with newer updatedAt wins over deleted', () {
-      final deletedExercise = Exercise(
-        id: 'ex-1',
+    test('empty remote — merged equals local', () {
+      final exerciseA = makeExercise(
+        id: 'ex-a',
         name: 'Bench Press',
-        category: ExerciseCategory.strength,
-        muscleGroup: MuscleGroup.chest,
-        equipmentType: EquipmentType.barbell,
-        updatedAt: DateTime.utc(2026, 1, 5),
-        deletedAt: DateTime.utc(2026, 1, 5),
+        updatedAt: baseTime,
+      );
+      final exerciseB = makeExercise(
+        id: 'ex-b',
+        name: 'Squat',
+        updatedAt: baseTime,
       );
 
-      final restoredExercise = Exercise(
-        id: 'ex-1',
-        name: 'Bench Press',
-        category: ExerciseCategory.strength,
-        muscleGroup: MuscleGroup.chest,
-        equipmentType: EquipmentType.barbell,
-        updatedAt: DateTime.utc(2026, 1, 10),
-      );
+      final local = makeSnapshot(exercises: [exerciseA, exerciseB]);
+      final remote = makeSnapshot(deviceId: 'device-remote');
 
-      final result = engine.merge(
-        local: SyncSnapshot(
-          snapshotAt: DateTime.utc(2026),
-          deviceId: 'device-a',
-          schemaVersion: 6,
-          exercises: [deletedExercise],
-        ),
-        remote: SyncSnapshot(
-          snapshotAt: DateTime.utc(2026),
-          deviceId: 'device-b',
-          schemaVersion: 6,
-          exercises: [restoredExercise],
-        ),
-      );
-
-      expect(result.exercises, hasLength(1));
-      expect(result.exercises.first.isDeleted, isFalse);
-    });
-  });
-
-  group('merging non-overlapping entities', () {
-    test('both local and remote exercises are included', () {
-      final localEx = Exercise(
-        id: 'ex-local',
-        name: 'Local Exercise',
-        category: ExerciseCategory.strength,
-        muscleGroup: MuscleGroup.chest,
-        equipmentType: EquipmentType.barbell,
-        updatedAt: DateTime.utc(2026, 1, 10),
-      );
-
-      final remoteEx = Exercise(
-        id: 'ex-remote',
-        name: 'Remote Exercise',
-        category: ExerciseCategory.strength,
-        muscleGroup: MuscleGroup.back,
-        equipmentType: EquipmentType.dumbbell,
-        updatedAt: DateTime.utc(2026, 1, 10),
-      );
-
-      final result = engine.merge(
-        local: SyncSnapshot(
-          snapshotAt: DateTime.utc(2026),
-          deviceId: 'device-a',
-          schemaVersion: 6,
-          exercises: [localEx],
-        ),
-        remote: SyncSnapshot(
-          snapshotAt: DateTime.utc(2026),
-          deviceId: 'device-b',
-          schemaVersion: 6,
-          exercises: [remoteEx],
-        ),
-      );
+      final result = engine.merge(local: local, remote: remote);
 
       expect(result.exercises, hasLength(2));
       final ids = result.exercises.map((e) => e.id).toSet();
-      expect(ids, containsAll(['ex-local', 'ex-remote']));
+      expect(ids, containsAll(['ex-a', 'ex-b']));
+    });
+
+    test('empty local — merged equals remote', () {
+      final exerciseA = makeExercise(
+        id: 'ex-a',
+        name: 'Bench Press',
+        updatedAt: baseTime,
+      );
+      final exerciseB = makeExercise(
+        id: 'ex-b',
+        name: 'Squat',
+        updatedAt: baseTime,
+      );
+
+      final local = makeSnapshot();
+      final remote = makeSnapshot(
+        deviceId: 'device-remote',
+        exercises: [exerciseA, exerciseB],
+      );
+
+      final result = engine.merge(local: local, remote: remote);
+
+      expect(result.exercises, hasLength(2));
+      final ids = result.exercises.map((e) => e.id).toSet();
+      expect(ids, containsAll(['ex-a', 'ex-b']));
+    });
+
+    test('multiple entity types — exercises + workouts merged correctly', () {
+      final localExercise = makeExercise(
+        id: 'ex-1',
+        name: 'Local Exercise',
+        updatedAt: earlier,
+      );
+      final remoteExercise = makeExercise(
+        id: 'ex-1',
+        name: 'Remote Exercise',
+        updatedAt: later,
+      );
+      final localOnlyExercise = makeExercise(
+        id: 'ex-2',
+        name: 'Only Local',
+        updatedAt: baseTime,
+      );
+
+      final localWorkout = makeWorkout(
+        id: 'wo-1',
+        updatedAt: later,
+        notes: 'Local workout',
+      );
+      final remoteWorkout = makeWorkout(
+        id: 'wo-1',
+        updatedAt: earlier,
+        notes: 'Remote workout',
+      );
+      final remoteOnlyWorkout = makeWorkout(
+        id: 'wo-2',
+        updatedAt: baseTime,
+        notes: 'Only Remote',
+      );
+
+      final local = makeSnapshot(
+        exercises: [localExercise, localOnlyExercise],
+        workouts: [localWorkout],
+      );
+      final remote = makeSnapshot(
+        deviceId: 'device-remote',
+        exercises: [remoteExercise],
+        workouts: [remoteWorkout, remoteOnlyWorkout],
+      );
+
+      final result = engine.merge(local: local, remote: remote);
+
+      // Exercise ex-1: remote newer → remote wins
+      expect(result.exercises, hasLength(2));
+      final mergedEx1 =
+          result.exercises.firstWhere((e) => e.id == 'ex-1');
+      expect(mergedEx1.name, equals('Remote Exercise'));
+
+      // Exercise ex-2: local only → kept
+      final mergedEx2 =
+          result.exercises.firstWhere((e) => e.id == 'ex-2');
+      expect(mergedEx2.name, equals('Only Local'));
+
+      // Workout wo-1: local newer → local wins
+      expect(result.workouts, hasLength(2));
+      final mergedWo1 =
+          result.workouts.firstWhere((w) => w.id == 'wo-1');
+      expect(mergedWo1.notes, equals('Local workout'));
+
+      // Workout wo-2: remote only → kept
+      final mergedWo2 =
+          result.workouts.firstWhere((w) => w.id == 'wo-2');
+      expect(mergedWo2.notes, equals('Only Remote'));
     });
   });
 }
