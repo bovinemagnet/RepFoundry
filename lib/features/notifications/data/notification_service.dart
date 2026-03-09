@@ -24,12 +24,15 @@ class NotificationService {
       requestBadgePermission: true,
       requestSoundPermission: true,
     );
+    const linuxSettings =
+        LinuxInitializationSettings(defaultActionName: 'Open notification');
     const settings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
+      linux: linuxSettings,
     );
 
-    await _plugin.initialize(settings);
+    await _plugin.initialize(settings: settings);
     _initialised = true;
   }
 
@@ -39,12 +42,12 @@ class NotificationService {
 
     for (final day in reminderSettings.enabledDays) {
       await _plugin.zonedSchedule(
-        day,
-        'Time to work out!',
-        'Your scheduled workout reminder',
-        _nextInstanceOfDayAndTime(
+        id: day,
+        title: 'Time to work out!',
+        body: 'Your scheduled workout reminder',
+        scheduledDate: _nextInstanceOfDayAndTime(
             day, reminderSettings.hour, reminderSettings.minute),
-        const NotificationDetails(
+        notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             'workout_reminders',
             'Workout Reminders',
@@ -55,8 +58,6 @@ class NotificationService {
           iOS: DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
         payload: 'workout_reminder',
       );
@@ -66,11 +67,11 @@ class NotificationService {
   Future<void> scheduleStreakReminder(int hour, int minute) async {
     const streakId = 100;
     await _plugin.zonedSchedule(
-      streakId,
-      'Don\'t break your streak!',
-      'You haven\'t logged a workout today',
-      _nextInstanceOfTime(hour, minute),
-      const NotificationDetails(
+      id: streakId,
+      title: 'Don\'t break your streak!',
+      body: 'You haven\'t logged a workout today',
+      scheduledDate: _nextInstanceOfTime(hour, minute),
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'streak_reminders',
           'Streak Reminders',
@@ -81,22 +82,20 @@ class NotificationService {
         iOS: DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
       payload: 'streak_reminder',
     );
   }
 
   Future<void> cancelStreakReminder() async {
-    await _plugin.cancel(100);
+    await _plugin.cancel(id: 100);
   }
 
   Future<void> cancelAllReminders() async {
     for (var i = 1; i <= 7; i++) {
-      await _plugin.cancel(i);
+      await _plugin.cancel(id: i);
     }
-    await _plugin.cancel(100);
+    await _plugin.cancel(id: 100);
   }
 
   tz.TZDateTime _nextInstanceOfDayAndTime(int day, int hour, int minute) {

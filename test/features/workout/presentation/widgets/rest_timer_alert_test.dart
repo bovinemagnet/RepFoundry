@@ -28,9 +28,8 @@ void main() {
         .setMockMethodCallHandler(SystemChannels.platform, null);
   });
 
-  Widget buildWidget({List<Override> overrides = const []}) {
+  Widget buildWidget() {
     return ProviderScope(
-      overrides: overrides,
       child: const MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,

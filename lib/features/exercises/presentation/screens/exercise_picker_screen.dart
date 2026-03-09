@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../domain/models/exercise.dart';
 import '../screens/create_exercise_screen.dart';

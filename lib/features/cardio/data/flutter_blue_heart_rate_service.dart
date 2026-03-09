@@ -88,7 +88,7 @@ class FlutterBlueHeartRateService implements HeartRateService {
   Future<void> _connectAndSubscribe(String deviceId) async {
     final device = BluetoothDevice.fromId(deviceId);
 
-    await device.connect(autoConnect: false);
+    await device.connect(license: License.free, autoConnect: false);
     _connectedDevice = device;
 
     // Listen for disconnection events.

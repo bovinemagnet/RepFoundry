@@ -38,13 +38,13 @@ class ExerciseProgressScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          exerciseAsync.valueOrNull?.name ?? s.exerciseProgressTitle,
+          exerciseAsync.value?.name ?? s.exerciseProgressTitle,
         ),
       ),
       body: progressAsync.when(
         data: (progress) => _ProgressBody(
           progress: progress,
-          exerciseName: exerciseAsync.valueOrNull?.name,
+          exerciseName: exerciseAsync.value?.name,
         ),
         loading: () => LoadingWidget(message: s.loadingProgress),
         error: (e, _) => Center(child: Text(s.errorPrefix(e.toString()))),
