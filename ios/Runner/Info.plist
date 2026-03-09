@@ -70,5 +70,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>RepFoundry reads body weight from Apple Health to keep your metrics in sync.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>RepFoundry writes workouts and body metrics to Apple Health for a complete fitness picture.</string>
 </dict>
 </plist>

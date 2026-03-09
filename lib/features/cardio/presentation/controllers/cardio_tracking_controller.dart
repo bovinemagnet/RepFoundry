@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../../../core/providers.dart';
+import '../../../health_sync/data/health_sync_service.dart';
+import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../../application/save_cardio_session_use_case.dart';
 import '../../data/heart_rate_service.dart';
 import '../../data/location_service.dart';
@@ -15,6 +17,8 @@ class CardioTrackingController extends StateNotifier<CardioTrackingState> {
   final SaveCardioSessionUseCase _saveUseCase;
   final LocationService _locationService;
   final HeartRateService _heartRateService;
+  final HealthSyncService _healthSyncService;
+  final HealthSyncSettings _healthSyncSettings;
   Timer? _timer;
   StreamSubscription<Position>? _positionSub;
   Position? _lastPosition;
@@ -26,10 +30,14 @@ class CardioTrackingController extends StateNotifier<CardioTrackingState> {
     required SaveCardioSessionUseCase saveUseCase,
     required LocationService locationService,
     required HeartRateService heartRateService,
+    required HealthSyncService healthSyncService,
+    required HealthSyncSettings healthSyncSettings,
   })  : _cardioRepository = cardioRepository,
         _saveUseCase = saveUseCase,
         _locationService = locationService,
         _heartRateService = heartRateService,
+        _healthSyncService = healthSyncService,
+        _healthSyncSettings = healthSyncSettings,
         super(const CardioTrackingState());
 
   void start() {
@@ -232,7 +240,7 @@ class CardioTrackingController extends StateNotifier<CardioTrackingState> {
     state = state.copyWith(isSaving: true, clearError: true);
 
     try {
-      await _saveUseCase.execute(
+      final result = await _saveUseCase.execute(
         SaveCardioSessionInput(
           exerciseId: state.selectedExerciseId!,
           exerciseName: state.selectedExerciseName ?? 'session',
@@ -242,6 +250,24 @@ class CardioTrackingController extends StateNotifier<CardioTrackingState> {
           avgHeartRate: effectiveHeartRate,
         ),
       );
+
+      // Sync to health store if enabled
+      try {
+        if (_healthSyncSettings.enabled &&
+            _healthSyncSettings.writeWorkouts) {
+          // Rough calorie estimate: ~8 kcal/min for moderate cardio
+          final calories = (state.elapsedSeconds / 60.0 * 8).round();
+          await _healthSyncService.writeWorkout(
+            startTime: result.workout.startedAt,
+            endTime: result.workout.completedAt!,
+            totalCalories: calories,
+            isCardio: true,
+            distanceMeters: effectiveDistance,
+          );
+        }
+      } catch (_) {
+        // Health sync is best-effort — don't fail the save
+      }
 
       _timer?.cancel();
       _stopGpsTracking();
@@ -269,5 +295,7 @@ final cardioTrackingProvider =
     saveUseCase: ref.watch(saveCardioSessionUseCaseProvider),
     locationService: ref.watch(locationServiceProvider),
     heartRateService: ref.watch(heartRateServiceProvider),
+    healthSyncService: ref.watch(healthSyncServiceProvider),
+    healthSyncSettings: ref.watch(healthSyncSettingsProvider),
   ),
 );

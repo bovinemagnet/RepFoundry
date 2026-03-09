@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/widgets/progress_chart_widget.dart';
+import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
+import '../../../health_sync/presentation/providers/health_weight_import_provider.dart';
 import '../../domain/models/body_metric.dart';
 
 class BodyMetricsScreen extends ConsumerWidget {
@@ -13,6 +15,31 @@ class BodyMetricsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
     final metricsAsync = ref.watch(bodyMetricsStreamProvider);
+
+    ref.listen<AsyncValue<double?>>(healthWeightCheckProvider,
+        (previous, next) {
+      if (previous is AsyncLoading && next is AsyncData<double?>) {
+        final weight = next.value;
+        if (weight != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+                  Text(s.importWeightPrompt(weight.toStringAsFixed(1))),
+              action: SnackBarAction(
+                label: s.importWeightAction,
+                onPressed: () async {
+                  final metric = BodyMetric.create(weight: weight);
+                  await ref
+                      .read(bodyMetricRepositoryProvider)
+                      .create(metric);
+                },
+              ),
+              duration: const Duration(seconds: 8),
+            ),
+          );
+        }
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(title: Text(s.bodyMetricsTitle)),
@@ -167,6 +194,26 @@ class BodyMetricsScreen extends ConsumerWidget {
 
     if (result != null) {
       await ref.read(bodyMetricRepositoryProvider).create(result);
+
+      // Sync to health store if enabled
+      try {
+        final healthSettings = ref.read(healthSyncSettingsProvider);
+        if (healthSettings.enabled && healthSettings.writeWeight) {
+          final healthService = ref.read(healthSyncServiceProvider);
+          await healthService.writeWeight(
+            weightKg: result.weight,
+            dateTime: result.date,
+          );
+          if (result.bodyFatPercent != null) {
+            await healthService.writeBodyFat(
+              percent: result.bodyFatPercent!,
+              dateTime: result.date,
+            );
+          }
+        }
+      } catch (_) {
+        // Health sync is best-effort
+      }
     }
   }
 }

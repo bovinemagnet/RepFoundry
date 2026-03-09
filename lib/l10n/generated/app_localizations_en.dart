@@ -1354,4 +1354,58 @@ class SEn extends S {
 
   @override
   String get noWorkoutScheduledForToday => 'No workout scheduled for today';
+
+  @override
+  String get healthSyncTitle => 'Health Sync';
+
+  @override
+  String get healthSyncSubtitle =>
+      'Sync data with Apple Health or Health Connect';
+
+  @override
+  String get healthSyncEnabled => 'Enable Health Sync';
+
+  @override
+  String get writeWorkoutsLabel => 'Write workouts';
+
+  @override
+  String get writeWorkoutsSubtitle =>
+      'Log completed workouts to the health store';
+
+  @override
+  String get writeWeightLabel => 'Write body weight';
+
+  @override
+  String get writeWeightSubtitle => 'Send body metrics to the health store';
+
+  @override
+  String get writeHeartRateLabel => 'Write heart rate';
+
+  @override
+  String get writeHeartRateSubtitle => 'Send heart rate data during cardio';
+
+  @override
+  String get readWeightLabel => 'Read body weight';
+
+  @override
+  String get readWeightSubtitle =>
+      'Import weight measurements from the health store';
+
+  @override
+  String get healthSyncPermissionDenied =>
+      'Health permissions were not granted';
+
+  @override
+  String get healthSyncSuccess => 'Synced to Health';
+
+  @override
+  String importWeightPrompt(String weight) {
+    return 'Import $weight kg from Health?';
+  }
+
+  @override
+  String get importWeightAction => 'Import';
+
+  @override
+  String get healthSyncNoNewData => 'No new data from Health';
 }

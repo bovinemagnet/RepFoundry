@@ -613,5 +613,25 @@
 
   "chooseProgramme": "Choose Programme",
   "noProgrammesAvailable": "No programmes available",
-  "noWorkoutScheduledForToday": "No workout scheduled for today"
+  "noWorkoutScheduledForToday": "No workout scheduled for today",
+
+  "healthSyncTitle": "Health Sync",
+  "healthSyncSubtitle": "Sync data with Apple Health or Health Connect",
+  "healthSyncEnabled": "Enable Health Sync",
+  "writeWorkoutsLabel": "Write workouts",
+  "writeWorkoutsSubtitle": "Log completed workouts to the health store",
+  "writeWeightLabel": "Write body weight",
+  "writeWeightSubtitle": "Send body metrics to the health store",
+  "writeHeartRateLabel": "Write heart rate",
+  "writeHeartRateSubtitle": "Send heart rate data during cardio",
+  "readWeightLabel": "Read body weight",
+  "readWeightSubtitle": "Import weight measurements from the health store",
+  "healthSyncPermissionDenied": "Health permissions were not granted",
+  "healthSyncSuccess": "Synced to Health",
+  "importWeightPrompt": "Import {weight} kg from Health?",
+  "@importWeightPrompt": {
+    "placeholders": { "weight": { "type": "String" } }
+  },
+  "importWeightAction": "Import",
+  "healthSyncNoNewData": "No new data from Health"
 }

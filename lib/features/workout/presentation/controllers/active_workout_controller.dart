@@ -5,6 +5,7 @@ import '../../domain/models/workout.dart';
 import '../../domain/models/workout_set.dart';
 import '../../domain/repositories/workout_repository.dart';
 import '../../../exercises/domain/models/exercise.dart';
+import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../../../history/domain/models/personal_record.dart';
 import '../../../programmes/domain/models/programme.dart';
 import '../../../templates/domain/models/workout_template.dart';
@@ -278,6 +279,29 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
     try {
       final completed = workout.copyWith(completedAt: DateTime.now().toUtc());
       await _workoutRepository.updateWorkout(completed);
+
+      // Sync to health store if enabled
+      try {
+        final healthSettings = _ref.read(healthSyncSettingsProvider);
+        if (healthSettings.enabled && healthSettings.writeWorkouts) {
+          final healthService = _ref.read(healthSyncServiceProvider);
+          final sets =
+              await _workoutRepository.getSetsForWorkout(workout.id);
+          final totalVolume = sets
+              .where((s) => !s.isWarmUp)
+              .fold(0.0, (sum, s) => sum + s.volume);
+          // Rough calorie estimate: 0.05 kcal per kg of volume moved
+          final calories = (totalVolume * 0.05).round();
+          await healthService.writeWorkout(
+            startTime: workout.startedAt,
+            endTime: completed.completedAt!,
+            totalCalories: calories,
+          );
+        }
+      } catch (_) {
+        // Health sync is best-effort — don't fail the workout
+      }
+
       state = const ActiveWorkoutState();
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

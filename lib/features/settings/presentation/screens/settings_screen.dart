@@ -10,7 +10,8 @@ import '../../../heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_bands_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../../heart_rate/presentation/widgets/health_profile_onboarding.dart';
-import '../../../../core/providers.dart' show importDataUseCaseProvider;
+import '../../../../core/providers.dart' show healthSyncServiceProvider, importDataUseCaseProvider;
+import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../providers/export_provider.dart';
 import '../providers/rest_timer_settings_provider.dart';
 import '../providers/show_exercise_images_provider.dart';
@@ -383,6 +384,7 @@ class SettingsScreen extends ConsumerWidget {
             value: ref.watch(reminderSettingsProvider).streakReminderEnabled,
             onChanged: (_) => ref.read(reminderSettingsProvider.notifier).toggleStreakReminder(),
           ),
+          _HealthSyncSection(),
           _SectionHeader(title: s.sectionData),
           ListTile(
             leading: const Icon(Icons.calendar_month_outlined),
@@ -759,6 +761,85 @@ class _ImportJsonTileState extends ConsumerState<_ImportJsonTile> {
             )
           : null,
       onTap: _importing ? null : _import,
+    );
+  }
+}
+
+class _HealthSyncSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
+    final settings = ref.watch(healthSyncSettingsProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeader(title: s.healthSyncTitle),
+        SwitchListTile(
+          secondary: const Icon(Icons.favorite),
+          title: Text(s.healthSyncEnabled),
+          subtitle: Text(s.healthSyncSubtitle),
+          value: settings.enabled,
+          onChanged: (_) async {
+            if (!settings.enabled) {
+              // Turning on — request permissions first
+              final service = ref.read(healthSyncServiceProvider);
+              final granted = await service.requestAuthorisation(
+                writeWorkouts: settings.writeWorkouts,
+                writeWeight: settings.writeWeight,
+                writeHeartRate: settings.writeHeartRate,
+                readWeight: settings.readWeight,
+              );
+              if (!granted && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(s.healthSyncPermissionDenied)),
+                );
+                return; // Don't toggle if permissions denied
+              }
+            }
+            ref.read(healthSyncSettingsProvider.notifier).toggleEnabled();
+          },
+        ),
+        if (settings.enabled) ...[
+          SwitchListTile(
+            secondary: const Icon(Icons.fitness_center),
+            title: Text(s.writeWorkoutsLabel),
+            subtitle: Text(s.writeWorkoutsSubtitle),
+            value: settings.writeWorkouts,
+            onChanged: (_) => ref
+                .read(healthSyncSettingsProvider.notifier)
+                .toggleWriteWorkouts(),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.monitor_weight),
+            title: Text(s.writeWeightLabel),
+            subtitle: Text(s.writeWeightSubtitle),
+            value: settings.writeWeight,
+            onChanged: (_) => ref
+                .read(healthSyncSettingsProvider.notifier)
+                .toggleWriteWeight(),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.monitor_heart),
+            title: Text(s.writeHeartRateLabel),
+            subtitle: Text(s.writeHeartRateSubtitle),
+            value: settings.writeHeartRate,
+            onChanged: (_) => ref
+                .read(healthSyncSettingsProvider.notifier)
+                .toggleWriteHeartRate(),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.download),
+            title: Text(s.readWeightLabel),
+            subtitle: Text(s.readWeightSubtitle),
+            value: settings.readWeight,
+            onChanged: (_) => ref
+                .read(healthSyncSettingsProvider.notifier)
+                .toggleReadWeight(),
+          ),
+        ],
+      ],
     );
   }
 }

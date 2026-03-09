@@ -2461,6 +2461,102 @@ abstract class S {
   /// In en, this message translates to:
   /// **'No workout scheduled for today'**
   String get noWorkoutScheduledForToday;
+
+  /// No description provided for @healthSyncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Health Sync'**
+  String get healthSyncTitle;
+
+  /// No description provided for @healthSyncSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync data with Apple Health or Health Connect'**
+  String get healthSyncSubtitle;
+
+  /// No description provided for @healthSyncEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Health Sync'**
+  String get healthSyncEnabled;
+
+  /// No description provided for @writeWorkoutsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Write workouts'**
+  String get writeWorkoutsLabel;
+
+  /// No description provided for @writeWorkoutsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log completed workouts to the health store'**
+  String get writeWorkoutsSubtitle;
+
+  /// No description provided for @writeWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Write body weight'**
+  String get writeWeightLabel;
+
+  /// No description provided for @writeWeightSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send body metrics to the health store'**
+  String get writeWeightSubtitle;
+
+  /// No description provided for @writeHeartRateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Write heart rate'**
+  String get writeHeartRateLabel;
+
+  /// No description provided for @writeHeartRateSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send heart rate data during cardio'**
+  String get writeHeartRateSubtitle;
+
+  /// No description provided for @readWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Read body weight'**
+  String get readWeightLabel;
+
+  /// No description provided for @readWeightSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import weight measurements from the health store'**
+  String get readWeightSubtitle;
+
+  /// No description provided for @healthSyncPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Health permissions were not granted'**
+  String get healthSyncPermissionDenied;
+
+  /// No description provided for @healthSyncSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Synced to Health'**
+  String get healthSyncSuccess;
+
+  /// No description provided for @importWeightPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Import {weight} kg from Health?'**
+  String importWeightPrompt(String weight);
+
+  /// No description provided for @importWeightAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get importWeightAction;
+
+  /// No description provided for @healthSyncNoNewData.
+  ///
+  /// In en, this message translates to:
+  /// **'No new data from Health'**
+  String get healthSyncNoNewData;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

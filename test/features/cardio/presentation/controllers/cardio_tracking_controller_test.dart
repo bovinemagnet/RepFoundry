@@ -4,6 +4,8 @@ import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.
 import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
 import 'package:rep_foundry/features/cardio/presentation/controllers/cardio_tracking_controller.dart';
+import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
+import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 
 import '../../data/fake_heart_rate_service.dart';
@@ -31,6 +33,8 @@ void main() {
       saveUseCase: useCase,
       locationService: locationService,
       heartRateService: heartRateService,
+      healthSyncService: HealthSyncService(),
+      healthSyncSettings: const HealthSyncSettings(),
     );
   });
 
