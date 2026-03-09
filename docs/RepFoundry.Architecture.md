@@ -16,7 +16,7 @@ RepFoundry follows a clean architecture pattern with clear separation between pr
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | Framework | Flutter 3.x / Dart 3.x | Cross-platform UI and application framework |
-| State Management | Riverpod 2.x | Reactive state management with dependency injection |
+| State Management | Riverpod 3.x | Reactive state management with dependency injection |
 | Local Database | Drift 2.x (SQLite) | Offline-first persistence with type-safe queries; in-memory repositories retained for testing |
 | Navigation | GoRouter | Declarative routing with deep link support |
 | Dependency Injection | Riverpod (built-in) | Provider-based DI with auto-dispose and scoping |
@@ -69,7 +69,7 @@ lib/
 
 ### 4.1 Presentation Layer
 
-Flutter widgets and screens consume state from Riverpod providers. Screens are thin and delegate all logic to controllers (StateNotifier classes). No business logic lives in widget build methods.
+Flutter widgets and screens consume state from Riverpod providers. Screens are thin and delegate all logic to controllers (StateNotifier classes, imported from `flutter_riverpod/legacy.dart`). No business logic lives in widget build methods.
 
 - **Screens:** full-page widgets mapped to GoRouter routes
 - **Widgets:** reusable UI components (SetInputCard, RestTimerWidget, ExercisePicker, GhostSetRow). RestTimerWidget fires haptic vibration and an audible beep when the countdown completes, controlled by user preferences in `RestTimerSettings`.
@@ -152,13 +152,13 @@ Riverpod is used throughout for reactive state management. The provider tree fol
 - **Provider:** static dependencies (database instance, repositories, use cases)
 - **FutureProvider:** one-shot async data (exercise library load, single workout fetch)
 - **StreamProvider:** reactive data (workout history list, active workout sets — powered by Drift query watchers)
-- **NotifierProvider:** mutable UI state (active workout controller, rest timer, exercise search filter)
+- **StateNotifierProvider (legacy):** mutable UI state (active workout controller, rest timer, exercise search filter)
 
 The `databaseProvider` is defined with an `UnimplementedError` default and overridden in `ProviderScope` inside `main()` with the real `AppDatabase` instance. Repository providers read from `databaseProvider` to obtain the database.
 
 ### 6.2 Active Workout State Flow
 
-The most complex state in the app is the active workout. When a user starts a workout, an `ActiveWorkoutController` (StateNotifier) is created that holds the in-progress workout, its sets, and the rest timer state. Sets are persisted to the repository immediately on entry (not batched at the end) so that data is never lost if the app is killed.
+The most complex state in the app is the active workout. When a user starts a workout, an `ActiveWorkoutController` (legacy StateNotifier) is created that holds the in-progress workout, its sets, and the rest timer state. Sets are persisted to the repository immediately on entry (not batched at the end) so that data is never lost if the app is killed.
 
 The flow is:
 
@@ -189,7 +189,7 @@ The rest timer (`restTimerProvider` in `rest_timer_widget.dart`) counts down fro
 - **Haptic feedback:** `HapticFeedback.heavyImpact()` — uses Flutter's built-in `dart:services`, no external package
 - **Sound alert:** `AudioPlayer.play(AssetSource('sounds/timer_complete.wav'))` — a bundled 0.5s 440 Hz sine-wave beep via the `audioplayers` package
 
-Both alerts are gated by `RestTimerSettings` (vibration and sound toggles), persisted via SharedPreferences. The settings provider (`restTimerSettingsProvider`) follows the same `StateNotifier` + `SharedPreferences` pattern as the existing theme and weight-unit providers.
+Both alerts are gated by `RestTimerSettings` (vibration and sound toggles), persisted via SharedPreferences. The settings provider (`restTimerSettingsProvider`) follows the same legacy `StateNotifier` + `SharedPreferences` pattern as the existing theme and weight-unit providers.
 
 Key files: `lib/features/workout/presentation/widgets/rest_timer_widget.dart`, `lib/features/settings/presentation/providers/rest_timer_settings_provider.dart`, `assets/sounds/timer_complete.wav`
 
@@ -233,15 +233,15 @@ A dedicated heart rate monitoring screen (`lib/features/heart_rate/`) provides a
 
 **Providers:**
 
-- `HealthProfileNotifier` (StateNotifier) — SharedPreferences-backed health profile. Migrates legacy `user_age` key to `hr_age` on first load. Methods: `updateAge`, `updateRestingHeartRate`, `updateMeasuredMaxHeartRate`, `setTakingBetaBlocker`, `setHasHeartCondition`, `setClinicianMaxHr`, `setCustomZones`.
+- `HealthProfileNotifier` (legacy StateNotifier) — SharedPreferences-backed health profile. Migrates legacy `user_age` key to `hr_age` on first load. Methods: `updateAge`, `updateRestingHeartRate`, `updateMeasuredMaxHeartRate`, `setTakingBetaBlocker`, `setHasHeartCondition`, `setClinicianMaxHr`, `setCustomZones`.
 - `zoneConfigurationProvider` (derived Provider) — watches `healthProfileProvider`, calls `calculateZones()`. Returns `ZoneConfiguration?`.
 - `cautionModeProvider` (derived Provider) — `healthProfileProvider.isCautionMode`.
-- `chartWindowProvider` (StateNotifier) — configurable sliding window duration (30s, 60s, 90s, 120s, 300s). Default 60s. Persisted via SharedPreferences.
+- `chartWindowProvider` (legacy StateNotifier) — configurable sliding window duration (30s, 60s, 90s, 120s, 300s). Default 60s. Persisted via SharedPreferences.
 - `userAgeProvider` — refactored to delegate to `healthProfileProvider.age` for backwards compatibility.
 
 **Presentation components:**
 
-- `HeartRatePanelController` (StateNotifier) — manages monitoring state, timestamped readings (`HrReading` with `bpm` and `elapsed` duration), elapsed timer, and BLE connection lifecycle. Non-autoDispose so monitoring survives tab switches.
+- `HeartRatePanelController` (legacy StateNotifier) — manages monitoring state, timestamped readings (`HrReading` with `bpm` and `elapsed` duration), elapsed timer, and BLE connection lifecycle. Non-autoDispose so monitoring survives tab switches.
 - `HeartRateChart` — real-time fl_chart `LineChart` plotting BPM against elapsed time. Accepts `ZoneConfiguration` for zone band annotations and optional `windowSeconds` for a sliding window view. X-axis shows `M:SS` timestamps with adaptive intervals.
 - `HeartRateZoneLegend` — displays 5 training zones with dual labels, BPM ranges, and inline `ReliabilityIndicator`. Highlights the current zone. Shows "Clinician-provided limits in use" when applicable.
 - `HealthProfileOnboarding` — 4-step bottom sheet: age → resting HR + measured max → medical flags → clinician cap. Skip/Next/Back navigation. Triggered on first HR panel visit (when age is null) or from Settings.
