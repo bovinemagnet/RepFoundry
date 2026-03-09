@@ -8,6 +8,7 @@ class Workout {
   final DateTime? completedAt;
   final String? templateId;
   final String? notes;
+  final DateTime updatedAt;
   final DateTime? deletedAt;
 
   const Workout({
@@ -16,6 +17,7 @@ class Workout {
     this.completedAt,
     this.templateId,
     this.notes,
+    required this.updatedAt,
     this.deletedAt,
   });
 
@@ -35,6 +37,7 @@ class Workout {
     DateTime? completedAt,
     String? templateId,
     String? notes,
+    DateTime? updatedAt,
     DateTime? deletedAt,
   }) {
     return Workout(
@@ -43,16 +46,19 @@ class Workout {
       completedAt: completedAt ?? this.completedAt,
       templateId: templateId ?? this.templateId,
       notes: notes ?? this.notes,
+      updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
   static Workout create({String? templateId, String? notes}) {
+    final now = DateTime.now().toUtc();
     return Workout(
       id: const Uuid().v4(),
-      startedAt: DateTime.now().toUtc(),
+      startedAt: now,
       templateId: templateId,
       notes: notes,
+      updatedAt: now,
     );
   }
 

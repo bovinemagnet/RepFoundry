@@ -14,6 +14,7 @@ class PersonalRecord {
   final double value;
   final DateTime achievedAt;
   final String? workoutSetId;
+  final DateTime updatedAt;
 
   const PersonalRecord({
     required this.id,
@@ -22,6 +23,7 @@ class PersonalRecord {
     required this.value,
     required this.achievedAt,
     this.workoutSetId,
+    required this.updatedAt,
   });
 
   static PersonalRecord create({
@@ -30,13 +32,15 @@ class PersonalRecord {
     required double value,
     String? workoutSetId,
   }) {
+    final now = DateTime.now().toUtc();
     return PersonalRecord(
       id: const Uuid().v4(),
       exerciseId: exerciseId,
       recordType: recordType,
       value: value,
-      achievedAt: DateTime.now().toUtc(),
+      achievedAt: now,
       workoutSetId: workoutSetId,
+      updatedAt: now,
     );
   }
 

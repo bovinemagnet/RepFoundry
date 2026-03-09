@@ -3,12 +3,13 @@ import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 
 void main() {
   group('Exercise', () {
-    const exercise = Exercise(
+    final exercise = Exercise(
       id: 'test-id',
       name: 'Bench Press',
       category: ExerciseCategory.strength,
       muscleGroup: MuscleGroup.chest,
       equipmentType: EquipmentType.barbell,
+      updatedAt: DateTime.utc(2024),
     );
 
     test('isDeleted is false by default', () {
@@ -44,26 +45,29 @@ void main() {
     });
 
     test('equality is based on id', () {
-      const a = Exercise(
+      final a = Exercise(
         id: 'same',
         name: 'A',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.chest,
         equipmentType: EquipmentType.barbell,
+        updatedAt: DateTime.utc(2024),
       );
-      const b = Exercise(
+      final b = Exercise(
         id: 'same',
         name: 'B',
         category: ExerciseCategory.cardio,
         muscleGroup: MuscleGroup.cardio,
         equipmentType: EquipmentType.cardioMachine,
+        updatedAt: DateTime.utc(2024),
       );
-      const c = Exercise(
+      final c = Exercise(
         id: 'different',
         name: 'A',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.chest,
         equipmentType: EquipmentType.barbell,
+        updatedAt: DateTime.utc(2024),
       );
       expect(a, equals(b));
       expect(a, isNot(equals(c)));

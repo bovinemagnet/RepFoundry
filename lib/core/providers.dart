@@ -27,6 +27,9 @@ import '../features/templates/data/drift_workout_template_repository.dart';
 import '../features/templates/domain/repositories/workout_template_repository.dart';
 import '../features/programmes/data/drift_programme_repository.dart';
 import '../features/programmes/domain/repositories/programme_repository.dart';
+import '../features/sync/application/sync_orchestrator.dart';
+import '../features/sync/data/sync_service_factory.dart';
+import '../features/sync/presentation/providers/sync_settings_provider.dart';
 
 // Repositories
 final bodyMetricRepositoryProvider = Provider<BodyMetricRepository>((ref) {
@@ -125,5 +128,15 @@ final importDataUseCaseProvider = Provider<ImportDataUseCase>((ref) {
     workoutRepository: ref.watch(workoutRepositoryProvider),
     exerciseRepository: ref.watch(exerciseRepositoryProvider),
     personalRecordRepository: ref.watch(personalRecordRepositoryProvider),
+  );
+});
+
+// Sync
+final syncOrchestratorProvider = Provider<SyncOrchestrator>((ref) {
+  final settings = ref.watch(syncSettingsProvider);
+  return SyncOrchestrator(
+    database: ref.watch(databaseProvider),
+    cloudService: createCloudSyncService(),
+    deviceId: settings.deviceId,
   );
 });

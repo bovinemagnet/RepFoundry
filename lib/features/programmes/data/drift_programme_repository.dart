@@ -97,6 +97,7 @@ class DriftProgrammeRepository implements ProgrammeRepository {
             dayOfWeek: day.dayOfWeek,
             templateId: day.templateId,
             templateName: day.templateName,
+            updatedAt: Value(dateTimeToEpochMs(day.updatedAt)),
           ),
         );
   }
@@ -122,6 +123,7 @@ class DriftProgrammeRepository implements ProgrammeRepository {
             type: rule.type.name,
             value: rule.value,
             frequencyWeeks: Value(rule.frequencyWeeks),
+            updatedAt: Value(dateTimeToEpochMs(rule.updatedAt)),
           ),
         );
   }
@@ -189,6 +191,7 @@ class DriftProgrammeRepository implements ProgrammeRepository {
       dayOfWeek: row.dayOfWeek,
       templateId: row.templateId,
       templateName: row.templateName,
+      updatedAt: dateTimeFromEpochMs(row.updatedAt),
     );
   }
 
@@ -200,6 +203,7 @@ class DriftProgrammeRepository implements ProgrammeRepository {
       type: ProgressionType.values.byName(row.type),
       value: row.value,
       frequencyWeeks: row.frequencyWeeks,
+      updatedAt: dateTimeFromEpochMs(row.updatedAt),
     );
   }
 }

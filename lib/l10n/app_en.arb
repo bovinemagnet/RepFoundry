@@ -633,5 +633,29 @@
     "placeholders": { "weight": { "type": "String" } }
   },
   "importWeightAction": "Import",
-  "healthSyncNoNewData": "No new data from Health"
+  "healthSyncNoNewData": "No new data from Health",
+
+  "syncSectionTitle": "Cross-Device Sync",
+  "syncEnabled": "Enable Cross-Device Sync",
+  "syncEnabledSubtitle": "Sync your workout data across devices",
+  "syncLastSynced": "Last synced: {time}",
+  "@syncLastSynced": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "syncNeverSynced": "Never synced",
+  "syncNow": "Sync Now",
+  "syncSyncing": "Syncing…",
+  "syncSuccess": "Sync complete",
+  "syncError": "Sync failed: {error}",
+  "@syncError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "syncDisableAndDelete": "Disable Sync & Delete Cloud Data",
+  "syncDisableConfirmTitle": "Disable Sync?",
+  "syncDisableConfirmBody": "This will disable sync and permanently delete your data from cloud storage. Your local data will not be affected.",
+  "syncDisableConfirmAction": "Disable & Delete",
+  "syncConsentTitle": "Cross-Device Sync",
+  "syncConsentBody": "Your workout data will be saved to your own Google Drive or iCloud account. RepFoundry cannot access this data. You can delete it at any time from Settings or directly from your cloud account.",
+  "syncConsentCancel": "Cancel",
+  "syncConsentAccept": "I Understand — Continue"
 }

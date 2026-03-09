@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../heart_rate/domain/zone_calculator.dart';
@@ -11,7 +12,10 @@ import '../../../heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_bands_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../../heart_rate/presentation/widgets/health_profile_onboarding.dart';
-import '../../../../core/providers.dart' show healthSyncServiceProvider, importDataUseCaseProvider;
+import '../../../../core/providers.dart' show healthSyncServiceProvider, importDataUseCaseProvider, syncOrchestratorProvider;
+import '../../../sync/domain/models/sync_state.dart';
+import '../../../sync/presentation/providers/sync_settings_provider.dart';
+import '../../../sync/presentation/widgets/sync_consent_dialog.dart';
 import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../providers/export_provider.dart';
 import '../providers/rest_timer_settings_provider.dart';
@@ -386,6 +390,7 @@ class SettingsScreen extends ConsumerWidget {
             onChanged: (_) => ref.read(reminderSettingsProvider.notifier).toggleStreakReminder(),
           ),
           _HealthSyncSection(),
+          _CloudSyncSection(),
           _SectionHeader(title: s.sectionData),
           ListTile(
             leading: const Icon(Icons.calendar_month_outlined),
@@ -838,6 +843,133 @@ class _HealthSyncSection extends ConsumerWidget {
             onChanged: (_) => ref
                 .read(healthSyncSettingsProvider.notifier)
                 .toggleReadWeight(),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _CloudSyncSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
+    final settings = ref.watch(syncSettingsProvider);
+    final syncState = ref.watch(syncStateProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeader(title: s.syncSectionTitle),
+        SwitchListTile(
+          secondary: const Icon(Icons.sync),
+          title: Text(s.syncEnabled),
+          subtitle: Text(s.syncEnabledSubtitle),
+          value: settings.enabled,
+          onChanged: (_) async {
+            if (!settings.enabled) {
+              if (!settings.consentGiven) {
+                final accepted = await SyncConsentDialog.show(context);
+                if (!accepted) return;
+                ref.read(syncSettingsProvider.notifier).setConsentGiven(true);
+              }
+              ref.read(syncSettingsProvider.notifier).setEnabled(true);
+            } else {
+              ref.read(syncSettingsProvider.notifier).setEnabled(false);
+            }
+          },
+        ),
+        if (settings.enabled) ...[
+          ListTile(
+            leading: const Icon(Icons.access_time),
+            title: Text(settings.lastSyncAt != null
+                ? s.syncLastSynced(
+                    DateFormat.yMd().add_jm().format(settings.lastSyncAt!.toLocal()))
+                : s.syncNeverSynced),
+          ),
+          ListTile(
+            leading: syncState.status == SyncStatus.syncing
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.cloud_sync_outlined),
+            title: Text(syncState.status == SyncStatus.syncing
+                ? s.syncSyncing
+                : s.syncNow),
+            onTap: syncState.status == SyncStatus.syncing
+                ? null
+                : () async {
+                    ref
+                        .read(syncStateProvider.notifier)
+                        .setStatus(SyncStatus.syncing);
+                    final result =
+                        await ref.read(syncOrchestratorProvider).sync();
+                    if (result.success) {
+                      ref.read(syncStateProvider.notifier).setStatus(
+                            SyncStatus.success,
+                            lastSyncAt: result.syncedAt,
+                          );
+                      ref
+                          .read(syncSettingsProvider.notifier)
+                          .updateLastSyncAt(result.syncedAt);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(s.syncSuccess)),
+                        );
+                      }
+                    } else {
+                      ref.read(syncStateProvider.notifier).setStatus(
+                            SyncStatus.error,
+                            error: result.errorMessage,
+                          );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                s.syncError(result.errorMessage ?? '')),
+                          ),
+                        );
+                      }
+                    }
+                  },
+          ),
+          ListTile(
+            leading: Icon(Icons.delete_outline,
+                color: Theme.of(context).colorScheme.error),
+            title: Text(
+              s.syncDisableAndDelete,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+            onTap: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: Text(s.syncDisableConfirmTitle),
+                  content: Text(s.syncDisableConfirmBody),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: Text(s.cancel),
+                    ),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor:
+                            Theme.of(ctx).colorScheme.error,
+                      ),
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: Text(s.syncDisableConfirmAction),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) {
+                await ref.read(syncOrchestratorProvider).deleteCloudData();
+                ref.read(syncSettingsProvider.notifier).disableAndClear();
+                ref.read(syncStateProvider.notifier).setStatus(SyncStatus.idle);
+              }
+            },
           ),
         ],
       ],

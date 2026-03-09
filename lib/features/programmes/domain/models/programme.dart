@@ -73,6 +73,7 @@ class ProgrammeDay {
   final int dayOfWeek;
   final String templateId;
   final String templateName;
+  final DateTime updatedAt;
 
   const ProgrammeDay({
     required this.id,
@@ -81,6 +82,7 @@ class ProgrammeDay {
     required this.dayOfWeek,
     required this.templateId,
     required this.templateName,
+    required this.updatedAt,
   });
 
   static ProgrammeDay create({
@@ -97,6 +99,7 @@ class ProgrammeDay {
       dayOfWeek: dayOfWeek,
       templateId: templateId,
       templateName: templateName,
+      updatedAt: DateTime.now().toUtc(),
     );
   }
 
@@ -105,6 +108,7 @@ class ProgrammeDay {
     int? dayOfWeek,
     String? templateId,
     String? templateName,
+    DateTime? updatedAt,
   }) {
     return ProgrammeDay(
       id: id,
@@ -113,6 +117,7 @@ class ProgrammeDay {
       dayOfWeek: dayOfWeek ?? this.dayOfWeek,
       templateId: templateId ?? this.templateId,
       templateName: templateName ?? this.templateName,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -134,6 +139,7 @@ class ProgressionRule {
   final ProgressionType type;
   final double value;
   final int frequencyWeeks;
+  final DateTime updatedAt;
 
   const ProgressionRule({
     required this.id,
@@ -142,6 +148,7 @@ class ProgressionRule {
     required this.type,
     required this.value,
     this.frequencyWeeks = 1,
+    required this.updatedAt,
   });
 
   static ProgressionRule create({
@@ -158,6 +165,7 @@ class ProgressionRule {
       type: type,
       value: value,
       frequencyWeeks: frequencyWeeks,
+      updatedAt: DateTime.now().toUtc(),
     );
   }
 

@@ -74,6 +74,7 @@ class TemplateListScreen extends ConsumerWidget {
                                 targetSets: e.targetSets,
                                 targetReps: e.targetReps,
                                 orderIndex: e.orderIndex,
+                                updatedAt: DateTime.now().toUtc(),
                               ))
                           .toList();
                       final copy = WorkoutTemplate(

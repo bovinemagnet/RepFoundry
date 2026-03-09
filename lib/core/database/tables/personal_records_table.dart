@@ -10,6 +10,7 @@ class PersonalRecords extends Table {
   IntColumn get achievedAt => integer()();
   TextColumn get workoutSetId =>
       text().nullable().references(WorkoutSets, #id)();
+  IntColumn get updatedAt => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};

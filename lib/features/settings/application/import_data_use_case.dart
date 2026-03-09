@@ -53,6 +53,7 @@ class ImportDataUseCase {
           muscleGroup: _parseEnum(MuscleGroup.values, map['muscleGroup'] as String),
           equipmentType: _parseEnum(EquipmentType.values, map['equipmentType'] as String),
           isCustom: true,
+          updatedAt: DateTime.now().toUtc(),
         );
         try {
           await exerciseRepository.createExercise(exercise);
@@ -75,6 +76,7 @@ class ImportDataUseCase {
             : null,
         templateId: map['templateId'] as String?,
         notes: map['notes'] as String?,
+        updatedAt: DateTime.now().toUtc(),
       );
       try {
         await workoutRepository.createWorkout(workout);
@@ -98,6 +100,7 @@ class ImportDataUseCase {
           timestamp: DateTime.parse(s['timestamp'] as String),
           isWarmUp: s['isWarmUp'] as bool? ?? false,
           groupId: s['groupId'] as String?,
+          updatedAt: DateTime.now().toUtc(),
         );
         try {
           await workoutRepository.addSet(workoutSet);
@@ -119,6 +122,7 @@ class ImportDataUseCase {
         value: (map['value'] as num).toDouble(),
         achievedAt: DateTime.parse(map['achievedAt'] as String),
         workoutSetId: map['workoutSetId'] as String?,
+        updatedAt: DateTime.now().toUtc(),
       );
       try {
         await personalRecordRepository.createRecord(pr);

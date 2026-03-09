@@ -10,6 +10,7 @@ class TemplateExercises extends Table {
   IntColumn get targetSets => integer()();
   IntColumn get targetReps => integer()();
   IntColumn get orderIndex => integer()();
+  IntColumn get updatedAt => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};

@@ -63,6 +63,7 @@ class DriftExerciseRepository implements ExerciseRepository {
             equipmentType: exercise.equipmentType.name,
             isCustom: Value(exercise.isCustom),
             imageAsset: Value(exercise.imageAsset),
+            updatedAt: Value(dateTimeToEpochMs(exercise.updatedAt)),
           ),
         );
     return exercise;
@@ -79,6 +80,7 @@ class DriftExerciseRepository implements ExerciseRepository {
         equipmentType: Value(exercise.equipmentType.name),
         isCustom: Value(exercise.isCustom),
         imageAsset: Value(exercise.imageAsset),
+        updatedAt: Value(dateTimeToEpochMs(exercise.updatedAt)),
         deletedAt: Value(nullableDateTimeToEpochMs(exercise.deletedAt)),
       ),
     );
@@ -89,7 +91,10 @@ class DriftExerciseRepository implements ExerciseRepository {
   Future<void> deleteExercise(String id) async {
     final now = dateTimeToEpochMs(DateTime.now().toUtc());
     await (_db.update(_db.exercises)..where((t) => t.id.equals(id)))
-        .write(db.ExercisesCompanion(deletedAt: Value(now)));
+        .write(db.ExercisesCompanion(
+      deletedAt: Value(now),
+      updatedAt: Value(now),
+    ));
   }
 
   @override
@@ -109,6 +114,7 @@ class DriftExerciseRepository implements ExerciseRepository {
       equipmentType: enumFromString(EquipmentType.values, row.equipmentType),
       isCustom: row.isCustom,
       imageAsset: row.imageAsset,
+      updatedAt: dateTimeFromEpochMs(row.updatedAt),
       deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );
   }

@@ -11,6 +11,7 @@ class WorkoutSet {
   final DateTime timestamp;
   final bool isWarmUp;
   final String? groupId;
+  final DateTime updatedAt;
 
   const WorkoutSet({
     required this.id,
@@ -23,6 +24,7 @@ class WorkoutSet {
     required this.timestamp,
     this.isWarmUp = false,
     this.groupId,
+    required this.updatedAt,
   });
 
   double get volume => weight * reps;
@@ -45,6 +47,7 @@ class WorkoutSet {
     bool? isWarmUp,
     String? groupId,
     bool clearGroupId = false,
+    DateTime? updatedAt,
   }) {
     return WorkoutSet(
       id: id ?? this.id,
@@ -57,6 +60,7 @@ class WorkoutSet {
       timestamp: timestamp ?? this.timestamp,
       isWarmUp: isWarmUp ?? this.isWarmUp,
       groupId: clearGroupId ? null : (groupId ?? this.groupId),
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -70,6 +74,7 @@ class WorkoutSet {
     bool isWarmUp = false,
     String? groupId,
   }) {
+    final now = DateTime.now().toUtc();
     return WorkoutSet(
       id: const Uuid().v4(),
       workoutId: workoutId,
@@ -78,9 +83,10 @@ class WorkoutSet {
       weight: weight,
       reps: reps,
       rpe: rpe,
-      timestamp: DateTime.now().toUtc(),
+      timestamp: now,
       isWarmUp: isWarmUp,
       groupId: groupId,
+      updatedAt: now,
     );
   }
 

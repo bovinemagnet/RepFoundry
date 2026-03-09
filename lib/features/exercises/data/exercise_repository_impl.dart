@@ -8,131 +8,149 @@ class InMemoryExerciseRepository implements ExerciseRepository {
 
   static List<Exercise> _buildDefaultExercises() {
     return [
-      const Exercise(
+      Exercise(
         id: '1',
         name: 'Barbell Bench Press',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.chest,
         equipmentType: EquipmentType.barbell,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '2',
         name: 'Barbell Squat',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.quadriceps,
         equipmentType: EquipmentType.barbell,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '3',
         name: 'Deadlift',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.back,
         equipmentType: EquipmentType.barbell,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '4',
         name: 'Pull-up',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.back,
         equipmentType: EquipmentType.bodyweight,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '5',
         name: 'Overhead Press',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.shoulders,
         equipmentType: EquipmentType.barbell,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '6',
         name: 'Barbell Row',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.back,
         equipmentType: EquipmentType.barbell,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '7',
         name: 'Dumbbell Curl',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.biceps,
         equipmentType: EquipmentType.dumbbell,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '8',
         name: 'Tricep Pushdown',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.triceps,
         equipmentType: EquipmentType.cable,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '9',
         name: 'Incline Dumbbell Press',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.chest,
         equipmentType: EquipmentType.dumbbell,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '10',
         name: 'Leg Press',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.quadriceps,
         equipmentType: EquipmentType.machine,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '11',
         name: 'Romanian Deadlift',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.hamstrings,
         equipmentType: EquipmentType.barbell,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '12',
         name: 'Hip Thrust',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.glutes,
         equipmentType: EquipmentType.barbell,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '13',
         name: 'Lat Pulldown',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.back,
         equipmentType: EquipmentType.cable,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '14',
         name: 'Cable Fly',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.chest,
         equipmentType: EquipmentType.cable,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '15',
         name: 'Plank',
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.core,
         equipmentType: EquipmentType.bodyweight,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '16',
         name: 'Treadmill',
         category: ExerciseCategory.cardio,
         muscleGroup: MuscleGroup.cardio,
         equipmentType: EquipmentType.cardioMachine,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '17',
         name: 'Stationary Bike',
         category: ExerciseCategory.cardio,
         muscleGroup: MuscleGroup.cardio,
         equipmentType: EquipmentType.cardioMachine,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
-      const Exercise(
+      Exercise(
         id: '18',
         name: 'Rowing Machine',
         category: ExerciseCategory.cardio,
         muscleGroup: MuscleGroup.fullBody,
         equipmentType: EquipmentType.cardioMachine,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
     ];
   }

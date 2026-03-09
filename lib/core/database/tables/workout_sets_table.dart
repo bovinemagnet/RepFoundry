@@ -18,6 +18,7 @@ class WorkoutSets extends Table {
   IntColumn get timestamp => integer()();
   BoolColumn get isWarmUp => boolean().withDefault(const Constant(false))();
   TextColumn get groupId => text().nullable()();
+  IntColumn get updatedAt => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};

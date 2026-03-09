@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:uuid/uuid.dart';
@@ -12,6 +14,7 @@ import '../../../programmes/domain/models/programme.dart';
 import '../../../templates/domain/models/workout_template.dart';
 import '../models/ghost_set.dart';
 import '../../../../core/providers.dart';
+import '../../../sync/presentation/providers/sync_settings_provider.dart';
 
 /// Pure function: assigns a shared groupId to all sets for two exercises.
 Map<String, List<WorkoutSet>> linkSupersetSets(
@@ -301,6 +304,17 @@ class ActiveWorkoutController extends StateNotifier<ActiveWorkoutState> {
         }
       } catch (_) {
         // Health sync is best-effort — don't fail the workout
+      }
+
+      // Cloud sync after workout — fire-and-forget
+      try {
+        final syncSettings = _ref.read(syncSettingsProvider);
+        if (syncSettings.enabled) {
+          final orchestrator = _ref.read(syncOrchestratorProvider);
+          unawaited(orchestrator.sync());
+        }
+      } catch (_) {
+        // Cloud sync is best-effort — don't fail the workout
       }
 
       state = const ActiveWorkoutState();

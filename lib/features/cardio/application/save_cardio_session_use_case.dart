@@ -60,6 +60,7 @@ class SaveCardioSessionUseCase {
       startedAt: now.subtract(Duration(seconds: input.durationSeconds)),
       completedAt: now,
       notes: 'Cardio: ${input.exerciseName}',
+      updatedAt: now,
     );
 
     final createdWorkout = await _workoutRepository.createWorkout(workout);

@@ -8,6 +8,7 @@ class CardioSession {
   final double? distanceMeters;
   final double? incline;
   final int? avgHeartRate;
+  final DateTime updatedAt;
 
   const CardioSession({
     required this.id,
@@ -17,6 +18,7 @@ class CardioSession {
     this.distanceMeters,
     this.incline,
     this.avgHeartRate,
+    required this.updatedAt,
   });
 
   Duration get duration => Duration(seconds: durationSeconds);
@@ -43,6 +45,7 @@ class CardioSession {
       distanceMeters: distanceMeters,
       incline: incline,
       avgHeartRate: avgHeartRate,
+      updatedAt: DateTime.now().toUtc(),
     );
   }
 

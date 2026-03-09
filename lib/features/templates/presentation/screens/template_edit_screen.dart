@@ -81,6 +81,7 @@ class _TemplateEditScreenState extends ConsumerState<TemplateEditScreen> {
       targetSets: 3,
       targetReps: 10,
       orderIndex: template.exercises.length,
+      updatedAt: DateTime.now().toUtc(),
     );
 
     setState(() {
@@ -108,6 +109,7 @@ class _TemplateEditScreenState extends ConsumerState<TemplateEditScreen> {
           targetSets: updatedExercises[i].targetSets,
           targetReps: updatedExercises[i].targetReps,
           orderIndex: i,
+          updatedAt: DateTime.now().toUtc(),
         ),
     ];
 
@@ -136,6 +138,7 @@ class _TemplateEditScreenState extends ConsumerState<TemplateEditScreen> {
           targetSets: exercises[i].targetSets,
           targetReps: exercises[i].targetReps,
           orderIndex: i,
+          updatedAt: DateTime.now().toUtc(),
         ),
     ];
 
@@ -158,6 +161,7 @@ class _TemplateEditScreenState extends ConsumerState<TemplateEditScreen> {
       targetSets: targetSets ?? current.targetSets,
       targetReps: targetReps ?? current.targetReps,
       orderIndex: current.orderIndex,
+      updatedAt: DateTime.now().toUtc(),
     );
 
     setState(() {

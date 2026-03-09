@@ -22,6 +22,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
             completedAt: Value(nullableDateTimeToEpochMs(workout.completedAt)),
             templateId: Value(workout.templateId),
             notes: Value(workout.notes),
+            updatedAt: Value(dateTimeToEpochMs(workout.updatedAt)),
           ),
         );
     return workout;
@@ -74,6 +75,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
         completedAt: Value(nullableDateTimeToEpochMs(workout.completedAt)),
         templateId: Value(workout.templateId),
         notes: Value(workout.notes),
+        updatedAt: Value(dateTimeToEpochMs(workout.updatedAt)),
         deletedAt: Value(nullableDateTimeToEpochMs(workout.deletedAt)),
       ),
     );
@@ -84,7 +86,10 @@ class DriftWorkoutRepository implements WorkoutRepository {
   Future<void> deleteWorkout(String id) async {
     final now = dateTimeToEpochMs(DateTime.now().toUtc());
     await (_db.update(_db.workouts)..where((t) => t.id.equals(id)))
-        .write(db.WorkoutsCompanion(deletedAt: Value(now)));
+        .write(db.WorkoutsCompanion(
+      deletedAt: Value(now),
+      updatedAt: Value(now),
+    ));
   }
 
   // ── Sets ──────────────────────────────────────────────────────────────
@@ -103,6 +108,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
             timestamp: dateTimeToEpochMs(set.timestamp),
             isWarmUp: Value(set.isWarmUp),
             groupId: Value(set.groupId),
+            updatedAt: Value(dateTimeToEpochMs(set.updatedAt)),
           ),
         );
     return set;
@@ -154,6 +160,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
         timestamp: Value(dateTimeToEpochMs(set.timestamp)),
         isWarmUp: Value(set.isWarmUp),
         groupId: Value(set.groupId),
+        updatedAt: Value(dateTimeToEpochMs(set.updatedAt)),
       ),
     );
     return set;
@@ -221,6 +228,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
       completedAt: nullableDateTimeFromEpochMs(row.completedAt),
       templateId: row.templateId,
       notes: row.notes,
+      updatedAt: dateTimeFromEpochMs(row.updatedAt),
       deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );
   }
@@ -237,6 +245,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
       timestamp: dateTimeFromEpochMs(row.timestamp),
       isWarmUp: row.isWarmUp,
       groupId: row.groupId,
+      updatedAt: dateTimeFromEpochMs(row.updatedAt),
     );
   }
 }
