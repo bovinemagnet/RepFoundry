@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
-import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:http/http.dart' as http;
 
 import '../domain/sync_service.dart';
@@ -12,31 +11,34 @@ const _syncFileName = 'repfoundry_sync.json';
 class GoogleDriveSyncService implements CloudSyncService {
   GoogleSignInAccount? _account;
   drive.DriveApi? _driveApi;
+  bool _initialised = false;
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: [drive.DriveApi.driveAppdataScope],
-  );
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+
+  Future<void> _ensureInitialised() async {
+    if (_initialised) return;
+    await _googleSignIn.initialize();
+    _initialised = true;
+  }
 
   Future<drive.DriveApi> _getDriveApi() async {
     if (_driveApi != null) return _driveApi!;
 
-    _account = await _googleSignIn.signIn();
-    if (_account == null) {
-      throw Exception('Google Sign-In was cancelled');
-    }
+    await _ensureInitialised();
 
-    final auth = await _account!.authentication;
-    final credentials = AccessCredentials(
-      AccessToken(
-        'Bearer',
-        auth.accessToken!,
-        DateTime.now().toUtc().add(const Duration(hours: 1)),
-      ),
-      null,
-      [drive.DriveApi.driveAppdataScope],
+    _account = await _googleSignIn.authenticate(
+      scopeHint: [drive.DriveApi.driveAppdataScope],
     );
 
-    final client = authenticatedClient(http.Client(), credentials);
+    final headers = await _account!.authorizationClient.authorizationHeaders(
+      [drive.DriveApi.driveAppdataScope],
+      promptIfNecessary: true,
+    );
+    if (headers == null) {
+      throw Exception('Failed to obtain Drive authorisation');
+    }
+
+    final client = _AuthenticatedClient(http.Client(), headers);
     _driveApi = drive.DriveApi(client);
     return _driveApi!;
   }
@@ -44,7 +46,8 @@ class GoogleDriveSyncService implements CloudSyncService {
   @override
   Future<bool> isAvailable() async {
     try {
-      final account = await _googleSignIn.signInSilently();
+      await _ensureInitialised();
+      final account = await _googleSignIn.attemptLightweightAuthentication();
       return account != null;
     } catch (_) {
       return false;
@@ -102,7 +105,7 @@ class GoogleDriveSyncService implements CloudSyncService {
     if (fileId != null) {
       await api.files.delete(fileId);
     }
-    await _googleSignIn.signOut();
+    await _googleSignIn.disconnect();
     _driveApi = null;
     _account = null;
   }
@@ -116,5 +119,24 @@ class GoogleDriveSyncService implements CloudSyncService {
     final files = fileList.files;
     if (files == null || files.isEmpty) return null;
     return files.first.id;
+  }
+}
+
+/// Simple authenticated HTTP client that injects auth headers.
+class _AuthenticatedClient extends http.BaseClient {
+  _AuthenticatedClient(this._inner, this._headers);
+
+  final http.Client _inner;
+  final Map<String, String> _headers;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    request.headers.addAll(_headers);
+    return _inner.send(request);
+  }
+
+  @override
+  void close() {
+    _inner.close();
   }
 }
