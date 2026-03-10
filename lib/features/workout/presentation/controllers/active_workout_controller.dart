@@ -142,12 +142,11 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
 
   @override
   ActiveWorkoutState build() {
-    _init();
-    return const ActiveWorkoutState();
+    Future.microtask(() => _init());
+    return const ActiveWorkoutState(isLoading: true);
   }
 
   Future<void> _init() async {
-    state = state.copyWith(isLoading: true);
     try {
       final workout = await _workoutRepository.getActiveWorkout();
       if (workout != null) {
