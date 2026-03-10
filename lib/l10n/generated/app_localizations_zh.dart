@@ -929,63 +929,62 @@ class SZh extends S {
   String get noTemplatesAvailable => '暂无可用模板';
 
   @override
-  String get muscleGroupDistributionTitle => 'Muscle Group Distribution';
+  String get muscleGroupDistributionTitle => '肌群分布';
 
   @override
-  String get exerciseProgressListTitle => 'Exercise Progress';
+  String get exerciseProgressListTitle => '动作进展';
 
   @override
   String setsLogged(int count) {
-    return '$count sets logged';
+    return '已记录 $count 组';
   }
 
   @override
-  String get exportAsJson => 'Export as JSON';
+  String get exportAsJson => '导出为 JSON';
 
   @override
-  String get exportAsJsonSubtitle => 'Full workout data in JSON format';
+  String get exportAsJsonSubtitle => '完整训练数据，JSON 格式';
 
   @override
-  String get exportAsCsv => 'Export as CSV';
+  String get exportAsCsv => '导出为 CSV';
 
   @override
-  String get exportAsCsvSubtitle =>
-      'Sets, cardio, and personal records as CSV files';
+  String get exportAsCsvSubtitle => '组数、有氧和个人纪录，CSV 文件';
 
   @override
-  String get exportingData => 'Exporting data…';
+  String get exportingData => '正在导出数据…';
 
   @override
-  String get exportComplete => 'Export complete';
+  String get exportComplete => '导出完成';
 
   @override
   String exportFailed(String error) {
-    return 'Export failed: $error';
+    return '导出失败：$error';
   }
 
   @override
-  String get editSet => 'Edit Set';
+  String get editSet => '编辑组';
 
   @override
-  String get editExerciseTitle => 'Edit Exercise';
+  String get editExerciseTitle => '编辑动作';
 
   @override
-  String get calendarHeatmapTitle => 'Workout Calendar';
+  String get calendarHeatmapTitle => '训练日历';
 
   @override
-  String get calendarHeatmapLess => 'Less';
+  String get calendarHeatmapLess => '少';
 
   @override
-  String get calendarHeatmapMore => 'More';
+  String get calendarHeatmapMore => '多';
 
   @override
   String currentStreak(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count day streak',
-      one: '1 day streak',
-      zero: 'No current streak',
+      other: '连续 $count 天',
+      one: '连续 1 天',
+      zero: '当前无连续天数',
     );
     return '$_temp0';
   }
@@ -995,162 +994,158 @@ class SZh extends S {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'days',
-      one: 'day',
+      other: '天',
+      one: '天',
     );
-    return 'Longest: $count $_temp0';
+    return '最长：$count $_temp0';
   }
 
   @override
-  String get durationTrendTitle => 'Workout Duration (mins)';
+  String get durationTrendTitle => '训练时长（分钟）';
 
   @override
-  String get warmUpLabel => 'Warm-up';
+  String get warmUpLabel => '热身';
 
   @override
-  String get bodyMetricsTitle => 'Body Metrics';
+  String get bodyMetricsTitle => '身体指标';
 
   @override
-  String get bodyMetricsSubtitle => 'Track body weight and composition';
+  String get bodyMetricsSubtitle => '追踪体重和身体成分';
 
   @override
-  String get noBodyMetricsYet => 'No body metrics yet';
+  String get noBodyMetricsYet => '暂无身体指标';
 
   @override
-  String get noBodyMetricsYetSubtitle =>
-      'Tap + to record your first measurement.';
+  String get noBodyMetricsYetSubtitle => '点击 + 记录你的第一次测量。';
 
   @override
-  String get addBodyMetric => 'Add Measurement';
+  String get addBodyMetric => '添加测量';
 
   @override
-  String get bodyWeightLabel => 'Body Weight';
+  String get bodyWeightLabel => '体重';
 
   @override
-  String get bodyFatPercentLabel => 'Body Fat %';
+  String get bodyFatPercentLabel => '体脂率 %';
 
   @override
-  String get bodyFatLabel => 'body fat';
+  String get bodyFatLabel => '体脂';
 
   @override
-  String get notesLabel => 'Notes';
+  String get notesLabel => '备注';
 
   @override
-  String get bodyWeightTrendTitle => 'Body Weight Trend';
+  String get bodyWeightTrendTitle => '体重趋势';
 
   @override
-  String get latestWeight => 'Latest Weight';
+  String get latestWeight => '最新体重';
 
   @override
-  String get bodyMetricsHistory => 'History';
+  String get bodyMetricsHistory => '历史';
 
   @override
-  String get importFromJson => 'Import from JSON';
+  String get importFromJson => '从 JSON 导入';
 
   @override
-  String get importFromJsonSubtitle => 'Restore data from a previous export';
+  String get importFromJsonSubtitle => '从之前的导出恢复数据';
 
   @override
-  String get importDataTitle => 'Import Data';
+  String get importDataTitle => '导入数据';
 
   @override
-  String get importDataConfirmContent =>
-      'This will add data from a JSON export to your existing data. Duplicates will be skipped.';
+  String get importDataConfirmContent => '这将把 JSON 导出的数据添加到现有数据中。重复数据将被跳过。';
 
   @override
-  String get importDataButton => 'Import';
+  String get importDataButton => '导入';
 
   @override
-  String get importPasteJsonTitle => 'Paste JSON Data';
+  String get importPasteJsonTitle => '粘贴 JSON 数据';
 
   @override
-  String get importPasteJsonHint => 'Paste your exported JSON here…';
+  String get importPasteJsonHint => '在此粘贴导出的 JSON…';
 
   @override
   String importComplete(int workouts, int sets) {
-    return 'Import complete: $workouts workouts, $sets sets';
+    return '导入完成：$workouts 次训练，$sets 组';
   }
 
   @override
   String importFailed(String error) {
-    return 'Import failed: $error';
+    return '导入失败：$error';
   }
 
   @override
-  String get duplicateTemplate => 'Duplicate';
+  String get duplicateTemplate => '复制';
 
   @override
-  String get copyLabel => 'Copy';
+  String get copyLabel => '复制';
 
   @override
-  String get supersetLabel => 'Superset';
+  String get supersetLabel => '超级组';
 
   @override
-  String get linkAsSuperset => 'Link as Superset';
+  String get linkAsSuperset => '链接为超级组';
 
   @override
-  String get breakSuperset => 'Break Superset';
+  String get breakSuperset => '解除超级组';
 
   @override
   String supersetWith(String name) {
-    return 'Superset with $name';
+    return '与 $name 超级组';
   }
 
   @override
-  String get selectSupersetPartner => 'Select Exercise to Link';
+  String get selectSupersetPartner => '选择要链接的动作';
 
   @override
-  String get noOtherExercises => 'Add another exercise first';
+  String get noOtherExercises => '请先添加其他动作';
 
   @override
-  String get sectionReminders => 'Reminders';
+  String get sectionReminders => '提醒';
 
   @override
-  String get workoutReminders => 'Workout Reminders';
+  String get workoutReminders => '训练提醒';
 
   @override
-  String get workoutRemindersSubtitle => 'Get notified on your training days';
+  String get workoutRemindersSubtitle => '在训练日接收通知';
 
   @override
-  String get reminderTime => 'Reminder Time';
+  String get reminderTime => '提醒时间';
 
   @override
-  String get reminderTimeSubtitle => 'Time to receive workout reminders';
+  String get reminderTimeSubtitle => '接收训练提醒的时间';
 
   @override
-  String get reminderDays => 'Training Days';
+  String get reminderDays => '训练日';
 
   @override
-  String get streakReminder => 'Streak Reminder';
+  String get streakReminder => '连续天数提醒';
 
   @override
-  String get streakReminderSubtitle =>
-      'Remind me if I haven\'t worked out today';
+  String get streakReminderSubtitle => '如果今天还没有训练则提醒我';
 
   @override
-  String get mondayShort => 'Mon';
+  String get mondayShort => '周一';
 
   @override
-  String get tuesdayShort => 'Tue';
+  String get tuesdayShort => '周二';
 
   @override
-  String get wednesdayShort => 'Wed';
+  String get wednesdayShort => '周三';
 
   @override
-  String get thursdayShort => 'Thu';
+  String get thursdayShort => '周四';
 
   @override
-  String get fridayShort => 'Fri';
+  String get fridayShort => '周五';
 
   @override
-  String get saturdayShort => 'Sat';
+  String get saturdayShort => '周六';
 
   @override
-  String get sundayShort => 'Sun';
+  String get sundayShort => '周日';
 
   @override
-  String get notificationPermissionRequired =>
-      'Notification permission is required for reminders';
+  String get notificationPermissionRequired => '提醒功能需要通知权限';
 
   @override
   String reminderTimeOfDay(String hour, String minute) {
@@ -1158,136 +1153,134 @@ class SZh extends S {
   }
 
   @override
-  String get analyticsTitle => 'Analytics';
+  String get analyticsTitle => '数据分析';
 
   @override
-  String get weeklyVolumeTitle => 'Weekly Volume Trend';
+  String get weeklyVolumeTitle => '每周训练量趋势';
 
   @override
   String weeklyVolumeChange(String change) {
-    return '$change% vs previous week';
+    return '较上周 $change%';
   }
 
   @override
-  String get muscleBalanceTitle => 'Muscle Group Balance';
+  String get muscleBalanceTitle => '肌群平衡';
 
   @override
-  String get prTimelineTitle => 'PR Timeline';
+  String get prTimelineTitle => '个人纪录时间线';
 
   @override
-  String get trainingLoadTitle => 'Weekly Training Load';
+  String get trainingLoadTitle => '每周训练负荷';
 
   @override
-  String get trainingLoadSubtitle => 'Sets × avg RPE';
+  String get trainingLoadSubtitle => '组数 × 平均 RPE';
 
   @override
-  String get noAnalyticsData => 'Not enough data yet';
+  String get noAnalyticsData => '数据不足';
 
   @override
-  String get noAnalyticsDataSubtitle =>
-      'Complete a few workouts to see your analytics.';
+  String get noAnalyticsDataSubtitle => '完成几次训练后即可查看分析。';
 
   @override
-  String get volumeCategory => 'Volume by Category';
+  String get volumeCategory => '按分类显示训练量';
 
   @override
   String loadScore(String score) {
-    return 'Load: $score';
+    return '负荷：$score';
   }
 
   @override
-  String get viewAdvancedAnalytics => 'View Advanced Analytics';
+  String get viewAdvancedAnalytics => '查看高级分析';
 
   @override
-  String get programmesTitle => 'Programmes';
+  String get programmesTitle => '训练计划';
 
   @override
-  String get noProgrammesYet => 'No programmes yet';
+  String get noProgrammesYet => '暂无训练计划';
 
   @override
-  String get noProgrammesYetSubtitle =>
-      'Create a training programme to plan your workouts.';
+  String get noProgrammesYetSubtitle => '创建训练计划以规划你的训练。';
 
   @override
-  String get newProgramme => 'New Programme';
+  String get newProgramme => '新建计划';
 
   @override
-  String get newProgrammeTitle => 'New Programme';
+  String get newProgrammeTitle => '新建训练计划';
 
   @override
-  String get programmeNameLabel => 'Programme Name';
+  String get programmeNameLabel => '计划名称';
 
   @override
-  String get durationWeeksLabel => 'Duration (weeks)';
+  String get durationWeeksLabel => '持续时间（周）';
 
   @override
-  String get editProgramme => 'Edit Programme';
+  String get editProgramme => '编辑计划';
 
   @override
-  String get deleteProgrammeTitle => 'Delete Programme?';
+  String get deleteProgrammeTitle => '删除计划？';
 
   @override
   String deleteProgrammeContent(String name) {
-    return 'Are you sure you want to delete \"$name\"? This cannot be undone.';
+    return '你确定要删除“$name”吗？此操作无法撤销。';
   }
 
   @override
-  String get programmeDashboard => 'Dashboard';
+  String get programmeDashboard => '仪表盘';
 
   @override
   String currentWeek(int current, int total) {
-    return 'Week $current of $total';
+    return '第 $current / $total 周';
   }
 
   @override
-  String get assignTemplate => 'Assign Template';
+  String get assignTemplate => '分配模板';
 
   @override
-  String get noTemplateAssigned => 'Rest day';
+  String get noTemplateAssigned => '休息日';
 
   @override
-  String get progressionRules => 'Progression Rules';
+  String get progressionRules => '渐进规则';
 
   @override
-  String get addRule => 'Add Rule';
+  String get addRule => '添加规则';
 
   @override
-  String get fixedIncrementLabel => 'Fixed increment';
+  String get fixedIncrementLabel => '固定递增';
 
   @override
-  String get percentageLabel => 'Percentage';
+  String get percentageLabel => '百分比';
 
   @override
-  String get deloadLabel => 'Deload';
+  String get deloadLabel => '减载';
 
   @override
-  String get ruleValueLabel => 'Value';
+  String get ruleValueLabel => '数值';
 
   @override
   String everyNWeeks(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'weeks',
-      one: 'week',
+      other: '周',
+      one: '周',
     );
-    return 'Every $count $_temp0';
+    return '每 $count $_temp0';
   }
 
   @override
-  String get startFromProgramme => 'Start from Programme';
+  String get startFromProgramme => '从计划开始';
 
   @override
   String targetWeight(String weight) {
-    return 'Target: $weight kg';
+    return '目标：$weight kg';
   }
 
   @override
-  String get programmeSaved => 'Programme saved';
+  String get programmeSaved => '计划已保存';
 
   @override
   String failedToLoadProgrammes(String error) {
-    return 'Failed to load programmes: $error';
+    return '加载计划失败：$error';
   }
 
   @override
@@ -1295,8 +1288,8 @@ class SZh extends S {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'weeks',
-      one: 'week',
+      other: '周',
+      one: '周',
     );
     return '$count $_temp0';
   }
@@ -1306,15 +1299,15 @@ class SZh extends S {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'days',
-      one: 'day',
+      other: '天',
+      one: '天',
     );
-    return '$count $_temp0 assigned';
+    return '已分配 $count $_temp0';
   }
 
   @override
   String weekLabel(int number) {
-    return 'Week $number';
+    return '第 $number 周';
   }
 
   @override
@@ -1323,124 +1316,119 @@ class SZh extends S {
   }
 
   @override
-  String get chooseProgramme => 'Choose Programme';
+  String get chooseProgramme => '选择计划';
 
   @override
-  String get noProgrammesAvailable => 'No programmes available';
+  String get noProgrammesAvailable => '暂无可用计划';
 
   @override
-  String get noWorkoutScheduledForToday => 'No workout scheduled for today';
+  String get noWorkoutScheduledForToday => '今天没有安排训练';
 
   @override
-  String get healthSyncTitle => 'Health Sync';
+  String get healthSyncTitle => '健康同步';
 
   @override
-  String get healthSyncSubtitle =>
-      'Sync data with Apple Health or Health Connect';
+  String get healthSyncSubtitle => '与 Apple Health 或 Health Connect 同步数据';
 
   @override
-  String get healthSyncEnabled => 'Enable Health Sync';
+  String get healthSyncEnabled => '启用健康同步';
 
   @override
-  String get writeWorkoutsLabel => 'Write workouts';
+  String get writeWorkoutsLabel => '写入训练记录';
 
   @override
-  String get writeWorkoutsSubtitle =>
-      'Log completed workouts to the health store';
+  String get writeWorkoutsSubtitle => '将已完成的训练记录到健康商店';
 
   @override
-  String get writeWeightLabel => 'Write body weight';
+  String get writeWeightLabel => '写入体重';
 
   @override
-  String get writeWeightSubtitle => 'Send body metrics to the health store';
+  String get writeWeightSubtitle => '将身体指标发送到健康商店';
 
   @override
-  String get writeHeartRateLabel => 'Write heart rate';
+  String get writeHeartRateLabel => '写入心率';
 
   @override
-  String get writeHeartRateSubtitle => 'Send heart rate data during cardio';
+  String get writeHeartRateSubtitle => '在有氧运动中发送心率数据';
 
   @override
-  String get readWeightLabel => 'Read body weight';
+  String get readWeightLabel => '读取体重';
 
   @override
-  String get readWeightSubtitle =>
-      'Import weight measurements from the health store';
+  String get readWeightSubtitle => '从健康商店导入体重测量';
 
   @override
-  String get healthSyncPermissionDenied =>
-      'Health permissions were not granted';
+  String get healthSyncPermissionDenied => '未授予健康权限';
 
   @override
-  String get healthSyncSuccess => 'Synced to Health';
+  String get healthSyncSuccess => '已同步到健康';
 
   @override
   String importWeightPrompt(String weight) {
-    return 'Import $weight kg from Health?';
+    return '从健康导入 $weight kg？';
   }
 
   @override
-  String get importWeightAction => 'Import';
+  String get importWeightAction => '导入';
 
   @override
-  String get healthSyncNoNewData => 'No new data from Health';
+  String get healthSyncNoNewData => '健康中没有新数据';
 
   @override
-  String get syncSectionTitle => 'Cross-Device Sync';
+  String get syncSectionTitle => '跨设备同步';
 
   @override
-  String get syncEnabled => 'Enable Cross-Device Sync';
+  String get syncEnabled => '启用跨设备同步';
 
   @override
-  String get syncEnabledSubtitle => 'Sync your workout data across devices';
+  String get syncEnabledSubtitle => '跨设备同步你的训练数据';
 
   @override
   String syncLastSynced(String time) {
-    return 'Last synced: $time';
+    return '上次同步：$time';
   }
 
   @override
-  String get syncNeverSynced => 'Never synced';
+  String get syncNeverSynced => '从未同步';
 
   @override
-  String get syncNow => 'Sync Now';
+  String get syncNow => '立即同步';
 
   @override
-  String get syncSyncing => 'Syncing…';
+  String get syncSyncing => '正在同步…';
 
   @override
-  String get syncSuccess => 'Sync complete';
+  String get syncSuccess => '同步完成';
 
   @override
   String syncError(String error) {
-    return 'Sync failed: $error';
+    return '同步失败：$error';
   }
 
   @override
-  String get syncDisableAndDelete => 'Disable Sync & Delete Cloud Data';
+  String get syncDisableAndDelete => '禁用同步并删除云端数据';
 
   @override
-  String get syncDisableConfirmTitle => 'Disable Sync?';
+  String get syncDisableConfirmTitle => '禁用同步？';
 
   @override
-  String get syncDisableConfirmBody =>
-      'This will disable sync and permanently delete your data from cloud storage. Your local data will not be affected.';
+  String get syncDisableConfirmBody => '这将禁用同步并永久删除云端存储中的数据。本地数据不会受到影响。';
 
   @override
-  String get syncDisableConfirmAction => 'Disable & Delete';
+  String get syncDisableConfirmAction => '禁用并删除';
 
   @override
-  String get syncConsentTitle => 'Cross-Device Sync';
+  String get syncConsentTitle => '跨设备同步';
 
   @override
   String get syncConsentBody =>
-      'Your workout data will be saved to your own Google Drive or iCloud account. RepFoundry cannot access this data. You can delete it at any time from Settings or directly from your cloud account.';
+      '你的训练数据将保存到你自己的 Google Drive 或 iCloud 帐户中。RepFoundry 无法访问这些数据。你可以随时在设置中或直接从云帐户中删除。';
 
   @override
-  String get syncConsentCancel => 'Cancel';
+  String get syncConsentCancel => '取消';
 
   @override
-  String get syncConsentAccept => 'I Understand — Continue';
+  String get syncConsentAccept => '我已了解——继续';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -2366,4 +2354,506 @@ class SZhHans extends SZh {
 
   @override
   String get noTemplatesAvailable => '暂无可用模板';
+
+  @override
+  String get muscleGroupDistributionTitle => '肌群分布';
+
+  @override
+  String get exerciseProgressListTitle => '动作进展';
+
+  @override
+  String setsLogged(int count) {
+    return '已记录 $count 组';
+  }
+
+  @override
+  String get exportAsJson => '导出为 JSON';
+
+  @override
+  String get exportAsJsonSubtitle => '完整训练数据，JSON 格式';
+
+  @override
+  String get exportAsCsv => '导出为 CSV';
+
+  @override
+  String get exportAsCsvSubtitle => '组数、有氧和个人纪录，CSV 文件';
+
+  @override
+  String get exportingData => '正在导出数据…';
+
+  @override
+  String get exportComplete => '导出完成';
+
+  @override
+  String exportFailed(String error) {
+    return '导出失败：$error';
+  }
+
+  @override
+  String get editSet => '编辑组';
+
+  @override
+  String get editExerciseTitle => '编辑动作';
+
+  @override
+  String get calendarHeatmapTitle => '训练日历';
+
+  @override
+  String get calendarHeatmapLess => '少';
+
+  @override
+  String get calendarHeatmapMore => '多';
+
+  @override
+  String currentStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '连续 $count 天',
+      one: '连续 1 天',
+      zero: '当前无连续天数',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String longestStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '天',
+      one: '天',
+    );
+    return '最长：$count $_temp0';
+  }
+
+  @override
+  String get durationTrendTitle => '训练时长（分钟）';
+
+  @override
+  String get warmUpLabel => '热身';
+
+  @override
+  String get bodyMetricsTitle => '身体指标';
+
+  @override
+  String get bodyMetricsSubtitle => '追踪体重和身体成分';
+
+  @override
+  String get noBodyMetricsYet => '暂无身体指标';
+
+  @override
+  String get noBodyMetricsYetSubtitle => '点击 + 记录你的第一次测量。';
+
+  @override
+  String get addBodyMetric => '添加测量';
+
+  @override
+  String get bodyWeightLabel => '体重';
+
+  @override
+  String get bodyFatPercentLabel => '体脂率 %';
+
+  @override
+  String get bodyFatLabel => '体脂';
+
+  @override
+  String get notesLabel => '备注';
+
+  @override
+  String get bodyWeightTrendTitle => '体重趋势';
+
+  @override
+  String get latestWeight => '最新体重';
+
+  @override
+  String get bodyMetricsHistory => '历史';
+
+  @override
+  String get importFromJson => '从 JSON 导入';
+
+  @override
+  String get importFromJsonSubtitle => '从之前的导出恢复数据';
+
+  @override
+  String get importDataTitle => '导入数据';
+
+  @override
+  String get importDataConfirmContent => '这将把 JSON 导出的数据添加到现有数据中。重复数据将被跳过。';
+
+  @override
+  String get importDataButton => '导入';
+
+  @override
+  String get importPasteJsonTitle => '粘贴 JSON 数据';
+
+  @override
+  String get importPasteJsonHint => '在此粘贴导出的 JSON…';
+
+  @override
+  String importComplete(int workouts, int sets) {
+    return '导入完成：$workouts 次训练，$sets 组';
+  }
+
+  @override
+  String importFailed(String error) {
+    return '导入失败：$error';
+  }
+
+  @override
+  String get duplicateTemplate => '复制';
+
+  @override
+  String get copyLabel => '复制';
+
+  @override
+  String get supersetLabel => '超级组';
+
+  @override
+  String get linkAsSuperset => '链接为超级组';
+
+  @override
+  String get breakSuperset => '解除超级组';
+
+  @override
+  String supersetWith(String name) {
+    return '与 $name 超级组';
+  }
+
+  @override
+  String get selectSupersetPartner => '选择要链接的动作';
+
+  @override
+  String get noOtherExercises => '请先添加其他动作';
+
+  @override
+  String get sectionReminders => '提醒';
+
+  @override
+  String get workoutReminders => '训练提醒';
+
+  @override
+  String get workoutRemindersSubtitle => '在训练日接收通知';
+
+  @override
+  String get reminderTime => '提醒时间';
+
+  @override
+  String get reminderTimeSubtitle => '接收训练提醒的时间';
+
+  @override
+  String get reminderDays => '训练日';
+
+  @override
+  String get streakReminder => '连续天数提醒';
+
+  @override
+  String get streakReminderSubtitle => '如果今天还没有训练则提醒我';
+
+  @override
+  String get mondayShort => '周一';
+
+  @override
+  String get tuesdayShort => '周二';
+
+  @override
+  String get wednesdayShort => '周三';
+
+  @override
+  String get thursdayShort => '周四';
+
+  @override
+  String get fridayShort => '周五';
+
+  @override
+  String get saturdayShort => '周六';
+
+  @override
+  String get sundayShort => '周日';
+
+  @override
+  String get notificationPermissionRequired => '提醒功能需要通知权限';
+
+  @override
+  String reminderTimeOfDay(String hour, String minute) {
+    return '$hour:$minute';
+  }
+
+  @override
+  String get analyticsTitle => '数据分析';
+
+  @override
+  String get weeklyVolumeTitle => '每周训练量趋势';
+
+  @override
+  String weeklyVolumeChange(String change) {
+    return '较上周 $change%';
+  }
+
+  @override
+  String get muscleBalanceTitle => '肌群平衡';
+
+  @override
+  String get prTimelineTitle => '个人纪录时间线';
+
+  @override
+  String get trainingLoadTitle => '每周训练负荷';
+
+  @override
+  String get trainingLoadSubtitle => '组数 × 平均 RPE';
+
+  @override
+  String get noAnalyticsData => '数据不足';
+
+  @override
+  String get noAnalyticsDataSubtitle => '完成几次训练后即可查看分析。';
+
+  @override
+  String get volumeCategory => '按分类显示训练量';
+
+  @override
+  String loadScore(String score) {
+    return '负荷：$score';
+  }
+
+  @override
+  String get viewAdvancedAnalytics => '查看高级分析';
+
+  @override
+  String get programmesTitle => '训练计划';
+
+  @override
+  String get noProgrammesYet => '暂无训练计划';
+
+  @override
+  String get noProgrammesYetSubtitle => '创建训练计划以规划你的训练。';
+
+  @override
+  String get newProgramme => '新建计划';
+
+  @override
+  String get newProgrammeTitle => '新建训练计划';
+
+  @override
+  String get programmeNameLabel => '计划名称';
+
+  @override
+  String get durationWeeksLabel => '持续时间（周）';
+
+  @override
+  String get editProgramme => '编辑计划';
+
+  @override
+  String get deleteProgrammeTitle => '删除计划？';
+
+  @override
+  String deleteProgrammeContent(String name) {
+    return '你确定要删除“$name”吗？此操作无法撤销。';
+  }
+
+  @override
+  String get programmeDashboard => '仪表盘';
+
+  @override
+  String currentWeek(int current, int total) {
+    return '第 $current / $total 周';
+  }
+
+  @override
+  String get assignTemplate => '分配模板';
+
+  @override
+  String get noTemplateAssigned => '休息日';
+
+  @override
+  String get progressionRules => '渐进规则';
+
+  @override
+  String get addRule => '添加规则';
+
+  @override
+  String get fixedIncrementLabel => '固定递增';
+
+  @override
+  String get percentageLabel => '百分比';
+
+  @override
+  String get deloadLabel => '减载';
+
+  @override
+  String get ruleValueLabel => '数值';
+
+  @override
+  String everyNWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '周',
+      one: '周',
+    );
+    return '每 $count $_temp0';
+  }
+
+  @override
+  String get startFromProgramme => '从计划开始';
+
+  @override
+  String targetWeight(String weight) {
+    return '目标：$weight kg';
+  }
+
+  @override
+  String get programmeSaved => '计划已保存';
+
+  @override
+  String failedToLoadProgrammes(String error) {
+    return '加载计划失败：$error';
+  }
+
+  @override
+  String programmeWeeksCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '周',
+      one: '周',
+    );
+    return '$count $_temp0';
+  }
+
+  @override
+  String programmeDaysCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '天',
+      one: '天',
+    );
+    return '已分配 $count $_temp0';
+  }
+
+  @override
+  String weekLabel(int number) {
+    return '第 $number 周';
+  }
+
+  @override
+  String dayLabel(String day) {
+    return '$day';
+  }
+
+  @override
+  String get chooseProgramme => '选择计划';
+
+  @override
+  String get noProgrammesAvailable => '暂无可用计划';
+
+  @override
+  String get noWorkoutScheduledForToday => '今天没有安排训练';
+
+  @override
+  String get healthSyncTitle => '健康同步';
+
+  @override
+  String get healthSyncSubtitle => '与 Apple Health 或 Health Connect 同步数据';
+
+  @override
+  String get healthSyncEnabled => '启用健康同步';
+
+  @override
+  String get writeWorkoutsLabel => '写入训练记录';
+
+  @override
+  String get writeWorkoutsSubtitle => '将已完成的训练记录到健康商店';
+
+  @override
+  String get writeWeightLabel => '写入体重';
+
+  @override
+  String get writeWeightSubtitle => '将身体指标发送到健康商店';
+
+  @override
+  String get writeHeartRateLabel => '写入心率';
+
+  @override
+  String get writeHeartRateSubtitle => '在有氧运动中发送心率数据';
+
+  @override
+  String get readWeightLabel => '读取体重';
+
+  @override
+  String get readWeightSubtitle => '从健康商店导入体重测量';
+
+  @override
+  String get healthSyncPermissionDenied => '未授予健康权限';
+
+  @override
+  String get healthSyncSuccess => '已同步到健康';
+
+  @override
+  String importWeightPrompt(String weight) {
+    return '从健康导入 $weight kg？';
+  }
+
+  @override
+  String get importWeightAction => '导入';
+
+  @override
+  String get healthSyncNoNewData => '健康中没有新数据';
+
+  @override
+  String get syncSectionTitle => '跨设备同步';
+
+  @override
+  String get syncEnabled => '启用跨设备同步';
+
+  @override
+  String get syncEnabledSubtitle => '跨设备同步你的训练数据';
+
+  @override
+  String syncLastSynced(String time) {
+    return '上次同步：$time';
+  }
+
+  @override
+  String get syncNeverSynced => '从未同步';
+
+  @override
+  String get syncNow => '立即同步';
+
+  @override
+  String get syncSyncing => '正在同步…';
+
+  @override
+  String get syncSuccess => '同步完成';
+
+  @override
+  String syncError(String error) {
+    return '同步失败：$error';
+  }
+
+  @override
+  String get syncDisableAndDelete => '禁用同步并删除云端数据';
+
+  @override
+  String get syncDisableConfirmTitle => '禁用同步？';
+
+  @override
+  String get syncDisableConfirmBody => '这将禁用同步并永久删除云端存储中的数据。本地数据不会受到影响。';
+
+  @override
+  String get syncDisableConfirmAction => '禁用并删除';
+
+  @override
+  String get syncConsentTitle => '跨设备同步';
+
+  @override
+  String get syncConsentBody =>
+      '你的训练数据将保存到你自己的 Google Drive 或 iCloud 帐户中。RepFoundry 无法访问这些数据。你可以随时在设置中或直接从云帐户中删除。';
+
+  @override
+  String get syncConsentCancel => '取消';
+
+  @override
+  String get syncConsentAccept => '我已了解——继续';
 }

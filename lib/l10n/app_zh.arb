@@ -423,5 +423,239 @@
 
   "startFromTemplate": "从模板开始",
   "chooseTemplate": "选择模板",
-  "noTemplatesAvailable": "暂无可用模板"
+  "noTemplatesAvailable": "暂无可用模板",
+
+  "muscleGroupDistributionTitle": "肌群分布",
+  "exerciseProgressListTitle": "动作进展",
+  "setsLogged": "已记录 {count} 组",
+  "@setsLogged": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "exportAsJson": "导出为 JSON",
+  "exportAsJsonSubtitle": "完整训练数据，JSON 格式",
+  "exportAsCsv": "导出为 CSV",
+  "exportAsCsvSubtitle": "组数、有氧和个人纪录，CSV 文件",
+  "exportingData": "正在导出数据…",
+  "exportComplete": "导出完成",
+  "exportFailed": "导出失败：{error}",
+  "@exportFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "editSet": "编辑组",
+  "editExerciseTitle": "编辑动作",
+
+  "calendarHeatmapTitle": "训练日历",
+  "calendarHeatmapLess": "少",
+  "calendarHeatmapMore": "多",
+
+  "currentStreak": "{count, plural, =0{当前无连续天数} =1{连续 1 天} other{连续 {count} 天}}",
+  "@currentStreak": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "longestStreak": "最长：{count} {count, plural, =1{天} other{天}}",
+  "@longestStreak": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "durationTrendTitle": "训练时长（分钟）",
+
+  "warmUpLabel": "热身",
+
+  "bodyMetricsTitle": "身体指标",
+  "bodyMetricsSubtitle": "追踪体重和身体成分",
+  "noBodyMetricsYet": "暂无身体指标",
+  "noBodyMetricsYetSubtitle": "点击 + 记录你的第一次测量。",
+  "addBodyMetric": "添加测量",
+  "bodyWeightLabel": "体重",
+  "bodyFatPercentLabel": "体脂率 %",
+  "bodyFatLabel": "体脂",
+  "notesLabel": "备注",
+  "bodyWeightTrendTitle": "体重趋势",
+  "latestWeight": "最新体重",
+  "bodyMetricsHistory": "历史",
+
+  "importFromJson": "从 JSON 导入",
+  "importFromJsonSubtitle": "从之前的导出恢复数据",
+  "importDataTitle": "导入数据",
+  "importDataConfirmContent": "这将把 JSON 导出的数据添加到现有数据中。重复数据将被跳过。",
+  "importDataButton": "导入",
+  "importPasteJsonTitle": "粘贴 JSON 数据",
+  "importPasteJsonHint": "在此粘贴导出的 JSON…",
+  "importComplete": "导入完成：{workouts} 次训练，{sets} 组",
+  "@importComplete": {
+    "placeholders": {
+      "workouts": { "type": "int" },
+      "sets": { "type": "int" }
+    }
+  },
+  "importFailed": "导入失败：{error}",
+  "@importFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "duplicateTemplate": "复制",
+  "copyLabel": "复制",
+
+  "supersetLabel": "超级组",
+  "linkAsSuperset": "链接为超级组",
+  "breakSuperset": "解除超级组",
+  "supersetWith": "与 {name} 超级组",
+  "@supersetWith": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "selectSupersetPartner": "选择要链接的动作",
+  "noOtherExercises": "请先添加其他动作",
+
+  "sectionReminders": "提醒",
+  "workoutReminders": "训练提醒",
+  "workoutRemindersSubtitle": "在训练日接收通知",
+  "reminderTime": "提醒时间",
+  "reminderTimeSubtitle": "接收训练提醒的时间",
+  "reminderDays": "训练日",
+  "streakReminder": "连续天数提醒",
+  "streakReminderSubtitle": "如果今天还没有训练则提醒我",
+  "mondayShort": "周一",
+  "tuesdayShort": "周二",
+  "wednesdayShort": "周三",
+  "thursdayShort": "周四",
+  "fridayShort": "周五",
+  "saturdayShort": "周六",
+  "sundayShort": "周日",
+  "notificationPermissionRequired": "提醒功能需要通知权限",
+  "reminderTimeOfDay": "{hour}:{minute}",
+  "@reminderTimeOfDay": {
+    "placeholders": {
+      "hour": { "type": "String" },
+      "minute": { "type": "String" }
+    }
+  },
+
+  "analyticsTitle": "数据分析",
+  "weeklyVolumeTitle": "每周训练量趋势",
+  "weeklyVolumeChange": "较上周 {change}%",
+  "@weeklyVolumeChange": {
+    "placeholders": { "change": { "type": "String" } }
+  },
+  "muscleBalanceTitle": "肌群平衡",
+  "prTimelineTitle": "个人纪录时间线",
+  "trainingLoadTitle": "每周训练负荷",
+  "trainingLoadSubtitle": "组数 × 平均 RPE",
+  "noAnalyticsData": "数据不足",
+  "noAnalyticsDataSubtitle": "完成几次训练后即可查看分析。",
+  "volumeCategory": "按分类显示训练量",
+  "loadScore": "负荷：{score}",
+  "@loadScore": {
+    "placeholders": { "score": { "type": "String" } }
+  },
+  "viewAdvancedAnalytics": "查看高级分析",
+
+  "programmesTitle": "训练计划",
+  "noProgrammesYet": "暂无训练计划",
+  "noProgrammesYetSubtitle": "创建训练计划以规划你的训练。",
+  "newProgramme": "新建计划",
+  "newProgrammeTitle": "新建训练计划",
+  "programmeNameLabel": "计划名称",
+  "durationWeeksLabel": "持续时间（周）",
+  "editProgramme": "编辑计划",
+  "deleteProgrammeTitle": "删除计划？",
+  "deleteProgrammeContent": "你确定要删除\u201c{name}\u201d吗？此操作无法撤销。",
+  "@deleteProgrammeContent": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "programmeDashboard": "仪表盘",
+  "currentWeek": "第 {current} / {total} 周",
+  "@currentWeek": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "assignTemplate": "分配模板",
+  "noTemplateAssigned": "休息日",
+  "progressionRules": "渐进规则",
+  "addRule": "添加规则",
+  "fixedIncrementLabel": "固定递增",
+  "percentageLabel": "百分比",
+  "deloadLabel": "减载",
+  "ruleValueLabel": "数值",
+  "everyNWeeks": "每 {count} {count, plural, =1{周} other{周}}",
+  "@everyNWeeks": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "startFromProgramme": "从计划开始",
+  "targetWeight": "目标：{weight} kg",
+  "@targetWeight": {
+    "placeholders": { "weight": { "type": "String" } }
+  },
+  "programmeSaved": "计划已保存",
+  "failedToLoadProgrammes": "加载计划失败：{error}",
+  "@failedToLoadProgrammes": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "programmeWeeksCount": "{count} {count, plural, =1{周} other{周}}",
+  "@programmeWeeksCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "programmeDaysCount": "已分配 {count} {count, plural, =1{天} other{天}}",
+  "@programmeDaysCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "weekLabel": "第 {number} 周",
+  "@weekLabel": {
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "dayLabel": "{day}",
+  "@dayLabel": {
+    "placeholders": { "day": { "type": "String" } }
+  },
+
+  "chooseProgramme": "选择计划",
+  "noProgrammesAvailable": "暂无可用计划",
+  "noWorkoutScheduledForToday": "今天没有安排训练",
+
+  "healthSyncTitle": "健康同步",
+  "healthSyncSubtitle": "与 Apple Health 或 Health Connect 同步数据",
+  "healthSyncEnabled": "启用健康同步",
+  "writeWorkoutsLabel": "写入训练记录",
+  "writeWorkoutsSubtitle": "将已完成的训练记录到健康商店",
+  "writeWeightLabel": "写入体重",
+  "writeWeightSubtitle": "将身体指标发送到健康商店",
+  "writeHeartRateLabel": "写入心率",
+  "writeHeartRateSubtitle": "在有氧运动中发送心率数据",
+  "readWeightLabel": "读取体重",
+  "readWeightSubtitle": "从健康商店导入体重测量",
+  "healthSyncPermissionDenied": "未授予健康权限",
+  "healthSyncSuccess": "已同步到健康",
+  "importWeightPrompt": "从健康导入 {weight} kg？",
+  "@importWeightPrompt": {
+    "placeholders": { "weight": { "type": "String" } }
+  },
+  "importWeightAction": "导入",
+  "healthSyncNoNewData": "健康中没有新数据",
+
+  "syncSectionTitle": "跨设备同步",
+  "syncEnabled": "启用跨设备同步",
+  "syncEnabledSubtitle": "跨设备同步你的训练数据",
+  "syncLastSynced": "上次同步：{time}",
+  "@syncLastSynced": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "syncNeverSynced": "从未同步",
+  "syncNow": "立即同步",
+  "syncSyncing": "正在同步…",
+  "syncSuccess": "同步完成",
+  "syncError": "同步失败：{error}",
+  "@syncError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "syncDisableAndDelete": "禁用同步并删除云端数据",
+  "syncDisableConfirmTitle": "禁用同步？",
+  "syncDisableConfirmBody": "这将禁用同步并永久删除云端存储中的数据。本地数据不会受到影响。",
+  "syncDisableConfirmAction": "禁用并删除",
+  "syncConsentTitle": "跨设备同步",
+  "syncConsentBody": "你的训练数据将保存到你自己的 Google Drive 或 iCloud 帐户中。RepFoundry 无法访问这些数据。你可以随时在设置中或直接从云帐户中删除。",
+  "syncConsentCancel": "取消",
+  "syncConsentAccept": "我已了解——继续"
 }
