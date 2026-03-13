@@ -39,7 +39,7 @@ class FlutterBlueHeartRateService implements HeartRateService {
     try {
       if (await FlutterBluePlus.isSupported == false) return false;
 
-      final adapterState = FlutterBluePlus.adapterStateNow;
+      final adapterState = await FlutterBluePlus.adapterState.first;
       return adapterState == BluetoothAdapterState.on;
     } catch (_) {
       return false;
