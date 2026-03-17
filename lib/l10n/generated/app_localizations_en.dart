@@ -306,7 +306,54 @@ class SEn extends S {
   String get aboutAppName => 'RepFoundry';
 
   @override
-  String get aboutVersion => 'Version 1.0.0';
+  String aboutVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get aboutScreenTitle => 'About RepFoundry';
+
+  @override
+  String get aboutDescription =>
+      'A simple, fast workout tracking app for gym-goers.';
+
+  @override
+  String get aboutAuthorLabel => 'Author';
+
+  @override
+  String get aboutAuthor => 'Paul Snow';
+
+  @override
+  String get aboutGitHub => 'GitHub Repository';
+
+  @override
+  String get aboutFeatures => 'Features';
+
+  @override
+  String get aboutFeatureOffline =>
+      'Offline-first — your data stays on your device';
+
+  @override
+  String get aboutFeatureHeartRate => 'Bluetooth heart rate monitor support';
+
+  @override
+  String get aboutFeatureTemplates =>
+      'Workout templates for quick session setup';
+
+  @override
+  String get aboutFeatureProgress => 'Progress tracking with personal records';
+
+  @override
+  String get aboutFeatureExport => 'Export your data as JSON or CSV';
+
+  @override
+  String get aboutFeatureCardio => 'GPS-tracked cardio sessions';
+
+  @override
+  String get aboutBuiltWith => 'Built with Flutter';
+
+  @override
+  String get aboutViewLicences => 'Open-source licences';
 
   @override
   String get heartRateTitle => 'Heart Rate';
