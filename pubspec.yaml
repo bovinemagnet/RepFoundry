@@ -33,6 +33,8 @@ dependencies:
   googleapis_auth: ^2.0.0
   connectivity_plus: ^7.0.0
   http: ^1.2.2
+  url_launcher: ^6.2.5
+  package_info_plus: ^8.0.0
 
 dev_dependencies:
   flutter_test:

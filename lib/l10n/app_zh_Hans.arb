@@ -139,7 +139,7 @@
   "allDataCleared": "所有数据已清除。",
 
   "aboutAppName": "RepFoundry",
-  "aboutVersion": "版本 1.0.0",
+  "aboutVersion": "版本 {version}",
 
   "heartRateTitle": "心率",
   "connectHrMonitor": "连接心率监测器",

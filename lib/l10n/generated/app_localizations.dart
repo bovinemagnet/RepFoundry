@@ -659,8 +659,92 @@ abstract class S {
   /// No description provided for @aboutVersion.
   ///
   /// In en, this message translates to:
-  /// **'Version 1.0.0'**
-  String get aboutVersion;
+  /// **'Version {version}'**
+  String aboutVersion(String version);
+
+  /// No description provided for @aboutScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About RepFoundry'**
+  String get aboutScreenTitle;
+
+  /// No description provided for @aboutDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A simple, fast workout tracking app for gym-goers.'**
+  String get aboutDescription;
+
+  /// No description provided for @aboutAuthorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get aboutAuthorLabel;
+
+  /// No description provided for @aboutAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Paul Snow'**
+  String get aboutAuthor;
+
+  /// No description provided for @aboutGitHub.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Repository'**
+  String get aboutGitHub;
+
+  /// No description provided for @aboutFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Features'**
+  String get aboutFeatures;
+
+  /// No description provided for @aboutFeatureOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline-first — your data stays on your device'**
+  String get aboutFeatureOffline;
+
+  /// No description provided for @aboutFeatureHeartRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth heart rate monitor support'**
+  String get aboutFeatureHeartRate;
+
+  /// No description provided for @aboutFeatureTemplates.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout templates for quick session setup'**
+  String get aboutFeatureTemplates;
+
+  /// No description provided for @aboutFeatureProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress tracking with personal records'**
+  String get aboutFeatureProgress;
+
+  /// No description provided for @aboutFeatureExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export your data as JSON or CSV'**
+  String get aboutFeatureExport;
+
+  /// No description provided for @aboutFeatureCardio.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS-tracked cardio sessions'**
+  String get aboutFeatureCardio;
+
+  /// No description provided for @aboutBuiltWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Built with Flutter'**
+  String get aboutBuiltWith;
+
+  /// No description provided for @aboutViewLicences.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-source licences'**
+  String get aboutViewLicences;
 
   /// No description provided for @heartRateTitle.
   ///

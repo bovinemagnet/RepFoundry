@@ -427,7 +427,8 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text(s.aboutAppName),
-            subtitle: Text(s.aboutVersion),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/about'),
           ),
         ],
       ),
