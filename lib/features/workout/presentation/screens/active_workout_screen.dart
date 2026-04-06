@@ -518,10 +518,14 @@ class _ExerciseSection extends StatelessWidget {
               );
             }
           : null,
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          padding: const EdgeInsets.all(16),
           child: _ExerciseSectionContent(
             exercise: exercise,
             sets: sets,
@@ -565,84 +569,84 @@ class _ExerciseSectionContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasTableContent = sets.isNotEmpty || ghostSets.isNotEmpty;
 
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Exercise header
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Text(
-                exercise.name,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    exercise.name,
+                    style: tt.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
+                  ),
+                  if (sets.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Row(
+                        children: [
+                          Icon(Icons.history, size: 12, color: cs.onSurfaceVariant),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Last: ${sets.last.weight}kg x ${sets.last.reps}',
+                            style: tt.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ),
-            Chip(
-              label: Text(
-                exercise.muscleGroup.name,
-                style: Theme.of(context).textTheme.labelSmall,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
               ),
-              padding: EdgeInsets.zero,
+              child: Text(
+                exercise.muscleGroup.name,
+                style: tt.labelSmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
+        // Set cards grid
         if (hasTableContent) ...[
-          _SetTableHeader(context),
-          const Divider(height: 8),
-          for (int i = 0; i < sets.length; i++)
-            _SetRow(
-              index: i,
-              set: sets[i],
-              onDelete: () => onDeleteSet(sets[i].id),
-              onEdit: onEditSet,
-            ),
-          for (int i = 0; i < ghostSets.length; i++)
-            _GhostSetRow(
-              index: sets.length + i,
-              ghost: ghostSets[i],
-            ),
-          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (int i = 0; i < sets.length; i++)
+                _SetCard(
+                  index: i,
+                  set: sets[i],
+                  onDelete: () => onDeleteSet(sets[i].id),
+                  onEdit: onEditSet,
+                ),
+              for (int i = 0; i < ghostSets.length; i++)
+                _GhostSetCard(
+                  index: sets.length + i,
+                  ghost: ghostSets[i],
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
         ],
         SetInputCard(onLogSet: onLogSet, suggestion: suggestion),
-      ],
-    );
-  }
-
-  Widget _SetTableHeader(BuildContext context) {
-    final s = S.of(context)!;
-    return Row(
-      children: [
-        const SizedBox(width: 32),
-        Expanded(
-          child: Text(
-            s.tableHeaderWeight,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-        Expanded(
-          child: Text(
-            s.tableHeaderReps,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-        Expanded(
-          child: Text(
-            s.tableHeaderE1rm,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-        const SizedBox(width: 36),
       ],
     );
   }
@@ -664,59 +668,50 @@ class _SupersetGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.tertiary,
-          width: 2,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.tertiaryContainer,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(10)),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.link,
-                    size: 16,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onTertiaryContainer),
-                const SizedBox(width: 6),
-                Text(
-                  s.supersetLabel,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onTertiaryContainer,
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.link_off, size: 18),
-                  tooltip: s.breakSuperset,
-                  onPressed: () => onUnlink(exercises.first.id),
-                  iconSize: 18,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Container(
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: cs.tertiary.withValues(alpha: 0.3),
           ),
-          for (final exercise in exercises)
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: _ExerciseSectionContent(
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: cs.tertiaryContainer.withValues(alpha: 0.3),
+              child: Row(
+                children: [
+                  Icon(Icons.link, size: 14, color: cs.tertiary),
+                  const SizedBox(width: 6),
+                  Text(
+                    s.supersetLabel.toUpperCase(),
+                    style: tt.labelSmall?.copyWith(
+                      color: cs.tertiary,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => onUnlink(exercises.first.id),
+                    child: Icon(Icons.link_off, size: 16, color: cs.outline),
+                  ),
+                ],
+              ),
+            ),
+            for (final exercise in exercises)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: _ExerciseSectionContent(
                 exercise: exercise,
                 sets: state.setsByExercise[exercise.id] ?? [],
                 ghostSets: state.remainingGhosts(exercise.id),
@@ -740,14 +735,15 @@ class _SupersetGroup extends StatelessWidget {
                 onEditSet: (updatedSet) => controller.updateSet(updatedSet),
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class _SetRow extends StatelessWidget {
-  const _SetRow({
+class _SetCard extends StatelessWidget {
+  const _SetCard({
     required this.index,
     required this.set,
     required this.onDelete,
@@ -761,77 +757,53 @@ class _SetRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return GestureDetector(
       onTap: () async {
         final updated = await showEditSetDialog(context, set);
         if (updated != null) onEdit(updated);
       },
-      child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 32,
-            child: set.isWarmUp
-                ? Text(
-                    'W',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.orange,
-                          fontWeight: FontWeight.bold,
-                        ),
-                    textAlign: TextAlign.center,
-                  )
-                : Text(
-                    '${index + 1}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-          ),
-          Expanded(
-            child: Text(
-              '${set.weight} kg',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontStyle: set.isWarmUp ? FontStyle.italic : null,
-                  ),
+      onLongPress: onDelete,
+      child: Container(
+        width: 80,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Text(
+              set.isWarmUp ? 'W' : 'SET ${index + 1}',
+              style: tt.labelSmall?.copyWith(
+                color: set.isWarmUp ? Colors.orange : cs.onSurfaceVariant,
+                letterSpacing: 0.5,
+                fontSize: 8,
+              ),
             ),
-          ),
-          Expanded(
-            child: Text(
-              '${set.reps}',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
+            const SizedBox(height: 4),
+            Text(
+              '${set.weight}kg',
+              style: tt.bodySmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontStyle: set.isWarmUp ? FontStyle.italic : null,
+              ),
             ),
-          ),
-          Expanded(
-            child: Text(
-              set.estimatedOneRepMax.toStringAsFixed(1),
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+            Text(
+              'x ${set.reps}',
+              style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
             ),
-          ),
-          SizedBox(
-            width: 36,
-            child: IconButton(
-              icon: const Icon(Icons.delete_outline, size: 18),
-              color: Theme.of(context).colorScheme.error,
-              onPressed: onDelete,
-              padding: EdgeInsets.zero,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 }
 
-class _GhostSetRow extends StatelessWidget {
-  const _GhostSetRow({
+class _GhostSetCard extends StatelessWidget {
+  const _GhostSetCard({
     required this.index,
     required this.ghost,
   });
@@ -841,47 +813,42 @@ class _GhostSetRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dimStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
-          fontStyle: FontStyle.italic,
-        );
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 32,
-            child: Text(
-              '${index + 1}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant
-                        .withValues(alpha: 0.4),
-                  ),
-              textAlign: TextAlign.center,
+    return Opacity(
+      opacity: 0.4,
+      child: Container(
+        width: 80,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Text(
+              'SET ${index + 1}',
+              style: tt.labelSmall?.copyWith(
+                color: cs.onSurfaceVariant,
+                letterSpacing: 0.5,
+                fontSize: 8,
+              ),
             ),
-          ),
-          Expanded(
-            child: Text(
-              '${ghost.weight} kg',
-              textAlign: TextAlign.center,
-              style: dimStyle,
+            const SizedBox(height: 4),
+            Text(
+              '${ghost.weight}kg',
+              style: tt.bodySmall?.copyWith(fontStyle: FontStyle.italic),
             ),
-          ),
-          Expanded(
-            child: Text(
-              '${ghost.reps}',
-              textAlign: TextAlign.center,
-              style: dimStyle,
+            Text(
+              'x ${ghost.reps}',
+              style: tt.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
             ),
-          ),
-          // No e1RM column for ghost rows.
-          const Expanded(child: SizedBox.shrink()),
-          // No delete button for ghost rows.
-          const SizedBox(width: 36),
-        ],
+          ],
+        ),
       ),
     );
   }

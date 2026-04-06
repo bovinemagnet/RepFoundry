@@ -657,5 +657,62 @@
   "syncConsentTitle": "跨设备同步",
   "syncConsentBody": "你的训练数据将保存到你自己的 Google Drive 或 iCloud 帐户中。RepFoundry 无法访问这些数据。你可以随时在设置中或直接从云帐户中删除。",
   "syncConsentCancel": "取消",
-  "syncConsentAccept": "我已了解——继续"
+  "syncConsentAccept": "我已了解——继续",
+
+  "aboutScreenTitle": "关于 RepFoundry",
+  "aboutDescription": "一款简单、快速的健身训练追踪应用。",
+  "aboutAuthorLabel": "作者",
+  "aboutAuthor": "Paul Snow",
+  "aboutGitHub": "GitHub 仓库",
+  "aboutFeatures": "功能特色",
+  "aboutFeatureOffline": "离线优先——数据保留在你的设备上",
+  "aboutFeatureHeartRate": "蓝牙心率监测器支持",
+  "aboutFeatureTemplates": "训练模板，快速开始训练",
+  "aboutFeatureProgress": "进度追踪与个人纪录",
+  "aboutFeatureExport": "将数据导出为 JSON 或 CSV",
+  "aboutFeatureCardio": "GPS 追踪有氧训练",
+  "aboutBuiltWith": "使用 Flutter 构建",
+  "aboutViewLicences": "开源许可证",
+
+  "trainingHistoryTitle": "训练历史",
+  "trainingHistorySubtitle": "追踪你的进化和机械张力增长。",
+  "searchSessionsHint": "搜索训练或动作…",
+  "thisWeek": "本周",
+  "lastWeek": "上周",
+  "volumeProgress": "训练量进展",
+  "totalVolumeKg": "{value} kg",
+  "@totalVolumeKg": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "workoutFallbackName": "训练",
+
+  "liveSensor": "实时传感器",
+  "restingHrLabel": "静息心率",
+  "maxHrLabel": "最大心率",
+  "recoveryLabel": "恢复",
+  "hrvLabel": "心率变异性",
+  "excellent": "优秀",
+  "reachedAgo": "本次最高",
+  "toBaseline": "恢复至基线",
+  "highReadiness": "高准备度",
+  "workoutIntensityZones": "训练强度区间",
+  "sessionDuration": "训练时长：{duration}",
+  "@sessionDuration": {
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "zonePeak": "峰值",
+  "zoneAnaerobic": "无氧",
+  "zoneAerobic": "有氧",
+  "zoneFatBurn": "燃脂",
+  "zoneWarmup": "热身",
+  "heartRateTrend": "心率趋势",
+  "heartRateTrendSubtitle": "当前训练时段",
+  "todayLabel": "今天",
+  "avgLabel": "平均",
+
+  "activeDuration": "活动时长",
+  "avgPaceLabel": "平均配速",
+  "distanceLabel": "距离",
+  "startSession": "开始训练",
+  "liveTracking": "实时追踪"
 }

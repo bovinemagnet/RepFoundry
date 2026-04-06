@@ -305,49 +305,46 @@ class SZh extends S {
   }
 
   @override
-  String get aboutScreenTitle => 'About RepFoundry';
+  String get aboutScreenTitle => '关于 RepFoundry';
 
   @override
-  String get aboutDescription =>
-      'A simple, fast workout tracking app for gym-goers.';
+  String get aboutDescription => '一款简单、快速的健身训练追踪应用。';
 
   @override
-  String get aboutAuthorLabel => 'Author';
+  String get aboutAuthorLabel => '作者';
 
   @override
   String get aboutAuthor => 'Paul Snow';
 
   @override
-  String get aboutGitHub => 'GitHub Repository';
+  String get aboutGitHub => 'GitHub 仓库';
 
   @override
-  String get aboutFeatures => 'Features';
+  String get aboutFeatures => '功能特色';
 
   @override
-  String get aboutFeatureOffline =>
-      'Offline-first — your data stays on your device';
+  String get aboutFeatureOffline => '离线优先——数据保留在你的设备上';
 
   @override
-  String get aboutFeatureHeartRate => 'Bluetooth heart rate monitor support';
+  String get aboutFeatureHeartRate => '蓝牙心率监测器支持';
 
   @override
-  String get aboutFeatureTemplates =>
-      'Workout templates for quick session setup';
+  String get aboutFeatureTemplates => '训练模板，快速开始训练';
 
   @override
-  String get aboutFeatureProgress => 'Progress tracking with personal records';
+  String get aboutFeatureProgress => '进度追踪与个人纪录';
 
   @override
-  String get aboutFeatureExport => 'Export your data as JSON or CSV';
+  String get aboutFeatureExport => '将数据导出为 JSON 或 CSV';
 
   @override
-  String get aboutFeatureCardio => 'GPS-tracked cardio sessions';
+  String get aboutFeatureCardio => 'GPS 追踪有氧训练';
 
   @override
-  String get aboutBuiltWith => 'Built with Flutter';
+  String get aboutBuiltWith => '使用 Flutter 构建';
 
   @override
-  String get aboutViewLicences => 'Open-source licences';
+  String get aboutViewLicences => '开源许可证';
 
   @override
   String get heartRateTitle => '心率';
@@ -1476,6 +1473,109 @@ class SZh extends S {
 
   @override
   String get syncConsentAccept => '我已了解——继续';
+
+  @override
+  String get trainingHistoryTitle => '训练历史';
+
+  @override
+  String get trainingHistorySubtitle => '追踪你的进化和机械张力增长。';
+
+  @override
+  String get searchSessionsHint => '搜索训练或动作…';
+
+  @override
+  String get thisWeek => '本周';
+
+  @override
+  String get lastWeek => '上周';
+
+  @override
+  String get volumeProgress => '训练量进展';
+
+  @override
+  String totalVolumeKg(String value) {
+    return '$value kg';
+  }
+
+  @override
+  String get workoutFallbackName => '训练';
+
+  @override
+  String get liveSensor => '实时传感器';
+
+  @override
+  String get restingHrLabel => '静息心率';
+
+  @override
+  String get maxHrLabel => '最大心率';
+
+  @override
+  String get recoveryLabel => '恢复';
+
+  @override
+  String get hrvLabel => '心率变异性';
+
+  @override
+  String get excellent => '优秀';
+
+  @override
+  String get reachedAgo => '本次最高';
+
+  @override
+  String get toBaseline => '恢复至基线';
+
+  @override
+  String get highReadiness => '高准备度';
+
+  @override
+  String get workoutIntensityZones => '训练强度区间';
+
+  @override
+  String sessionDuration(String duration) {
+    return '训练时长：$duration';
+  }
+
+  @override
+  String get zonePeak => '峰值';
+
+  @override
+  String get zoneAnaerobic => '无氧';
+
+  @override
+  String get zoneAerobic => '有氧';
+
+  @override
+  String get zoneFatBurn => '燃脂';
+
+  @override
+  String get zoneWarmup => '热身';
+
+  @override
+  String get heartRateTrend => '心率趋势';
+
+  @override
+  String get heartRateTrendSubtitle => '当前训练时段';
+
+  @override
+  String get todayLabel => '今天';
+
+  @override
+  String get avgLabel => '平均';
+
+  @override
+  String get activeDuration => '活动时长';
+
+  @override
+  String get avgPaceLabel => '平均配速';
+
+  @override
+  String get distanceLabel => '距离';
+
+  @override
+  String get startSession => '开始训练';
+
+  @override
+  String get liveTracking => '实时追踪';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1779,6 +1879,48 @@ class SZhHans extends SZh {
   }
 
   @override
+  String get aboutScreenTitle => '关于 RepFoundry';
+
+  @override
+  String get aboutDescription => '一款简单、快速的健身训练追踪应用。';
+
+  @override
+  String get aboutAuthorLabel => '作者';
+
+  @override
+  String get aboutAuthor => 'Paul Snow';
+
+  @override
+  String get aboutGitHub => 'GitHub 仓库';
+
+  @override
+  String get aboutFeatures => '功能特色';
+
+  @override
+  String get aboutFeatureOffline => '离线优先——数据保留在你的设备上';
+
+  @override
+  String get aboutFeatureHeartRate => '蓝牙心率监测器支持';
+
+  @override
+  String get aboutFeatureTemplates => '训练模板，快速开始训练';
+
+  @override
+  String get aboutFeatureProgress => '进度追踪与个人纪录';
+
+  @override
+  String get aboutFeatureExport => '将数据导出为 JSON 或 CSV';
+
+  @override
+  String get aboutFeatureCardio => 'GPS 追踪有氧训练';
+
+  @override
+  String get aboutBuiltWith => '使用 Flutter 构建';
+
+  @override
+  String get aboutViewLicences => '开源许可证';
+
+  @override
   String get heartRateTitle => '心率';
 
   @override
@@ -2905,4 +3047,107 @@ class SZhHans extends SZh {
 
   @override
   String get syncConsentAccept => '我已了解——继续';
+
+  @override
+  String get trainingHistoryTitle => '训练历史';
+
+  @override
+  String get trainingHistorySubtitle => '追踪你的进化和机械张力增长。';
+
+  @override
+  String get searchSessionsHint => '搜索训练或动作…';
+
+  @override
+  String get thisWeek => '本周';
+
+  @override
+  String get lastWeek => '上周';
+
+  @override
+  String get volumeProgress => '训练量进展';
+
+  @override
+  String totalVolumeKg(String value) {
+    return '$value kg';
+  }
+
+  @override
+  String get workoutFallbackName => '训练';
+
+  @override
+  String get liveSensor => '实时传感器';
+
+  @override
+  String get restingHrLabel => '静息心率';
+
+  @override
+  String get maxHrLabel => '最大心率';
+
+  @override
+  String get recoveryLabel => '恢复';
+
+  @override
+  String get hrvLabel => '心率变异性';
+
+  @override
+  String get excellent => '优秀';
+
+  @override
+  String get reachedAgo => '本次最高';
+
+  @override
+  String get toBaseline => '恢复至基线';
+
+  @override
+  String get highReadiness => '高准备度';
+
+  @override
+  String get workoutIntensityZones => '训练强度区间';
+
+  @override
+  String sessionDuration(String duration) {
+    return '训练时长：$duration';
+  }
+
+  @override
+  String get zonePeak => '峰值';
+
+  @override
+  String get zoneAnaerobic => '无氧';
+
+  @override
+  String get zoneAerobic => '有氧';
+
+  @override
+  String get zoneFatBurn => '燃脂';
+
+  @override
+  String get zoneWarmup => '热身';
+
+  @override
+  String get heartRateTrend => '心率趋势';
+
+  @override
+  String get heartRateTrendSubtitle => '当前训练时段';
+
+  @override
+  String get todayLabel => '今天';
+
+  @override
+  String get avgLabel => '平均';
+
+  @override
+  String get activeDuration => '活动时长';
+
+  @override
+  String get avgPaceLabel => '平均配速';
+
+  @override
+  String get distanceLabel => '距离';
+
+  @override
+  String get startSession => '开始训练';
+
+  @override
+  String get liveTracking => '实时追踪';
 }

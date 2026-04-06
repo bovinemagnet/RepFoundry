@@ -29,8 +29,8 @@ void main() {
   });
 
   Widget buildWidget() {
-    return ProviderScope(
-      child: const MaterialApp(
+    return const ProviderScope(
+      child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(body: RestTimerWidget()),

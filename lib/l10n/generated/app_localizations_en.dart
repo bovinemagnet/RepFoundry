@@ -1512,4 +1512,108 @@ class SEn extends S {
 
   @override
   String get syncConsentAccept => 'I Understand — Continue';
+
+  @override
+  String get trainingHistoryTitle => 'Training History';
+
+  @override
+  String get trainingHistorySubtitle =>
+      'Track your evolution and mechanical tension gains.';
+
+  @override
+  String get searchSessionsHint => 'Search sessions or exercises…';
+
+  @override
+  String get thisWeek => 'This Week';
+
+  @override
+  String get lastWeek => 'Last Week';
+
+  @override
+  String get volumeProgress => 'Volume Progress';
+
+  @override
+  String totalVolumeKg(String value) {
+    return '$value kg';
+  }
+
+  @override
+  String get workoutFallbackName => 'Workout';
+
+  @override
+  String get liveSensor => 'Live Sensor';
+
+  @override
+  String get restingHrLabel => 'Resting HR';
+
+  @override
+  String get maxHrLabel => 'Max HR';
+
+  @override
+  String get recoveryLabel => 'Recovery';
+
+  @override
+  String get hrvLabel => 'HRV';
+
+  @override
+  String get excellent => 'Excellent';
+
+  @override
+  String get reachedAgo => 'Session max';
+
+  @override
+  String get toBaseline => 'To baseline';
+
+  @override
+  String get highReadiness => 'High Readiness';
+
+  @override
+  String get workoutIntensityZones => 'Workout Intensity Zones';
+
+  @override
+  String sessionDuration(String duration) {
+    return 'Session: $duration';
+  }
+
+  @override
+  String get zonePeak => 'Peak';
+
+  @override
+  String get zoneAnaerobic => 'Anaerobic';
+
+  @override
+  String get zoneAerobic => 'Aerobic';
+
+  @override
+  String get zoneFatBurn => 'Fat Burn';
+
+  @override
+  String get zoneWarmup => 'Warmup';
+
+  @override
+  String get heartRateTrend => 'Heart Rate Trend';
+
+  @override
+  String get heartRateTrendSubtitle => 'Current workout session';
+
+  @override
+  String get todayLabel => 'Today';
+
+  @override
+  String get avgLabel => 'Avg';
+
+  @override
+  String get activeDuration => 'Active Duration';
+
+  @override
+  String get avgPaceLabel => 'Avg Pace';
+
+  @override
+  String get distanceLabel => 'Distance';
+
+  @override
+  String get startSession => 'Start Session';
+
+  @override
+  String get liveTracking => 'Live Tracking';
 }

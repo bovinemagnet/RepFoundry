@@ -45,7 +45,12 @@ final streakProvider = FutureProvider.autoDispose<StreakData>((ref) async {
   if (checkDate != null) {
     while (sortedDays.contains(checkDate)) {
       currentStreak++;
-      checkDate = checkDate!.subtract(const Duration(days: 1));
+      // Use calendar-day arithmetic to avoid DST drift.
+      checkDate = DateTime(
+        checkDate!.year,
+        checkDate!.month,
+        checkDate!.day - 1,
+      );
     }
   }
 
@@ -54,8 +59,14 @@ final streakProvider = FutureProvider.autoDispose<StreakData>((ref) async {
   int runningStreak = 1;
 
   for (int i = 1; i < sortedDays.length; i++) {
-    final diff = sortedDays[i - 1].difference(sortedDays[i]).inDays;
-    if (diff == 1) {
+    // Compare calendar days to avoid DST-related drift.
+    final a = sortedDays[i - 1];
+    final b = sortedDays[i];
+    final dayDiff = DateTime(a.year, a.month, a.day)
+            .toUtc()
+            .difference(DateTime(b.year, b.month, b.day).toUtc())
+            .inDays;
+    if (dayDiff == 1) {
       runningStreak++;
     } else {
       if (runningStreak > longestStreak) longestStreak = runningStreak;

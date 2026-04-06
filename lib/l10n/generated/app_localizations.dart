@@ -6,6 +6,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_ja.dart';
+import 'app_localizations_ko.dart';
 import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
@@ -94,6 +96,8 @@ abstract class S {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('ja'),
+    Locale('ko'),
     Locale('zh'),
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans')
   ];
@@ -2743,6 +2747,204 @@ abstract class S {
   /// In en, this message translates to:
   /// **'I Understand — Continue'**
   String get syncConsentAccept;
+
+  /// No description provided for @trainingHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Training History'**
+  String get trainingHistoryTitle;
+
+  /// No description provided for @trainingHistorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your evolution and mechanical tension gains.'**
+  String get trainingHistorySubtitle;
+
+  /// No description provided for @searchSessionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search sessions or exercises…'**
+  String get searchSessionsHint;
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get thisWeek;
+
+  /// No description provided for @lastWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Week'**
+  String get lastWeek;
+
+  /// No description provided for @volumeProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume Progress'**
+  String get volumeProgress;
+
+  /// No description provided for @totalVolumeKg.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} kg'**
+  String totalVolumeKg(String value);
+
+  /// No description provided for @workoutFallbackName.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout'**
+  String get workoutFallbackName;
+
+  /// No description provided for @liveSensor.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Sensor'**
+  String get liveSensor;
+
+  /// No description provided for @restingHrLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Resting HR'**
+  String get restingHrLabel;
+
+  /// No description provided for @maxHrLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Max HR'**
+  String get maxHrLabel;
+
+  /// No description provided for @recoveryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery'**
+  String get recoveryLabel;
+
+  /// No description provided for @hrvLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'HRV'**
+  String get hrvLabel;
+
+  /// No description provided for @excellent.
+  ///
+  /// In en, this message translates to:
+  /// **'Excellent'**
+  String get excellent;
+
+  /// No description provided for @reachedAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Session max'**
+  String get reachedAgo;
+
+  /// No description provided for @toBaseline.
+  ///
+  /// In en, this message translates to:
+  /// **'To baseline'**
+  String get toBaseline;
+
+  /// No description provided for @highReadiness.
+  ///
+  /// In en, this message translates to:
+  /// **'High Readiness'**
+  String get highReadiness;
+
+  /// No description provided for @workoutIntensityZones.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout Intensity Zones'**
+  String get workoutIntensityZones;
+
+  /// No description provided for @sessionDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Session: {duration}'**
+  String sessionDuration(String duration);
+
+  /// No description provided for @zonePeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Peak'**
+  String get zonePeak;
+
+  /// No description provided for @zoneAnaerobic.
+  ///
+  /// In en, this message translates to:
+  /// **'Anaerobic'**
+  String get zoneAnaerobic;
+
+  /// No description provided for @zoneAerobic.
+  ///
+  /// In en, this message translates to:
+  /// **'Aerobic'**
+  String get zoneAerobic;
+
+  /// No description provided for @zoneFatBurn.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat Burn'**
+  String get zoneFatBurn;
+
+  /// No description provided for @zoneWarmup.
+  ///
+  /// In en, this message translates to:
+  /// **'Warmup'**
+  String get zoneWarmup;
+
+  /// No description provided for @heartRateTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart Rate Trend'**
+  String get heartRateTrend;
+
+  /// No description provided for @heartRateTrendSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Current workout session'**
+  String get heartRateTrendSubtitle;
+
+  /// No description provided for @todayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todayLabel;
+
+  /// No description provided for @avgLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg'**
+  String get avgLabel;
+
+  /// No description provided for @activeDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Duration'**
+  String get activeDuration;
+
+  /// No description provided for @avgPaceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Pace'**
+  String get avgPaceLabel;
+
+  /// No description provided for @distanceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get distanceLabel;
+
+  /// No description provided for @startSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Session'**
+  String get startSession;
+
+  /// No description provided for @liveTracking.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Tracking'**
+  String get liveTracking;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {
@@ -2755,7 +2957,7 @@ class _SDelegate extends LocalizationsDelegate<S> {
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'zh'].contains(locale.languageCode);
+      <String>['en', 'ja', 'ko', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_SDelegate old) => false;
@@ -2778,6 +2980,10 @@ S lookupS(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return SEn();
+    case 'ja':
+      return SJa();
+    case 'ko':
+      return SKo();
     case 'zh':
       return SZh();
   }

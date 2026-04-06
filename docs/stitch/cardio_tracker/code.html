@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RepFoundry - Cardio Session</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed": "#ff8eb2",
+              "surface-bright": "#391e58",
+              "on-primary": "#38008d",
+              "on-error": "#490013",
+              "on-tertiary": "#6a0936",
+              "surface": "#16052a",
+              "outline": "#826d97",
+              "primary-dim": "#8354f4",
+              "tertiary": "#ff97b7",
+              "inverse-primary": "#6c3adc",
+              "tertiary-container": "#fc81aa",
+              "primary-fixed": "#ac8eff",
+              "surface-container": "#240e3b",
+              "background": "#16052a",
+              "on-tertiary-fixed": "#380018",
+              "on-surface": "#f1dfff",
+              "surface-container-low": "#1d0832",
+              "secondary-dim": "#b987f2",
+              "primary-container": "#ac8eff",
+              "primary-fixed-dim": "#a07cff",
+              "on-tertiary-container": "#59002b",
+              "surface-container-lowest": "#000000",
+              "on-primary-fixed-variant": "#350087",
+              "on-background": "#f1dfff",
+              "error": "#ff6e84",
+              "on-primary-container": "#2a006f",
+              "surface-dim": "#16052a",
+              "tertiary-fixed-dim": "#f67ca4",
+              "inverse-on-surface": "#604d75",
+              "on-secondary-container": "#e2c5ff",
+              "on-tertiary-fixed-variant": "#70103a",
+              "error-dim": "#d73357",
+              "on-primary-fixed": "#000000",
+              "on-error-container": "#ffb2b9",
+              "surface-variant": "#32194e",
+              "secondary-fixed": "#e3c6ff",
+              "primary": "#b99fff",
+              "surface-container-high": "#2b1344",
+              "secondary-container": "#5d2c92",
+              "on-secondary-fixed": "#4a147e",
+              "tertiary-dim": "#ef779f",
+              "error-container": "#a70138",
+              "surface-container-highest": "#32194e",
+              "on-surface-variant": "#b9a2d0",
+              "outline-variant": "#534067",
+              "on-secondary-fixed-variant": "#68379d",
+              "inverse-surface": "#fff7ff",
+              "on-secondary": "#380069",
+              "secondary-fixed-dim": "#d9b5ff",
+              "secondary": "#bf8cf7",
+              "surface-tint": "#b99fff"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        .glass-nav {
+            background: rgba(57, 30, 88, 0.6);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-6 h-16 w-full fixed top-0 z-50 bg-[#16052a] dark:bg-[#16052a]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-highest">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="Close-up portrait of a determined female athlete with soft gym lighting and professional depth of field" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpFS7K3ALMUrvaPOHKqKYvWYjdAX-DL4tYy6N2Db49bska6tWj7fI7E0zmZPpAYW0PVxqlIsldK19gS6tHJ3tBkPXihc4_1_4Cv1lEaNOnEh8te24ISop6-qR4jaF9NIJZSkateL6ecvcoeLAUpHVHPYzDhXDqhnmpsNgtvkt8bHt4qAEPl2xFKl0goDtQOALSYyWo_vMWZl2uJPAsyANJvEFMNu7RsTCdRdLNL5grEM4P-e-MLg08r1reRi51usxMSnDCOY6JCng"/>
+</div>
+<h1 class="text-[#b99fff] font-['Space_Grotesk'] font-black italic tracking-tighter text-xl">RepFoundry</h1>
+</div>
+<button class="text-[#b99fff] hover:bg-[#391e58]/40 transition-colors p-2 rounded-full active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<main class="pt-20 pb-32 px-6 max-w-lg mx-auto min-h-screen">
+<!-- Session Selector (Asymmetric Tabs) -->
+<section class="mb-8 flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-surface-container-highest text-primary font-bold border border-primary/20 whitespace-nowrap">
+<span class="material-symbols-outlined text-sm" data-icon="directions_run">directions_run</span>
+                Running
+            </button>
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-sm" data-icon="directions_bike">directions_bike</span>
+                Cycling
+            </button>
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-sm" data-icon="rowing">rowing</span>
+                Rowing
+            </button>
+</section>
+<!-- Main Timer & Metrics Display -->
+<section class="mb-10 relative">
+<div class="text-center mb-6">
+<span class="font-label text-label-sm uppercase tracking-widest text-primary/60 mb-1 block">Active Duration</span>
+<div class="font-headline font-black text-7xl md:text-8xl tracking-tight text-on-surface flex justify-center items-baseline gap-1">
+<span>42</span><span class="text-primary-dim">:</span><span>18</span>
+<span class="text-2xl font-light text-on-surface-variant ml-2">.04</span>
+</div>
+</div>
+<!-- Kinetic Bento Grid for Metrics -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-5 rounded-3xl flex flex-col justify-between aspect-square">
+<span class="material-symbols-outlined text-tertiary" data-icon="speed">speed</span>
+<div>
+<div class="font-headline font-bold text-3xl">5'12"</div>
+<div class="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Avg Pace (km)</div>
+</div>
+</div>
+<div class="bg-surface-container-highest p-5 rounded-3xl flex flex-col justify-between aspect-square relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-20 h-20 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all"></div>
+<span class="material-symbols-outlined text-primary" data-icon="distance">distance</span>
+<div>
+<div class="font-headline font-bold text-3xl">8.42</div>
+<div class="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Distance (km)</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Route Visualization (Editorial Style) -->
+<section class="mb-8">
+<div class="flex items-end justify-between mb-4 px-1">
+<h3 class="font-headline font-bold text-xl ml-1">Live Route</h3>
+<span class="font-label text-[10px] uppercase text-on-surface-variant bg-surface-container-high px-2 py-1 rounded">London, UK</span>
+</div>
+<div class="relative h-64 rounded-[2rem] overflow-hidden bg-surface-container border border-outline-variant/10">
+<img alt="Route Map" class="w-full h-full object-cover opacity-50 grayscale contrast-125" data-alt="Abstract aerial satellite view of city streets at night with glowing blue and purple light trails" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8mqOsrE6DD9dJbHzY1Dz9L9NrnBuJQ8qLndCSx8oBIwFUjGyfVjYjA9ju-oQCi6g31eNoZ4B5bkaNF3d8cs7lrW24sFKQt3N4n2zCNWZ6hOOETML0ryMeAvgapHB4uNu6olkznTKkM54xzeQTOE8w_b_BmU5Q9yu8g_TBetrzLgddiL0rjKBkSZgadgJIBwCaZpQmhh29WdFMZYtPQ5KTCjG74c1tWEWZerYJdPr_6x6GfaqTjZrXRvVFErmJEipbiloZJ9ckVU0"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-80"></div>
+<!-- SVG Path Over Map for "Route Visualization" -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<path d="M20,80 Q40,40 60,60 T90,20" fill="none" stroke="#b99fff" stroke-dasharray="4 2" stroke-linecap="round" stroke-width="2"></path>
+<circle cx="20" cy="80" fill="#ff97b7" r="2"></circle>
+<circle class="animate-pulse" cx="90" cy="20" fill="#b99fff" r="3"></circle>
+</svg>
+<div class="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+<div class="bg-surface/80 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-3">
+<span class="material-symbols-outlined text-error text-sm" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-headline font-bold text-lg">158 <span class="text-[10px] text-on-surface-variant font-normal">BPM</span></span>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-bright flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined" data-icon="fullscreen">fullscreen</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Secondary Metrics Row -->
+<section class="grid grid-cols-3 gap-3">
+<div class="bg-surface-container-low p-4 rounded-2xl">
+<div class="font-headline font-bold text-xl">412</div>
+<div class="font-label text-[9px] uppercase tracking-tighter text-on-surface-variant">Kcal Burnt</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-2xl">
+<div class="font-headline font-bold text-xl">28m</div>
+<div class="font-label text-[9px] uppercase tracking-tighter text-on-surface-variant">Elev Gain</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-2xl">
+<div class="font-headline font-bold text-xl">184</div>
+<div class="font-label text-[9px] uppercase tracking-tighter text-on-surface-variant">Avg Cadence</div>
+</div>
+</section>
+</main>
+<!-- Start Session FAB (Styled per Design System) -->
+<button class="fixed bottom-24 right-6 bg-primary-container text-on-primary-container p-4 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.2)] active:scale-95 transition-all flex items-center gap-2 z-50">
+<span class="material-symbols-outlined" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span class="font-label font-bold text-sm tracking-wide">START SESSION</span>
+</button>
+<!-- BottomNavBar (Shared Component) -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-[#391e58]/60 backdrop-blur-xl shadow-[0_-8px_24px_rgba(0,0,0,0.2)]">
+<a class="flex flex-col items-center justify-center text-[#ac8eff]/50 hover:text-[#b99fff] transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+<span class="font-['Manrope'] text-[10px] font-semibold tracking-wide uppercase mt-1">Workout</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ac8eff]/50 hover:text-[#b99fff] transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-['Manrope'] text-[10px] font-semibold tracking-wide uppercase mt-1">History</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#32194e]/30 text-[#b99fff] rounded-2xl px-4 py-1.5 active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="directions_run" style="font-variation-settings: 'FILL' 1;">directions_run</span>
+<span class="font-['Manrope'] text-[10px] font-semibold tracking-wide uppercase mt-1">Cardio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ac8eff]/50 hover:text-[#b99fff] transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-['Manrope'] text-[10px] font-semibold tracking-wide uppercase mt-1">Heart</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ac8eff]/50 hover:text-[#b99fff] transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-['Manrope'] text-[10px] font-semibold tracking-wide uppercase mt-1">Settings</span>
+</a>
+</nav>
+</body></html>
