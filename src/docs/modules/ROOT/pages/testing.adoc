@@ -12,23 +12,31 @@ Tests live in the `test/` directory, mirroring the structure of `lib/`.
 ----
 test/
 ├── features/
-│   ├── workout/
-│   │   ├── domain/
-│   │   │   └── workout_test.dart
-│   │   ├── application/
-│   │   │   └── log_set_use_case_test.dart
-│   │   ├── data/
-│   │   │   └── drift_workout_repository_test.dart
-│   │   └── presentation/
-│   │       └── active_workout_controller_test.dart
-│   ├── exercises/
-│   ├── history/
+│   ├── analytics/
+│   ├── body_metrics/
 │   ├── cardio/
+│   ├── exercises/
+│   ├── health_sync/
 │   ├── heart_rate/
-│   └── settings/
-└── core/
-    └── database/
-        └── app_database_test.dart
+│   ├── history/
+│   ├── notifications/
+│   ├── programmes/
+│   ├── settings/
+│   ├── sync/
+│   ├── templates/
+│   └── workout/
+│       ├── domain/
+│       │   └── workout_test.dart
+│       ├── application/
+│       │   └── log_set_use_case_test.dart
+│       ├── data/
+│       │   └── drift_workout_repository_test.dart
+│       └── presentation/
+│           └── active_workout_controller_test.dart
+├── core/
+│   └── database/
+│       └── app_database_test.dart
+└── integration_test/            # Full user-flow tests (separate directory at project root)
 ----
 
 == Tooling
@@ -135,12 +143,71 @@ await tester.pumpWidget(
 
 See xref:localisation.adoc[Localisation] for details on the `S` class.
 
+Many widget tests use a local `buildScreen()` helper to reduce boilerplate:
+
+[source,dart]
+----
+Widget buildScreen() {
+  return ProviderScope(
+    overrides: [/* provider overrides */],
+    child: MaterialApp(
+      localizationsDelegates: S.localizationsDelegates,
+      supportedLocales: S.supportedLocales,
+      home: const ScreenUnderTest(),
+    ),
+  );
+}
+----
+
+Call `tester.pumpWidget(buildScreen())` in each test to get a fully wired widget with localisation and mocked providers.
+
+=== Presentation Controller Tests
+
+Riverpod controllers (`Notifier`, `AsyncNotifier`) are tested without a widget tree using `ProviderContainer` with overrides.
+This isolates controller logic from rendering.
+
+[source,dart]
+----
+void main() {
+  late ProviderContainer container;
+
+  setUp(() {
+    container = ProviderContainer(
+      overrides: [
+        exerciseRepositoryProvider.overrideWithValue(FakeExerciseRepository()),
+        workoutRepositoryProvider.overrideWithValue(FakeWorkoutRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+  });
+
+  test('loads initial state from repository', () async {
+    final notifier = container.read(analyticsProvider.notifier);
+    // assert on notifier state …
+  });
+}
+----
+
 === Integration Tests
 
 Integration tests cover full user flows — for example, starting a workout, logging sets, finishing, and verifying the session appears in history.
-They run on a real emulator (Android) or simulator (iOS) using `flutter_test`'s integration test runner.
+They run on a real emulator (Android) or simulator (iOS).
 
-Integration tests live under `integration_test/` (separate from `test/`).
+Integration tests live under `integration_test/` at the project root (separate from `test/`).
+
+The shared `createTestApp()` helper in `integration_test/test_app.dart` bootstraps the full app with a test database.
+Tests use `pumpUntilFound()` to wait for asynchronous widgets to appear before interacting:
+
+[source,dart]
+----
+void main() {
+  testWidgets('complete workout flow', (tester) async {
+    await tester.pumpWidget(createTestApp());
+    await tester.pumpUntilFound(find.text('Start Workout'));
+    // interact with the app …
+  });
+}
+----
 
 == Running Tests
 
