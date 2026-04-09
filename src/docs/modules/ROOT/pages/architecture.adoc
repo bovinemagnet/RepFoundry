@@ -66,12 +66,8 @@ The domain layer in particular has zero framework dependencies — it is pure Da
 | Unit, widget, and integration testing
 
 | CI/CD
-| Planned — GitHub Actions + Fastlane
-| Automated build, test, and store deployment (not yet configured)
-
-| Analytics / Crash
-| Planned — Firebase Crashlytics + Analytics
-| Crash reporting and usage analytics (not yet integrated)
+| GitHub Actions
+| Automated APK build and GitHub Release on version tags
 |===
 
 == Project Structure
@@ -273,40 +269,27 @@ List-heavy screens (workout history, exercise list) use `ListView.builder` for l
 Charts are rendered with fl_chart, which uses `CustomPainter` for GPU-accelerated drawing.
 Animations are limited to 60fps targets with simple curves to avoid jank on older devices.
 
-== CI/CD Pipeline (Planned)
+== CI/CD Pipeline
 
-NOTE: No CI/CD workflows are configured yet. The table below describes the planned pipeline.
+GitHub Actions automates the release process.
+The workflow is defined in `.github/workflows/release.yml`.
 
-GitHub Actions will handle continuous integration. Fastlane will automate store submissions.
+=== Android APK Release
 
-[cols="2,3,2",options="header"]
-|===
-| Stage | Actions | Trigger
+Triggered by pushing a tag matching `v*`.
 
-| Lint + Format
-| `dart analyze`, `dart format --set-exit-if-changed`
-| Every PR
+Steps:
 
-| Unit + Widget Tests
-| `flutter test` with coverage reporting
-| Every PR
+. Checkout repository
+. Set up Java 17 (Temurin) and Flutter (stable channel)
+. Run `flutter pub get`
+. Detect pre-release: tags ending in `-SNAPSHOT` (case-insensitive) are marked as pre-release
+. Decode and write the Android keystore from repository secrets (`KEYSTORE_BASE64`, `KEY_ALIAS`, `KEY_PASSWORD`, `STORE_PASSWORD`) if `KEYSTORE_BASE64` is set
+. Build release APK: `flutter build apk --release`
+. Rename APK to `RepFoundry-{tag}.apk`
+. Create a GitHub Release via `softprops/action-gh-release@v2` with auto-generated release notes and the APK attached as an artifact
 
-| Integration Tests
-| Run on emulator (Android) and simulator (iOS)
-| Merge to main
-
-| Build
-| `flutter build apk / ipa` with flavour-based config (dev, staging, prod)
-| Merge to main
-
-| Deploy (Beta)
-| Fastlane upload to TestFlight + Play Console internal track
-| Tag: `beta/*`
-
-| Deploy (Release)
-| Fastlane upload to App Store + Play Store production
-| Tag: `v*`
-|===
+NOTE: iOS build and deployment are not yet automated.
 
 == Security Considerations
 
