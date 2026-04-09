@@ -84,17 +84,19 @@ lib/
 │   ├── router.dart
 │   └── theme.dart
 ├── features/
-│   ├── workout/              # Workout logging feature
-│   │   ├── presentation/     # Screens, widgets, controllers
-│   │   ├── application/      # Use cases, state notifiers
-│   │   ├── domain/           # Models, repository interfaces
-│   │   └── data/             # Repository impls (Drift + in-memory)
-│   ├── exercises/            # Exercise library feature
-│   ├── history/              # Workout history & progress
+│   ├── analytics/            # Training analytics and charts
+│   ├── body_metrics/         # Weight and body fat tracking
 │   ├── cardio/               # Cardio tracking feature
+│   ├── exercises/            # Exercise library feature
+│   ├── health_sync/          # Platform health data sync
 │   ├── heart_rate/           # Real-time HR monitoring panel
+│   ├── history/              # Workout history and progress
+│   ├── notifications/        # Scheduled workout reminders
+│   ├── programmes/           # Multi-week training programmes
+│   ├── settings/             # App preferences
+│   ├── sync/                 # Cloud sync (iCloud / Google Drive)
 │   ├── templates/            # Workout templates
-│   └── settings/             # App preferences
+│   └── workout/              # Workout logging feature
 ├── core/                     # Shared utilities
 │   ├── database/             # Drift database, tables, converters
 │   │   ├── app_database.dart # @DriftDatabase class + seed data
