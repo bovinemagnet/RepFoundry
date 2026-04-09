@@ -43,14 +43,11 @@ final streakProvider = FutureProvider.autoDispose<StreakData>((ref) async {
   }
 
   if (checkDate != null) {
-    while (sortedDays.contains(checkDate)) {
+    var current = checkDate;
+    while (sortedDays.contains(current)) {
       currentStreak++;
       // Use calendar-day arithmetic to avoid DST drift.
-      checkDate = DateTime(
-        checkDate!.year,
-        checkDate!.month,
-        checkDate!.day - 1,
-      );
+      current = DateTime(current.year, current.month, current.day - 1);
     }
   }
 
