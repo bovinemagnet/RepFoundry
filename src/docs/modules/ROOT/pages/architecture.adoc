@@ -241,15 +241,22 @@ Routes are defined in `lib/app/router.dart`.
 
 The app is designed to work entirely offline.
 All data is persisted locally via Drift (SQLite).
-No feature requires network connectivity.
-This is critical for gym environments with poor connectivity.
+No feature requires network connectivity — this is critical for gym environments with poor connectivity.
 
-When cloud sync is introduced in a future version, the strategy will be:
+=== Cloud Sync
 
-* *Local-first writes* — all data written to SQLite immediately
-* *Background sync* — a sync engine periodically pushes local changes to the cloud and pulls remote changes
-* *Conflict resolution* — last-write-wins at the row level, with a sync timestamp column on all tables
-* *Sync status* — UI indicators for sync state (synced, pending, error) without blocking user interaction
+Cloud sync is implemented as a best-effort, fire-and-forget layer on top of the offline-first core.
+Sync never blocks user actions; errors are swallowed and surfaced only as status indicators in the Settings screen.
+
+The sync feature uses iCloud (via CloudKit platform channel) on iOS and Google Drive (hidden app data folder) on Android.
+See xref:features/sync.adoc[Cloud Sync] for the full architecture.
+
+Key design principles:
+
+* *Local-first writes* — all data is written to SQLite immediately; sync runs after the fact
+* *Best-effort sync* — connectivity failures are silently tolerated; the user is never blocked
+* *updatedAt-wins conflict resolution* — when the same entity exists on both devices, the newer `updatedAt` timestamp wins; ties favour the local copy
+* *Fire-and-forget* — sync triggers automatically after workout completion but can also be triggered manually from Settings
 
 == Performance Considerations
 
@@ -305,7 +312,6 @@ NOTE: iOS build and deployment are not yet automated.
 The following architectural investments are deferred to keep v1 lean but are accounted for in the current structure:
 
 * *Remaining Drift repositories* — `CardioSession`, `PersonalRecord`, and `WorkoutTemplate` repositories need implementing against the existing table definitions
-* *Cloud sync layer* — repository interfaces are designed so a remote data source can be added behind the same contract without changing the application or presentation layers
 * *Wearable companion* — live BLE heart rate streaming from Apple Watch and Samsung Galaxy Watch is implemented (via standard BLE HR broadcast); a full native companion app for Wear OS or watchOS remains deferred
 * *Feature flags* — a `FeatureFlag` provider is planned to support A/B testing and gradual rollout of Pro features
 * *Modularisation* — features are self-contained directories today; when the codebase grows, each feature can be extracted into a separate Dart package for independent compilation and testing
