@@ -1,0 +1,720 @@
+{
+  "@@locale": "ko",
+
+  "appTitle": "RepFoundry",
+
+  "navWorkout": "운동",
+  "navHistory": "기록",
+  "navCardio": "유산소",
+  "navHeartRate": "심박수",
+  "navSettings": "설정",
+
+  "start": "시작",
+  "pause": "일시정지",
+  "resume": "재개",
+  "reset": "초기화",
+  "cancel": "취소",
+  "save": "저장",
+  "delete": "삭제",
+  "create": "생성",
+  "finish": "완료",
+  "next": "다음",
+  "back": "뒤로",
+  "skip": "건너뛰기",
+  "done": "완료",
+  "retry": "재시도",
+
+  "bpmSuffix": "bpm",
+  "yearsSuffix": "세",
+  "kgUnit": "kg",
+  "lbsUnit": "lbs",
+
+  "settingsTitle": "설정",
+  "sectionHealthProfile": "건강 프로필",
+  "sectionAppearance": "외관",
+  "sectionUnits": "단위",
+  "sectionRestTimer": "휴식 타이머",
+  "sectionData": "데이터",
+  "sectionAbout": "정보",
+
+  "ageLabel": "나이",
+  "ageSubtitleSet": "{age}세 (최대 심박수: {maxHr} bpm)",
+  "@ageSubtitleSet": {
+    "placeholders": {
+      "age": { "type": "int" },
+      "maxHr": { "type": "int" }
+    }
+  },
+  "ageSubtitleEmpty": "심박수 구간 계산을 위해 나이를 설정하세요",
+  "setYourAge": "나이 설정",
+  "ageHint": "예: 30",
+
+  "restingHeartRate": "안정 시 심박수",
+  "restingHrSubtitleSet": "{bpm} bpm",
+  "@restingHrSubtitleSet": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "restingHrSubtitleEmpty": "선택 — Karvonen 구간 활성화",
+  "restingHrHint": "예: 60",
+
+  "measuredMaxHeartRate": "측정 최대 심박수",
+  "measuredMaxHrSubtitleSet": "{bpm} bpm",
+  "@measuredMaxHrSubtitleSet": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "measuredMaxHrSubtitleEmpty": "선택 — 운동 부하 검사에서",
+  "measuredMaxHrHint": "예: 185",
+
+  "betaBlockerMedication": "베타 차단제 복용",
+  "betaBlockerSubtitle": "심박수 구간 정확도에 영향",
+
+  "heartConditionLabel": "심장 질환",
+  "heartConditionSubtitle": "구간에 주의 모드 활성화",
+
+  "clinicianMaxHeartRate": "의사 지정 최대 심박수",
+  "clinicianMaxHrSubtitleSet": "{bpm} bpm — 추정값 대체",
+  "@clinicianMaxHrSubtitleSet": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "clinicianMaxHrSubtitleEmpty": "선택 — 의사 제공",
+  "clinicianMaxHrHint": "예: 150",
+
+  "zoneMethod": "구간 계산 방식",
+  "zoneMethodAndReliability": "{method} · {reliability} 신뢰도",
+  "@zoneMethodAndReliability": {
+    "placeholders": {
+      "method": { "type": "String" },
+      "reliability": { "type": "String" }
+    }
+  },
+  "zoneMethodCustom": "맞춤 구간",
+  "zoneMethodClinicianCap": "의사 상한",
+  "zoneMethodHrr": "심박수 예비능 (Karvonen)",
+  "zoneMethodMeasuredMax": "측정 최대 심박수",
+  "zoneMethodEstimatedMax": "나이 추정 최대 심박수",
+  "reliabilityHigh": "높음",
+  "reliabilityMedium": "보통",
+  "reliabilityLow": "낮음",
+
+  "setUpHeartRateZones": "심박수 구간 설정",
+  "stepByStepGuidedSetup": "단계별 가이드 설정",
+
+  "zoneColourBands": "구간 색상 밴드",
+  "zoneColourBandsSubtitle": "심박수 차트에 색상 구간 밴드 표시",
+
+  "sectionMaxHrAlert": "최대 심박수 알림",
+  "maxHrAlertVibration": "최대 심박수 도달 시 진동",
+  "maxHrAlertVibrationSubtitle": "심박수가 권장 최대치에 도달하면 진동으로 알림",
+  "maxHrAlertSound": "최대 심박수 도달 시 소리",
+  "maxHrAlertSoundSubtitle": "심박수가 권장 최대치에 도달하면 경고음 재생",
+  "maxHrAlertCooldown": "알림 쿨다운",
+  "maxHrAlertCooldownSubtitle": "반복 알림 간 최소 간격(초)",
+  "maxHrAlertCooldownValue": "{seconds}초",
+  "@maxHrAlertCooldownValue": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "maxHrReached": "심박수가 권장 최대치에 도달했습니다",
+
+  "disclaimerLabel": "면책 조항",
+
+  "settingsShowExerciseImages": "운동 이미지 표시",
+  "settingsShowExerciseImagesSubtitle": "목록에 운동 일러스트 표시",
+
+  "themeLabel": "테마",
+  "themeLight": "라이트",
+  "themeDark": "다크",
+  "themeAuto": "자동",
+
+  "weightUnitLabel": "무게 단위",
+
+  "vibrationAlert": "진동 알림",
+  "vibrationAlertSubtitle": "휴식 타이머 종료 시 진동",
+  "soundAlert": "소리 알림",
+  "soundAlertSubtitle": "휴식 타이머 종료 시 소리 재생",
+
+  "clearAllData": "모든 데이터 삭제",
+  "clearAllDataSubtitle": "모든 운동 기록과 설정을 영구 삭제합니다.",
+  "clearAllDataConfirmTitle": "모든 데이터를 삭제하시겠습니까?",
+  "clearAllDataConfirmContent": "모든 운동 기록이 영구 삭제되며 되돌릴 수 없습니다.",
+  "allDataCleared": "모든 데이터가 삭제되었습니다.",
+
+  "aboutAppName": "RepFoundry",
+  "aboutVersion": "버전 {version}",
+  "@aboutVersion": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "aboutScreenTitle": "RepFoundry 정보",
+  "aboutDescription": "헬스장 이용자를 위한 간편하고 빠른 운동 기록 앱.",
+  "aboutAuthorLabel": "개발자",
+  "aboutAuthor": "Paul Snow",
+  "aboutGitHub": "GitHub 저장소",
+  "aboutFeatures": "기능",
+  "aboutFeatureOffline": "오프라인 우선 — 데이터가 기기에 저장됩니다",
+  "aboutFeatureHeartRate": "블루투스 심박수 모니터 지원",
+  "aboutFeatureTemplates": "빠른 세션 시작을 위한 운동 템플릿",
+  "aboutFeatureProgress": "개인 기록으로 진행 상황 추적",
+  "aboutFeatureExport": "JSON 또는 CSV로 데이터 내보내기",
+  "aboutFeatureCardio": "GPS 추적 유산소 세션",
+  "aboutBuiltWith": "Flutter로 개발",
+  "aboutViewLicences": "오픈소스 라이선스",
+
+  "heartRateTitle": "심박수",
+  "connectHrMonitor": "심박수 모니터 연결",
+  "disconnect": "연결 해제",
+  "setupGuide": "설정 가이드",
+  "reconnecting": "재연결 중...",
+  "recentChart": "최근",
+  "fullSessionChart": "전체 세션",
+  "setAgeInSettings": "설정에서 나이를 입력하세요",
+  "setAgeInSettingsSubtitle": "나이를 설정하면 심박수 트레이닝 구간이 표시됩니다.",
+  "statsAvg": "평균",
+  "statsMin": "최소",
+  "statsMax": "최대",
+  "statsReadings": "판독 수",
+  "timeInZone": "구간 체류 시간",
+  "moderateOrHigher": "중간 이상: {duration}",
+  "@moderateOrHigher": {
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "recoveryHrDrop": "회복 심박수 감소: {bpm} bpm",
+  "@recoveryHrDrop": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "bluetoothNotAvailable": "블루투스를 사용할 수 없습니다. 블루투스가 켜져 있는지 확인하세요.",
+  "chartWindowSeconds": "{seconds}초",
+  "@chartWindowSeconds": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "chartWindowMinutes": "{minutes}분",
+  "@chartWindowMinutes": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+
+  "onboardingTitle": "심박수 구간 설정",
+  "onboardingStepOf": "{current} / {total} 단계",
+  "@onboardingStepOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "onboardingAgeExplanation": "나이는 최대 심박수 추정 및 트레이닝 구간 맞춤화에 사용됩니다.",
+  "onboardingRestingHrExplanation": "안정 시 심박수를 입력하면 Karvonen(심박수 예비능) 방법으로 더 정확한 구간 계산이 가능합니다.",
+  "onboardingRestingHrLabel": "안정 시 심박수 (선택)",
+  "onboardingMeasuredMaxHrLabel": "측정 최대 심박수 (선택)",
+  "onboardingRestingHrHint": "예: 60",
+  "onboardingMeasuredMaxHrHint": "예: 185",
+  "onboardingMedicalExplanation": "아래 항목 중 해당사항이 있으면 심박수 구간이 주의 모드로 표시되며 신뢰도가 낮아집니다. 개인 맞춤 상한은 의료 전문가에게 문의하세요.",
+  "onboardingBetaBlockerLabel": "베타 차단제 복용 중",
+  "onboardingHeartConditionLabel": "심장 질환",
+  "onboardingClinicianWithFlags": "의료적 요인이 있으므로 의사가 제공한 최대 심박수를 입력하시기를 강력히 권합니다. 이 값이 다른 모든 추정값을 대체합니다.",
+  "onboardingClinicianWithoutFlags": "의사 또는 운동생리학자로부터 최대 심박수를 제공받은 경우 여기에 입력하여 추정값을 대체하세요.",
+  "onboardingClinicianMaxHrLabel": "의사 지정 최대 심박수 (선택)",
+
+  "disclaimerDialogTitle": "심박수 모니터링",
+  "disclaimerDialogButton": "이해했습니다",
+
+  "cautionModeTitle": "주의 모드",
+
+  "symptomReportButton": "증상 보고",
+  "symptomReportTitle": "증상 보고",
+  "stopExerciseTitle": "운동 중지",
+  "stopExerciseOk": "괜찮습니다, 운동을 중지합니다",
+  "stopExerciseHelp": "도움이 필요합니다",
+
+  "warningGeneralDisclaimer": "심박수 구간 추정은 참고용이며 의학적 조언이 아닙니다. 특히 기저 질환이 있는 경우, 운동 프로그램을 시작하거나 변경하기 전에 반드시 의료 전문가와 상담하세요.",
+  "warningBetaBlocker": "베타 차단제는 최대 심박수를 크게 낮출 수 있습니다. 표준 구간 계산이 정확하지 않을 수 있습니다. 의사 제공 최대 심박수를 설정하거나 주관적 운동 강도(RPE)와 말하기 테스트로 강도를 판단하는 것을 권장합니다.",
+  "warningHeartCondition": "심장 질환이 있는 것으로 표시되어 있습니다. 표준 심박수 구간 계산이 적합하지 않을 수 있습니다. 강도 기반 트레이닝 가이드를 사용하기 전에 의사 제공 최대 심박수를 얻는 것을 강력히 권장합니다.",
+  "warningClinicianCap": "심박수 구간이 의사 제공 최대 심박수를 기반으로 계산됩니다. 이 값이 나이 기반 또는 측정 추정값을 대체합니다.",
+  "warningStopExercise": "흉통, 심한 어지러움, 실신 또는 비정상적 호흡곤란이 있으면 즉시 운동을 중지하세요. 증상이 지속되면 응급 의료 처치를 받으세요.",
+  "warningSymptomIntro": "다음 증상을 경험하고 있습니까?",
+  "symptomChestPain": "흉통 또는 가슴 조임",
+  "symptomDizziness": "심한 어지러움 또는 현기증",
+  "symptomFainting": "실신 또는 실신 직전 느낌",
+  "symptomBreathing": "비정상적 호흡곤란",
+
+  "clinicianLimitsInUse": "의사 제공 제한값 사용 중",
+
+  "workoutTitle": "운동",
+  "workoutTitleWithTime": "운동  •  {time}",
+  "@workoutTitleWithTime": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "loadingWorkout": "운동 로딩 중…",
+  "addExercise": "운동 추가",
+  "startWorkout": "운동 시작",
+  "noActiveWorkout": "진행 중인 운동이 없습니다",
+  "noActiveWorkoutSubtitle": "새 운동을 시작하여 세트를 기록하세요.",
+  "addExercisesHint": "아래 버튼으로 운동을 추가하세요",
+  "finishWorkoutTitle": "운동을 종료하시겠습니까?",
+  "finishWorkoutContent": "운동을 저장하고 세션을 종료합니다.",
+  "tableHeaderHash": "#",
+  "tableHeaderWeight": "무게",
+  "tableHeaderReps": "횟수",
+  "tableHeaderE1rm": "e1RM",
+
+  "weightKgLabel": "무게 (kg)",
+  "repsLabel": "횟수",
+  "rpeLabel": "RPE",
+  "addRpe": "RPE 추가",
+  "hideRpe": "RPE 숨기기",
+  "logSet": "세트 기록",
+  "validationRequired": "필수",
+  "validationInvalid": "유효하지 않음",
+  "validationMinZero": "≥ 0",
+  "validationRpeRange": "1–10",
+
+  "restTimer": "휴식 타이머",
+  "stopTimer": "타이머 중지",
+
+  "newPersonalRecord": "새로운 개인 기록!",
+  "e1rmValue": "e1RM: {value} kg",
+  "@e1rmValue": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+
+  "historyTitle": "기록",
+  "noWorkoutsYet": "아직 운동 기록이 없습니다",
+  "noWorkoutsYetSubtitle": "완료된 운동이 여기에 표시됩니다.",
+  "loadingHistory": "기록 로딩 중…",
+  "errorPrefix": "오류: {error}",
+  "@errorPrefix": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "volumeTrend": "볼륨 추세 (최근 {count}회 운동)",
+  "@volumeTrend": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "setsCount": "{count} 세트",
+  "@setsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "prBadge": "PR!",
+
+  "workoutDetailTitle": "운동 상세",
+  "workoutNotFound": "운동을 찾을 수 없습니다",
+  "durationLabel": "시간",
+  "setsLabel": "세트",
+  "volumeLabel": "볼륨",
+
+  "exerciseProgressTitle": "운동 진행",
+  "noDataYet": "아직 데이터가 없습니다",
+  "noDataYetSubtitle": "이 운동의 세트를 기록하면 진행 상황을 볼 수 있습니다.",
+  "loadingProgress": "진행 상황 로딩 중…",
+  "bestE1rm": "최고 e1RM",
+  "totalVolume": "총 볼륨",
+  "totalSets": "총 세트",
+  "e1rmTrend": "추정 1RM 추세",
+  "recentSets": "최근 세트",
+  "tableHeaderDate": "날짜",
+
+  "chooseExercise": "운동 선택",
+  "searchExercisesHint": "운동 검색…",
+  "filterAll": "전체",
+  "noExercisesFound": "운동을 찾을 수 없습니다",
+  "loadingExercises": "운동 로딩 중…",
+  "customExercise": "맞춤",
+
+  "newExerciseTitle": "새 운동",
+  "exerciseNameLabel": "운동 이름",
+  "categoryLabel": "카테고리",
+  "muscleGroupLabel": "근육 그룹",
+  "equipmentLabel": "장비",
+  "exerciseNameRequired": "운동 이름을 입력하세요",
+
+  "cardioTitle": "유산소",
+  "exerciseField": "종목",
+  "distanceMetresLabel": "거리 (미터)",
+  "inclineLabel": "경사 (%)",
+  "avgHeartRateLabel": "평균 심박수 (bpm)",
+  "lastSession": "이전 세션",
+  "gpsDistanceTracking": "GPS 거리 추적",
+  "gpsAcquiring": "신호 수신 중...",
+  "gpsMetresTracked": "{metres} m 추적 중",
+  "@gpsMetresTracked": {
+    "placeholders": { "metres": { "type": "String" } }
+  },
+  "gpsSubtitle": "실외 런닝 거리를 GPS로 추적",
+  "saveSession": "세션 저장",
+  "cardioSessionSaved": "유산소 세션이 저장되었습니다",
+  "heartRateMonitorCard": "심박수 모니터",
+  "heartRateMonitorSubtitle": "BLE 심박 스트랩 또는 워치 연결",
+  "connect": "연결",
+  "connectingTo": "{device}에 연결 중...",
+  "@connectingTo": {
+    "placeholders": { "device": { "type": "String" } }
+  },
+  "reconnectingTo": "{device}에 재연결 중...",
+  "@reconnectingTo": {
+    "placeholders": { "device": { "type": "String" } }
+  },
+  "paceLabel": "페이스: {pace}",
+  "@paceLabel": {
+    "placeholders": { "pace": { "type": "String" } }
+  },
+
+  "hrSetupGuideTitle": "심박수 설정 가이드",
+  "appleWatchTitle": "Apple Watch",
+  "samsungWatchTitle": "Samsung Galaxy Watch",
+  "chestStrapsTitle": "가슴 스트랩 및 팔 밴드",
+  "appleWatchStep1": "Apple Watch에서 설정 → 운동 → 심박수를 엽니다.",
+  "appleWatchStep2": "\"심박수 브로드캐스트\"를 활성화합니다.",
+  "appleWatchStep3": "Apple Watch에서 아무 운동이나 시작합니다.",
+  "appleWatchStep4": "RepFoundry에서 \"연결\"을 탭하고 Apple Watch를 선택합니다.",
+  "samsungWatchStep1": "워치에서 Samsung Health를 엽니다.",
+  "samsungWatchStep2": "설정 → 심박수 브로드캐스트로 이동합니다.",
+  "samsungWatchStep3": "BLE 브로드캐스트를 활성화합니다.",
+  "samsungWatchStep4": "RepFoundry에서 \"연결\"을 탭하고 Galaxy Watch를 선택합니다.",
+  "chestStrapStep1": "모든 BLE 심박 기기(Polar, Garmin, Wahoo 등)가 자동으로 작동합니다.",
+  "chestStrapStep2": "스트랩이나 밴드를 착용하고 \"연결\"을 탭하세요.",
+  "chestStrapStep3": "기기가 스캔 목록에 나타납니다.",
+
+  "hrDevicePickerTitle": "심박수 모니터",
+  "scanning": "기기 스캔 중...",
+  "noDevicesFound": "심박수 모니터를 찾을 수 없습니다. 기기가 브로드캐스트 중인지 확인하세요. Apple Watch의 경우 심박수 브로드캐스트를 활성화하고 운동을 시작하세요.",
+  "scanAgain": "다시 스캔",
+  "setupHelp": "설정 도움말",
+
+  "templatesTitle": "템플릿",
+  "noTemplatesYet": "아직 템플릿이 없습니다",
+  "noTemplatesYetSubtitle": "템플릿을 만들어 빠르게 운동을 시작하세요.",
+  "failedToLoadTemplates": "템플릿 로딩 실패: {error}",
+  "@failedToLoadTemplates": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "newTemplate": "새 템플릿",
+  "newTemplateTitle": "새 템플릿",
+  "templateNameLabel": "템플릿 이름",
+  "deleteTemplateTitle": "템플릿을 삭제하시겠습니까?",
+  "deleteTemplateContent": "\"{name}\"을(를) 삭제하시겠습니까?",
+  "@deleteTemplateContent": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "exerciseCount": "{count}개 운동",
+  "@exerciseCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "editTemplate": "템플릿 편집",
+  "targetSets": "세트",
+  "targetReps": "횟수",
+  "addExerciseToTemplate": "운동 추가",
+  "saveTemplate": "저장",
+  "removeExercise": "운동 제거",
+  "reorderHint": "드래그하여 순서 변경",
+  "templateSaved": "템플릿이 저장되었습니다",
+
+  "prTypeWeight": "새 무게 기록!",
+  "prTypeReps": "새 횟수 기록!",
+  "prTypeVolume": "새 볼륨 기록!",
+  "prTypeE1rm": "새 e1RM 기록!",
+  "prHistoryTitle": "개인 기록",
+  "prHistoryEmpty": "아직 개인 기록이 없습니다",
+  "prHistoryEmptySubtitle": "운동에서 세트를 기록하여 새 기록을 세우세요.",
+  "prAchievedOn": "{date}에 달성",
+  "@prAchievedOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "prValueWeight": "{value} kg",
+  "@prValueWeight": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "prValueReps": "{value}회",
+  "@prValueReps": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "prValueVolume": "{value} kg 볼륨",
+  "@prValueVolume": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "prValueE1rm": "{value} kg e1RM",
+  "@prValueE1rm": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+
+  "historyTab": "기록",
+  "progressTab": "진행",
+  "volumeTrendTitle": "볼륨 추세",
+  "frequencyTitle": "주간 운동 횟수",
+  "workoutsPerWeek": "회",
+
+  "startFromTemplate": "템플릿에서 시작",
+  "chooseTemplate": "템플릿 선택",
+  "noTemplatesAvailable": "사용 가능한 템플릿이 없습니다",
+
+  "muscleGroupDistributionTitle": "근육 그룹 분포",
+  "exerciseProgressListTitle": "운동 진행",
+  "setsLogged": "{count} 세트 기록됨",
+  "@setsLogged": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "exportAsJson": "JSON으로 내보내기",
+  "exportAsJsonSubtitle": "전체 운동 데이터를 JSON 형식으로",
+  "exportAsCsv": "CSV로 내보내기",
+  "exportAsCsvSubtitle": "세트, 유산소, 개인 기록을 CSV 파일로",
+  "exportingData": "데이터 내보내기 중…",
+  "exportComplete": "내보내기 완료",
+  "exportFailed": "내보내기 실패: {error}",
+  "@exportFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "editSet": "세트 편집",
+  "editExerciseTitle": "운동 편집",
+
+  "calendarHeatmapTitle": "운동 캘린더",
+  "calendarHeatmapLess": "적음",
+  "calendarHeatmapMore": "많음",
+
+  "currentStreak": "{count, plural, =0{연속 기록 없음} =1{1일 연속} other{{count}일 연속}}",
+  "@currentStreak": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "longestStreak": "최장: {count} {count, plural, =1{일} other{일}}",
+  "@longestStreak": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "durationTrendTitle": "운동 시간 (분)",
+
+  "warmUpLabel": "워밍업",
+
+  "bodyMetricsTitle": "신체 측정",
+  "bodyMetricsSubtitle": "체중과 체성분 추적",
+  "noBodyMetricsYet": "아직 신체 측정 데이터가 없습니다",
+  "noBodyMetricsYetSubtitle": "+ 를 탭하여 첫 측정을 기록하세요.",
+  "addBodyMetric": "측정 추가",
+  "bodyWeightLabel": "체중",
+  "bodyFatPercentLabel": "체지방률 %",
+  "bodyFatLabel": "체지방",
+  "notesLabel": "메모",
+  "bodyWeightTrendTitle": "체중 추세",
+  "latestWeight": "최근 체중",
+  "bodyMetricsHistory": "기록",
+
+  "importFromJson": "JSON에서 가져오기",
+  "importFromJsonSubtitle": "이전 내보내기에서 데이터 복원",
+  "importDataTitle": "데이터 가져오기",
+  "importDataConfirmContent": "JSON 내보내기의 데이터를 기존 데이터에 추가합니다. 중복은 건너뜁니다.",
+  "importDataButton": "가져오기",
+  "importPasteJsonTitle": "JSON 데이터 붙여넣기",
+  "importPasteJsonHint": "내보낸 JSON을 여기에 붙여넣으세요…",
+  "importComplete": "가져오기 완료: {workouts}회 운동, {sets} 세트",
+  "@importComplete": {
+    "placeholders": {
+      "workouts": { "type": "int" },
+      "sets": { "type": "int" }
+    }
+  },
+  "importFailed": "가져오기 실패: {error}",
+  "@importFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "duplicateTemplate": "복제",
+  "copyLabel": "복사",
+
+  "supersetLabel": "슈퍼세트",
+  "linkAsSuperset": "슈퍼세트로 연결",
+  "breakSuperset": "슈퍼세트 해제",
+  "supersetWith": "{name}과(와) 슈퍼세트",
+  "@supersetWith": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "selectSupersetPartner": "연결할 운동 선택",
+  "noOtherExercises": "먼저 다른 운동을 추가하세요",
+
+  "sectionReminders": "알림",
+  "workoutReminders": "운동 알림",
+  "workoutRemindersSubtitle": "운동일에 알림 받기",
+  "reminderTime": "알림 시간",
+  "reminderTimeSubtitle": "운동 알림을 받을 시간",
+  "reminderDays": "운동일",
+  "streakReminder": "연속 기록 알림",
+  "streakReminderSubtitle": "오늘 아직 운동하지 않은 경우 알림",
+  "mondayShort": "월",
+  "tuesdayShort": "화",
+  "wednesdayShort": "수",
+  "thursdayShort": "목",
+  "fridayShort": "금",
+  "saturdayShort": "토",
+  "sundayShort": "일",
+  "notificationPermissionRequired": "알림에는 알림 권한이 필요합니다",
+  "reminderTimeOfDay": "{hour}:{minute}",
+  "@reminderTimeOfDay": {
+    "placeholders": {
+      "hour": { "type": "String" },
+      "minute": { "type": "String" }
+    }
+  },
+
+  "analyticsTitle": "분석",
+  "weeklyVolumeTitle": "주간 볼륨 추세",
+  "weeklyVolumeChange": "전주 대비 {change}%",
+  "@weeklyVolumeChange": {
+    "placeholders": { "change": { "type": "String" } }
+  },
+  "muscleBalanceTitle": "근육 그룹 밸런스",
+  "prTimelineTitle": "개인 기록 타임라인",
+  "trainingLoadTitle": "주간 트레이닝 부하",
+  "trainingLoadSubtitle": "세트 × 평균 RPE",
+  "noAnalyticsData": "데이터가 부족합니다",
+  "noAnalyticsDataSubtitle": "몇 번의 운동을 완료하면 분석이 표시됩니다.",
+  "volumeCategory": "카테고리별 볼륨",
+  "loadScore": "부하: {score}",
+  "@loadScore": {
+    "placeholders": { "score": { "type": "String" } }
+  },
+  "viewAdvancedAnalytics": "상세 분석 보기",
+
+  "programmesTitle": "프로그램",
+  "noProgrammesYet": "아직 프로그램이 없습니다",
+  "noProgrammesYetSubtitle": "트레이닝 프로그램을 만들어 운동을 계획하세요.",
+  "newProgramme": "새 프로그램",
+  "newProgrammeTitle": "새 프로그램",
+  "programmeNameLabel": "프로그램 이름",
+  "durationWeeksLabel": "기간 (주)",
+  "editProgramme": "프로그램 편집",
+  "deleteProgrammeTitle": "프로그램을 삭제하시겠습니까?",
+  "deleteProgrammeContent": "\"{name}\"을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+  "@deleteProgrammeContent": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "programmeDashboard": "대시보드",
+  "currentWeek": "{current} / {total} 주차",
+  "@currentWeek": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "assignTemplate": "템플릿 할당",
+  "noTemplateAssigned": "휴식일",
+  "progressionRules": "점진 규칙",
+  "addRule": "규칙 추가",
+  "fixedIncrementLabel": "고정 증가",
+  "percentageLabel": "백분율",
+  "deloadLabel": "디로드",
+  "ruleValueLabel": "값",
+  "everyNWeeks": "{count} {count, plural, =1{주} other{주}}마다",
+  "@everyNWeeks": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "startFromProgramme": "프로그램에서 시작",
+  "targetWeight": "목표: {weight} kg",
+  "@targetWeight": {
+    "placeholders": { "weight": { "type": "String" } }
+  },
+  "programmeSaved": "프로그램이 저장되었습니다",
+  "failedToLoadProgrammes": "프로그램 로딩 실패: {error}",
+  "@failedToLoadProgrammes": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "programmeWeeksCount": "{count} {count, plural, =1{주} other{주}}",
+  "@programmeWeeksCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "programmeDaysCount": "{count} {count, plural, =1{일} other{일}} 할당됨",
+  "@programmeDaysCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "weekLabel": "{number}주차",
+  "@weekLabel": {
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "dayLabel": "{day}",
+  "@dayLabel": {
+    "placeholders": { "day": { "type": "String" } }
+  },
+
+  "chooseProgramme": "프로그램 선택",
+  "noProgrammesAvailable": "사용 가능한 프로그램이 없습니다",
+  "noWorkoutScheduledForToday": "오늘 예정된 운동이 없습니다",
+
+  "healthSyncTitle": "건강 동기화",
+  "healthSyncSubtitle": "Apple Health 또는 Health Connect와 데이터 동기화",
+  "healthSyncEnabled": "건강 동기화 활성화",
+  "writeWorkoutsLabel": "운동 기록 쓰기",
+  "writeWorkoutsSubtitle": "완료된 운동을 건강 스토어에 기록",
+  "writeWeightLabel": "체중 쓰기",
+  "writeWeightSubtitle": "신체 측정 데이터를 건강 스토어에 전송",
+  "writeHeartRateLabel": "심박수 쓰기",
+  "writeHeartRateSubtitle": "유산소 운동 중 심박수 데이터 전송",
+  "readWeightLabel": "체중 읽기",
+  "readWeightSubtitle": "건강 스토어에서 체중 측정값 가져오기",
+  "healthSyncPermissionDenied": "건강 권한이 부여되지 않았습니다",
+  "healthSyncSuccess": "건강에 동기화되었습니다",
+  "importWeightPrompt": "건강에서 {weight} kg을 가져오시겠습니까?",
+  "@importWeightPrompt": {
+    "placeholders": { "weight": { "type": "String" } }
+  },
+  "importWeightAction": "가져오기",
+  "healthSyncNoNewData": "건강에 새 데이터가 없습니다",
+
+  "syncSectionTitle": "기기 간 동기화",
+  "syncEnabled": "기기 간 동기화 활성화",
+  "syncEnabledSubtitle": "기기 간 운동 데이터 동기화",
+  "syncLastSynced": "마지막 동기화: {time}",
+  "@syncLastSynced": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "syncNeverSynced": "동기화한 적 없음",
+  "syncNow": "지금 동기화",
+  "syncSyncing": "동기화 중…",
+  "syncSuccess": "동기화 완료",
+  "syncError": "동기화 실패: {error}",
+  "@syncError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "syncDisableAndDelete": "동기화 비활성화 및 클라우드 데이터 삭제",
+  "syncDisableConfirmTitle": "동기화를 비활성화하시겠습니까?",
+  "syncDisableConfirmBody": "동기화를 비활성화하고 클라우드 스토리지의 데이터를 영구 삭제합니다. 로컬 데이터는 영향을 받지 않습니다.",
+  "syncDisableConfirmAction": "비활성화 및 삭제",
+  "syncConsentTitle": "기기 간 동기화",
+  "syncConsentBody": "운동 데이터가 본인의 Google Drive 또는 iCloud 계정에 저장됩니다. RepFoundry는 이 데이터에 접근할 수 없습니다. 설정이나 클라우드 계정에서 언제든지 삭제할 수 있습니다.",
+  "syncConsentCancel": "취소",
+  "syncConsentAccept": "이해했습니다 — 계속",
+
+  "trainingHistoryTitle": "트레이닝 기록",
+  "trainingHistorySubtitle": "진화와 기계적 장력 증가를 추적하세요.",
+  "searchSessionsHint": "세션 또는 운동 검색…",
+  "thisWeek": "이번 주",
+  "lastWeek": "지난 주",
+  "volumeProgress": "볼륨 진행",
+  "totalVolumeKg": "{value} kg",
+  "@totalVolumeKg": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "workoutFallbackName": "운동",
+
+  "liveSensor": "라이브 센서",
+  "restingHrLabel": "안정 시 심박수",
+  "maxHrLabel": "최대 심박수",
+  "recoveryLabel": "회복",
+  "hrvLabel": "심박변이도",
+  "excellent": "우수",
+  "reachedAgo": "세션 최대",
+  "toBaseline": "기준선으로",
+  "highReadiness": "높은 준비도",
+  "workoutIntensityZones": "운동 강도 구간",
+  "sessionDuration": "세션: {duration}",
+  "@sessionDuration": {
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "zonePeak": "피크",
+  "zoneAnaerobic": "무산소",
+  "zoneAerobic": "유산소",
+  "zoneFatBurn": "지방 연소",
+  "zoneWarmup": "워밍업",
+  "heartRateTrend": "심박수 추세",
+  "heartRateTrendSubtitle": "현재 운동 세션",
+  "todayLabel": "오늘",
+  "avgLabel": "평균",
+
+  "activeDuration": "활동 시간",
+  "avgPaceLabel": "평균 페이스",
+  "distanceLabel": "거리",
+  "startSession": "세션 시작",
+  "liveTracking": "실시간 추적"
+}

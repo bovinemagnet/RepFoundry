@@ -63,7 +63,7 @@ class _HeatmapGrid extends StatelessWidget {
     final startOfCurrentWeek =
         today.subtract(Duration(days: today.weekday - 1));
     final gridStart =
-        startOfCurrentWeek.subtract(Duration(days: 7 * (_weeks - 1)));
+        startOfCurrentWeek.subtract(const Duration(days: 7 * (_weeks - 1)));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

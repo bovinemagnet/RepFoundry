@@ -1,0 +1,720 @@
+{
+  "@@locale": "ja",
+
+  "appTitle": "RepFoundry",
+
+  "navWorkout": "ワークアウト",
+  "navHistory": "履歴",
+  "navCardio": "有酸素",
+  "navHeartRate": "心拍数",
+  "navSettings": "設定",
+
+  "start": "スタート",
+  "pause": "一時停止",
+  "resume": "再開",
+  "reset": "リセット",
+  "cancel": "キャンセル",
+  "save": "保存",
+  "delete": "削除",
+  "create": "作成",
+  "finish": "終了",
+  "next": "次へ",
+  "back": "戻る",
+  "skip": "スキップ",
+  "done": "完了",
+  "retry": "再試行",
+
+  "bpmSuffix": "bpm",
+  "yearsSuffix": "歳",
+  "kgUnit": "kg",
+  "lbsUnit": "lbs",
+
+  "settingsTitle": "設定",
+  "sectionHealthProfile": "健康プロフィール",
+  "sectionAppearance": "外観",
+  "sectionUnits": "単位",
+  "sectionRestTimer": "レストタイマー",
+  "sectionData": "データ",
+  "sectionAbout": "このアプリについて",
+
+  "ageLabel": "年齢",
+  "ageSubtitleSet": "{age} 歳（最大心拍数：{maxHr} bpm）",
+  "@ageSubtitleSet": {
+    "placeholders": {
+      "age": { "type": "int" },
+      "maxHr": { "type": "int" }
+    }
+  },
+  "ageSubtitleEmpty": "心拍数ゾーンの計算に年齢を設定してください",
+  "setYourAge": "年齢を設定",
+  "ageHint": "例：30",
+
+  "restingHeartRate": "安静時心拍数",
+  "restingHrSubtitleSet": "{bpm} bpm",
+  "@restingHrSubtitleSet": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "restingHrSubtitleEmpty": "任意 — Karvonen ゾーンを有効化",
+  "restingHrHint": "例：60",
+
+  "measuredMaxHeartRate": "実測最大心拍数",
+  "measuredMaxHrSubtitleSet": "{bpm} bpm",
+  "@measuredMaxHrSubtitleSet": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "measuredMaxHrSubtitleEmpty": "任意 — 運動負荷試験より",
+  "measuredMaxHrHint": "例：185",
+
+  "betaBlockerMedication": "β遮断薬の服用",
+  "betaBlockerSubtitle": "心拍数ゾーンの精度に影響します",
+
+  "heartConditionLabel": "心疾患",
+  "heartConditionSubtitle": "ゾーンの注意モードを有効化",
+
+  "clinicianMaxHeartRate": "医師指定の最大心拍数",
+  "clinicianMaxHrSubtitleSet": "{bpm} bpm — 推定値を上書き",
+  "@clinicianMaxHrSubtitleSet": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "clinicianMaxHrSubtitleEmpty": "任意 — 医師が提供",
+  "clinicianMaxHrHint": "例：150",
+
+  "zoneMethod": "ゾーン計算方式",
+  "zoneMethodAndReliability": "{method} · 信頼度{reliability}",
+  "@zoneMethodAndReliability": {
+    "placeholders": {
+      "method": { "type": "String" },
+      "reliability": { "type": "String" }
+    }
+  },
+  "zoneMethodCustom": "カスタムゾーン",
+  "zoneMethodClinicianCap": "医師上限",
+  "zoneMethodHrr": "心拍予備能（Karvonen）",
+  "zoneMethodMeasuredMax": "実測最大心拍数",
+  "zoneMethodEstimatedMax": "年齢推定最大心拍数",
+  "reliabilityHigh": "高",
+  "reliabilityMedium": "中",
+  "reliabilityLow": "低",
+
+  "setUpHeartRateZones": "心拍数ゾーンの設定",
+  "stepByStepGuidedSetup": "ステップバイステップのガイド設定",
+
+  "zoneColourBands": "ゾーンカラーバンド",
+  "zoneColourBandsSubtitle": "心拍数チャートにカラーゾーンバンドを表示",
+
+  "sectionMaxHrAlert": "最大心拍数アラート",
+  "maxHrAlertVibration": "最大心拍数到達時の振動",
+  "maxHrAlertVibrationSubtitle": "心拍数が推奨最大値に達したとき振動で通知",
+  "maxHrAlertSound": "最大心拍数到達時のサウンド",
+  "maxHrAlertSoundSubtitle": "心拍数が推奨最大値に達したとき警告音を再生",
+  "maxHrAlertCooldown": "アラートクールダウン",
+  "maxHrAlertCooldownSubtitle": "繰り返しアラートの最小間隔（秒）",
+  "maxHrAlertCooldownValue": "{seconds}秒",
+  "@maxHrAlertCooldownValue": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "maxHrReached": "心拍数が推奨最大値に達しました",
+
+  "disclaimerLabel": "免責事項",
+
+  "settingsShowExerciseImages": "エクササイズ画像を表示",
+  "settingsShowExerciseImagesSubtitle": "リストにエクササイズのイラストを表示",
+
+  "themeLabel": "テーマ",
+  "themeLight": "ライト",
+  "themeDark": "ダーク",
+  "themeAuto": "自動",
+
+  "weightUnitLabel": "重量単位",
+
+  "vibrationAlert": "振動アラート",
+  "vibrationAlertSubtitle": "レストタイマー終了時に振動",
+  "soundAlert": "サウンドアラート",
+  "soundAlertSubtitle": "レストタイマー終了時にサウンドを再生",
+
+  "clearAllData": "すべてのデータを消去",
+  "clearAllDataSubtitle": "すべてのワークアウトと設定を完全に削除します。",
+  "clearAllDataConfirmTitle": "すべてのデータを消去しますか？",
+  "clearAllDataConfirmContent": "すべてのワークアウト履歴が完全に削除されます。この操作は元に戻せません。",
+  "allDataCleared": "すべてのデータが消去されました。",
+
+  "aboutAppName": "RepFoundry",
+  "aboutVersion": "バージョン {version}",
+  "@aboutVersion": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "aboutScreenTitle": "RepFoundry について",
+  "aboutDescription": "ジムユーザーのためのシンプルで高速なワークアウト記録アプリ。",
+  "aboutAuthorLabel": "作者",
+  "aboutAuthor": "Paul Snow",
+  "aboutGitHub": "GitHub リポジトリ",
+  "aboutFeatures": "機能",
+  "aboutFeatureOffline": "オフラインファースト — データはデバイスに保存",
+  "aboutFeatureHeartRate": "Bluetooth 心拍数モニター対応",
+  "aboutFeatureTemplates": "ワークアウトテンプレートで素早くセッション開始",
+  "aboutFeatureProgress": "個人記録による進捗トラッキング",
+  "aboutFeatureExport": "JSON または CSV でデータをエクスポート",
+  "aboutFeatureCardio": "GPS 対応の有酸素セッション",
+  "aboutBuiltWith": "Flutter で構築",
+  "aboutViewLicences": "オープンソースライセンス",
+
+  "heartRateTitle": "心拍数",
+  "connectHrMonitor": "心拍数モニターを接続",
+  "disconnect": "切断",
+  "setupGuide": "セットアップガイド",
+  "reconnecting": "再接続中...",
+  "recentChart": "最近",
+  "fullSessionChart": "フルセッション",
+  "setAgeInSettings": "設定で年齢を入力してください",
+  "setAgeInSettingsSubtitle": "年齢を設定すると、心拍トレーニングゾーンが表示されます。",
+  "statsAvg": "平均",
+  "statsMin": "最小",
+  "statsMax": "最大",
+  "statsReadings": "読み取り数",
+  "timeInZone": "ゾーン滞在時間",
+  "moderateOrHigher": "中等度以上：{duration}",
+  "@moderateOrHigher": {
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "recoveryHrDrop": "回復心拍数低下：{bpm} bpm",
+  "@recoveryHrDrop": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
+  "bluetoothNotAvailable": "Bluetooth が利用できません。Bluetooth がオンになっていることを確認してください。",
+  "chartWindowSeconds": "{seconds}秒",
+  "@chartWindowSeconds": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "chartWindowMinutes": "{minutes}分",
+  "@chartWindowMinutes": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+
+  "onboardingTitle": "心拍数ゾーンの設定",
+  "onboardingStepOf": "ステップ {current} / {total}",
+  "@onboardingStepOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "onboardingAgeExplanation": "年齢は最大心拍数の推定とトレーニングゾーンのカスタマイズに使用されます。",
+  "onboardingRestingHrExplanation": "安静時心拍数を入力すると、Karvonen（心拍予備能）法でより正確なゾーン計算が可能になります。",
+  "onboardingRestingHrLabel": "安静時心拍数（任意）",
+  "onboardingMeasuredMaxHrLabel": "実測最大心拍数（任意）",
+  "onboardingRestingHrHint": "例：60",
+  "onboardingMeasuredMaxHrHint": "例：185",
+  "onboardingMedicalExplanation": "以下のいずれかに該当する場合、心拍数ゾーンは注意モードで表示され、信頼度が低下します。個別の上限については医療専門家にご相談ください。",
+  "onboardingBetaBlockerLabel": "β遮断薬を服用中",
+  "onboardingHeartConditionLabel": "心疾患",
+  "onboardingClinicianWithFlags": "医療的要因があるため、医師が提供する最大心拍数の入力を強くお勧めします。この値は他のすべての推定値を上書きします。",
+  "onboardingClinicianWithoutFlags": "医師または運動生理学者から最大心拍数を提供されている場合は、ここに入力して推定値を上書きしてください。",
+  "onboardingClinicianMaxHrLabel": "医師指定の最大心拍数（任意）",
+
+  "disclaimerDialogTitle": "心拍数モニタリング",
+  "disclaimerDialogButton": "了解しました",
+
+  "cautionModeTitle": "注意モード",
+
+  "symptomReportButton": "症状を報告",
+  "symptomReportTitle": "症状レポート",
+  "stopExerciseTitle": "運動を中止",
+  "stopExerciseOk": "大丈夫です、運動を中止します",
+  "stopExerciseHelp": "助けが必要です",
+
+  "warningGeneralDisclaimer": "心拍数ゾーンの推定は参考情報であり、医学的アドバイスではありません。特に既往症がある場合は、運動プログラムを開始または変更する前に必ず医療専門家にご相談ください。",
+  "warningBetaBlocker": "β遮断薬は最大心拍数を大幅に低下させる場合があります。標準的なゾーン計算が正確でない可能性があります。医師提供の最大心拍数を設定するか、主観的運動強度（RPE）とトークテストで強度を判断することをお勧めします。",
+  "warningHeartCondition": "心疾患があることを示されています。標準的な心拍数ゾーン計算が適切でない場合があります。強度ベースのトレーニングガイダンスを使用する前に、医師提供の最大心拍数を取得することを強くお勧めします。",
+  "warningClinicianCap": "心拍数ゾーンは医師提供の最大心拍数に基づいて計算されています。この値は年齢ベースまたは実測の推定値を上書きします。",
+  "warningStopExercise": "胸痛、激しいめまい、失神、または異常な息切れを経験している場合は、直ちに運動を中止してください。症状が続く場合は、緊急の医療を受けてください。",
+  "warningSymptomIntro": "以下のいずれかの症状を経験していますか？",
+  "symptomChestPain": "胸の痛みまたは圧迫感",
+  "symptomDizziness": "激しいめまいまたはふらつき",
+  "symptomFainting": "失神しそうな感覚",
+  "symptomBreathing": "異常な息切れ",
+
+  "clinicianLimitsInUse": "医師提供の制限値を使用中",
+
+  "workoutTitle": "ワークアウト",
+  "workoutTitleWithTime": "ワークアウト  •  {time}",
+  "@workoutTitleWithTime": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "loadingWorkout": "ワークアウトを読み込み中…",
+  "addExercise": "エクササイズを追加",
+  "startWorkout": "ワークアウトを開始",
+  "noActiveWorkout": "アクティブなワークアウトがありません",
+  "noActiveWorkoutSubtitle": "新しいワークアウトを開始してセットを記録しましょう。",
+  "addExercisesHint": "下のボタンでエクササイズを追加",
+  "finishWorkoutTitle": "ワークアウトを終了しますか？",
+  "finishWorkoutContent": "ワークアウトを保存してセッションを終了します。",
+  "tableHeaderHash": "#",
+  "tableHeaderWeight": "重量",
+  "tableHeaderReps": "レップ数",
+  "tableHeaderE1rm": "e1RM",
+
+  "weightKgLabel": "重量（kg）",
+  "repsLabel": "レップ数",
+  "rpeLabel": "RPE",
+  "addRpe": "RPE を追加",
+  "hideRpe": "RPE を非表示",
+  "logSet": "セットを記録",
+  "validationRequired": "必須",
+  "validationInvalid": "無効",
+  "validationMinZero": "≥ 0",
+  "validationRpeRange": "1–10",
+
+  "restTimer": "レストタイマー",
+  "stopTimer": "タイマーを停止",
+
+  "newPersonalRecord": "新しい自己記録！",
+  "e1rmValue": "e1RM：{value} kg",
+  "@e1rmValue": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+
+  "historyTitle": "履歴",
+  "noWorkoutsYet": "ワークアウトがまだありません",
+  "noWorkoutsYetSubtitle": "完了したワークアウトがここに表示されます。",
+  "loadingHistory": "履歴を読み込み中…",
+  "errorPrefix": "エラー：{error}",
+  "@errorPrefix": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "volumeTrend": "ボリュームトレンド（直近 {count} 回）",
+  "@volumeTrend": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "setsCount": "{count} セット",
+  "@setsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "prBadge": "PR!",
+
+  "workoutDetailTitle": "ワークアウト詳細",
+  "workoutNotFound": "ワークアウトが見つかりません",
+  "durationLabel": "時間",
+  "setsLabel": "セット数",
+  "volumeLabel": "ボリューム",
+
+  "exerciseProgressTitle": "エクササイズ進捗",
+  "noDataYet": "データがまだありません",
+  "noDataYetSubtitle": "このエクササイズのセットを記録すると進捗が表示されます。",
+  "loadingProgress": "進捗を読み込み中…",
+  "bestE1rm": "ベスト e1RM",
+  "totalVolume": "総ボリューム",
+  "totalSets": "総セット数",
+  "e1rmTrend": "推定 1RM トレンド",
+  "recentSets": "最近のセット",
+  "tableHeaderDate": "日付",
+
+  "chooseExercise": "エクササイズを選択",
+  "searchExercisesHint": "エクササイズを検索…",
+  "filterAll": "すべて",
+  "noExercisesFound": "エクササイズが見つかりません",
+  "loadingExercises": "エクササイズを読み込み中…",
+  "customExercise": "カスタム",
+
+  "newExerciseTitle": "新しいエクササイズ",
+  "exerciseNameLabel": "エクササイズ名",
+  "categoryLabel": "カテゴリ",
+  "muscleGroupLabel": "筋肉群",
+  "equipmentLabel": "器具",
+  "exerciseNameRequired": "エクササイズ名を入力してください",
+
+  "cardioTitle": "有酸素",
+  "exerciseField": "種目",
+  "distanceMetresLabel": "距離（メートル）",
+  "inclineLabel": "傾斜（%）",
+  "avgHeartRateLabel": "平均心拍数（bpm）",
+  "lastSession": "前回のセッション",
+  "gpsDistanceTracking": "GPS 距離トラッキング",
+  "gpsAcquiring": "信号を取得中...",
+  "gpsMetresTracked": "{metres} m トラッキング中",
+  "@gpsMetresTracked": {
+    "placeholders": { "metres": { "type": "String" } }
+  },
+  "gpsSubtitle": "屋外ランニングの距離を GPS でトラッキング",
+  "saveSession": "セッションを保存",
+  "cardioSessionSaved": "有酸素セッションを保存しました",
+  "heartRateMonitorCard": "心拍数モニター",
+  "heartRateMonitorSubtitle": "BLE 心拍ストラップまたはウォッチを接続",
+  "connect": "接続",
+  "connectingTo": "{device} に接続中...",
+  "@connectingTo": {
+    "placeholders": { "device": { "type": "String" } }
+  },
+  "reconnectingTo": "{device} に再接続中...",
+  "@reconnectingTo": {
+    "placeholders": { "device": { "type": "String" } }
+  },
+  "paceLabel": "ペース：{pace}",
+  "@paceLabel": {
+    "placeholders": { "pace": { "type": "String" } }
+  },
+
+  "hrSetupGuideTitle": "心拍数セットアップガイド",
+  "appleWatchTitle": "Apple Watch",
+  "samsungWatchTitle": "Samsung Galaxy Watch",
+  "chestStrapsTitle": "チェストストラップ＆アームバンド",
+  "appleWatchStep1": "Apple Watch で「設定」→「ワークアウト」→「心拍数」を開きます。",
+  "appleWatchStep2": "「心拍数をブロードキャスト」を有効にします。",
+  "appleWatchStep3": "Apple Watch で任意のワークアウトを開始します。",
+  "appleWatchStep4": "RepFoundry で「接続」をタップし、Apple Watch を選択します。",
+  "samsungWatchStep1": "ウォッチで Samsung Health を開きます。",
+  "samsungWatchStep2": "「設定」→「心拍数ブロードキャスト」に移動します。",
+  "samsungWatchStep3": "BLE ブロードキャストを有効にします。",
+  "samsungWatchStep4": "RepFoundry で「接続」をタップし、Galaxy Watch を選択します。",
+  "chestStrapStep1": "BLE 心拍デバイス（Polar、Garmin、Wahoo など）は自動的に動作します。",
+  "chestStrapStep2": "ストラップまたはバンドを装着して「接続」をタップするだけです。",
+  "chestStrapStep3": "デバイスがスキャンリストに表示されます。",
+
+  "hrDevicePickerTitle": "心拍数モニター",
+  "scanning": "デバイスをスキャン中...",
+  "noDevicesFound": "心拍数モニターが見つかりません。デバイスがブロードキャスト中であることを確認してください。Apple Watch の場合は、心拍数ブロードキャストを有効にしてワークアウトを開始してください。",
+  "scanAgain": "再スキャン",
+  "setupHelp": "セットアップヘルプ",
+
+  "templatesTitle": "テンプレート",
+  "noTemplatesYet": "テンプレートがまだありません",
+  "noTemplatesYetSubtitle": "テンプレートを作成してワークアウトを素早く開始しましょう。",
+  "failedToLoadTemplates": "テンプレートの読み込みに失敗：{error}",
+  "@failedToLoadTemplates": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "newTemplate": "新しいテンプレート",
+  "newTemplateTitle": "新しいテンプレート",
+  "templateNameLabel": "テンプレート名",
+  "deleteTemplateTitle": "テンプレートを削除しますか？",
+  "deleteTemplateContent": "「{name}」を削除してもよろしいですか？",
+  "@deleteTemplateContent": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "exerciseCount": "{count} エクササイズ",
+  "@exerciseCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "editTemplate": "テンプレートを編集",
+  "targetSets": "セット数",
+  "targetReps": "レップ数",
+  "addExerciseToTemplate": "エクササイズを追加",
+  "saveTemplate": "保存",
+  "removeExercise": "エクササイズを削除",
+  "reorderHint": "ドラッグして並べ替え",
+  "templateSaved": "テンプレートを保存しました",
+
+  "prTypeWeight": "新重量記録！",
+  "prTypeReps": "新レップ記録！",
+  "prTypeVolume": "新ボリューム記録！",
+  "prTypeE1rm": "新 e1RM 記録！",
+  "prHistoryTitle": "自己記録",
+  "prHistoryEmpty": "自己記録がまだありません",
+  "prHistoryEmptySubtitle": "ワークアウトでセットを記録して新記録を達成しましょう。",
+  "prAchievedOn": "{date} に達成",
+  "@prAchievedOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "prValueWeight": "{value} kg",
+  "@prValueWeight": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "prValueReps": "{value} レップ",
+  "@prValueReps": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "prValueVolume": "{value} kg ボリューム",
+  "@prValueVolume": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "prValueE1rm": "{value} kg e1RM",
+  "@prValueE1rm": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+
+  "historyTab": "履歴",
+  "progressTab": "進捗",
+  "volumeTrendTitle": "ボリュームトレンド",
+  "frequencyTitle": "週あたりのワークアウト数",
+  "workoutsPerWeek": "回",
+
+  "startFromTemplate": "テンプレートから開始",
+  "chooseTemplate": "テンプレートを選択",
+  "noTemplatesAvailable": "利用可能なテンプレートがありません",
+
+  "muscleGroupDistributionTitle": "筋肉群の分布",
+  "exerciseProgressListTitle": "エクササイズ進捗",
+  "setsLogged": "{count} セット記録済み",
+  "@setsLogged": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "exportAsJson": "JSON でエクスポート",
+  "exportAsJsonSubtitle": "完全なワークアウトデータを JSON 形式で",
+  "exportAsCsv": "CSV でエクスポート",
+  "exportAsCsvSubtitle": "セット、有酸素、自己記録を CSV ファイルで",
+  "exportingData": "データをエクスポート中…",
+  "exportComplete": "エクスポート完了",
+  "exportFailed": "エクスポートに失敗：{error}",
+  "@exportFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "editSet": "セットを編集",
+  "editExerciseTitle": "エクササイズを編集",
+
+  "calendarHeatmapTitle": "ワークアウトカレンダー",
+  "calendarHeatmapLess": "少",
+  "calendarHeatmapMore": "多",
+
+  "currentStreak": "{count, plural, =0{連続記録なし} =1{1 日連続} other{{count} 日連続}}",
+  "@currentStreak": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "longestStreak": "最長：{count} {count, plural, =1{日} other{日}}",
+  "@longestStreak": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "durationTrendTitle": "ワークアウト時間（分）",
+
+  "warmUpLabel": "ウォームアップ",
+
+  "bodyMetricsTitle": "身体計測",
+  "bodyMetricsSubtitle": "体重と体組成をトラッキング",
+  "noBodyMetricsYet": "身体計測データがまだありません",
+  "noBodyMetricsYetSubtitle": "+ をタップして最初の計測を記録しましょう。",
+  "addBodyMetric": "計測を追加",
+  "bodyWeightLabel": "体重",
+  "bodyFatPercentLabel": "体脂肪率 %",
+  "bodyFatLabel": "体脂肪",
+  "notesLabel": "メモ",
+  "bodyWeightTrendTitle": "体重トレンド",
+  "latestWeight": "最新の体重",
+  "bodyMetricsHistory": "履歴",
+
+  "importFromJson": "JSON からインポート",
+  "importFromJsonSubtitle": "以前のエクスポートからデータを復元",
+  "importDataTitle": "データをインポート",
+  "importDataConfirmContent": "JSON エクスポートのデータを既存のデータに追加します。重複はスキップされます。",
+  "importDataButton": "インポート",
+  "importPasteJsonTitle": "JSON データを貼り付け",
+  "importPasteJsonHint": "エクスポートした JSON をここに貼り付け…",
+  "importComplete": "インポート完了：{workouts} ワークアウト、{sets} セット",
+  "@importComplete": {
+    "placeholders": {
+      "workouts": { "type": "int" },
+      "sets": { "type": "int" }
+    }
+  },
+  "importFailed": "インポートに失敗：{error}",
+  "@importFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "duplicateTemplate": "複製",
+  "copyLabel": "コピー",
+
+  "supersetLabel": "スーパーセット",
+  "linkAsSuperset": "スーパーセットとしてリンク",
+  "breakSuperset": "スーパーセットを解除",
+  "supersetWith": "{name} とスーパーセット",
+  "@supersetWith": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "selectSupersetPartner": "リンクするエクササイズを選択",
+  "noOtherExercises": "先に別のエクササイズを追加してください",
+
+  "sectionReminders": "リマインダー",
+  "workoutReminders": "ワークアウトリマインダー",
+  "workoutRemindersSubtitle": "トレーニング日に通知を受け取る",
+  "reminderTime": "リマインダー時刻",
+  "reminderTimeSubtitle": "ワークアウトリマインダーを受け取る時刻",
+  "reminderDays": "トレーニング日",
+  "streakReminder": "連続記録リマインダー",
+  "streakReminderSubtitle": "今日まだワークアウトしていない場合に通知",
+  "mondayShort": "月",
+  "tuesdayShort": "火",
+  "wednesdayShort": "水",
+  "thursdayShort": "木",
+  "fridayShort": "金",
+  "saturdayShort": "土",
+  "sundayShort": "日",
+  "notificationPermissionRequired": "リマインダーには通知の許可が必要です",
+  "reminderTimeOfDay": "{hour}:{minute}",
+  "@reminderTimeOfDay": {
+    "placeholders": {
+      "hour": { "type": "String" },
+      "minute": { "type": "String" }
+    }
+  },
+
+  "analyticsTitle": "分析",
+  "weeklyVolumeTitle": "週間ボリュームトレンド",
+  "weeklyVolumeChange": "前週比 {change}%",
+  "@weeklyVolumeChange": {
+    "placeholders": { "change": { "type": "String" } }
+  },
+  "muscleBalanceTitle": "筋肉群バランス",
+  "prTimelineTitle": "自己記録タイムライン",
+  "trainingLoadTitle": "週間トレーニング負荷",
+  "trainingLoadSubtitle": "セット数 × 平均 RPE",
+  "noAnalyticsData": "データが不足しています",
+  "noAnalyticsDataSubtitle": "いくつかのワークアウトを完了すると分析が表示されます。",
+  "volumeCategory": "カテゴリ別ボリューム",
+  "loadScore": "負荷：{score}",
+  "@loadScore": {
+    "placeholders": { "score": { "type": "String" } }
+  },
+  "viewAdvancedAnalytics": "詳細分析を表示",
+
+  "programmesTitle": "プログラム",
+  "noProgrammesYet": "プログラムがまだありません",
+  "noProgrammesYetSubtitle": "トレーニングプログラムを作成してワークアウトを計画しましょう。",
+  "newProgramme": "新しいプログラム",
+  "newProgrammeTitle": "新しいプログラム",
+  "programmeNameLabel": "プログラム名",
+  "durationWeeksLabel": "期間（週）",
+  "editProgramme": "プログラムを編集",
+  "deleteProgrammeTitle": "プログラムを削除しますか？",
+  "deleteProgrammeContent": "「{name}」を削除してもよろしいですか？この操作は元に戻せません。",
+  "@deleteProgrammeContent": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "programmeDashboard": "ダッシュボード",
+  "currentWeek": "第 {current} / {total} 週",
+  "@currentWeek": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "assignTemplate": "テンプレートを割り当て",
+  "noTemplateAssigned": "休息日",
+  "progressionRules": "プログレッションルール",
+  "addRule": "ルールを追加",
+  "fixedIncrementLabel": "固定増加",
+  "percentageLabel": "パーセンテージ",
+  "deloadLabel": "ディロード",
+  "ruleValueLabel": "値",
+  "everyNWeeks": "{count} {count, plural, =1{週} other{週}}ごと",
+  "@everyNWeeks": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "startFromProgramme": "プログラムから開始",
+  "targetWeight": "目標：{weight} kg",
+  "@targetWeight": {
+    "placeholders": { "weight": { "type": "String" } }
+  },
+  "programmeSaved": "プログラムを保存しました",
+  "failedToLoadProgrammes": "プログラムの読み込みに失敗：{error}",
+  "@failedToLoadProgrammes": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "programmeWeeksCount": "{count} {count, plural, =1{週} other{週}}",
+  "@programmeWeeksCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "programmeDaysCount": "{count} {count, plural, =1{日} other{日}}割り当て済み",
+  "@programmeDaysCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "weekLabel": "第 {number} 週",
+  "@weekLabel": {
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "dayLabel": "{day}",
+  "@dayLabel": {
+    "placeholders": { "day": { "type": "String" } }
+  },
+
+  "chooseProgramme": "プログラムを選択",
+  "noProgrammesAvailable": "利用可能なプログラムがありません",
+  "noWorkoutScheduledForToday": "今日のワークアウト予定はありません",
+
+  "healthSyncTitle": "ヘルス同期",
+  "healthSyncSubtitle": "Apple Health または Health Connect とデータを同期",
+  "healthSyncEnabled": "ヘルス同期を有効化",
+  "writeWorkoutsLabel": "ワークアウトを書き込み",
+  "writeWorkoutsSubtitle": "完了したワークアウトをヘルスストアに記録",
+  "writeWeightLabel": "体重を書き込み",
+  "writeWeightSubtitle": "身体計測データをヘルスストアに送信",
+  "writeHeartRateLabel": "心拍数を書き込み",
+  "writeHeartRateSubtitle": "有酸素運動中の心拍数データを送信",
+  "readWeightLabel": "体重を読み込み",
+  "readWeightSubtitle": "ヘルスストアから体重データをインポート",
+  "healthSyncPermissionDenied": "ヘルスの権限が付与されていません",
+  "healthSyncSuccess": "ヘルスに同期しました",
+  "importWeightPrompt": "ヘルスから {weight} kg をインポートしますか？",
+  "@importWeightPrompt": {
+    "placeholders": { "weight": { "type": "String" } }
+  },
+  "importWeightAction": "インポート",
+  "healthSyncNoNewData": "ヘルスに新しいデータがありません",
+
+  "syncSectionTitle": "クロスデバイス同期",
+  "syncEnabled": "クロスデバイス同期を有効化",
+  "syncEnabledSubtitle": "デバイス間でワークアウトデータを同期",
+  "syncLastSynced": "最終同期：{time}",
+  "@syncLastSynced": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "syncNeverSynced": "未同期",
+  "syncNow": "今すぐ同期",
+  "syncSyncing": "同期中…",
+  "syncSuccess": "同期完了",
+  "syncError": "同期に失敗：{error}",
+  "@syncError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "syncDisableAndDelete": "同期を無効化しクラウドデータを削除",
+  "syncDisableConfirmTitle": "同期を無効化しますか？",
+  "syncDisableConfirmBody": "同期を無効化し、クラウドストレージのデータを完全に削除します。ローカルデータには影響しません。",
+  "syncDisableConfirmAction": "無効化して削除",
+  "syncConsentTitle": "クロスデバイス同期",
+  "syncConsentBody": "ワークアウトデータはご自身の Google Drive または iCloud アカウントに保存されます。RepFoundry はこのデータにアクセスできません。設定またはクラウドアカウントからいつでも削除できます。",
+  "syncConsentCancel": "キャンセル",
+  "syncConsentAccept": "了解しました — 続行",
+
+  "trainingHistoryTitle": "トレーニング履歴",
+  "trainingHistorySubtitle": "進化と機械的張力の向上を追跡しましょう。",
+  "searchSessionsHint": "セッションまたはエクササイズを検索…",
+  "thisWeek": "今週",
+  "lastWeek": "先週",
+  "volumeProgress": "ボリューム進捗",
+  "totalVolumeKg": "{value} kg",
+  "@totalVolumeKg": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "workoutFallbackName": "ワークアウト",
+
+  "liveSensor": "ライブセンサー",
+  "restingHrLabel": "安静時心拍数",
+  "maxHrLabel": "最大心拍数",
+  "recoveryLabel": "回復",
+  "hrvLabel": "心拍変動",
+  "excellent": "優秀",
+  "reachedAgo": "セッション最大",
+  "toBaseline": "ベースラインへ",
+  "highReadiness": "高準備度",
+  "workoutIntensityZones": "ワークアウト強度ゾーン",
+  "sessionDuration": "セッション：{duration}",
+  "@sessionDuration": {
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "zonePeak": "ピーク",
+  "zoneAnaerobic": "無酸素",
+  "zoneAerobic": "有酸素",
+  "zoneFatBurn": "脂肪燃焼",
+  "zoneWarmup": "ウォームアップ",
+  "heartRateTrend": "心拍数トレンド",
+  "heartRateTrendSubtitle": "現在のワークアウトセッション",
+  "todayLabel": "今日",
+  "avgLabel": "平均",
+
+  "activeDuration": "活動時間",
+  "avgPaceLabel": "平均ペース",
+  "distanceLabel": "距離",
+  "startSession": "セッションを開始",
+  "liveTracking": "ライブトラッキング"
+}

@@ -674,5 +674,47 @@
   "syncConsentTitle": "Cross-Device Sync",
   "syncConsentBody": "Your workout data will be saved to your own Google Drive or iCloud account. RepFoundry cannot access this data. You can delete it at any time from Settings or directly from your cloud account.",
   "syncConsentCancel": "Cancel",
-  "syncConsentAccept": "I Understand — Continue"
+  "syncConsentAccept": "I Understand — Continue",
+
+  "trainingHistoryTitle": "Training History",
+  "trainingHistorySubtitle": "Track your evolution and mechanical tension gains.",
+  "searchSessionsHint": "Search sessions or exercises\u2026",
+  "thisWeek": "This Week",
+  "lastWeek": "Last Week",
+  "volumeProgress": "Volume Progress",
+  "totalVolumeKg": "{value} kg",
+  "@totalVolumeKg": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "workoutFallbackName": "Workout",
+
+  "liveSensor": "Live Sensor",
+  "restingHrLabel": "Resting HR",
+  "maxHrLabel": "Max HR",
+  "recoveryLabel": "Recovery",
+  "hrvLabel": "HRV",
+  "excellent": "Excellent",
+  "reachedAgo": "Session max",
+  "toBaseline": "To baseline",
+  "highReadiness": "High Readiness",
+  "workoutIntensityZones": "Workout Intensity Zones",
+  "sessionDuration": "Session: {duration}",
+  "@sessionDuration": {
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "zonePeak": "Peak",
+  "zoneAnaerobic": "Anaerobic",
+  "zoneAerobic": "Aerobic",
+  "zoneFatBurn": "Fat Burn",
+  "zoneWarmup": "Warmup",
+  "heartRateTrend": "Heart Rate Trend",
+  "heartRateTrendSubtitle": "Current workout session",
+  "todayLabel": "Today",
+  "avgLabel": "Avg",
+
+  "activeDuration": "Active Duration",
+  "avgPaceLabel": "Avg Pace",
+  "distanceLabel": "Distance",
+  "startSession": "Start Session",
+  "liveTracking": "Live Tracking"
 }
