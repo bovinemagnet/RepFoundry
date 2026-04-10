@@ -1,0 +1,176 @@
+= Cloud Sync
+Paul Snow
+:description: Offline-first cloud sync architecture — iCloud (iOS) and Google Drive (Android)
+:keywords: sync, cloud, iCloud, CloudKit, Google Drive, offline-first, conflict resolution
+
+RepFoundry syncs workout data across devices using iCloud on iOS and Google Drive on Android.
+Sync is best-effort and fire-and-forget — it never blocks user actions or shows loading spinners.
+Errors are swallowed and surfaced only as status indicators in the Settings screen.
+
+== Overview
+
+The sync feature sits on top of the offline-first SQLite core.
+All data is written locally first; sync runs after the fact (e.g. after completing a workout).
+If the device is offline or sync fails, the user is unaffected.
+
+Platform backends:
+
+* *iOS* — CloudKit via a platform channel (`com.repfoundry.app/cloudkit_sync`)
+* *Android* — Google Drive hidden app data folder (`driveAppdataScope`) via `googleapis` + `google_sign_in`
+
+Platform selection is handled by `SyncServiceFactory`: `Platform.isIOS` returns `CloudKitSyncService`, all other platforms return `GoogleDriveSyncService`.
+
+== SyncOrchestrator — 6-Step Flow
+
+`SyncOrchestrator.sync()` coordinates the full sync cycle.
+A `_isSyncing` guard prevents concurrent runs.
+
+. *Check connectivity* — query `connectivity_plus`; bail with error status if offline
+. *Create local snapshot* — read all local DB rows (including soft-deleted) into a `SyncSnapshot` via `SyncSnapshotSerialiser.createFromDatabase()`
+. *Download remote snapshot* — call `CloudSyncService.downloadSnapshot()`; returns `null` on first sync
+. *Merge* — pass local and remote snapshots to `SyncMergeEngine.merge()`; if no remote exists, use local as-is
+. *Apply merged snapshot to local DB* — `SyncSnapshotSerialiser.applyToDatabase()` writes all entities in a single Drift transaction using `insertOnConflictUpdate`
+. *Upload merged snapshot to cloud* — `CloudSyncService.uploadSnapshot()` serialises the merged snapshot as JSON
+
+== SyncMergeEngine — Conflict Resolution
+
+The merge engine uses an *updatedAt-wins* strategy, resolved per entity by UUID:
+
+* Entities unique to either side are included unconditionally
+* When the same UUID exists in both snapshots, the entity with the newer `updatedAt` wins
+* Ties (equal timestamps) favour the local copy
+* Output snapshot carries `snapshotAt: DateTime.now().toUtc()` and inherits `deviceId` and `schemaVersion` from the local snapshot
+
+The merge is a pure function with no side effects — it takes two `SyncSnapshot` objects and returns a third.
+
+== SyncSnapshot Model
+
+`SyncSnapshot` is an immutable value object holding all syncable data.
+
+=== Metadata
+
+[cols="1,1,2",options="header"]
+|===
+| Field | Type | Description
+
+| `snapshotAt`
+| `DateTime` (UTC)
+| When the snapshot was created
+
+| `deviceId`
+| `String`
+| UUID of the originating device
+
+| `schemaVersion`
+| `int`
+| Database schema version (currently 6)
+|===
+
+=== Entity Lists (11)
+
+[cols="1,2",options="header"]
+|===
+| List | Domain Model
+
+| `exercises` | `Exercise`
+| `workouts` | `Workout`
+| `workoutSets` | `WorkoutSet`
+| `cardioSessions` | `CardioSession`
+| `personalRecords` | `PersonalRecord`
+| `workoutTemplates` | `WorkoutTemplate`
+| `templateExercises` | `TemplateExercise`
+| `bodyMetrics` | `BodyMetric`
+| `programmes` | `Programme`
+| `programmeDays` | `ProgrammeDay`
+| `progressionRules` | `ProgressionRule`
+|===
+
+All lists default to `const []`.
+
+== CloudSyncService Interface
+
+`CloudSyncService` (`lib/features/sync/domain/sync_service.dart`) defines four methods:
+
+[cols="2,3",options="header"]
+|===
+| Method | Description
+
+| `Future<bool> isAvailable()`
+| Check authentication and service availability
+
+| `Future<void> uploadSnapshot(String jsonData)`
+| Upload serialised snapshot JSON to cloud
+
+| `Future<String?> downloadSnapshot()`
+| Download latest snapshot; returns `null` if none exists
+
+| `Future<void> deleteCloudData()`
+| Delete cloud data and sign out
+|===
+
+=== CloudKit Implementation (iOS)
+
+`CloudKitSyncService` communicates via a platform channel named `com.repfoundry.app/cloudkit_sync`.
+Method calls map directly to the interface: `isAvailable`, `uploadSnapshot`, `downloadSnapshot`, `deleteCloudData`.
+`PlatformException` on `isAvailable` gracefully returns `false`.
+
+=== Google Drive Implementation (Android)
+
+`GoogleDriveSyncService` uses `googleapis/drive/v3` with `google_sign_in`.
+Data is stored as `repfoundry_sync.json` in the hidden `appDataFolder` space (not visible in the user's Drive).
+Upload updates the existing file by ID if found, otherwise creates a new file.
+`deleteCloudData()` deletes the file and calls `_googleSignIn.disconnect()`.
+
+== State Management
+
+Two Riverpod providers manage sync state, both defined in `lib/features/sync/presentation/providers/sync_settings_provider.dart`.
+
+=== SyncSettings (persisted)
+
+`syncSettingsProvider` — `NotifierProvider<SyncSettingsNotifier, SyncSettings>`
+
+Persisted via `SharedPreferences` under keys: `cloud_sync_enabled`, `cloud_sync_last_sync_at`, `cloud_sync_device_id`, `cloud_sync_consent_given`.
+
+[cols="1,1,2",options="header"]
+|===
+| Field | Type | Description
+
+| `enabled` | `bool` | Whether sync is turned on
+| `lastSyncAt` | `DateTime?` | Timestamp of last successful sync
+| `deviceId` | `String` | UUID v4, generated on first build and persisted
+| `consentGiven` | `bool` | Whether user has accepted the sync consent dialog
+|===
+
+=== SyncState (in-memory)
+
+`syncStateProvider` — `NotifierProvider<SyncStateNotifier, SyncState>`
+
+Not persisted; resets to `idle` on app restart.
+
+`SyncStatus` enum: `idle`, `syncing`, `success`, `error`.
+
+=== Consent Flow
+
+A `SyncConsentDialog` is shown the first time sync is enabled.
+The dialog returns a `bool`; sync only proceeds if consent is granted.
+
+== File Inventory
+
+[cols="2,3",options="header"]
+|===
+| File | Purpose
+
+| `application/sync_orchestrator.dart` | 6-step sync coordinator
+| `domain/sync_merge_engine.dart` | updatedAt-wins merge logic
+| `domain/sync_service.dart` | `CloudSyncService` abstract interface
+| `domain/models/sync_snapshot.dart` | Snapshot value object (11 entity lists + metadata)
+| `domain/models/sync_settings.dart` | User-facing settings model
+| `domain/models/sync_state.dart` | Runtime UI state + `SyncStatus` enum
+| `domain/models/sync_result.dart` | Return value from sync (success, count, timestamp)
+| `data/sync_snapshot_serialiser.dart` | DB ↔ JSON serialisation; hard-codes `schemaVersion: 6`
+| `data/cloudkit_sync_service.dart` | CloudKit platform channel implementation
+| `data/google_drive_sync_service.dart` | Google Drive implementation via `googleapis`
+| `data/sync_service_factory.dart` | Platform factory: iOS → CloudKit, else → Google Drive
+| `presentation/providers/sync_settings_provider.dart` | Riverpod providers for settings + state
+| `presentation/widgets/sync_consent_dialog.dart` | One-time consent dialog
+|===
