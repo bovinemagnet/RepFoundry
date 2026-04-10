@@ -295,7 +295,7 @@ Steps:
 . Detect pre-release: tags ending in `-SNAPSHOT` (case-insensitive) are marked as pre-release
 . Decode and write the Android keystore from repository secrets (`KEYSTORE_BASE64`, `KEY_ALIAS`, `KEY_PASSWORD`, `STORE_PASSWORD`) if `KEYSTORE_BASE64` is set
 . Build release APK: `flutter build apk --release`
-. Rename APK to `RepFoundry-{tag}.apk`
+. Rename APK to `RepFoundry-\{tag\}.apk`
 . Create a GitHub Release via `softprops/action-gh-release@v2` with auto-generated release notes and the APK attached as an artifact
 
 NOTE: iOS build and deployment are not yet automated.
