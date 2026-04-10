@@ -9,6 +9,7 @@
 ** xref:features/heart-rate.adoc[Heart Rate Monitoring]
 ** xref:features/programmes.adoc[Programme Builder]
 ** xref:features/analytics.adoc[Advanced Analytics]
+** xref:features/sync.adoc[Cloud Sync]
 ** xref:features/health-sync.adoc[Health Sync]
 ** xref:features/body-metrics.adoc[Body Metrics]
 ** xref:features/notifications.adoc[Notifications]
