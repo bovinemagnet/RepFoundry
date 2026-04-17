@@ -1,7 +1,11 @@
+import 'package:app_settings/app_settings.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import '../domain/models/reminder_settings.dart';
+
+enum NotificationPermission { unknown, granted, denied }
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._();
@@ -40,6 +44,74 @@ class NotificationService {
 
     await _plugin.initialize(settings: settings);
     _initialised = true;
+  }
+
+  Future<NotificationPermission> permissionStatus() async {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      final enabled = await android?.areNotificationsEnabled();
+      if (enabled == null) return NotificationPermission.unknown;
+      return enabled
+          ? NotificationPermission.granted
+          : NotificationPermission.denied;
+    }
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      final ios = _plugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>();
+      final options = await ios?.checkPermissions();
+      if (options == null) return NotificationPermission.unknown;
+      return options.isEnabled
+          ? NotificationPermission.granted
+          : NotificationPermission.denied;
+    }
+    return NotificationPermission.granted;
+  }
+
+  Future<bool> requestPermission() async {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      return (await android?.requestNotificationsPermission()) ?? false;
+    }
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      final ios = _plugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>();
+      return (await ios?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          )) ??
+          false;
+    }
+    return true;
+  }
+
+  Future<void> openNotificationSettings() {
+    return AppSettings.openAppSettings(type: AppSettingsType.notification);
+  }
+
+  Future<void> showTestNotification() async {
+    await _plugin.show(
+      id: 999,
+      title: 'RepFoundry test notification',
+      body: 'If you can see this, reminders will work.',
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'workout_reminders',
+          'Workout Reminders',
+          channelDescription: 'Scheduled workout reminder notifications',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      payload: 'test_notification',
+    );
   }
 
   Future<void> scheduleWeeklyReminders(

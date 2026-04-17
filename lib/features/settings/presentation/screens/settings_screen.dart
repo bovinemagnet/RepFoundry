@@ -387,36 +387,7 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           _SectionHeader(title: s.sectionReminders),
-          _ReminderDaysPicker(ref: ref, settings: ref.watch(reminderSettingsProvider)),
-          ListTile(
-            leading: const Icon(Icons.access_time),
-            title: Text(s.reminderTime),
-            subtitle: Text(s.reminderTimeSubtitle),
-            trailing: Text(
-              s.reminderTimeOfDay(
-                ref.watch(reminderSettingsProvider).hour.toString().padLeft(2, '0'),
-                ref.watch(reminderSettingsProvider).minute.toString().padLeft(2, '0'),
-              ),
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            onTap: () async {
-              final settings = ref.read(reminderSettingsProvider);
-              final time = await showTimePicker(
-                context: context,
-                initialTime: TimeOfDay(hour: settings.hour, minute: settings.minute),
-              );
-              if (time != null) {
-                ref.read(reminderSettingsProvider.notifier).setTime(time.hour, time.minute);
-              }
-            },
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.local_fire_department_outlined),
-            title: Text(s.streakReminder),
-            subtitle: Text(s.streakReminderSubtitle),
-            value: ref.watch(reminderSettingsProvider).streakReminderEnabled,
-            onChanged: (_) => ref.read(reminderSettingsProvider.notifier).toggleStreakReminder(),
-          ),
+          _NotificationsTile(),
           _HealthSyncSection(),
           _CloudSyncSection(),
           _SectionHeader(title: s.sectionData),
@@ -1045,16 +1016,30 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _ReminderDaysPicker extends StatelessWidget {
-  const _ReminderDaysPicker({required this.ref, required this.settings});
-
-  final WidgetRef ref;
-  final ReminderSettings settings;
-
+class _NotificationsTile extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
-    final dayLabels = {
+    final settings = ref.watch(reminderSettingsProvider);
+    final subtitle = _summary(context, s, settings);
+    return ListTile(
+      leading: const Icon(Icons.notifications_outlined),
+      title: Text(s.notificationsTileTitle),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => context.push('/settings/notifications'),
+    );
+  }
+
+  String _summary(
+    BuildContext context,
+    S s,
+    ReminderSettings settings,
+  ) {
+    if (!settings.hasReminders) {
+      return s.notificationsTileSubtitleEmpty;
+    }
+    final dayLabels = <int, String>{
       DateTime.monday: s.mondayShort,
       DateTime.tuesday: s.tuesdayShort,
       DateTime.wednesday: s.wednesdayShort,
@@ -1063,20 +1048,13 @@ class _ReminderDaysPicker extends StatelessWidget {
       DateTime.saturday: s.saturdayShort,
       DateTime.sunday: s.sundayShort,
     };
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: dayLabels.entries.map((entry) {
-          final selected = settings.enabledDays.contains(entry.key);
-          return FilterChip(
-            label: Text(entry.value),
-            selected: selected,
-            onSelected: (_) => ref.read(reminderSettingsProvider.notifier).toggleDay(entry.key),
-          );
-        }).toList(),
-      ),
+    final days = (settings.enabledDays.toList()..sort())
+        .map((d) => dayLabels[d]!)
+        .join(', ');
+    final time = s.reminderTimeOfDay(
+      settings.hour.toString().padLeft(2, '0'),
+      settings.minute.toString().padLeft(2, '0'),
     );
+    return s.notificationsTileSubtitleSummary(days, time);
   }
 }

@@ -1201,6 +1201,48 @@ class SKo extends S {
   }
 
   @override
+  String get notificationsScreenTitle => 'Notifications';
+
+  @override
+  String get notificationsTileTitle => 'Notifications';
+
+  @override
+  String get notificationsTileSubtitleEmpty => 'No reminders configured';
+
+  @override
+  String notificationsTileSubtitleSummary(String days, String time) {
+    return '$days at $time';
+  }
+
+  @override
+  String get permissionDeniedBanner =>
+      'Notifications are blocked. Reminders won\'t fire until you enable them in system settings.';
+
+  @override
+  String get openSystemSettings => 'Open settings';
+
+  @override
+  String get sendTestNotification => 'Send test notification';
+
+  @override
+  String get sendTestNotificationSubtitle =>
+      'Show a sample notification now to verify setup';
+
+  @override
+  String get testNotificationTitle => 'RepFoundry test notification';
+
+  @override
+  String get testNotificationBody =>
+      'If you can see this, reminders will work.';
+
+  @override
+  String get testNotificationSentSnack => 'Test notification sent';
+
+  @override
+  String get testNotificationBlockedSnack =>
+      'Notifications are blocked — enable them in system settings first';
+
+  @override
   String get analyticsTitle => '분석';
 
   @override

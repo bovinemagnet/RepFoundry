@@ -3,6 +3,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/models/reminder_settings.dart';
 import '../../data/notification_service.dart';
 
+final notificationServiceProvider = Provider<NotificationService>((_) {
+  return NotificationService();
+});
+
 String daysToString(Set<int> days) {
   final sorted = days.toList()..sort();
   return sorted.join(',');
@@ -52,10 +56,11 @@ class ReminderSettingsNotifier extends Notifier<ReminderSettings> {
     final newValue = !state.streakReminderEnabled;
     state = state.copyWith(streakReminderEnabled: newValue);
     await _persist();
+    final service = ref.read(notificationServiceProvider);
     if (newValue) {
-      await NotificationService().scheduleStreakReminder(state.hour, state.minute);
+      await service.scheduleStreakReminder(state.hour, state.minute);
     } else {
-      await NotificationService().cancelStreakReminder();
+      await service.cancelStreakReminder();
     }
   }
 
@@ -68,7 +73,7 @@ class ReminderSettingsNotifier extends Notifier<ReminderSettings> {
   }
 
   Future<void> _reschedule() async {
-    final service = NotificationService();
+    final service = ref.read(notificationServiceProvider);
     await service.scheduleWeeklyReminders(state);
     if (state.streakReminderEnabled) {
       await service.scheduleStreakReminder(state.hour, state.minute);
@@ -79,4 +84,35 @@ class ReminderSettingsNotifier extends Notifier<ReminderSettings> {
 final reminderSettingsProvider =
     NotifierProvider<ReminderSettingsNotifier, ReminderSettings>(
   ReminderSettingsNotifier.new,
+);
+
+class NotificationPermissionNotifier
+    extends AsyncNotifier<NotificationPermission> {
+  @override
+  Future<NotificationPermission> build() {
+    return ref.read(notificationServiceProvider).permissionStatus();
+  }
+
+  Future<NotificationPermission> request() async {
+    final service = ref.read(notificationServiceProvider);
+    state = const AsyncValue.loading();
+    final granted = await service.requestPermission();
+    final result = granted
+        ? NotificationPermission.granted
+        : NotificationPermission.denied;
+    state = AsyncValue.data(result);
+    return result;
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncValue.loading();
+    final result =
+        await ref.read(notificationServiceProvider).permissionStatus();
+    state = AsyncValue.data(result);
+  }
+}
+
+final notificationPermissionProvider = AsyncNotifierProvider<
+    NotificationPermissionNotifier, NotificationPermission>(
+  NotificationPermissionNotifier.new,
 );

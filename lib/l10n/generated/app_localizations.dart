@@ -2286,6 +2286,78 @@ abstract class S {
   /// **'{hour}:{minute}'**
   String reminderTimeOfDay(String hour, String minute);
 
+  /// No description provided for @notificationsScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsScreenTitle;
+
+  /// No description provided for @notificationsTileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsTileTitle;
+
+  /// No description provided for @notificationsTileSubtitleEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminders configured'**
+  String get notificationsTileSubtitleEmpty;
+
+  /// No description provided for @notificationsTileSubtitleSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} at {time}'**
+  String notificationsTileSubtitleSummary(String days, String time);
+
+  /// No description provided for @permissionDeniedBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are blocked. Reminders won\'t fire until you enable them in system settings.'**
+  String get permissionDeniedBanner;
+
+  /// No description provided for @openSystemSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get openSystemSettings;
+
+  /// No description provided for @sendTestNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Send test notification'**
+  String get sendTestNotification;
+
+  /// No description provided for @sendTestNotificationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show a sample notification now to verify setup'**
+  String get sendTestNotificationSubtitle;
+
+  /// No description provided for @testNotificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'RepFoundry test notification'**
+  String get testNotificationTitle;
+
+  /// No description provided for @testNotificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If you can see this, reminders will work.'**
+  String get testNotificationBody;
+
+  /// No description provided for @testNotificationSentSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Test notification sent'**
+  String get testNotificationSentSnack;
+
+  /// No description provided for @testNotificationBlockedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are blocked — enable them in system settings first'**
+  String get testNotificationBlockedSnack;
+
   /// No description provided for @analyticsTitle.
   ///
   /// In en, this message translates to:

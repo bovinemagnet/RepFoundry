@@ -27,7 +27,7 @@ The `hasReminders` computed property returns `true` when `enabledDays` is non-em
 
 == NotificationService
 
-`NotificationService` is a singleton accessible via its factory constructor (`NotificationService()`).
+`NotificationService` is a singleton accessible via its factory constructor (`NotificationService()`), and is injected into Riverpod consumers via `notificationServiceProvider` so tests can swap it for a fake.
 
 === Initialisation
 
@@ -101,6 +101,19 @@ Future<void> cancelAllReminders()    // cancels IDs 1–7 and 100
 
 Weekly reminder notifications use IDs 1–7 (one per day of week).
 
+=== Permission API
+
+[source,dart]
+----
+Future<NotificationPermission> permissionStatus()  // unknown | granted | denied
+Future<bool> requestPermission()                  // returns granted state
+Future<void> openNotificationSettings()           // launches system settings
+Future<void> showTestNotification()               // fires an immediate notification (ID 999)
+----
+
+`NotificationPermissionNotifier` (an `AsyncNotifier`) wraps these calls so the UI can observe and react to permission changes.
+The notifications screen calls `request()` lazily — only when the user enables their first reminder day, the streak toggle, or the test notification button.
+
 == Scheduling Algorithm
 
 The `_nextInstanceOfDayAndTime` helper finds the next calendar occurrence of the target `(weekday, hour, minute)` tuple in the device's local timezone.
@@ -135,11 +148,19 @@ No additional `Info.plist` keys are required beyond those added by the `flutter_
 
 == Settings UI
 
-The notifications section in the Settings screen contains:
+Notifications have a dedicated screen at the route `/settings/notifications`, reached from a *Notifications* tile in the Settings hub.
+The tile's subtitle summarises current configuration (for example, `Mon, Wed, Fri at 18:00`) or shows _No reminders configured_ when none are enabled.
 
+The notifications screen contains:
+
+* *Permission denied banner* — appears at the top when notifications are blocked at the OS level, with an *Open settings* action that launches the system notification settings via the `app_settings` package
 * *Day picker* — a row of toggle chips for Monday through Sunday
 * *Time picker* — opens the platform time picker; updates `hour` and `minute`
 * *Streak reminder toggle* — enables or disables the daily streak protection notification
+* *Send test notification* — fires an immediate notification so the user can verify their setup is working; disabled when permission is denied
+
+The first time the user enables a reminder day, the streak toggle, or taps the test notification button, the OS permission prompt appears.
+If the user denies permission, the toggle still persists their choice but the banner appears so they can re-grant later.
 
 Changes are saved immediately via `ReminderSettingsNotifier`, which reschedules all active notifications to reflect the updated preferences.
 
@@ -156,7 +177,13 @@ Changes are saved immediately via `ReminderSettingsNotifier`, which reschedules 
 | `NotificationService` singleton — scheduling and cancellation
 
 | `lib/features/notifications/presentation/providers/reminder_settings_provider.dart`
-| `ReminderSettingsNotifier` — SharedPreferences-backed settings state
+| `ReminderSettingsNotifier` + `NotificationPermissionNotifier` + `notificationServiceProvider`
+
+| `lib/features/notifications/presentation/screens/notifications_screen.dart`
+| Dedicated `/settings/notifications` screen with permission banner + test notification button
+
+| `lib/features/notifications/presentation/widgets/reminder_days_picker.dart`
+| `ReminderDaysPicker` widget — 7 FilterChips with optional `onBeforeToggle` permission gate
 |===
 
 == Related Features

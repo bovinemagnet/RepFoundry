@@ -7,6 +7,7 @@ import '../features/history/presentation/screens/workout_detail_screen.dart';
 import '../features/history/presentation/screens/exercise_progress_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/settings/presentation/screens/about_screen.dart';
+import '../features/notifications/presentation/screens/notifications_screen.dart';
 import '../features/templates/presentation/screens/template_list_screen.dart';
 import '../features/templates/presentation/screens/template_edit_screen.dart';
 import '../features/exercises/presentation/screens/exercise_picker_screen.dart';
@@ -56,6 +57,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'about',
                 builder: (context, state) => const AboutScreen(),
+              ),
+              GoRoute(
+                path: 'notifications',
+                builder: (context, state) => const NotificationsScreen(),
               ),
             ],
           ),

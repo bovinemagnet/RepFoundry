@@ -548,6 +548,24 @@
       "minute": { "type": "String" }
     }
   },
+  "notificationsScreenTitle": "Notifications",
+  "notificationsTileTitle": "Notifications",
+  "notificationsTileSubtitleEmpty": "No reminders configured",
+  "notificationsTileSubtitleSummary": "{days} at {time}",
+  "@notificationsTileSubtitleSummary": {
+    "placeholders": {
+      "days": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
+  "permissionDeniedBanner": "Notifications are blocked. Reminders won\u0027t fire until you enable them in system settings.",
+  "openSystemSettings": "Open settings",
+  "sendTestNotification": "Send test notification",
+  "sendTestNotificationSubtitle": "Show a sample notification now to verify setup",
+  "testNotificationTitle": "RepFoundry test notification",
+  "testNotificationBody": "If you can see this, reminders will work.",
+  "testNotificationSentSnack": "Test notification sent",
+  "testNotificationBlockedSnack": "Notifications are blocked \u2014 enable them in system settings first",
 
   "analyticsTitle": "Analytics",
   "weeklyVolumeTitle": "Weekly Volume Trend",
