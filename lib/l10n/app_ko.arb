@@ -90,6 +90,7 @@
   "zoneMethodCustom": "맞춤 구간",
   "zoneMethodClinicianCap": "의사 상한",
   "zoneMethodHrr": "심박수 예비능 (Karvonen)",
+  "zoneMethodLthrFriel": "젖산 역치 (Friel)",
   "zoneMethodMeasuredMax": "측정 최대 심박수",
   "zoneMethodEstimatedMax": "나이 추정 최대 심박수",
   "reliabilityHigh": "높음",

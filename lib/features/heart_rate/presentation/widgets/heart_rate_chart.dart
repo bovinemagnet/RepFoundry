@@ -1,8 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-
-import '../../domain/zone_calculator.dart';
-import '../controllers/heart_rate_panel_state.dart';
+import 'package:hr_zones/hr_zones.dart';
 
 /// Real-time heart rate line chart with optional HR zone bands.
 ///
@@ -63,8 +61,8 @@ class HeartRateChart extends StatelessWidget {
     final maxBpm = bpmValues.reduce((a, b) => a > b ? a : b);
     final range = maxBpm - minBpm;
     final yPadding = range == 0 ? 20.0 : range * 0.15;
-    final chartMaxHr = zoneConfig?.zones.isNotEmpty == true
-        ? zoneConfig!.zones.last.upperBpm
+    final chartMaxHr = zoneConfig != null && zoneConfig!.zones.isNotEmpty
+        ? zoneConfig!.maxHr
         : null;
     final chartMinY = (minBpm - yPadding).clamp(0, double.infinity).toDouble();
     final chartMaxY = chartMaxHr != null
@@ -208,12 +206,15 @@ class HeartRateChart extends StatelessWidget {
   ) {
     final lines = <HorizontalLine>[];
     for (final zone in config.zones) {
-      final y = zone.lowerBpm.toDouble();
+      final y = zone.lowerBound.toDouble();
       if (y > chartMinY && y < chartMaxY) {
+        final percent = zone.lowerPercent > 0
+            ? (zone.lowerPercent * 100).round()
+            : (zone.lowerBound * 100 / config.maxHr).round();
         lines.add(
           HorizontalLine(
             y: y,
-            color: Color(zone.colourValue).withValues(alpha: 0.6),
+            color: Color(zone.color).withValues(alpha: 0.6),
             strokeWidth: 0.8,
             dashArray: [4, 4],
             label: HorizontalLineLabel(
@@ -225,8 +226,7 @@ class HeartRateChart extends StatelessWidget {
                 fontSize: 8,
                 fontWeight: FontWeight.w500,
               ),
-              labelResolver: (_) =>
-                  '${zone.lowerPercent > 0 ? '${(zone.lowerPercent * 100).round()}%' : ''} ${zone.lowerBpm}',
+              labelResolver: (_) => '$percent% ${zone.lowerBound}',
             ),
           ),
         );
@@ -242,14 +242,16 @@ class HeartRateChart extends StatelessWidget {
   ) {
     final annotations = <HorizontalRangeAnnotation>[];
     for (final zone in config.zones) {
-      final from = zone.lowerBpm.toDouble().clamp(chartMinY, chartMaxY);
-      final to = zone.upperBpm.toDouble().clamp(chartMinY, chartMaxY);
+      final from = zone.lowerBound.toDouble().clamp(chartMinY, chartMaxY);
+      final to = (zone.upperBound ?? config.maxHr)
+          .toDouble()
+          .clamp(chartMinY, chartMaxY);
       if (to > from) {
         annotations.add(
           HorizontalRangeAnnotation(
             y1: from,
             y2: to,
-            color: Color(zone.colourValue).withValues(alpha: 0.15),
+            color: Color(zone.color).withValues(alpha: 0.15),
           ),
         );
       }

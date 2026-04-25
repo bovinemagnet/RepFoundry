@@ -71,7 +71,8 @@ class ExportDataUseCase {
     for (final workout in workouts) {
       final sets = await workoutRepository.getSetsForWorkout(workout.id);
       for (final set in sets) {
-        final name = _escapeCsv(exerciseNames[set.exerciseId] ?? set.exerciseId);
+        final name =
+            _escapeCsv(exerciseNames[set.exerciseId] ?? set.exerciseId);
         final date = dateFormat.format(set.timestamp);
         final rpe = set.rpe?.toStringAsFixed(1) ?? '';
         setLines.writeln(
@@ -82,14 +83,14 @@ class ExportDataUseCase {
 
     // cardio.csv
     final cardioLines = StringBuffer()
-      ..writeln('date,exercise,duration_min,distance_km,avg_pace,avg_heart_rate');
+      ..writeln(
+          'date,exercise,duration_min,distance_km,avg_pace,avg_heart_rate');
     for (final session in cardioSessions) {
-      final name = _escapeCsv(exerciseNames[session.exerciseId] ?? session.exerciseId);
+      final name =
+          _escapeCsv(exerciseNames[session.exerciseId] ?? session.exerciseId);
       // Find workout date
       final workout = await workoutRepository.getWorkout(session.workoutId);
-      final date = workout != null
-          ? dateFormat.format(workout.startedAt)
-          : '';
+      final date = workout != null ? dateFormat.format(workout.startedAt) : '';
       final durationMin = (session.durationSeconds / 60).toStringAsFixed(1);
       final distanceKm = session.distanceMeters != null
           ? (session.distanceMeters! / 1000).toStringAsFixed(2)
@@ -100,8 +101,7 @@ class ExportDataUseCase {
     }
 
     // personal_records.csv
-    final prLines = StringBuffer()
-      ..writeln('date,exercise,record_type,value');
+    final prLines = StringBuffer()..writeln('date,exercise,record_type,value');
     for (final pr in personalRecords) {
       final name = _escapeCsv(exerciseNames[pr.exerciseId] ?? pr.exerciseId);
       final date = dateFormat.format(pr.achievedAt);

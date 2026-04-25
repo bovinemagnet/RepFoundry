@@ -190,6 +190,9 @@ class SEn extends S {
   String get zoneMethodHrr => 'Heart rate reserve (Karvonen)';
 
   @override
+  String get zoneMethodLthrFriel => 'Lactate threshold (Friel)';
+
+  @override
   String get zoneMethodMeasuredMax => 'Measured max HR';
 
   @override

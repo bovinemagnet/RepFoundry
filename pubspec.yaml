@@ -37,6 +37,7 @@ dependencies:
   package_info_plus: ^8.0.0
   google_fonts: ^6.2.1
   app_settings: ^5.1.1
+  hr_zones: ^0.0.2
 
 dev_dependencies:
   flutter_test:

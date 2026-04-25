@@ -9,8 +9,7 @@ import '../../../../core/providers.dart';
 import '../../../cardio/presentation/controllers/cardio_tracking_controller.dart';
 import '../../../cardio/presentation/widgets/hr_device_picker_dialog.dart';
 import '../../../cardio/presentation/widgets/hr_setup_guide_dialog.dart';
-import '../../domain/time_in_zone_calculator.dart';
-import '../../domain/zone_calculator.dart';
+import 'package:hr_zones/hr_zones.dart';
 import '../controllers/heart_rate_panel_controller.dart';
 import '../controllers/heart_rate_panel_state.dart';
 import '../providers/chart_window_provider.dart';
@@ -90,7 +89,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     final zoneConfig = ref.read(zoneConfigurationProvider);
     if (zoneConfig == null || zoneConfig.zones.isEmpty) return;
 
-    final maxBpm = zoneConfig.zones.last.upperBpm;
+    final maxBpm = zoneConfig.maxHr;
     if (currentHr < maxBpm) return;
 
     // Cooldown check
@@ -425,7 +424,7 @@ class _HeroBpmSection extends StatelessWidget {
                 TextSpan(
                   text: activeZone!.displayLabel,
                   style: TextStyle(
-                    color: Color(activeZone!.colourValue),
+                    color: Color(activeZone!.color),
                     fontWeight: FontWeight.bold,
                     fontStyle: FontStyle.italic,
                   ),
@@ -678,9 +677,9 @@ class _ZonesSection extends StatelessWidget {
         for (final zone in zoneConfig.zones.reversed) ...[
           _ZoneCard(
             zone: zone,
-            duration: summary.zoneTime[zone.zoneNumber] ?? Duration.zero,
+            duration: summary.durationInZone(zone.zoneNumber),
             accentColour:
-                zoneThemeColours[zone.zoneNumber] ?? Color(zone.colourValue),
+                zoneThemeColours[zone.zoneNumber] ?? Color(zone.color),
             backgroundIcon: zoneIcons[zone.zoneNumber] ?? Icons.favorite,
           ),
           const SizedBox(height: 8),
@@ -689,7 +688,7 @@ class _ZonesSection extends StatelessWidget {
         // Summary stats
         const SizedBox(height: 4),
         Text(
-          s.moderateOrHigher(_formatDuration(summary.moderateOrHigher)),
+          s.moderateOrHigher(_formatDuration(summary.moderateOrHigherDuration)),
           style: tt.bodySmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         if (summary.recoveryHrDrop != null) ...[
@@ -776,7 +775,9 @@ class _ZoneCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${zone.lowerBpm}–${zone.upperBpm} BPM',
+                  zone.upperBound != null
+                      ? '${zone.lowerBound}–${zone.upperBound} BPM'
+                      : '${zone.lowerBound}+ BPM',
                   style: tt.labelSmall?.copyWith(
                     color: cs.onSurfaceVariant,
                     fontSize: 9,

@@ -49,9 +49,12 @@ class ImportDataUseCase {
         final exercise = Exercise(
           id: map['id'] as String,
           name: map['name'] as String,
-          category: _parseEnum(ExerciseCategory.values, map['category'] as String),
-          muscleGroup: _parseEnum(MuscleGroup.values, map['muscleGroup'] as String),
-          equipmentType: _parseEnum(EquipmentType.values, map['equipmentType'] as String),
+          category:
+              _parseEnum(ExerciseCategory.values, map['category'] as String),
+          muscleGroup:
+              _parseEnum(MuscleGroup.values, map['muscleGroup'] as String),
+          equipmentType:
+              _parseEnum(EquipmentType.values, map['equipmentType'] as String),
           isCustom: true,
           updatedAt: DateTime.now().toUtc(),
         );

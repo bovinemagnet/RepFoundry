@@ -90,6 +90,7 @@
   "zoneMethodCustom": "Custom zones",
   "zoneMethodClinicianCap": "Clinician cap",
   "zoneMethodHrr": "Heart rate reserve (Karvonen)",
+  "zoneMethodLthrFriel": "Lactate threshold (Friel)",
   "zoneMethodMeasuredMax": "Measured max HR",
   "zoneMethodEstimatedMax": "Age-estimated max HR",
   "reliabilityHigh": "High",

@@ -90,6 +90,7 @@
   "zoneMethodCustom": "自定义区间",
   "zoneMethodClinicianCap": "医生上限",
   "zoneMethodHrr": "心率储备法（Karvonen）",
+  "zoneMethodLthrFriel": "乳酸阈值（Friel）",
   "zoneMethodMeasuredMax": "实测最大心率",
   "zoneMethodEstimatedMax": "按年龄估算最大心率",
   "reliabilityHigh": "高",

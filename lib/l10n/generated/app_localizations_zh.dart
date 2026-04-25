@@ -190,6 +190,9 @@ class SZh extends S {
   String get zoneMethodHrr => '心率储备法（Karvonen）';
 
   @override
+  String get zoneMethodLthrFriel => '乳酸阈值（Friel）';
+
+  @override
   String get zoneMethodMeasuredMax => '实测最大心率';
 
   @override
@@ -1804,6 +1807,9 @@ class SZhHans extends SZh {
 
   @override
   String get zoneMethodHrr => '心率储备法（Karvonen）';
+
+  @override
+  String get zoneMethodLthrFriel => '乳酸阈值（Friel）';
 
   @override
   String get zoneMethodMeasuredMax => '实测最大心率';

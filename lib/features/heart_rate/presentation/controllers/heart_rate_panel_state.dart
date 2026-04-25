@@ -1,10 +1,6 @@
-/// A timestamped heart rate reading for charting.
-class HrReading {
-  final int bpm;
-  final Duration elapsed;
+import 'package:hr_zones/hr_zones.dart';
 
-  const HrReading({required this.bpm, required this.elapsed});
-}
+export 'package:hr_zones/hr_zones.dart' show HrReading;
 
 class HeartRatePanelState {
   final bool isMonitoring;

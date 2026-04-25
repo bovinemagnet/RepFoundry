@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hr_zones/hr_zones.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
-import '../../domain/zone_calculator.dart';
 import 'reliability_indicator.dart';
 
 /// Widget showing the HR zone legend with BPM ranges.
@@ -21,7 +21,7 @@ class HeartRateZoneLegend extends StatelessWidget {
     final activeZone =
         currentBpm != null ? currentZoneFromConfig(currentBpm!, config) : null;
 
-    final maxBpm = config.zones.isNotEmpty ? config.zones.last.upperBpm : 0;
+    final maxBpm = config.maxHr;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,7 +39,7 @@ class HeartRateZoneLegend extends StatelessWidget {
             ReliabilityIndicator(config: config),
           ],
         ),
-        if (config.activeMethod == ZoneMethod.clinicianCap) ...[
+        if (config.method == ZoneMethod.clinicianCap) ...[
           const SizedBox(height: 4),
           Text(
             s.clinicianLimitsInUse,
@@ -59,7 +59,7 @@ class HeartRateZoneLegend extends StatelessWidget {
                   width: 12,
                   height: 12,
                   decoration: BoxDecoration(
-                    color: Color(zone.colourValue),
+                    color: Color(zone.color),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -75,7 +75,7 @@ class HeartRateZoneLegend extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${zone.lowerBpm}–${zone.upperBpm} ${s.bpmSuffix}',
+                  '${zone.lowerBound}–${zone.upperBound ?? config.maxHr} ${s.bpmSuffix}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontWeight: activeZone?.zoneNumber == zone.zoneNumber

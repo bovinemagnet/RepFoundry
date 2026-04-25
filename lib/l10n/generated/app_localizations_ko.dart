@@ -190,6 +190,9 @@ class SKo extends S {
   String get zoneMethodHrr => '심박수 예비능 (Karvonen)';
 
   @override
+  String get zoneMethodLthrFriel => '젖산 역치 (Friel)';
+
+  @override
   String get zoneMethodMeasuredMax => '측정 최대 심박수';
 
   @override

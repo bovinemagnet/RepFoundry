@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/heart_rate/domain/analytics_events.dart';
-import 'package:rep_foundry/features/heart_rate/domain/models/health_profile.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/health_profile_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -30,7 +29,6 @@ void main() {
           hrAnalyticsReporterProvider.overrideWithValue(analytics),
         ],
       );
-      // Allow the async _load() from build to complete.
       await Future<void>.delayed(Duration.zero);
     });
 
@@ -41,16 +39,15 @@ void main() {
     test('initial state is empty profile', () {
       final state = container.read(healthProfileProvider);
       expect(state.age, isNull);
-      expect(state.restingHeartRate, isNull);
-      expect(state.takingBetaBlocker, isFalse);
-      expect(state.hasHeartCondition, isFalse);
+      expect(state.restingHr, isNull);
+      expect(state.betaBlocker, isFalse);
+      expect(state.heartCondition, isFalse);
     });
 
     test('updateAge sets age and fires analytics', () async {
       final notifier = container.read(healthProfileProvider.notifier);
       await notifier.updateAge(49);
       expect(container.read(healthProfileProvider).age, 49);
-      expect(container.read(healthProfileProvider).estimatedMaxHr, 171);
 
       final ageEvents = analytics.events
           .where((e) => e.$1 == HrAnalyticsEvent.healthFieldCompleted)
@@ -69,7 +66,7 @@ void main() {
     test('updateRestingHeartRate sets value and fires analytics', () async {
       final notifier = container.read(healthProfileProvider.notifier);
       await notifier.updateRestingHeartRate(60);
-      expect(container.read(healthProfileProvider).restingHeartRate, 60);
+      expect(container.read(healthProfileProvider).restingHr, 60);
 
       final events = analytics.events
           .where((e) =>
@@ -82,14 +79,14 @@ void main() {
     test('updateMeasuredMaxHeartRate sets value', () async {
       final notifier = container.read(healthProfileProvider.notifier);
       await notifier.updateMeasuredMaxHeartRate(185);
-      expect(container.read(healthProfileProvider).measuredMaxHeartRate, 185);
+      expect(container.read(healthProfileProvider).measuredMaxHr, 185);
     });
 
     test('setTakingBetaBlocker enables caution mode and fires analytics',
         () async {
       final notifier = container.read(healthProfileProvider.notifier);
       await notifier.setTakingBetaBlocker(true);
-      expect(container.read(healthProfileProvider).takingBetaBlocker, isTrue);
+      expect(container.read(healthProfileProvider).betaBlocker, isTrue);
       expect(container.read(healthProfileProvider).isCautionMode, isTrue);
 
       final cautionEvents = analytics.events
@@ -101,7 +98,7 @@ void main() {
     test('setHasHeartCondition enables caution mode', () async {
       final notifier = container.read(healthProfileProvider.notifier);
       await notifier.setHasHeartCondition(true);
-      expect(container.read(healthProfileProvider).hasHeartCondition, isTrue);
+      expect(container.read(healthProfileProvider).heartCondition, isTrue);
       expect(container.read(healthProfileProvider).isCautionMode, isTrue);
     });
 
@@ -123,27 +120,12 @@ void main() {
       expect(container.read(healthProfileProvider).clinicianMaxHr, isNull);
     });
 
-    test('setCustomZones stores and clears custom zones', () async {
-      final notifier = container.read(healthProfileProvider.notifier);
-      const zones = [
-        CustomZoneBoundary(lowerBpm: 60, upperBpm: 100, label: 'Easy'),
-        CustomZoneBoundary(lowerBpm: 100, upperBpm: 140, label: 'Hard'),
-      ];
-      await notifier.setCustomZones(zones);
-      expect(container.read(healthProfileProvider).customZones, hasLength(2));
-      expect(container.read(healthProfileProvider).customZones!.first.label, 'Easy');
-
-      await notifier.setCustomZones(null);
-      expect(container.read(healthProfileProvider).customZones, isNull);
-    });
-
     test('caution mode analytics not fired when disabling flags', () async {
       final notifier = container.read(healthProfileProvider.notifier);
       await notifier.setTakingBetaBlocker(true);
       analytics.events.clear();
 
       await notifier.setTakingBetaBlocker(false);
-      // caution mode is now false, so no event should fire
       final cautionEvents = analytics.events
           .where((e) => e.$1 == HrAnalyticsEvent.cautionModeActivated)
           .toList();

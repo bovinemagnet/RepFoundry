@@ -148,7 +148,6 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
       }
     });
   }
-
 }
 
 /// NON-autoDispose so monitoring survives tab switches.

@@ -40,12 +40,11 @@ class _HealthProfileOnboardingState
     super.initState();
     final profile = ref.read(healthProfileProvider);
     _ageController.text = profile.age?.toString() ?? '';
-    _restingHrController.text = profile.restingHeartRate?.toString() ?? '';
-    _measuredMaxController.text =
-        profile.measuredMaxHeartRate?.toString() ?? '';
+    _restingHrController.text = profile.restingHr?.toString() ?? '';
+    _measuredMaxController.text = profile.measuredMaxHr?.toString() ?? '';
     _clinicianMaxController.text = profile.clinicianMaxHr?.toString() ?? '';
-    _betaBlocker = profile.takingBetaBlocker;
-    _heartCondition = profile.hasHeartCondition;
+    _betaBlocker = profile.betaBlocker;
+    _heartCondition = profile.heartCondition;
   }
 
   @override

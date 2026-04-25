@@ -90,6 +90,7 @@
   "zoneMethodCustom": "カスタムゾーン",
   "zoneMethodClinicianCap": "医師上限",
   "zoneMethodHrr": "心拍予備能（Karvonen）",
+  "zoneMethodLthrFriel": "乳酸閾値（Friel）",
   "zoneMethodMeasuredMax": "実測最大心拍数",
   "zoneMethodEstimatedMax": "年齢推定最大心拍数",
   "reliabilityHigh": "高",

@@ -6,13 +6,17 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../heart_rate/domain/zone_calculator.dart';
+import 'package:hr_zones/hr_zones.dart';
 import '../../../heart_rate/presentation/providers/health_profile_provider.dart';
 import '../../../heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_bands_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../../heart_rate/presentation/widgets/health_profile_onboarding.dart';
-import '../../../../core/providers.dart' show healthSyncServiceProvider, importDataUseCaseProvider, syncOrchestratorProvider;
+import '../../../../core/providers.dart'
+    show
+        healthSyncServiceProvider,
+        importDataUseCaseProvider,
+        syncOrchestratorProvider;
 import '../../../sync/domain/models/sync_state.dart';
 import '../../../sync/presentation/providers/sync_settings_provider.dart';
 import '../../../sync/presentation/widgets/sync_consent_dialog.dart';
@@ -109,15 +113,18 @@ class SettingsScreen extends ConsumerWidget {
                 Text(
                   s.settingsTitle,
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Fine-tune your performance experience.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
-                  ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurfaceVariant
+                            .withValues(alpha: 0.8),
+                      ),
                 ),
               ],
             ),
@@ -128,7 +135,11 @@ class SettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.cake_outlined),
             title: Text(s.ageLabel),
             subtitle: userAge != null
-                ? Text(s.ageSubtitleSet(userAge, 220 - userAge))
+                ? Text(s.ageSubtitleSet(
+                    userAge,
+                    profile.estimatedMaxHr ??
+                        MaxHrFormula.tanaka.apply(userAge),
+                  ))
                 : Text(s.ageSubtitleEmpty),
             trailing: userAge != null
                 ? IconButton(
@@ -142,10 +153,10 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.monitor_heart_outlined),
             title: Text(s.restingHeartRate),
-            subtitle: profile.restingHeartRate != null
-                ? Text(s.restingHrSubtitleSet(profile.restingHeartRate!))
+            subtitle: profile.restingHr != null
+                ? Text(s.restingHrSubtitleSet(profile.restingHr!))
                 : Text(s.restingHrSubtitleEmpty),
-            trailing: profile.restingHeartRate != null
+            trailing: profile.restingHr != null
                 ? IconButton(
                     icon: const Icon(Icons.clear),
                     onPressed: () => ref
@@ -160,7 +171,7 @@ class SettingsScreen extends ConsumerWidget {
               label: s.bpmSuffix,
               hint: s.restingHrHint,
               suffix: s.bpmSuffix,
-              current: profile.restingHeartRate,
+              current: profile.restingHr,
               min: 20,
               max: 220,
               onSave: (v) => ref
@@ -171,11 +182,10 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.speed_outlined),
             title: Text(s.measuredMaxHeartRate),
-            subtitle: profile.measuredMaxHeartRate != null
-                ? Text(
-                    s.measuredMaxHrSubtitleSet(profile.measuredMaxHeartRate!))
+            subtitle: profile.measuredMaxHr != null
+                ? Text(s.measuredMaxHrSubtitleSet(profile.measuredMaxHr!))
                 : Text(s.measuredMaxHrSubtitleEmpty),
-            trailing: profile.measuredMaxHeartRate != null
+            trailing: profile.measuredMaxHr != null
                 ? IconButton(
                     icon: const Icon(Icons.clear),
                     onPressed: () => ref
@@ -190,7 +200,7 @@ class SettingsScreen extends ConsumerWidget {
               label: s.bpmSuffix,
               hint: s.measuredMaxHrHint,
               suffix: s.bpmSuffix,
-              current: profile.measuredMaxHeartRate,
+              current: profile.measuredMaxHr,
               min: 60,
               max: 250,
               onSave: (v) => ref
@@ -202,7 +212,7 @@ class SettingsScreen extends ConsumerWidget {
             secondary: const Icon(Icons.medication_outlined),
             title: Text(s.betaBlockerMedication),
             subtitle: Text(s.betaBlockerSubtitle),
-            value: profile.takingBetaBlocker,
+            value: profile.betaBlocker,
             onChanged: (v) => ref
                 .read(healthProfileProvider.notifier)
                 .setTakingBetaBlocker(v),
@@ -211,7 +221,7 @@ class SettingsScreen extends ConsumerWidget {
             secondary: const Icon(Icons.favorite_outline),
             title: Text(s.heartConditionLabel),
             subtitle: Text(s.heartConditionSubtitle),
-            value: profile.hasHeartCondition,
+            value: profile.heartCondition,
             onChanged: (v) => ref
                 .read(healthProfileProvider.notifier)
                 .setHasHeartCondition(v),
@@ -249,7 +259,7 @@ class SettingsScreen extends ConsumerWidget {
               leading: const Icon(Icons.bar_chart_outlined),
               title: Text(s.zoneMethod),
               subtitle: Text(
-                '${_methodLabel(zoneConfig.activeMethod, s)} · '
+                '${_methodLabel(zoneConfig.method, s)} · '
                 '${_reliabilityLabel(zoneConfig.reliability, s)} confidence',
               ),
             ),
@@ -433,11 +443,14 @@ class SettingsScreen extends ConsumerWidget {
                 Text(
                   'REPFOUNDRY',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    fontStyle: FontStyle.italic,
-                    letterSpacing: 2.0,
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                  ),
+                        fontWeight: FontWeight.w900,
+                        fontStyle: FontStyle.italic,
+                        letterSpacing: 2.0,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.2),
+                      ),
                 ),
               ],
             ),
@@ -556,7 +569,8 @@ class SettingsScreen extends ConsumerWidget {
     return switch (method) {
       ZoneMethod.custom => s.zoneMethodCustom,
       ZoneMethod.clinicianCap => s.zoneMethodClinicianCap,
-      ZoneMethod.hrr => s.zoneMethodHrr,
+      ZoneMethod.hrrKarvonen => s.zoneMethodHrr,
+      ZoneMethod.lthrFriel => s.zoneMethodLthrFriel,
       ZoneMethod.percentOfMeasuredMax => s.zoneMethodMeasuredMax,
       ZoneMethod.percentOfEstimatedMax => s.zoneMethodEstimatedMax,
     };
@@ -816,8 +830,7 @@ class _HealthSyncSection extends ConsumerWidget {
               );
               if (!granted && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text(s.healthSyncPermissionDenied)),
+                  SnackBar(content: Text(s.healthSyncPermissionDenied)),
                 );
                 return; // Don't toggle if permissions denied
               }
@@ -901,8 +914,9 @@ class _CloudSyncSection extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.access_time),
             title: Text(settings.lastSyncAt != null
-                ? s.syncLastSynced(
-                    DateFormat.yMd().add_jm().format(settings.lastSyncAt!.toLocal()))
+                ? s.syncLastSynced(DateFormat.yMd()
+                    .add_jm()
+                    .format(settings.lastSyncAt!.toLocal()))
                 : s.syncNeverSynced),
           ),
           ListTile(
@@ -945,8 +959,8 @@ class _CloudSyncSection extends ConsumerWidget {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(
-                                s.syncError(result.errorMessage ?? '')),
+                            content:
+                                Text(s.syncError(result.errorMessage ?? '')),
                           ),
                         );
                       }
@@ -973,8 +987,7 @@ class _CloudSyncSection extends ConsumerWidget {
                     ),
                     FilledButton(
                       style: FilledButton.styleFrom(
-                        backgroundColor:
-                            Theme.of(ctx).colorScheme.error,
+                        backgroundColor: Theme.of(ctx).colorScheme.error,
                       ),
                       onPressed: () => Navigator.pop(ctx, true),
                       child: Text(s.syncDisableConfirmAction),

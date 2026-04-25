@@ -1,11 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hr_zones/hr_zones.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/providers.dart';
 import '../../domain/analytics_events.dart';
-import '../../domain/models/health_profile.dart';
 
 class HealthProfileNotifier extends Notifier<HealthProfile> {
   @override
@@ -20,7 +18,6 @@ class HealthProfileNotifier extends Notifier<HealthProfile> {
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Migrate legacy user_age key if present
     int? age = prefs.getInt('hr_age');
     if (age == null) {
       final legacyAge = prefs.getInt('user_age');
@@ -30,27 +27,13 @@ class HealthProfileNotifier extends Notifier<HealthProfile> {
       }
     }
 
-    List<CustomZoneBoundary>? customZones;
-    final zonesJson = prefs.getString('hr_custom_zones');
-    if (zonesJson != null) {
-      final list = jsonDecode(zonesJson) as List;
-      customZones = list
-          .map((e) => CustomZoneBoundary(
-                lowerBpm: e['lowerBpm'] as int,
-                upperBpm: e['upperBpm'] as int,
-                label: e['label'] as String,
-              ))
-          .toList();
-    }
-
     state = HealthProfile(
       age: age,
-      restingHeartRate: prefs.getInt('hr_resting_hr'),
-      measuredMaxHeartRate: prefs.getInt('hr_measured_max_hr'),
+      restingHr: prefs.getInt('hr_resting_hr'),
+      measuredMaxHr: prefs.getInt('hr_measured_max_hr'),
       clinicianMaxHr: prefs.getInt('hr_clinician_max_hr'),
-      takingBetaBlocker: prefs.getBool('hr_beta_blocker') ?? false,
-      hasHeartCondition: prefs.getBool('hr_heart_condition') ?? false,
-      customZones: customZones,
+      betaBlocker: prefs.getBool('hr_beta_blocker') ?? false,
+      heartCondition: prefs.getBool('hr_heart_condition') ?? false,
     );
   }
 
@@ -60,7 +43,6 @@ class HealthProfileNotifier extends Notifier<HealthProfile> {
     final prefs = await SharedPreferences.getInstance();
     if (age != null) {
       await prefs.setInt('hr_age', age);
-      // Keep legacy key in sync
       await prefs.setInt('user_age', age);
       analyticsReporter?.trackEvent(
         HrAnalyticsEvent.healthFieldCompleted,
@@ -74,8 +56,8 @@ class HealthProfileNotifier extends Notifier<HealthProfile> {
 
   Future<void> updateRestingHeartRate(int? restingHr) async {
     state = restingHr != null
-        ? state.copyWith(restingHeartRate: restingHr)
-        : state.copyWith(clearRestingHeartRate: true);
+        ? state.copyWith(restingHr: restingHr)
+        : state.copyWith(clearRestingHr: true);
     final prefs = await SharedPreferences.getInstance();
     if (restingHr != null) {
       await prefs.setInt('hr_resting_hr', restingHr);
@@ -90,8 +72,8 @@ class HealthProfileNotifier extends Notifier<HealthProfile> {
 
   Future<void> updateMeasuredMaxHeartRate(int? measuredMax) async {
     state = measuredMax != null
-        ? state.copyWith(measuredMaxHeartRate: measuredMax)
-        : state.copyWith(clearMeasuredMaxHeartRate: true);
+        ? state.copyWith(measuredMaxHr: measuredMax)
+        : state.copyWith(clearMeasuredMaxHr: true);
     final prefs = await SharedPreferences.getInstance();
     if (measuredMax != null) {
       await prefs.setInt('hr_measured_max_hr', measuredMax);
@@ -101,7 +83,7 @@ class HealthProfileNotifier extends Notifier<HealthProfile> {
   }
 
   Future<void> setTakingBetaBlocker(bool value) async {
-    state = state.copyWith(takingBetaBlocker: value);
+    state = state.copyWith(betaBlocker: value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hr_beta_blocker', value);
     if (state.isCautionMode) {
@@ -110,7 +92,7 @@ class HealthProfileNotifier extends Notifier<HealthProfile> {
   }
 
   Future<void> setHasHeartCondition(bool value) async {
-    state = state.copyWith(hasHeartCondition: value);
+    state = state.copyWith(heartCondition: value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hr_heart_condition', value);
     if (state.isCautionMode) {
@@ -128,25 +110,6 @@ class HealthProfileNotifier extends Notifier<HealthProfile> {
       analyticsReporter?.trackEvent(HrAnalyticsEvent.customCapUsed);
     } else {
       await prefs.remove('hr_clinician_max_hr');
-    }
-  }
-
-  Future<void> setCustomZones(List<CustomZoneBoundary>? zones) async {
-    state = zones != null
-        ? state.copyWith(customZones: zones)
-        : state.copyWith(clearCustomZones: true);
-    final prefs = await SharedPreferences.getInstance();
-    if (zones != null) {
-      final json = jsonEncode(zones
-          .map((z) => {
-                'lowerBpm': z.lowerBpm,
-                'upperBpm': z.upperBpm,
-                'label': z.label,
-              })
-          .toList());
-      await prefs.setString('hr_custom_zones', json);
-    } else {
-      await prefs.remove('hr_custom_zones');
     }
   }
 }

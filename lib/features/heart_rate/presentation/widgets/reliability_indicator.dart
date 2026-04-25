@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hr_zones/hr_zones.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
-
-import '../../domain/zone_calculator.dart';
 
 /// Shows the reliability level of the current zone configuration.
 class ReliabilityIndicator extends StatelessWidget {

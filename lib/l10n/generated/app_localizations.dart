@@ -444,6 +444,12 @@ abstract class S {
   /// **'Heart rate reserve (Karvonen)'**
   String get zoneMethodHrr;
 
+  /// No description provided for @zoneMethodLthrFriel.
+  ///
+  /// In en, this message translates to:
+  /// **'Lactate threshold (Friel)'**
+  String get zoneMethodLthrFriel;
+
   /// No description provided for @zoneMethodMeasuredMax.
   ///
   /// In en, this message translates to:

@@ -190,6 +190,9 @@ class SJa extends S {
   String get zoneMethodHrr => '心拍予備能（Karvonen）';
 
   @override
+  String get zoneMethodLthrFriel => '乳酸閾値（Friel）';
+
+  @override
   String get zoneMethodMeasuredMax => '実測最大心拍数';
 
   @override

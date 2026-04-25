@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hr_zones/hr_zones.dart';
 
 import '../../../../core/providers.dart';
 import '../../domain/analytics_events.dart';
-import '../../domain/zone_calculator.dart';
 import 'health_profile_provider.dart';
 
 /// Derived provider that recalculates zones whenever the health profile changes.
@@ -12,7 +12,7 @@ final zoneConfigurationProvider = Provider<ZoneConfiguration?>((ref) {
   if (config != null) {
     ref.read(hrAnalyticsReporterProvider).trackEvent(
       HrAnalyticsEvent.zoneMethodSelected,
-      {'method': config.activeMethod.name},
+      {'method': config.method.name},
     );
   }
   return config;
