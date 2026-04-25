@@ -85,6 +85,32 @@ void main() {
       expect(days.first.templateName, 'Push');
     });
 
+    test('startedAt round-trips through create/get', () async {
+      final start = DateTime.utc(2026, 1, 5);
+      final p = Programme.create(name: 'PPL', durationWeeks: 4)
+          .copyWith(startedAt: start);
+      await repo.createProgramme(p);
+
+      final fetched = await repo.getProgramme(p.id);
+      expect(fetched!.startedAt, start);
+      expect(fetched.isStarted, isTrue);
+    });
+
+    test('markProgrammeStarted populates startedAt for unstarted programme',
+        () async {
+      final p = Programme.create(name: 'PPL', durationWeeks: 4);
+      await repo.createProgramme(p);
+
+      final before = await repo.getProgramme(p.id);
+      expect(before!.startedAt, isNull);
+
+      final start = DateTime.utc(2026, 2, 1);
+      await repo.markProgrammeStarted(p.id, startedAt: start);
+
+      final after = await repo.getProgramme(p.id);
+      expect(after!.startedAt, start);
+    });
+
     test('addRule and getRulesForProgramme', () async {
       final p = Programme.create(name: 'PPL', durationWeeks: 4);
       await repo.createProgramme(p);

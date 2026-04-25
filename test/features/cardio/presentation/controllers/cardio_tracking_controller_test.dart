@@ -275,20 +275,55 @@ void main() {
         expect(controller.state.hrDeviceName, 'Polar H10');
       });
 
-      test('HR stream updates currentHeartRate and appends readings', () async {
+      test(
+          'HR stream updates currentHeartRate but does not append readings before start',
+          () async {
         await controller.connectHeartRate('dev1', 'Polar H10');
 
         heartRateService.emitHeartRate(140);
         await Future<void>.delayed(const Duration(milliseconds: 50));
 
+        // currentHeartRate still displays so the user sees the live BPM during
+        // setup, but readings do not accumulate into the session average.
         expect(controller.state.currentHeartRate, 140);
-        expect(controller.state.heartRateReadings, [140]);
+        expect(controller.state.heartRateReadings, isEmpty);
+      });
 
+      test('HR stream appends readings only while session is running',
+          () async {
+        await controller.connectHeartRate('dev1', 'Polar H10');
+        controller.start();
+
+        heartRateService.emitHeartRate(140);
         heartRateService.emitHeartRate(145);
         await Future<void>.delayed(const Duration(milliseconds: 50));
 
-        expect(controller.state.currentHeartRate, 145);
         expect(controller.state.heartRateReadings, [140, 145]);
+
+        // Pause stops accumulation but still updates currentHeartRate.
+        controller.pause();
+        heartRateService.emitHeartRate(150);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+
+        expect(controller.state.currentHeartRate, 150);
+        expect(controller.state.heartRateReadings, [140, 145]);
+      });
+
+      test('start() clears stale heart rate readings from a previous session',
+          () async {
+        await controller.connectHeartRate('dev1', 'Polar H10');
+        controller.start();
+        heartRateService.emitHeartRate(140);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        controller.pause();
+        controller.reset();
+
+        // Defence in depth: even if readings somehow leaked, start clears them.
+        controller.start();
+        heartRateService.emitHeartRate(160);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+
+        expect(controller.state.heartRateReadings, [160]);
       });
 
       test('disconnectHeartRate clears HR state', () async {
@@ -323,6 +358,27 @@ void main() {
         final sessions = await cardioRepo.getSessionsForExercise('e1');
         expect(sessions, hasLength(1));
         expect(sessions.first.avgHeartRate, 150); // (140+150+160)/3
+      });
+
+      test('save tears down HR subscription so post-save samples do not leak',
+          () async {
+        await controller.selectExercise('e1', 'Treadmill');
+        await controller.connectHeartRate('dev1', 'Polar H10');
+        controller.start();
+        heartRateService.emitHeartRate(140);
+        heartRateService.emitHeartRate(160);
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+        await controller.save();
+
+        // Late-arriving samples after save must not pollute the next session.
+        heartRateService.emitHeartRate(220);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+
+        expect(controller.state.heartRateReadings, isEmpty);
+        expect(controller.state.currentHeartRate, isNull);
+        expect(controller.state.hrConnected, isFalse);
       });
 
       test('save with HR readings overrides manual avgHeartRate', () async {

@@ -35,7 +35,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -139,6 +139,11 @@ class AppDatabase extends _$AppDatabase {
                 'ALTER TABLE $table ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0',
               );
             }
+          }
+          if (from < 7) {
+            await customStatement(
+              'ALTER TABLE programmes ADD COLUMN started_at INTEGER',
+            );
           }
         },
       );

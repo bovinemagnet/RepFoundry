@@ -1115,7 +1115,7 @@ class SJa extends S {
   String get importPasteJsonHint => 'エクスポートした JSON をここに貼り付け…';
 
   @override
-  String importComplete(int workouts, int sets) {
+  String importComplete(int workouts, int sets, int cardio) {
     return 'インポート完了：$workouts ワークアウト、$sets セット';
   }
 
@@ -1402,6 +1402,14 @@ class SJa extends S {
   String weekLabel(int number) {
     return '第 $number 週';
   }
+
+  @override
+  String programmeWeekOf(int current, int total) {
+    return 'Week $current of $total';
+  }
+
+  @override
+  String get programmeNotStarted => 'Not started';
 
   @override
   String dayLabel(String day) {

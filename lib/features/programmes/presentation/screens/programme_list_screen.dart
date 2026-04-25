@@ -173,7 +173,9 @@ class _ProgrammeTile extends StatelessWidget {
         subtitle: Text(
           '${s.programmeWeeksCount(programme.durationWeeks)}'
           ' · '
-          '${s.programmeDaysCount(programme.days.length)}',
+          '${s.programmeDaysCount(programme.days.length)}'
+          ' · '
+          '${programme.isStarted ? s.programmeWeekOf(programme.currentWeek(), programme.durationWeeks) : s.programmeNotStarted}',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),

@@ -21,18 +21,29 @@ class ExerciseListTile extends ConsumerWidget {
     final showImages = ref.watch(showExerciseImagesProvider);
     final hasImage = showImages && exercise.imageAsset != null;
 
+    final categoryIcon = Icon(
+      _iconForCategory(exercise.category),
+      color: Theme.of(context).colorScheme.onPrimaryContainer,
+      size: 20,
+    );
+
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        backgroundImage:
-            hasImage ? AssetImage(exercise.imageAsset!) : null,
         child: hasImage
-            ? null
-            : Icon(
-                _iconForCategory(exercise.category),
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-                size: 20,
-              ),
+            ? ClipOval(
+                child: Image.asset(
+                  exercise.imageAsset!,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  // If the asset path is invalid (e.g. a custom exercise was
+                  // saved with a now-missing file), fall back to the icon
+                  // instead of producing a console error and a blank avatar.
+                  errorBuilder: (_, __, ___) => categoryIcon,
+                ),
+              )
+            : categoryIcon,
       ),
       title: Text(exercise.name),
       subtitle: Text(

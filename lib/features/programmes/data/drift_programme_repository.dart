@@ -19,6 +19,9 @@ class DriftProgrammeRepository implements ProgrammeRepository {
             durationWeeks: programme.durationWeeks,
             createdAt: dateTimeToEpochMs(programme.createdAt),
             updatedAt: dateTimeToEpochMs(programme.updatedAt),
+            startedAt: Value(programme.startedAt == null
+                ? null
+                : dateTimeToEpochMs(programme.startedAt!)),
           ),
         );
     return programme;
@@ -56,9 +59,28 @@ class DriftProgrammeRepository implements ProgrammeRepository {
         name: Value(programme.name),
         durationWeeks: Value(programme.durationWeeks),
         updatedAt: Value(dateTimeToEpochMs(programme.updatedAt)),
+        startedAt: Value(programme.startedAt == null
+            ? null
+            : dateTimeToEpochMs(programme.startedAt!)),
       ),
     );
     return programme;
+  }
+
+  @override
+  Future<void> markProgrammeStarted(
+    String programmeId, {
+    DateTime? startedAt,
+  }) async {
+    final at = startedAt ?? DateTime.now().toUtc();
+    await (_db.update(_db.programmes)
+          ..where((t) => t.id.equals(programmeId)))
+        .write(
+      db.ProgrammesCompanion(
+        startedAt: Value(dateTimeToEpochMs(at)),
+        updatedAt: Value(dateTimeToEpochMs(at)),
+      ),
+    );
   }
 
   @override
@@ -178,6 +200,9 @@ class DriftProgrammeRepository implements ProgrammeRepository {
       durationWeeks: row.durationWeeks,
       createdAt: dateTimeFromEpochMs(row.createdAt),
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
+      startedAt: row.startedAt == null
+          ? null
+          : dateTimeFromEpochMs(row.startedAt!),
       days: days,
       rules: rules,
     );

@@ -2133,8 +2133,8 @@ abstract class S {
   /// No description provided for @importComplete.
   ///
   /// In en, this message translates to:
-  /// **'Import complete: {workouts} workouts, {sets} sets'**
-  String importComplete(int workouts, int sets);
+  /// **'Import complete: {workouts} workouts, {sets} sets, {cardio} cardio sessions'**
+  String importComplete(int workouts, int sets, int cardio);
 
   /// No description provided for @importFailed.
   ///
@@ -2603,6 +2603,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Week {number}'**
   String weekLabel(int number);
+
+  /// No description provided for @programmeWeekOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {current} of {total}'**
+  String programmeWeekOf(int current, int total);
+
+  /// No description provided for @programmeNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get programmeNotStarted;
 
   /// No description provided for @dayLabel.
   ///

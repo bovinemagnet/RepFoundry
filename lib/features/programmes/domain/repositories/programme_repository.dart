@@ -5,6 +5,11 @@ abstract class ProgrammeRepository {
   Future<Programme?> getProgramme(String id);
   Future<List<Programme>> getAllProgrammes();
   Future<Programme> updateProgramme(Programme programme);
+
+  /// Marks [programmeId] as started at [startedAt] (defaults to now). Used
+  /// to anchor the per-week template lookup in the active workout controller.
+  Future<void> markProgrammeStarted(String programmeId, {DateTime? startedAt});
+
   Future<void> deleteProgramme(String id);
   Stream<List<Programme>> watchAllProgrammes();
 

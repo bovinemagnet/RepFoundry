@@ -12,6 +12,10 @@ class Programme {
   final int durationWeeks;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  /// When the user pressed "Start programme". Null until they start.
+  /// Used to compute [currentWeek] so multi-week programmes advance.
+  final DateTime? startedAt;
   final List<ProgrammeDay> days;
   final List<ProgressionRule> rules;
 
@@ -21,9 +25,24 @@ class Programme {
     required this.durationWeeks,
     required this.createdAt,
     required this.updatedAt,
+    this.startedAt,
     this.days = const [],
     this.rules = const [],
   });
+
+  /// 1-based current week of the programme, clamped to [1, durationWeeks].
+  /// Returns 1 if the programme has not been started yet.
+  int currentWeek({DateTime? now}) {
+    if (startedAt == null) return 1;
+    final reference = (now ?? DateTime.now().toUtc());
+    final daysSinceStart = reference.difference(startedAt!).inDays;
+    final week = (daysSinceStart ~/ 7) + 1;
+    if (week < 1) return 1;
+    if (week > durationWeeks) return durationWeeks;
+    return week;
+  }
+
+  bool get isStarted => startedAt != null;
 
   static Programme create(
       {required String name, required int durationWeeks}) {
@@ -41,6 +60,8 @@ class Programme {
     String? name,
     int? durationWeeks,
     DateTime? updatedAt,
+    DateTime? startedAt,
+    bool clearStartedAt = false,
     List<ProgrammeDay>? days,
     List<ProgressionRule>? rules,
   }) {
@@ -50,6 +71,7 @@ class Programme {
       durationWeeks: durationWeeks ?? this.durationWeeks,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      startedAt: clearStartedAt ? null : (startedAt ?? this.startedAt),
       days: days ?? this.days,
       rules: rules ?? this.rules,
     );

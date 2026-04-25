@@ -3390,9 +3390,15 @@ class $ProgrammesTable extends Programmes
   late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
       'updated_at', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _startedAtMeta =
+      const VerificationMeta('startedAt');
+  @override
+  late final GeneratedColumn<int> startedAt = GeneratedColumn<int>(
+      'started_at', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, name, durationWeeks, createdAt, updatedAt];
+      [id, name, durationWeeks, createdAt, updatedAt, startedAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -3434,6 +3440,10 @@ class $ProgrammesTable extends Programmes
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('started_at')) {
+      context.handle(_startedAtMeta,
+          startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta));
+    }
     return context;
   }
 
@@ -3453,6 +3463,8 @@ class $ProgrammesTable extends Programmes
           .read(DriftSqlType.int, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}updated_at'])!,
+      startedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}started_at']),
     );
   }
 
@@ -3468,12 +3480,17 @@ class Programme extends DataClass implements Insertable<Programme> {
   final int durationWeeks;
   final int createdAt;
   final int updatedAt;
+
+  /// Epoch ms when the user activated the programme. Null = not yet started.
+  /// Used to compute the current week for [Programme.currentWeek].
+  final int? startedAt;
   const Programme(
       {required this.id,
       required this.name,
       required this.durationWeeks,
       required this.createdAt,
-      required this.updatedAt});
+      required this.updatedAt,
+      this.startedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -3482,6 +3499,9 @@ class Programme extends DataClass implements Insertable<Programme> {
     map['duration_weeks'] = Variable<int>(durationWeeks);
     map['created_at'] = Variable<int>(createdAt);
     map['updated_at'] = Variable<int>(updatedAt);
+    if (!nullToAbsent || startedAt != null) {
+      map['started_at'] = Variable<int>(startedAt);
+    }
     return map;
   }
 
@@ -3492,6 +3512,9 @@ class Programme extends DataClass implements Insertable<Programme> {
       durationWeeks: Value(durationWeeks),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      startedAt: startedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startedAt),
     );
   }
 
@@ -3504,6 +3527,7 @@ class Programme extends DataClass implements Insertable<Programme> {
       durationWeeks: serializer.fromJson<int>(json['durationWeeks']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
+      startedAt: serializer.fromJson<int?>(json['startedAt']),
     );
   }
   @override
@@ -3515,6 +3539,7 @@ class Programme extends DataClass implements Insertable<Programme> {
       'durationWeeks': serializer.toJson<int>(durationWeeks),
       'createdAt': serializer.toJson<int>(createdAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
+      'startedAt': serializer.toJson<int?>(startedAt),
     };
   }
 
@@ -3523,13 +3548,15 @@ class Programme extends DataClass implements Insertable<Programme> {
           String? name,
           int? durationWeeks,
           int? createdAt,
-          int? updatedAt}) =>
+          int? updatedAt,
+          Value<int?> startedAt = const Value.absent()}) =>
       Programme(
         id: id ?? this.id,
         name: name ?? this.name,
         durationWeeks: durationWeeks ?? this.durationWeeks,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
+        startedAt: startedAt.present ? startedAt.value : this.startedAt,
       );
   Programme copyWithCompanion(ProgrammesCompanion data) {
     return Programme(
@@ -3540,6 +3567,7 @@ class Programme extends DataClass implements Insertable<Programme> {
           : this.durationWeeks,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
     );
   }
 
@@ -3550,14 +3578,15 @@ class Programme extends DataClass implements Insertable<Programme> {
           ..write('name: $name, ')
           ..write('durationWeeks: $durationWeeks, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('startedAt: $startedAt')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, name, durationWeeks, createdAt, updatedAt);
+      Object.hash(id, name, durationWeeks, createdAt, updatedAt, startedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3566,7 +3595,8 @@ class Programme extends DataClass implements Insertable<Programme> {
           other.name == this.name &&
           other.durationWeeks == this.durationWeeks &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.startedAt == this.startedAt);
 }
 
 class ProgrammesCompanion extends UpdateCompanion<Programme> {
@@ -3575,6 +3605,7 @@ class ProgrammesCompanion extends UpdateCompanion<Programme> {
   final Value<int> durationWeeks;
   final Value<int> createdAt;
   final Value<int> updatedAt;
+  final Value<int?> startedAt;
   final Value<int> rowid;
   const ProgrammesCompanion({
     this.id = const Value.absent(),
@@ -3582,6 +3613,7 @@ class ProgrammesCompanion extends UpdateCompanion<Programme> {
     this.durationWeeks = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.startedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ProgrammesCompanion.insert({
@@ -3590,6 +3622,7 @@ class ProgrammesCompanion extends UpdateCompanion<Programme> {
     required int durationWeeks,
     required int createdAt,
     required int updatedAt,
+    this.startedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         name = Value(name),
@@ -3602,6 +3635,7 @@ class ProgrammesCompanion extends UpdateCompanion<Programme> {
     Expression<int>? durationWeeks,
     Expression<int>? createdAt,
     Expression<int>? updatedAt,
+    Expression<int>? startedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3610,6 +3644,7 @@ class ProgrammesCompanion extends UpdateCompanion<Programme> {
       if (durationWeeks != null) 'duration_weeks': durationWeeks,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (startedAt != null) 'started_at': startedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3620,6 +3655,7 @@ class ProgrammesCompanion extends UpdateCompanion<Programme> {
       Value<int>? durationWeeks,
       Value<int>? createdAt,
       Value<int>? updatedAt,
+      Value<int?>? startedAt,
       Value<int>? rowid}) {
     return ProgrammesCompanion(
       id: id ?? this.id,
@@ -3627,6 +3663,7 @@ class ProgrammesCompanion extends UpdateCompanion<Programme> {
       durationWeeks: durationWeeks ?? this.durationWeeks,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      startedAt: startedAt ?? this.startedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3649,6 +3686,9 @@ class ProgrammesCompanion extends UpdateCompanion<Programme> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<int>(updatedAt.value);
     }
+    if (startedAt.present) {
+      map['started_at'] = Variable<int>(startedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3663,6 +3703,7 @@ class ProgrammesCompanion extends UpdateCompanion<Programme> {
           ..write('durationWeeks: $durationWeeks, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('startedAt: $startedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -7559,6 +7600,7 @@ typedef $$ProgrammesTableCreateCompanionBuilder = ProgrammesCompanion Function({
   required int durationWeeks,
   required int createdAt,
   required int updatedAt,
+  Value<int?> startedAt,
   Value<int> rowid,
 });
 typedef $$ProgrammesTableUpdateCompanionBuilder = ProgrammesCompanion Function({
@@ -7567,6 +7609,7 @@ typedef $$ProgrammesTableUpdateCompanionBuilder = ProgrammesCompanion Function({
   Value<int> durationWeeks,
   Value<int> createdAt,
   Value<int> updatedAt,
+  Value<int?> startedAt,
   Value<int> rowid,
 });
 
@@ -7593,6 +7636,9 @@ class $$ProgrammesTableFilterComposer
 
   ColumnFilters<int> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get startedAt => $composableBuilder(
+      column: $table.startedAt, builder: (column) => ColumnFilters(column));
 }
 
 class $$ProgrammesTableOrderingComposer
@@ -7619,6 +7665,9 @@ class $$ProgrammesTableOrderingComposer
 
   ColumnOrderings<int> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get startedAt => $composableBuilder(
+      column: $table.startedAt, builder: (column) => ColumnOrderings(column));
 }
 
 class $$ProgrammesTableAnnotationComposer
@@ -7644,6 +7693,9 @@ class $$ProgrammesTableAnnotationComposer
 
   GeneratedColumn<int> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
 }
 
 class $$ProgrammesTableTableManager extends RootTableManager<
@@ -7674,6 +7726,7 @@ class $$ProgrammesTableTableManager extends RootTableManager<
             Value<int> durationWeeks = const Value.absent(),
             Value<int> createdAt = const Value.absent(),
             Value<int> updatedAt = const Value.absent(),
+            Value<int?> startedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ProgrammesCompanion(
@@ -7682,6 +7735,7 @@ class $$ProgrammesTableTableManager extends RootTableManager<
             durationWeeks: durationWeeks,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            startedAt: startedAt,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -7690,6 +7744,7 @@ class $$ProgrammesTableTableManager extends RootTableManager<
             required int durationWeeks,
             required int createdAt,
             required int updatedAt,
+            Value<int?> startedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ProgrammesCompanion.insert(
@@ -7698,6 +7753,7 @@ class $$ProgrammesTableTableManager extends RootTableManager<
             durationWeeks: durationWeeks,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            startedAt: startedAt,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0

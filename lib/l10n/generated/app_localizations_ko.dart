@@ -1115,7 +1115,7 @@ class SKo extends S {
   String get importPasteJsonHint => '내보낸 JSON을 여기에 붙여넣으세요…';
 
   @override
-  String importComplete(int workouts, int sets) {
+  String importComplete(int workouts, int sets, int cardio) {
     return '가져오기 완료: $workouts회 운동, $sets 세트';
   }
 
@@ -1402,6 +1402,14 @@ class SKo extends S {
   String weekLabel(int number) {
     return '$number주차';
   }
+
+  @override
+  String programmeWeekOf(int current, int total) {
+    return 'Week $current of $total';
+  }
+
+  @override
+  String get programmeNotStarted => 'Not started';
 
   @override
   String dayLabel(String day) {

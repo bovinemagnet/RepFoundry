@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
+import 'package:rep_foundry/features/cardio/domain/repositories/cardio_session_repository.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/exercises/domain/repositories/exercise_repository.dart';
 import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
@@ -102,6 +104,41 @@ class _FakeWorkoutRepository implements WorkoutRepository {
       const Stream.empty();
 }
 
+class _FakeCardioSessionRepository implements CardioSessionRepository {
+  final Map<String, CardioSession> _sessions = {};
+
+  @override
+  Future<CardioSession> createSession(CardioSession session) async {
+    if (_sessions.containsKey(session.id)) {
+      throw StateError('Duplicate cardio session id: ${session.id}');
+    }
+    _sessions[session.id] = session;
+    return session;
+  }
+
+  // Unused stubs
+  @override
+  Future<CardioSession?> getSession(String id) async => _sessions[id];
+  @override
+  Future<List<CardioSession>> getSessionsForWorkout(String workoutId) async =>
+      [];
+  @override
+  Future<List<CardioSession>> getSessionsForExercise(String exerciseId,
+          {int limit = 50}) async =>
+      [];
+  @override
+  Future<void> deleteSession(String id) async {}
+  @override
+  Future<List<CardioSession>> getAllSessions() async =>
+      _sessions.values.toList();
+  @override
+  Future<CardioSession?> getLastSessionForExercise(String exerciseId) async =>
+      null;
+  @override
+  Stream<List<CardioSession>> watchSessionsForWorkout(String workoutId) =>
+      const Stream.empty();
+}
+
 class _FakePersonalRecordRepository implements PersonalRecordRepository {
   final Map<String, PersonalRecord> _records = {};
 
@@ -171,6 +208,24 @@ Map<String, dynamic> _setMap({String id = 's-1', String workoutId = 'w-1'}) => {
       'groupId': null,
     };
 
+Map<String, dynamic> _cardioMap({
+  String id = 'c-1',
+  String workoutId = 'w-1',
+  int durationSeconds = 1800,
+  double? distanceMeters = 5000,
+  double? incline,
+  int? avgHeartRate = 145,
+}) =>
+    {
+      'id': id,
+      'workoutId': workoutId,
+      'exerciseId': 'ex-1',
+      'durationSeconds': durationSeconds,
+      'distanceMeters': distanceMeters,
+      'incline': incline,
+      'avgHeartRate': avgHeartRate,
+    };
+
 Map<String, dynamic> _prMap({String id = 'pr-1'}) => {
       'id': id,
       'exerciseId': 'ex-1',
@@ -188,15 +243,18 @@ void main() {
   late ImportDataUseCase useCase;
   late _FakeExerciseRepository exerciseRepo;
   late _FakeWorkoutRepository workoutRepo;
+  late _FakeCardioSessionRepository cardioRepo;
   late _FakePersonalRecordRepository prRepo;
 
   setUp(() {
     exerciseRepo = _FakeExerciseRepository();
     workoutRepo = _FakeWorkoutRepository();
+    cardioRepo = _FakeCardioSessionRepository();
     prRepo = _FakePersonalRecordRepository();
     useCase = ImportDataUseCase(
       workoutRepository: workoutRepo,
       exerciseRepository: exerciseRepo,
+      cardioSessionRepository: cardioRepo,
       personalRecordRepository: prRepo,
     );
   });
@@ -211,6 +269,7 @@ void main() {
           'workouts': [
             _workoutMap(sets: [_setMap()]),
           ],
+          'cardioSessions': [_cardioMap()],
           'personalRecords': [_prMap()],
         });
 
@@ -221,7 +280,85 @@ void main() {
         expect(result.exercisesImported, 1);
         expect(result.workoutsImported, 1);
         expect(result.setsImported, 1);
+        expect(result.cardioSessionsImported, 1);
         expect(result.personalRecordsImported, 1);
+      },
+    );
+
+    test(
+      'importFromJson_cardioSessions_preservesDistanceInclineAndHeartRate',
+      () async {
+        // Arrange — full cardio payload with all optional fields populated
+        final json = jsonEncode({
+          'exercises': <dynamic>[],
+          'workouts': <dynamic>[],
+          'cardioSessions': [
+            _cardioMap(
+              id: 'c-1',
+              durationSeconds: 1800,
+              distanceMeters: 5000.0,
+              incline: 2.5,
+              avgHeartRate: 145,
+            ),
+          ],
+          'personalRecords': <dynamic>[],
+        });
+
+        // Act
+        final result = await useCase.importFromJson(json);
+
+        // Assert
+        expect(result.cardioSessionsImported, 1);
+        final restored = await cardioRepo.getSession('c-1');
+        expect(restored, isNotNull);
+        expect(restored!.durationSeconds, 1800);
+        expect(restored.distanceMeters, 5000.0);
+        expect(restored.incline, 2.5);
+        expect(restored.avgHeartRate, 145);
+      },
+    );
+
+    test(
+      'importFromJson_cardioSessionWithNulls_acceptsMissingOptionals',
+      () async {
+        // Arrange — distance/incline/HR may legitimately be null
+        final json = jsonEncode({
+          'cardioSessions': [
+            _cardioMap(
+              id: 'c-2',
+              distanceMeters: null,
+              incline: null,
+              avgHeartRate: null,
+            ),
+          ],
+        });
+
+        // Act
+        final result = await useCase.importFromJson(json);
+
+        // Assert
+        expect(result.cardioSessionsImported, 1);
+        final restored = await cardioRepo.getSession('c-2');
+        expect(restored!.distanceMeters, isNull);
+        expect(restored.incline, isNull);
+        expect(restored.avgHeartRate, isNull);
+      },
+    );
+
+    test(
+      'importFromJson_duplicateCardioSession_secondIsSkippedAndCountIsOne',
+      () async {
+        // Arrange
+        final json = jsonEncode({
+          'cardioSessions': [_cardioMap(), _cardioMap()],
+        });
+
+        // Act
+        final result = await useCase.importFromJson(json);
+
+        // Assert
+        expect(result.cardioSessionsImported, 1);
+        expect(cardioRepo._sessions.length, 1);
       },
     );
 

@@ -1,6 +1,7 @@
 import 'package:app_settings/app_settings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import '../domain/models/reminder_settings.dart';
@@ -20,6 +21,7 @@ class NotificationService {
     if (_initialised) return;
 
     tzdata.initializeTimeZones();
+    await _configureLocalTimeZone();
 
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -44,6 +46,19 @@ class NotificationService {
 
     await _plugin.initialize(settings: settings);
     _initialised = true;
+  }
+
+  /// Detect the device's IANA timezone and bind it to `tz.local`. Without
+  /// this, scheduled notifications use UTC and fire at the wrong wall-clock
+  /// time outside the UTC zone.
+  Future<void> _configureLocalTimeZone() async {
+    try {
+      final localName = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(localName));
+    } catch (e) {
+      debugPrint('Failed to detect local timezone, falling back to UTC: $e');
+      tz.setLocalLocation(tz.UTC);
+    }
   }
 
   Future<NotificationPermission> permissionStatus() async {
@@ -176,31 +191,39 @@ class NotificationService {
     await _plugin.cancel(id: 100);
   }
 
-  tz.TZDateTime _nextInstanceOfDayAndTime(int day, int hour, int minute) {
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+  tz.TZDateTime _nextInstanceOfDayAndTime(int day, int hour, int minute) =>
+      nextInstanceOfDayAndTime(day, hour, minute);
 
-    while (scheduledDate.weekday != day) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
+  tz.TZDateTime _nextInstanceOfTime(int hour, int minute) =>
+      nextInstanceOfTime(hour, minute);
+}
 
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 7));
-    }
+@visibleForTesting
+tz.TZDateTime nextInstanceOfDayAndTime(int day, int hour, int minute) {
+  final now = tz.TZDateTime.now(tz.local);
+  var scheduledDate =
+      tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
 
-    return scheduledDate;
+  while (scheduledDate.weekday != day) {
+    scheduledDate = scheduledDate.add(const Duration(days: 1));
   }
 
-  tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
-
-    return scheduledDate;
+  if (scheduledDate.isBefore(now)) {
+    scheduledDate = scheduledDate.add(const Duration(days: 7));
   }
+
+  return scheduledDate;
+}
+
+@visibleForTesting
+tz.TZDateTime nextInstanceOfTime(int hour, int minute) {
+  final now = tz.TZDateTime.now(tz.local);
+  var scheduledDate =
+      tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+
+  if (scheduledDate.isBefore(now)) {
+    scheduledDate = scheduledDate.add(const Duration(days: 1));
+  }
+
+  return scheduledDate;
 }

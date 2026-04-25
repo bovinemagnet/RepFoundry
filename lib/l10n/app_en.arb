@@ -501,11 +501,12 @@
   "importDataButton": "Import",
   "importPasteJsonTitle": "Paste JSON Data",
   "importPasteJsonHint": "Paste your exported JSON here\u2026",
-  "importComplete": "Import complete: {workouts} workouts, {sets} sets",
+  "importComplete": "Import complete: {workouts} workouts, {sets} sets, {cardio} cardio sessions",
   "@importComplete": {
     "placeholders": {
       "workouts": { "type": "int" },
-      "sets": { "type": "int" }
+      "sets": { "type": "int" },
+      "cardio": { "type": "int" }
     }
   },
   "importFailed": "Import failed: {error}",
@@ -642,6 +643,14 @@
   "@weekLabel": {
     "placeholders": { "number": { "type": "int" } }
   },
+  "programmeWeekOf": "Week {current} of {total}",
+  "@programmeWeekOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "programmeNotStarted": "Not started",
   "dayLabel": "{day}",
   "@dayLabel": {
     "placeholders": { "day": { "type": "String" } }

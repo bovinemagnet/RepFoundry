@@ -1141,8 +1141,8 @@ class SEn extends S {
   String get importPasteJsonHint => 'Paste your exported JSON here…';
 
   @override
-  String importComplete(int workouts, int sets) {
-    return 'Import complete: $workouts workouts, $sets sets';
+  String importComplete(int workouts, int sets, int cardio) {
+    return 'Import complete: $workouts workouts, $sets sets, $cardio cardio sessions';
   }
 
   @override
@@ -1432,6 +1432,14 @@ class SEn extends S {
   String weekLabel(int number) {
     return 'Week $number';
   }
+
+  @override
+  String programmeWeekOf(int current, int total) {
+    return 'Week $current of $total';
+  }
+
+  @override
+  String get programmeNotStarted => 'Not started';
 
   @override
   String dayLabel(String day) {

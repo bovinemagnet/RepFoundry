@@ -1111,7 +1111,7 @@ class SZh extends S {
   String get importPasteJsonHint => '在此粘贴导出的 JSON…';
 
   @override
-  String importComplete(int workouts, int sets) {
+  String importComplete(int workouts, int sets, int cardio) {
     return '导入完成：$workouts 次训练，$sets 组';
   }
 
@@ -1398,6 +1398,14 @@ class SZh extends S {
   String weekLabel(int number) {
     return '第 $number 周';
   }
+
+  @override
+  String programmeWeekOf(int current, int total) {
+    return 'Week $current of $total';
+  }
+
+  @override
+  String get programmeNotStarted => 'Not started';
 
   @override
   String dayLabel(String day) {
@@ -2730,7 +2738,7 @@ class SZhHans extends SZh {
   String get importPasteJsonHint => '在此粘贴导出的 JSON…';
 
   @override
-  String importComplete(int workouts, int sets) {
+  String importComplete(int workouts, int sets, int cardio) {
     return '导入完成：$workouts 次训练，$sets 组';
   }
 

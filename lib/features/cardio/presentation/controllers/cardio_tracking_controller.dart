@@ -39,7 +39,11 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
 
   void start() {
     if (state.isRunning) return;
-    state = state.copyWith(isRunning: true, savedSuccessfully: false);
+    state = state.copyWith(
+      isRunning: true,
+      savedSuccessfully: false,
+      heartRateReadings: const [],
+    );
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
     });
@@ -138,10 +142,12 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       _hrSub?.cancel();
       _hrSub = _heartRateService.heartRateStream.listen(
         (bpm) {
-          state = state.copyWith(
-            currentHeartRate: bpm,
-            heartRateReadings: [...state.heartRateReadings, bpm],
-          );
+          state = state.isRunning
+              ? state.copyWith(
+                  currentHeartRate: bpm,
+                  heartRateReadings: [...state.heartRateReadings, bpm],
+                )
+              : state.copyWith(currentHeartRate: bpm);
         },
         onError: (_) {
           state = state.copyWith(
@@ -268,6 +274,11 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
 
       _timer?.cancel();
       _stopGpsTracking();
+      _hrSub?.cancel();
+      _hrSub = null;
+      _hrConnectionSub?.cancel();
+      _hrConnectionSub = null;
+      await _heartRateService.disconnect();
       state = const CardioTrackingState(savedSuccessfully: true);
     } on SaveCardioSessionException catch (e) {
       state = state.copyWith(isSaving: false, error: e.message);

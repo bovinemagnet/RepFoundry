@@ -730,6 +730,7 @@ class _ImportJsonTileState extends ConsumerState<_ImportJsonTile> {
               content: Text(s.importComplete(
                 importResult.workoutsImported,
                 importResult.setsImported,
+                importResult.cardioSessionsImported,
               )),
             ),
           );

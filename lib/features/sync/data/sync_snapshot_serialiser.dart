@@ -68,6 +68,9 @@ class SyncSnapshotSerialiser {
               durationWeeks: row.durationWeeks,
               createdAt: dateTimeFromEpochMs(row.createdAt),
               updatedAt: dateTimeFromEpochMs(row.updatedAt),
+              startedAt: row.startedAt == null
+                  ? null
+                  : dateTimeFromEpochMs(row.startedAt!),
             ))
         .toList();
 
@@ -82,7 +85,7 @@ class SyncSnapshotSerialiser {
     return SyncSnapshot(
       snapshotAt: DateTime.now().toUtc(),
       deviceId: deviceId,
-      schemaVersion: 6,
+      schemaVersion: 7,
       exercises: exercises,
       workouts: workouts,
       workoutSets: workoutSets,
@@ -281,6 +284,9 @@ class SyncSnapshotSerialiser {
                 durationWeeks: p.durationWeeks,
                 createdAt: dateTimeToEpochMs(p.createdAt),
                 updatedAt: dateTimeToEpochMs(p.updatedAt),
+                startedAt: Value(p.startedAt == null
+                    ? null
+                    : dateTimeToEpochMs(p.startedAt!)),
               ),
             );
       }
@@ -522,6 +528,7 @@ class SyncSnapshotSerialiser {
         'durationWeeks': p.durationWeeks,
         'createdAt': p.createdAt.toIso8601String(),
         'updatedAt': p.updatedAt.toIso8601String(),
+        'startedAt': p.startedAt?.toIso8601String(),
       };
 
   Map<String, dynamic> _programmeDayToMap(ProgrammeDay d) => {
@@ -646,6 +653,9 @@ class SyncSnapshotSerialiser {
         durationWeeks: m['durationWeeks'] as int,
         createdAt: DateTime.parse(m['createdAt'] as String),
         updatedAt: DateTime.parse(m['updatedAt'] as String),
+        startedAt: m['startedAt'] == null
+            ? null
+            : DateTime.parse(m['startedAt'] as String),
       );
 
   ProgrammeDay _programmeDayFromMap(Map<String, dynamic> m) => ProgrammeDay(

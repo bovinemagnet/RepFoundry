@@ -17,6 +17,43 @@ void main() {
       expect(updated.name, '5/3/1');
       expect(updated.id, p.id);
     });
+
+    test('currentWeek is 1 when not started', () {
+      final p = Programme.create(name: 'PPL', durationWeeks: 4);
+      expect(p.isStarted, isFalse);
+      expect(p.currentWeek(), 1);
+    });
+
+    test('currentWeek advances by 1 every 7 days from startedAt', () {
+      final start = DateTime.utc(2026, 1, 5); // Monday
+      final p = Programme.create(name: 'PPL', durationWeeks: 4)
+          .copyWith(startedAt: start);
+
+      // Day 0 → week 1.
+      expect(p.currentWeek(now: start), 1);
+      // Day 6 → still week 1.
+      expect(p.currentWeek(now: start.add(const Duration(days: 6))), 1);
+      // Day 7 → week 2.
+      expect(p.currentWeek(now: start.add(const Duration(days: 7))), 2);
+      // Day 21 → week 4.
+      expect(p.currentWeek(now: start.add(const Duration(days: 21))), 4);
+    });
+
+    test('currentWeek is clamped to durationWeeks beyond programme end', () {
+      final start = DateTime.utc(2026, 1, 5);
+      final p = Programme.create(name: 'PPL', durationWeeks: 4)
+          .copyWith(startedAt: start);
+      // Day 100 — long past end of 4-week programme.
+      expect(p.currentWeek(now: start.add(const Duration(days: 100))), 4);
+    });
+
+    test('clearStartedAt resets the started timestamp', () {
+      final p = Programme.create(name: 'PPL', durationWeeks: 4)
+          .copyWith(startedAt: DateTime.utc(2026, 1, 5));
+      expect(p.isStarted, isTrue);
+      final reset = p.copyWith(clearStartedAt: true);
+      expect(reset.isStarted, isFalse);
+    });
   });
 
   group('ProgrammeDay', () {

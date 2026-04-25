@@ -127,6 +127,7 @@ final importDataUseCaseProvider = Provider<ImportDataUseCase>((ref) {
   return ImportDataUseCase(
     workoutRepository: ref.watch(workoutRepositoryProvider),
     exerciseRepository: ref.watch(exerciseRepositoryProvider),
+    cardioSessionRepository: ref.watch(cardioSessionRepositoryProvider),
     personalRecordRepository: ref.watch(personalRecordRepositoryProvider),
   );
 });

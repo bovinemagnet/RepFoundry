@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import '../../cardio/domain/models/cardio_session.dart';
+import '../../cardio/domain/repositories/cardio_session_repository.dart';
 import '../../exercises/domain/models/exercise.dart';
 import '../../exercises/domain/repositories/exercise_repository.dart';
 import '../../history/domain/models/personal_record.dart';
@@ -12,12 +14,14 @@ class ImportResult {
   final int exercisesImported;
   final int workoutsImported;
   final int setsImported;
+  final int cardioSessionsImported;
   final int personalRecordsImported;
 
   const ImportResult({
     this.exercisesImported = 0,
     this.workoutsImported = 0,
     this.setsImported = 0,
+    this.cardioSessionsImported = 0,
     this.personalRecordsImported = 0,
   });
 }
@@ -25,11 +29,13 @@ class ImportResult {
 class ImportDataUseCase {
   final WorkoutRepository workoutRepository;
   final ExerciseRepository exerciseRepository;
+  final CardioSessionRepository cardioSessionRepository;
   final PersonalRecordRepository personalRecordRepository;
 
   const ImportDataUseCase({
     required this.workoutRepository,
     required this.exerciseRepository,
+    required this.cardioSessionRepository,
     required this.personalRecordRepository,
   });
 
@@ -39,6 +45,7 @@ class ImportDataUseCase {
     int exercisesImported = 0;
     int workoutsImported = 0;
     int setsImported = 0;
+    int cardioSessionsImported = 0;
     int prsImported = 0;
 
     // Import custom exercises.
@@ -114,6 +121,31 @@ class ImportDataUseCase {
       }
     }
 
+    // Import cardio sessions.
+    final cardioList = data['cardioSessions'] as List<dynamic>? ?? [];
+    for (final cardioMap in cardioList) {
+      final map = cardioMap as Map<String, dynamic>;
+      final session = CardioSession(
+        id: map['id'] as String,
+        workoutId: map['workoutId'] as String,
+        exerciseId: map['exerciseId'] as String,
+        durationSeconds: map['durationSeconds'] as int,
+        distanceMeters: map['distanceMeters'] != null
+            ? (map['distanceMeters'] as num).toDouble()
+            : null,
+        incline:
+            map['incline'] != null ? (map['incline'] as num).toDouble() : null,
+        avgHeartRate: map['avgHeartRate'] as int?,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      try {
+        await cardioSessionRepository.createSession(session);
+        cardioSessionsImported++;
+      } catch (_) {
+        // Skip duplicates.
+      }
+    }
+
     // Import personal records.
     final prsList = data['personalRecords'] as List<dynamic>? ?? [];
     for (final prMap in prsList) {
@@ -139,6 +171,7 @@ class ImportDataUseCase {
       exercisesImported: exercisesImported,
       workoutsImported: workoutsImported,
       setsImported: setsImported,
+      cardioSessionsImported: cardioSessionsImported,
       personalRecordsImported: prsImported,
     );
   }

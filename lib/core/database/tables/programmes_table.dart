@@ -7,6 +7,10 @@ class Programmes extends Table {
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
 
+  /// Epoch ms when the user activated the programme. Null = not yet started.
+  /// Used to compute the current week for [Programme.currentWeek].
+  IntColumn get startedAt => integer().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }

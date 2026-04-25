@@ -230,12 +230,29 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
   /// Starts a workout from a programme, applying progression rules to ghost
   /// set weights where applicable.
   ///
+  /// Selects the day matching today's weekday in the programme's current week
+  /// (computed from [Programme.startedAt]). If the programme hasn't been
+  /// started yet, this implicitly anchors it at "now" so the first session
+  /// counts as week 1.
+  ///
   /// Returns `true` if a workout was started, `false` if no template was
-  /// found for today's day of the week.
+  /// found for today's day-of-week within the current week.
   Future<bool> startFromProgramme(Programme programme) async {
+    final programmeRepo = ref.read(programmeRepositoryProvider);
+
+    // Anchor the programme on first start so currentWeek can advance.
+    Programme effectiveProgramme = programme;
+    if (!programme.isStarted) {
+      final now = DateTime.now().toUtc();
+      await programmeRepo.markProgrammeStarted(programme.id, startedAt: now);
+      effectiveProgramme = programme.copyWith(startedAt: now);
+    }
+
     final today = DateTime.now().weekday; // 1 = Monday … 7 = Sunday
-    final todayDay = programme.days.cast<ProgrammeDay?>().firstWhere(
-          (d) => d!.dayOfWeek == today,
+    final currentWeek = effectiveProgramme.currentWeek();
+
+    final todayDay = effectiveProgramme.days.cast<ProgrammeDay?>().firstWhere(
+          (d) => d!.dayOfWeek == today && d.weekNumber == currentWeek,
           orElse: () => null,
         );
 
