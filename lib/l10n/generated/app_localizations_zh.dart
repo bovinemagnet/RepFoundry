@@ -1112,7 +1112,7 @@ class SZh extends S {
 
   @override
   String importComplete(int workouts, int sets, int cardio) {
-    return '导入完成：$workouts 次训练，$sets 组';
+    return '导入完成：$workouts 次训练，$sets 组，$cardio 次有氧';
   }
 
   @override
@@ -1401,11 +1401,11 @@ class SZh extends S {
 
   @override
   String programmeWeekOf(int current, int total) {
-    return 'Week $current of $total';
+    return '第 $current 周，共 $total 周';
   }
 
   @override
-  String get programmeNotStarted => 'Not started';
+  String get programmeNotStarted => '尚未开始';
 
   @override
   String dayLabel(String day) {
@@ -2739,7 +2739,7 @@ class SZhHans extends SZh {
 
   @override
   String importComplete(int workouts, int sets, int cardio) {
-    return '导入完成：$workouts 次训练，$sets 组';
+    return '导入完成：$workouts 次训练，$sets 组，$cardio 次有氧';
   }
 
   @override
@@ -2983,6 +2983,14 @@ class SZhHans extends SZh {
   String weekLabel(int number) {
     return '第 $number 周';
   }
+
+  @override
+  String programmeWeekOf(int current, int total) {
+    return '第 $current 周，共 $total 周';
+  }
+
+  @override
+  String get programmeNotStarted => '尚未开始';
 
   @override
   String dayLabel(String day) {

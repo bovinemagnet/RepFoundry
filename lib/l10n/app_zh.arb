@@ -484,11 +484,12 @@
   "importDataButton": "导入",
   "importPasteJsonTitle": "粘贴 JSON 数据",
   "importPasteJsonHint": "在此粘贴导出的 JSON…",
-  "importComplete": "导入完成：{workouts} 次训练，{sets} 组",
+  "importComplete": "导入完成：{workouts} 次训练，{sets} 组，{cardio} 次有氧",
   "@importComplete": {
     "placeholders": {
       "workouts": { "type": "int" },
-      "sets": { "type": "int" }
+      "sets": { "type": "int" },
+      "cardio": { "type": "int" }
     }
   },
   "importFailed": "导入失败：{error}",
@@ -607,6 +608,14 @@
   "@weekLabel": {
     "placeholders": { "number": { "type": "int" } }
   },
+  "programmeWeekOf": "第 {current} 周，共 {total} 周",
+  "@programmeWeekOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "programmeNotStarted": "尚未开始",
   "dayLabel": "{day}",
   "@dayLabel": {
     "placeholders": { "day": { "type": "String" } }

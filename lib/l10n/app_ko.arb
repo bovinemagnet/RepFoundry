@@ -501,11 +501,12 @@
   "importDataButton": "가져오기",
   "importPasteJsonTitle": "JSON 데이터 붙여넣기",
   "importPasteJsonHint": "내보낸 JSON을 여기에 붙여넣으세요…",
-  "importComplete": "가져오기 완료: {workouts}회 운동, {sets} 세트",
+  "importComplete": "가져오기 완료: {workouts}회 운동, {sets} 세트, {cardio}회 유산소 세션",
   "@importComplete": {
     "placeholders": {
       "workouts": { "type": "int" },
-      "sets": { "type": "int" }
+      "sets": { "type": "int" },
+      "cardio": { "type": "int" }
     }
   },
   "importFailed": "가져오기 실패: {error}",
@@ -624,6 +625,14 @@
   "@weekLabel": {
     "placeholders": { "number": { "type": "int" } }
   },
+  "programmeWeekOf": "{total}주 중 {current}주차",
+  "@programmeWeekOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "programmeNotStarted": "시작 전",
   "dayLabel": "{day}",
   "@dayLabel": {
     "placeholders": { "day": { "type": "String" } }

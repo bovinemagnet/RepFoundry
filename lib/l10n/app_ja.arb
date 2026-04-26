@@ -501,11 +501,12 @@
   "importDataButton": "インポート",
   "importPasteJsonTitle": "JSON データを貼り付け",
   "importPasteJsonHint": "エクスポートした JSON をここに貼り付け…",
-  "importComplete": "インポート完了：{workouts} ワークアウト、{sets} セット",
+  "importComplete": "インポート完了：{workouts} ワークアウト、{sets} セット、{cardio} カーディオセッション",
   "@importComplete": {
     "placeholders": {
       "workouts": { "type": "int" },
-      "sets": { "type": "int" }
+      "sets": { "type": "int" },
+      "cardio": { "type": "int" }
     }
   },
   "importFailed": "インポートに失敗：{error}",
@@ -624,6 +625,14 @@
   "@weekLabel": {
     "placeholders": { "number": { "type": "int" } }
   },
+  "programmeWeekOf": "{total} 週中 {current} 週目",
+  "@programmeWeekOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "programmeNotStarted": "未開始",
   "dayLabel": "{day}",
   "@dayLabel": {
     "placeholders": { "day": { "type": "String" } }

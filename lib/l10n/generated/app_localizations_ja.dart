@@ -1116,7 +1116,7 @@ class SJa extends S {
 
   @override
   String importComplete(int workouts, int sets, int cardio) {
-    return 'インポート完了：$workouts ワークアウト、$sets セット';
+    return 'インポート完了：$workouts ワークアウト、$sets セット、$cardio カーディオセッション';
   }
 
   @override
@@ -1405,11 +1405,11 @@ class SJa extends S {
 
   @override
   String programmeWeekOf(int current, int total) {
-    return 'Week $current of $total';
+    return '$total 週中 $current 週目';
   }
 
   @override
-  String get programmeNotStarted => 'Not started';
+  String get programmeNotStarted => '未開始';
 
   @override
   String dayLabel(String day) {

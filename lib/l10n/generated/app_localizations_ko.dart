@@ -1116,7 +1116,7 @@ class SKo extends S {
 
   @override
   String importComplete(int workouts, int sets, int cardio) {
-    return '가져오기 완료: $workouts회 운동, $sets 세트';
+    return '가져오기 완료: $workouts회 운동, $sets 세트, $cardio회 유산소 세션';
   }
 
   @override
@@ -1405,11 +1405,11 @@ class SKo extends S {
 
   @override
   String programmeWeekOf(int current, int total) {
-    return 'Week $current of $total';
+    return '$total주 중 $current주차';
   }
 
   @override
-  String get programmeNotStarted => 'Not started';
+  String get programmeNotStarted => '시작 전';
 
   @override
   String dayLabel(String day) {
