@@ -39,10 +39,15 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
 
   void start() {
     if (state.isRunning) return;
+    // The same method handles both initial start and resume-after-pause.
+    // Only clear the HR sample buffer on a fresh session — clearing on
+    // resume would discard the pre-pause segment of the user's workout.
+    final isFreshSession = state.elapsedSeconds == 0;
     state = state.copyWith(
       isRunning: true,
       savedSuccessfully: false,
-      heartRateReadings: const [],
+      heartRateReadings:
+          isFreshSession ? const [] : state.heartRateReadings,
     );
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
@@ -274,11 +279,15 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
 
       _timer?.cancel();
       _stopGpsTracking();
+      // Cancel only this controller's subscriptions; never disconnect the
+      // shared HeartRateService singleton, since the dedicated HR panel
+      // (heart_rate_panel_controller) subscribes to the same stream and
+      // would lose its connection too. The user disconnects explicitly via
+      // disconnectHeartRate when they want to release the device.
       _hrSub?.cancel();
       _hrSub = null;
       _hrConnectionSub?.cancel();
       _hrConnectionSub = null;
-      await _heartRateService.disconnect();
       state = const CardioTrackingState(savedSuccessfully: true);
     } on SaveCardioSessionException catch (e) {
       state = state.copyWith(isSaving: false, error: e.message);

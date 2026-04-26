@@ -238,20 +238,20 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
   /// Returns `true` if a workout was started, `false` if no template was
   /// found for today's day-of-week within the current week.
   Future<bool> startFromProgramme(Programme programme) async {
-    final programmeRepo = ref.read(programmeRepositoryProvider);
-
-    // Anchor the programme on first start so currentWeek can advance.
-    Programme effectiveProgramme = programme;
-    if (!programme.isStarted) {
-      final now = DateTime.now().toUtc();
-      await programmeRepo.markProgrammeStarted(programme.id, startedAt: now);
-      effectiveProgramme = programme.copyWith(startedAt: now);
-    }
+    // For lookup we treat a not-yet-started programme as if it were started
+    // right now, so currentWeek resolves to 1. Persistence is deferred until
+    // we've confirmed there's an actual workout to start — anchoring sooner
+    // would advance the programme clock for an unscheduled-day no-op.
+    final tentativeStartedAt =
+        programme.startedAt ?? DateTime.now().toUtc();
+    final lookupProgramme = programme.isStarted
+        ? programme
+        : programme.copyWith(startedAt: tentativeStartedAt);
 
     final today = DateTime.now().weekday; // 1 = Monday … 7 = Sunday
-    final currentWeek = effectiveProgramme.currentWeek();
+    final currentWeek = lookupProgramme.currentWeek();
 
-    final todayDay = effectiveProgramme.days.cast<ProgrammeDay?>().firstWhere(
+    final todayDay = lookupProgramme.days.cast<ProgrammeDay?>().firstWhere(
           (d) => d!.dayOfWeek == today && d.weekNumber == currentWeek,
           orElse: () => null,
         );
@@ -262,6 +262,15 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     final templateRepo = ref.read(workoutTemplateRepositoryProvider);
     final template = await templateRepo.getTemplate(todayDay.templateId);
     if (template == null) return false;
+
+    // Commit the start anchor only now that we know we'll start a workout.
+    if (!programme.isStarted) {
+      final programmeRepo = ref.read(programmeRepositoryProvider);
+      await programmeRepo.markProgrammeStarted(
+        programme.id,
+        startedAt: tentativeStartedAt,
+      );
+    }
 
     await startFromTemplate(template);
 

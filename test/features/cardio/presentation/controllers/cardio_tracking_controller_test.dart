@@ -379,6 +379,42 @@ void main() {
         expect(controller.state.heartRateReadings, isEmpty);
         expect(controller.state.currentHeartRate, isNull);
         expect(controller.state.hrConnected, isFalse);
+        // The HR service is a singleton shared with the dedicated HR panel —
+        // saving cardio must not disconnect the underlying BLE device.
+        expect(heartRateService.isConnected, isTrue);
+      });
+
+      test('resume after pause preserves pre-pause heart rate readings',
+          () async {
+        await controller.selectExercise('e1', 'Treadmill');
+        await controller.connectHeartRate('dev1', 'Polar H10');
+        controller.start();
+
+        heartRateService.emitHeartRate(140);
+        heartRateService.emitHeartRate(150);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        expect(controller.state.heartRateReadings, [140, 150]);
+
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+
+        // Resume — start() is also wired to the resume button, so it must
+        // NOT clear the buffer mid-session.
+        controller.start();
+        heartRateService.emitHeartRate(160);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        expect(controller.state.heartRateReadings, [140, 150, 160]);
+
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+        await controller.save();
+
+        final sessions = await cardioRepo.getSessionsForExercise('e1');
+        expect(sessions, hasLength(1));
+        // Average across the full session, not just the post-resume segment.
+        expect(sessions.first.avgHeartRate, 150);
       });
 
       test('save with HR readings overrides manual avgHeartRate', () async {

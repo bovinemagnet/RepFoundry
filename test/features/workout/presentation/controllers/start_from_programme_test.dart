@@ -174,7 +174,9 @@ void main() {
       expect(state.activeWorkout?.templateId, week1Template.id);
     });
 
-    test('programme with no day matching today returns false', () async {
+    test(
+        'programme with no day matching today returns false and does not '
+        'anchor startedAt', () async {
       await waitForInit();
       // Build a programme with only days for tomorrow's weekday.
       final tomorrow = (DateTime.now().weekday % 7) + 1;
@@ -194,6 +196,33 @@ void main() {
       final started = await readController().startFromProgramme(programme);
 
       expect(started, isFalse);
+      // A no-op (unscheduled day) must NOT advance the programme clock —
+      // otherwise tapping on the wrong day would burn week 1 silently.
+      expect(programmeRepo.markedProgrammeId, isNull);
+      expect(programmeRepo.markedStartedAt, isNull);
+    });
+
+    test('missing template returns false and does not anchor startedAt',
+        () async {
+      await waitForInit();
+      final today = DateTime.now().weekday;
+      final programme =
+          Programme.create(name: 'Stale ref', durationWeeks: 2).copyWith(
+        days: [
+          ProgrammeDay.create(
+            programmeId: 'p',
+            weekNumber: 1,
+            dayOfWeek: today,
+            templateId: 'template-that-does-not-exist',
+            templateName: 'Ghost',
+          ),
+        ],
+      );
+
+      final started = await readController().startFromProgramme(programme);
+
+      expect(started, isFalse);
+      expect(programmeRepo.markedProgrammeId, isNull);
     });
   });
 }
