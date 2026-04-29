@@ -35,7 +35,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -145,6 +145,18 @@ class AppDatabase extends _$AppDatabase {
               'ALTER TABLE programmes ADD COLUMN started_at INTEGER',
             );
           }
+          if (from < 8) {
+            await batch((b) {
+              b.insertAll(
+                exercises,
+                _defaultExercises.where((e) =>
+                    e.id.value == '19' ||
+                    e.id.value == '20' ||
+                    e.id.value == '21'),
+                mode: InsertMode.insertOrIgnore,
+              );
+            });
+          }
         },
       );
 
@@ -159,8 +171,8 @@ class AppDatabase extends _$AppDatabase {
   }
 }
 
-/// The 18 default exercises seeded on first run.
-/// IDs '1'–'18' match the in-memory implementation.
+/// The 21 default exercises seeded on first run.
+/// IDs '1'–'21' match the in-memory implementation.
 const _defaultExercises = [
   ExercisesCompanion(
     id: Value('1'),
@@ -305,5 +317,26 @@ const _defaultExercises = [
     muscleGroup: Value('fullBody'),
     equipmentType: Value('cardioMachine'),
     imageAsset: Value('assets/images/exercises/18.webp'),
+  ),
+  ExercisesCompanion(
+    id: Value('19'),
+    name: Value('Leg Extensions'),
+    category: Value('strength'),
+    muscleGroup: Value('quadriceps'),
+    equipmentType: Value('machine'),
+  ),
+  ExercisesCompanion(
+    id: Value('20'),
+    name: Value('Pec Deck'),
+    category: Value('strength'),
+    muscleGroup: Value('chest'),
+    equipmentType: Value('machine'),
+  ),
+  ExercisesCompanion(
+    id: Value('21'),
+    name: Value('Leg Curl'),
+    category: Value('strength'),
+    muscleGroup: Value('hamstrings'),
+    equipmentType: Value('machine'),
   ),
 ];

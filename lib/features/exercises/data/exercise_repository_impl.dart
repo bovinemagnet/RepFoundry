@@ -152,6 +152,30 @@ class InMemoryExerciseRepository implements ExerciseRepository {
         equipmentType: EquipmentType.cardioMachine,
         updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
+      Exercise(
+        id: '19',
+        name: 'Leg Extensions',
+        category: ExerciseCategory.strength,
+        muscleGroup: MuscleGroup.quadriceps,
+        equipmentType: EquipmentType.machine,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      ),
+      Exercise(
+        id: '20',
+        name: 'Pec Deck',
+        category: ExerciseCategory.strength,
+        muscleGroup: MuscleGroup.chest,
+        equipmentType: EquipmentType.machine,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      ),
+      Exercise(
+        id: '21',
+        name: 'Leg Curl',
+        category: ExerciseCategory.strength,
+        muscleGroup: MuscleGroup.hamstrings,
+        equipmentType: EquipmentType.machine,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      ),
     ];
   }
 

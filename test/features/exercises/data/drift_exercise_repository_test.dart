@@ -17,10 +17,10 @@ void main() {
 
   group('DriftExerciseRepository', () {
     group('getAllExercises', () {
-      test('returns the 18 seeded exercises sorted by name', () async {
+      test('returns the 21 seeded exercises sorted by name', () async {
         final exercises = await repo.getAllExercises();
 
-        expect(exercises, hasLength(18));
+        expect(exercises, hasLength(21));
         for (var i = 0; i < exercises.length - 1; i++) {
           expect(
             exercises[i].name.compareTo(exercises[i + 1].name),
@@ -33,7 +33,7 @@ void main() {
         await repo.deleteExercise('1');
         final exercises = await repo.getAllExercises();
 
-        expect(exercises, hasLength(17));
+        expect(exercises, hasLength(20));
         expect(exercises.any((e) => e.id == '1'), isFalse);
       });
     });
@@ -166,7 +166,7 @@ void main() {
         // Wait for the initial emission.
         await pumpEventQueue();
         expect(emissions, hasLength(1));
-        expect(emissions.first, hasLength(18));
+        expect(emissions.first, hasLength(21));
 
         final newExercise = Exercise.create(
           name: 'Arnold Press',
@@ -178,7 +178,7 @@ void main() {
         await pumpEventQueue();
 
         expect(emissions, hasLength(2));
-        expect(emissions.last, hasLength(19));
+        expect(emissions.last, hasLength(22));
       });
     });
   });
