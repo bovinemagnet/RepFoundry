@@ -27,6 +27,11 @@ import '../features/templates/data/drift_workout_template_repository.dart';
 import '../features/templates/domain/repositories/workout_template_repository.dart';
 import '../features/programmes/data/drift_programme_repository.dart';
 import '../features/programmes/domain/repositories/programme_repository.dart';
+import '../features/stretching/application/delete_stretching_session_use_case.dart';
+import '../features/stretching/application/save_stretching_session_use_case.dart';
+import '../features/stretching/data/drift_stretching_session_repository.dart';
+import '../features/stretching/domain/models/stretching_session.dart';
+import '../features/stretching/domain/repositories/stretching_session_repository.dart';
 import '../features/sync/application/sync_orchestrator.dart';
 import '../features/sync/data/sync_service_factory.dart';
 import '../features/sync/presentation/providers/sync_settings_provider.dart';
@@ -68,6 +73,20 @@ final programmeRepositoryProvider = Provider<ProgrammeRepository>((ref) {
   return DriftProgrammeRepository(ref.watch(databaseProvider));
 });
 
+final stretchingSessionRepositoryProvider =
+    Provider<StretchingSessionRepository>((ref) {
+  return DriftStretchingSessionRepository(ref.watch(databaseProvider));
+});
+
+final stretchingSessionsForWorkoutProvider =
+    StreamProvider.autoDispose.family<List<StretchingSession>, String>(
+  (ref, workoutId) {
+    return ref
+        .watch(stretchingSessionRepositoryProvider)
+        .watchSessionsForWorkout(workoutId);
+  },
+);
+
 // Services
 final locationServiceProvider = Provider<LocationService>((ref) {
   return GeolocatorLocationService();
@@ -104,6 +123,20 @@ final saveCardioSessionUseCaseProvider =
   return SaveCardioSessionUseCase(
     cardioRepository: ref.watch(cardioSessionRepositoryProvider),
     workoutRepository: ref.watch(workoutRepositoryProvider),
+  );
+});
+
+final saveStretchingSessionUseCaseProvider =
+    Provider<SaveStretchingSessionUseCase>((ref) {
+  return SaveStretchingSessionUseCase(
+    repository: ref.watch(stretchingSessionRepositoryProvider),
+  );
+});
+
+final deleteStretchingSessionUseCaseProvider =
+    Provider<DeleteStretchingSessionUseCase>((ref) {
+  return DeleteStretchingSessionUseCase(
+    repository: ref.watch(stretchingSessionRepositoryProvider),
   );
 });
 

@@ -5,6 +5,8 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../workout/domain/models/workout.dart';
 import '../../../workout/domain/models/workout_set.dart';
 import '../../../exercises/domain/models/exercise.dart';
+import '../../../stretching/domain/models/stretching_session.dart';
+import '../../../stretching/presentation/widgets/stretch_preset_localiser.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
@@ -14,12 +16,14 @@ class _WorkoutDetailData {
   final Map<String, List<WorkoutSet>> setsByExercise;
   final Map<String, Exercise> exercisesById;
   final Set<String> prSetIds;
+  final List<StretchingSession> stretchingSessions;
 
   const _WorkoutDetailData({
     required this.workout,
     required this.setsByExercise,
     required this.exercisesById,
     this.prSetIds = const {},
+    this.stretchingSessions = const [],
   });
 }
 
@@ -52,11 +56,16 @@ final _workoutDetailProvider =
         .map((pr) => pr.workoutSetId!)
         .toSet();
 
+    final stretchingRepo = ref.watch(stretchingSessionRepositoryProvider);
+    final stretchingSessions =
+        await stretchingRepo.getSessionsForWorkout(workoutId);
+
     return _WorkoutDetailData(
       workout: workout,
       setsByExercise: byExercise,
       exercisesById: exercisesById,
       prSetIds: prSetIds,
+      stretchingSessions: stretchingSessions,
     );
   },
 );
@@ -159,7 +168,86 @@ class _WorkoutDetailBody extends StatelessWidget {
             sets: entry.value,
             prSetIds: data.prSetIds,
           ),
+        if (data.stretchingSessions.isNotEmpty)
+          _StretchingCard(sessions: data.stretchingSessions),
       ],
+    );
+  }
+}
+
+class _StretchingCard extends StatelessWidget {
+  const _StretchingCard({required this.sessions});
+
+  final List<StretchingSession> sessions;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context)!;
+    final totalSeconds =
+        sessions.fold<int>(0, (sum, sn) => sum + sn.durationSeconds);
+    final totalMinutes = (totalSeconds / 60).round();
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.self_improvement,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    s.stretchingSectionTitle,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+                Text(
+                  s.stretchingTotalMinutes(totalMinutes.toString()),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            for (final session in sessions)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        localiseStretch(
+                          s,
+                          session.type,
+                          customName: session.customName,
+                        ),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                    Text(
+                      formatStretchDuration(session.durationSeconds),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontFeatures: const [
+                          FontFeature.tabularFigures(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

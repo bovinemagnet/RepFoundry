@@ -4505,6 +4505,663 @@ class ProgressionRulesCompanion extends UpdateCompanion<ProgressionRule> {
   }
 }
 
+class $StretchingSessionsTable extends StretchingSessions
+    with TableInfo<$StretchingSessionsTable, StretchingSession> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $StretchingSessionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _workoutIdMeta =
+      const VerificationMeta('workoutId');
+  @override
+  late final GeneratedColumn<String> workoutId = GeneratedColumn<String>(
+      'workout_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES workouts (id)'));
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+      'type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _customNameMeta =
+      const VerificationMeta('customName');
+  @override
+  late final GeneratedColumn<String> customName = GeneratedColumn<String>(
+      'custom_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _bodyAreaMeta =
+      const VerificationMeta('bodyArea');
+  @override
+  late final GeneratedColumn<String> bodyArea = GeneratedColumn<String>(
+      'body_area', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _sideMeta = const VerificationMeta('side');
+  @override
+  late final GeneratedColumn<String> side = GeneratedColumn<String>(
+      'side', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _durationSecondsMeta =
+      const VerificationMeta('durationSeconds');
+  @override
+  late final GeneratedColumn<int> durationSeconds = GeneratedColumn<int>(
+      'duration_seconds', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _startedAtMeta =
+      const VerificationMeta('startedAt');
+  @override
+  late final GeneratedColumn<int> startedAt = GeneratedColumn<int>(
+      'started_at', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _endedAtMeta =
+      const VerificationMeta('endedAt');
+  @override
+  late final GeneratedColumn<int> endedAt = GeneratedColumn<int>(
+      'ended_at', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _entryMethodMeta =
+      const VerificationMeta('entryMethod');
+  @override
+  late final GeneratedColumn<String> entryMethod = GeneratedColumn<String>(
+      'entry_method', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _deletedAtMeta =
+      const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<int> deletedAt = GeneratedColumn<int>(
+      'deleted_at', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        workoutId,
+        type,
+        customName,
+        bodyArea,
+        side,
+        durationSeconds,
+        startedAt,
+        endedAt,
+        entryMethod,
+        notes,
+        updatedAt,
+        deletedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'stretching_sessions';
+  @override
+  VerificationContext validateIntegrity(Insertable<StretchingSession> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('workout_id')) {
+      context.handle(_workoutIdMeta,
+          workoutId.isAcceptableOrUnknown(data['workout_id']!, _workoutIdMeta));
+    } else if (isInserting) {
+      context.missing(_workoutIdMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('custom_name')) {
+      context.handle(
+          _customNameMeta,
+          customName.isAcceptableOrUnknown(
+              data['custom_name']!, _customNameMeta));
+    }
+    if (data.containsKey('body_area')) {
+      context.handle(_bodyAreaMeta,
+          bodyArea.isAcceptableOrUnknown(data['body_area']!, _bodyAreaMeta));
+    }
+    if (data.containsKey('side')) {
+      context.handle(
+          _sideMeta, side.isAcceptableOrUnknown(data['side']!, _sideMeta));
+    }
+    if (data.containsKey('duration_seconds')) {
+      context.handle(
+          _durationSecondsMeta,
+          durationSeconds.isAcceptableOrUnknown(
+              data['duration_seconds']!, _durationSecondsMeta));
+    } else if (isInserting) {
+      context.missing(_durationSecondsMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(_startedAtMeta,
+          startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta));
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(_endedAtMeta,
+          endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta));
+    }
+    if (data.containsKey('entry_method')) {
+      context.handle(
+          _entryMethodMeta,
+          entryMethod.isAcceptableOrUnknown(
+              data['entry_method']!, _entryMethodMeta));
+    } else if (isInserting) {
+      context.missing(_entryMethodMeta);
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta,
+          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  StretchingSession map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return StretchingSession(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      workoutId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}workout_id'])!,
+      type: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}type'])!,
+      customName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}custom_name']),
+      bodyArea: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}body_area']),
+      side: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}side']),
+      durationSeconds: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}duration_seconds'])!,
+      startedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}started_at']),
+      endedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}ended_at']),
+      entryMethod: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}entry_method'])!,
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}updated_at'])!,
+      deletedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}deleted_at']),
+    );
+  }
+
+  @override
+  $StretchingSessionsTable createAlias(String alias) {
+    return $StretchingSessionsTable(attachedDatabase, alias);
+  }
+}
+
+class StretchingSession extends DataClass
+    implements Insertable<StretchingSession> {
+  final String id;
+  final String workoutId;
+
+  /// Either a preset key or 'custom'.
+  final String type;
+  final String? customName;
+
+  /// Enum name for [StretchingBodyArea]; nullable.
+  final String? bodyArea;
+
+  /// Enum name for [StretchingSide]; nullable.
+  final String? side;
+  final int durationSeconds;
+
+  /// Wall-clock start, epoch ms; null for manual entries.
+  final int? startedAt;
+
+  /// Wall-clock end, epoch ms; null for manual entries.
+  final int? endedAt;
+
+  /// Enum name for [StretchingEntryMethod].
+  final String entryMethod;
+  final String? notes;
+  final int updatedAt;
+  final int? deletedAt;
+  const StretchingSession(
+      {required this.id,
+      required this.workoutId,
+      required this.type,
+      this.customName,
+      this.bodyArea,
+      this.side,
+      required this.durationSeconds,
+      this.startedAt,
+      this.endedAt,
+      required this.entryMethod,
+      this.notes,
+      required this.updatedAt,
+      this.deletedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['workout_id'] = Variable<String>(workoutId);
+    map['type'] = Variable<String>(type);
+    if (!nullToAbsent || customName != null) {
+      map['custom_name'] = Variable<String>(customName);
+    }
+    if (!nullToAbsent || bodyArea != null) {
+      map['body_area'] = Variable<String>(bodyArea);
+    }
+    if (!nullToAbsent || side != null) {
+      map['side'] = Variable<String>(side);
+    }
+    map['duration_seconds'] = Variable<int>(durationSeconds);
+    if (!nullToAbsent || startedAt != null) {
+      map['started_at'] = Variable<int>(startedAt);
+    }
+    if (!nullToAbsent || endedAt != null) {
+      map['ended_at'] = Variable<int>(endedAt);
+    }
+    map['entry_method'] = Variable<String>(entryMethod);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['updated_at'] = Variable<int>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<int>(deletedAt);
+    }
+    return map;
+  }
+
+  StretchingSessionsCompanion toCompanion(bool nullToAbsent) {
+    return StretchingSessionsCompanion(
+      id: Value(id),
+      workoutId: Value(workoutId),
+      type: Value(type),
+      customName: customName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customName),
+      bodyArea: bodyArea == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bodyArea),
+      side: side == null && nullToAbsent ? const Value.absent() : Value(side),
+      durationSeconds: Value(durationSeconds),
+      startedAt: startedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startedAt),
+      endedAt: endedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endedAt),
+      entryMethod: Value(entryMethod),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory StretchingSession.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return StretchingSession(
+      id: serializer.fromJson<String>(json['id']),
+      workoutId: serializer.fromJson<String>(json['workoutId']),
+      type: serializer.fromJson<String>(json['type']),
+      customName: serializer.fromJson<String?>(json['customName']),
+      bodyArea: serializer.fromJson<String?>(json['bodyArea']),
+      side: serializer.fromJson<String?>(json['side']),
+      durationSeconds: serializer.fromJson<int>(json['durationSeconds']),
+      startedAt: serializer.fromJson<int?>(json['startedAt']),
+      endedAt: serializer.fromJson<int?>(json['endedAt']),
+      entryMethod: serializer.fromJson<String>(json['entryMethod']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+      deletedAt: serializer.fromJson<int?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'workoutId': serializer.toJson<String>(workoutId),
+      'type': serializer.toJson<String>(type),
+      'customName': serializer.toJson<String?>(customName),
+      'bodyArea': serializer.toJson<String?>(bodyArea),
+      'side': serializer.toJson<String?>(side),
+      'durationSeconds': serializer.toJson<int>(durationSeconds),
+      'startedAt': serializer.toJson<int?>(startedAt),
+      'endedAt': serializer.toJson<int?>(endedAt),
+      'entryMethod': serializer.toJson<String>(entryMethod),
+      'notes': serializer.toJson<String?>(notes),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+      'deletedAt': serializer.toJson<int?>(deletedAt),
+    };
+  }
+
+  StretchingSession copyWith(
+          {String? id,
+          String? workoutId,
+          String? type,
+          Value<String?> customName = const Value.absent(),
+          Value<String?> bodyArea = const Value.absent(),
+          Value<String?> side = const Value.absent(),
+          int? durationSeconds,
+          Value<int?> startedAt = const Value.absent(),
+          Value<int?> endedAt = const Value.absent(),
+          String? entryMethod,
+          Value<String?> notes = const Value.absent(),
+          int? updatedAt,
+          Value<int?> deletedAt = const Value.absent()}) =>
+      StretchingSession(
+        id: id ?? this.id,
+        workoutId: workoutId ?? this.workoutId,
+        type: type ?? this.type,
+        customName: customName.present ? customName.value : this.customName,
+        bodyArea: bodyArea.present ? bodyArea.value : this.bodyArea,
+        side: side.present ? side.value : this.side,
+        durationSeconds: durationSeconds ?? this.durationSeconds,
+        startedAt: startedAt.present ? startedAt.value : this.startedAt,
+        endedAt: endedAt.present ? endedAt.value : this.endedAt,
+        entryMethod: entryMethod ?? this.entryMethod,
+        notes: notes.present ? notes.value : this.notes,
+        updatedAt: updatedAt ?? this.updatedAt,
+        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+      );
+  StretchingSession copyWithCompanion(StretchingSessionsCompanion data) {
+    return StretchingSession(
+      id: data.id.present ? data.id.value : this.id,
+      workoutId: data.workoutId.present ? data.workoutId.value : this.workoutId,
+      type: data.type.present ? data.type.value : this.type,
+      customName:
+          data.customName.present ? data.customName.value : this.customName,
+      bodyArea: data.bodyArea.present ? data.bodyArea.value : this.bodyArea,
+      side: data.side.present ? data.side.value : this.side,
+      durationSeconds: data.durationSeconds.present
+          ? data.durationSeconds.value
+          : this.durationSeconds,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+      entryMethod:
+          data.entryMethod.present ? data.entryMethod.value : this.entryMethod,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StretchingSession(')
+          ..write('id: $id, ')
+          ..write('workoutId: $workoutId, ')
+          ..write('type: $type, ')
+          ..write('customName: $customName, ')
+          ..write('bodyArea: $bodyArea, ')
+          ..write('side: $side, ')
+          ..write('durationSeconds: $durationSeconds, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('entryMethod: $entryMethod, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      workoutId,
+      type,
+      customName,
+      bodyArea,
+      side,
+      durationSeconds,
+      startedAt,
+      endedAt,
+      entryMethod,
+      notes,
+      updatedAt,
+      deletedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is StretchingSession &&
+          other.id == this.id &&
+          other.workoutId == this.workoutId &&
+          other.type == this.type &&
+          other.customName == this.customName &&
+          other.bodyArea == this.bodyArea &&
+          other.side == this.side &&
+          other.durationSeconds == this.durationSeconds &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt &&
+          other.entryMethod == this.entryMethod &&
+          other.notes == this.notes &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class StretchingSessionsCompanion extends UpdateCompanion<StretchingSession> {
+  final Value<String> id;
+  final Value<String> workoutId;
+  final Value<String> type;
+  final Value<String?> customName;
+  final Value<String?> bodyArea;
+  final Value<String?> side;
+  final Value<int> durationSeconds;
+  final Value<int?> startedAt;
+  final Value<int?> endedAt;
+  final Value<String> entryMethod;
+  final Value<String?> notes;
+  final Value<int> updatedAt;
+  final Value<int?> deletedAt;
+  final Value<int> rowid;
+  const StretchingSessionsCompanion({
+    this.id = const Value.absent(),
+    this.workoutId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.customName = const Value.absent(),
+    this.bodyArea = const Value.absent(),
+    this.side = const Value.absent(),
+    this.durationSeconds = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.entryMethod = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  StretchingSessionsCompanion.insert({
+    required String id,
+    required String workoutId,
+    required String type,
+    this.customName = const Value.absent(),
+    this.bodyArea = const Value.absent(),
+    this.side = const Value.absent(),
+    required int durationSeconds,
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    required String entryMethod,
+    this.notes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        workoutId = Value(workoutId),
+        type = Value(type),
+        durationSeconds = Value(durationSeconds),
+        entryMethod = Value(entryMethod);
+  static Insertable<StretchingSession> custom({
+    Expression<String>? id,
+    Expression<String>? workoutId,
+    Expression<String>? type,
+    Expression<String>? customName,
+    Expression<String>? bodyArea,
+    Expression<String>? side,
+    Expression<int>? durationSeconds,
+    Expression<int>? startedAt,
+    Expression<int>? endedAt,
+    Expression<String>? entryMethod,
+    Expression<String>? notes,
+    Expression<int>? updatedAt,
+    Expression<int>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (workoutId != null) 'workout_id': workoutId,
+      if (type != null) 'type': type,
+      if (customName != null) 'custom_name': customName,
+      if (bodyArea != null) 'body_area': bodyArea,
+      if (side != null) 'side': side,
+      if (durationSeconds != null) 'duration_seconds': durationSeconds,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (entryMethod != null) 'entry_method': entryMethod,
+      if (notes != null) 'notes': notes,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  StretchingSessionsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? workoutId,
+      Value<String>? type,
+      Value<String?>? customName,
+      Value<String?>? bodyArea,
+      Value<String?>? side,
+      Value<int>? durationSeconds,
+      Value<int?>? startedAt,
+      Value<int?>? endedAt,
+      Value<String>? entryMethod,
+      Value<String?>? notes,
+      Value<int>? updatedAt,
+      Value<int?>? deletedAt,
+      Value<int>? rowid}) {
+    return StretchingSessionsCompanion(
+      id: id ?? this.id,
+      workoutId: workoutId ?? this.workoutId,
+      type: type ?? this.type,
+      customName: customName ?? this.customName,
+      bodyArea: bodyArea ?? this.bodyArea,
+      side: side ?? this.side,
+      durationSeconds: durationSeconds ?? this.durationSeconds,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      entryMethod: entryMethod ?? this.entryMethod,
+      notes: notes ?? this.notes,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (workoutId.present) {
+      map['workout_id'] = Variable<String>(workoutId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (customName.present) {
+      map['custom_name'] = Variable<String>(customName.value);
+    }
+    if (bodyArea.present) {
+      map['body_area'] = Variable<String>(bodyArea.value);
+    }
+    if (side.present) {
+      map['side'] = Variable<String>(side.value);
+    }
+    if (durationSeconds.present) {
+      map['duration_seconds'] = Variable<int>(durationSeconds.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<int>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<int>(endedAt.value);
+    }
+    if (entryMethod.present) {
+      map['entry_method'] = Variable<String>(entryMethod.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<int>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StretchingSessionsCompanion(')
+          ..write('id: $id, ')
+          ..write('workoutId: $workoutId, ')
+          ..write('type: $type, ')
+          ..write('customName: $customName, ')
+          ..write('bodyArea: $bodyArea, ')
+          ..write('side: $side, ')
+          ..write('durationSeconds: $durationSeconds, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('entryMethod: $entryMethod, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4523,12 +5180,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ProgrammeDaysTable programmeDays = $ProgrammeDaysTable(this);
   late final $ProgressionRulesTable progressionRules =
       $ProgressionRulesTable(this);
+  late final $StretchingSessionsTable stretchingSessions =
+      $StretchingSessionsTable(this);
   late final Index idxWorkoutSetsExerciseTimestamp = Index(
       'idx_workout_sets_exercise_timestamp',
       'CREATE INDEX idx_workout_sets_exercise_timestamp ON workout_sets (exercise_id, timestamp)');
   late final Index idxWorkoutSetsWorkoutOrder = Index(
       'idx_workout_sets_workout_order',
       'CREATE INDEX idx_workout_sets_workout_order ON workout_sets (workout_id, set_order)');
+  late final Index idxStretchingSessionsWorkout = Index(
+      'idx_stretching_sessions_workout',
+      'CREATE INDEX idx_stretching_sessions_workout ON stretching_sessions (workout_id)');
+  late final Index idxStretchingSessionsTypeUpdated = Index(
+      'idx_stretching_sessions_type_updated',
+      'CREATE INDEX idx_stretching_sessions_type_updated ON stretching_sessions (type, updated_at)');
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4545,8 +5210,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         programmes,
         programmeDays,
         progressionRules,
+        stretchingSessions,
         idxWorkoutSetsExerciseTimestamp,
-        idxWorkoutSetsWorkoutOrder
+        idxWorkoutSetsWorkoutOrder,
+        idxStretchingSessionsWorkout,
+        idxStretchingSessionsTypeUpdated
       ];
 }
 
@@ -5334,6 +6002,23 @@ final class $$WorkoutsTableReferences
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
+
+  static MultiTypedResultKey<$StretchingSessionsTable, List<StretchingSession>>
+      _stretchingSessionsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.stretchingSessions,
+              aliasName: $_aliasNameGenerator(
+                  db.workouts.id, db.stretchingSessions.workoutId));
+
+  $$StretchingSessionsTableProcessedTableManager get stretchingSessionsRefs {
+    final manager = $$StretchingSessionsTableTableManager(
+            $_db, $_db.stretchingSessions)
+        .filter((f) => f.workoutId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_stretchingSessionsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$WorkoutsTableFilterComposer
@@ -5400,6 +6085,27 @@ class $$WorkoutsTableFilterComposer
             $$CardioSessionsTableFilterComposer(
               $db: $db,
               $table: $db.cardioSessions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> stretchingSessionsRefs(
+      Expression<bool> Function($$StretchingSessionsTableFilterComposer f) f) {
+    final $$StretchingSessionsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.stretchingSessions,
+        getReferencedColumn: (t) => t.workoutId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$StretchingSessionsTableFilterComposer(
+              $db: $db,
+              $table: $db.stretchingSessions,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -5511,6 +6217,28 @@ class $$WorkoutsTableAnnotationComposer
             ));
     return f(composer);
   }
+
+  Expression<T> stretchingSessionsRefs<T extends Object>(
+      Expression<T> Function($$StretchingSessionsTableAnnotationComposer a) f) {
+    final $$StretchingSessionsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.stretchingSessions,
+            getReferencedColumn: (t) => t.workoutId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$StretchingSessionsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.stretchingSessions,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
 }
 
 class $$WorkoutsTableTableManager extends RootTableManager<
@@ -5524,7 +6252,10 @@ class $$WorkoutsTableTableManager extends RootTableManager<
     $$WorkoutsTableUpdateCompanionBuilder,
     (Workout, $$WorkoutsTableReferences),
     Workout,
-    PrefetchHooks Function({bool workoutSetsRefs, bool cardioSessionsRefs})> {
+    PrefetchHooks Function(
+        {bool workoutSetsRefs,
+        bool cardioSessionsRefs,
+        bool stretchingSessionsRefs})> {
   $$WorkoutsTableTableManager(_$AppDatabase db, $WorkoutsTable table)
       : super(TableManagerState(
           db: db,
@@ -5580,12 +6311,15 @@ class $$WorkoutsTableTableManager extends RootTableManager<
                   (e.readTable(table), $$WorkoutsTableReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: (
-              {workoutSetsRefs = false, cardioSessionsRefs = false}) {
+              {workoutSetsRefs = false,
+              cardioSessionsRefs = false,
+              stretchingSessionsRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
                 if (workoutSetsRefs) db.workoutSets,
-                if (cardioSessionsRefs) db.cardioSessions
+                if (cardioSessionsRefs) db.cardioSessions,
+                if (stretchingSessionsRefs) db.stretchingSessions
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -5615,6 +6349,19 @@ class $$WorkoutsTableTableManager extends RootTableManager<
                         referencedItemsForCurrentItem:
                             (item, referencedItems) => referencedItems
                                 .where((e) => e.workoutId == item.id),
+                        typedResults: items),
+                  if (stretchingSessionsRefs)
+                    await $_getPrefetchedData<Workout, $WorkoutsTable,
+                            StretchingSession>(
+                        currentTable: table,
+                        referencedTable: $$WorkoutsTableReferences
+                            ._stretchingSessionsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$WorkoutsTableReferences(db, table, p0)
+                                .stretchingSessionsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.workoutId == item.id),
                         typedResults: items)
                 ];
               },
@@ -5634,7 +6381,10 @@ typedef $$WorkoutsTableProcessedTableManager = ProcessedTableManager<
     $$WorkoutsTableUpdateCompanionBuilder,
     (Workout, $$WorkoutsTableReferences),
     Workout,
-    PrefetchHooks Function({bool workoutSetsRefs, bool cardioSessionsRefs})>;
+    PrefetchHooks Function(
+        {bool workoutSetsRefs,
+        bool cardioSessionsRefs,
+        bool stretchingSessionsRefs})>;
 typedef $$WorkoutSetsTableCreateCompanionBuilder = WorkoutSetsCompanion
     Function({
   required String id,
@@ -8185,6 +8935,407 @@ typedef $$ProgressionRulesTableProcessedTableManager = ProcessedTableManager<
     ),
     ProgressionRule,
     PrefetchHooks Function()>;
+typedef $$StretchingSessionsTableCreateCompanionBuilder
+    = StretchingSessionsCompanion Function({
+  required String id,
+  required String workoutId,
+  required String type,
+  Value<String?> customName,
+  Value<String?> bodyArea,
+  Value<String?> side,
+  required int durationSeconds,
+  Value<int?> startedAt,
+  Value<int?> endedAt,
+  required String entryMethod,
+  Value<String?> notes,
+  Value<int> updatedAt,
+  Value<int?> deletedAt,
+  Value<int> rowid,
+});
+typedef $$StretchingSessionsTableUpdateCompanionBuilder
+    = StretchingSessionsCompanion Function({
+  Value<String> id,
+  Value<String> workoutId,
+  Value<String> type,
+  Value<String?> customName,
+  Value<String?> bodyArea,
+  Value<String?> side,
+  Value<int> durationSeconds,
+  Value<int?> startedAt,
+  Value<int?> endedAt,
+  Value<String> entryMethod,
+  Value<String?> notes,
+  Value<int> updatedAt,
+  Value<int?> deletedAt,
+  Value<int> rowid,
+});
+
+final class $$StretchingSessionsTableReferences extends BaseReferences<
+    _$AppDatabase, $StretchingSessionsTable, StretchingSession> {
+  $$StretchingSessionsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $WorkoutsTable _workoutIdTable(_$AppDatabase db) =>
+      db.workouts.createAlias($_aliasNameGenerator(
+          db.stretchingSessions.workoutId, db.workouts.id));
+
+  $$WorkoutsTableProcessedTableManager get workoutId {
+    final $_column = $_itemColumn<String>('workout_id')!;
+
+    final manager = $$WorkoutsTableTableManager($_db, $_db.workouts)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workoutIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$StretchingSessionsTableFilterComposer
+    extends Composer<_$AppDatabase, $StretchingSessionsTable> {
+  $$StretchingSessionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get customName => $composableBuilder(
+      column: $table.customName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get bodyArea => $composableBuilder(
+      column: $table.bodyArea, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get side => $composableBuilder(
+      column: $table.side, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get durationSeconds => $composableBuilder(
+      column: $table.durationSeconds,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get startedAt => $composableBuilder(
+      column: $table.startedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get endedAt => $composableBuilder(
+      column: $table.endedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get entryMethod => $composableBuilder(
+      column: $table.entryMethod, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+
+  $$WorkoutsTableFilterComposer get workoutId {
+    final $$WorkoutsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.workoutId,
+        referencedTable: $db.workouts,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WorkoutsTableFilterComposer(
+              $db: $db,
+              $table: $db.workouts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$StretchingSessionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $StretchingSessionsTable> {
+  $$StretchingSessionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get customName => $composableBuilder(
+      column: $table.customName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get bodyArea => $composableBuilder(
+      column: $table.bodyArea, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get side => $composableBuilder(
+      column: $table.side, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get durationSeconds => $composableBuilder(
+      column: $table.durationSeconds,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get startedAt => $composableBuilder(
+      column: $table.startedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get endedAt => $composableBuilder(
+      column: $table.endedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get entryMethod => $composableBuilder(
+      column: $table.entryMethod, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+
+  $$WorkoutsTableOrderingComposer get workoutId {
+    final $$WorkoutsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.workoutId,
+        referencedTable: $db.workouts,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WorkoutsTableOrderingComposer(
+              $db: $db,
+              $table: $db.workouts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$StretchingSessionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $StretchingSessionsTable> {
+  $$StretchingSessionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get customName => $composableBuilder(
+      column: $table.customName, builder: (column) => column);
+
+  GeneratedColumn<String> get bodyArea =>
+      $composableBuilder(column: $table.bodyArea, builder: (column) => column);
+
+  GeneratedColumn<String> get side =>
+      $composableBuilder(column: $table.side, builder: (column) => column);
+
+  GeneratedColumn<int> get durationSeconds => $composableBuilder(
+      column: $table.durationSeconds, builder: (column) => column);
+
+  GeneratedColumn<int> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get entryMethod => $composableBuilder(
+      column: $table.entryMethod, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$WorkoutsTableAnnotationComposer get workoutId {
+    final $$WorkoutsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.workoutId,
+        referencedTable: $db.workouts,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WorkoutsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.workouts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$StretchingSessionsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $StretchingSessionsTable,
+    StretchingSession,
+    $$StretchingSessionsTableFilterComposer,
+    $$StretchingSessionsTableOrderingComposer,
+    $$StretchingSessionsTableAnnotationComposer,
+    $$StretchingSessionsTableCreateCompanionBuilder,
+    $$StretchingSessionsTableUpdateCompanionBuilder,
+    (StretchingSession, $$StretchingSessionsTableReferences),
+    StretchingSession,
+    PrefetchHooks Function({bool workoutId})> {
+  $$StretchingSessionsTableTableManager(
+      _$AppDatabase db, $StretchingSessionsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$StretchingSessionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$StretchingSessionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$StretchingSessionsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> workoutId = const Value.absent(),
+            Value<String> type = const Value.absent(),
+            Value<String?> customName = const Value.absent(),
+            Value<String?> bodyArea = const Value.absent(),
+            Value<String?> side = const Value.absent(),
+            Value<int> durationSeconds = const Value.absent(),
+            Value<int?> startedAt = const Value.absent(),
+            Value<int?> endedAt = const Value.absent(),
+            Value<String> entryMethod = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<int> updatedAt = const Value.absent(),
+            Value<int?> deletedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              StretchingSessionsCompanion(
+            id: id,
+            workoutId: workoutId,
+            type: type,
+            customName: customName,
+            bodyArea: bodyArea,
+            side: side,
+            durationSeconds: durationSeconds,
+            startedAt: startedAt,
+            endedAt: endedAt,
+            entryMethod: entryMethod,
+            notes: notes,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String workoutId,
+            required String type,
+            Value<String?> customName = const Value.absent(),
+            Value<String?> bodyArea = const Value.absent(),
+            Value<String?> side = const Value.absent(),
+            required int durationSeconds,
+            Value<int?> startedAt = const Value.absent(),
+            Value<int?> endedAt = const Value.absent(),
+            required String entryMethod,
+            Value<String?> notes = const Value.absent(),
+            Value<int> updatedAt = const Value.absent(),
+            Value<int?> deletedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              StretchingSessionsCompanion.insert(
+            id: id,
+            workoutId: workoutId,
+            type: type,
+            customName: customName,
+            bodyArea: bodyArea,
+            side: side,
+            durationSeconds: durationSeconds,
+            startedAt: startedAt,
+            endedAt: endedAt,
+            entryMethod: entryMethod,
+            notes: notes,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$StretchingSessionsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({workoutId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (workoutId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.workoutId,
+                    referencedTable:
+                        $$StretchingSessionsTableReferences._workoutIdTable(db),
+                    referencedColumn: $$StretchingSessionsTableReferences
+                        ._workoutIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$StretchingSessionsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $StretchingSessionsTable,
+    StretchingSession,
+    $$StretchingSessionsTableFilterComposer,
+    $$StretchingSessionsTableOrderingComposer,
+    $$StretchingSessionsTableAnnotationComposer,
+    $$StretchingSessionsTableCreateCompanionBuilder,
+    $$StretchingSessionsTableUpdateCompanionBuilder,
+    (StretchingSession, $$StretchingSessionsTableReferences),
+    StretchingSession,
+    PrefetchHooks Function({bool workoutId})>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -8211,4 +9362,6 @@ class $AppDatabaseManager {
       $$ProgrammeDaysTableTableManager(_db, _db.programmeDays);
   $$ProgressionRulesTableTableManager get progressionRules =>
       $$ProgressionRulesTableTableManager(_db, _db.progressionRules);
+  $$StretchingSessionsTableTableManager get stretchingSessions =>
+      $$StretchingSessionsTableTableManager(_db, _db.stretchingSessions);
 }

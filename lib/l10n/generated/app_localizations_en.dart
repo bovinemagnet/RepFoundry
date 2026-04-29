@@ -1107,7 +1107,7 @@ class SEn extends S {
   String get bodyFatLabel => 'body fat';
 
   @override
-  String get notesLabel => 'Notes';
+  String get notesLabel => 'Notes (optional)';
 
   @override
   String get bodyWeightTrendTitle => 'Body Weight Trend';
@@ -1669,4 +1669,136 @@ class SEn extends S {
 
   @override
   String get liveTracking => 'Live Tracking';
+
+  @override
+  String get stretchingSectionTitle => 'Stretching';
+
+  @override
+  String get stretchingEmptySubtitle =>
+      'Add mobility, warm-up, or cool-down stretching.';
+
+  @override
+  String get addStretching => 'Add Stretching';
+
+  @override
+  String get addStretchingShort => 'Add';
+
+  @override
+  String stretchingTotalMinutes(String minutes) {
+    return '$minutes min total';
+  }
+
+  @override
+  String stretchingEntriesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get addStretchingTitle => 'Add Stretching';
+
+  @override
+  String get stretchTypeLabel => 'Stretch type';
+
+  @override
+  String get customStretchLabel => 'Custom…';
+
+  @override
+  String get customStretchHint => 'Stretch name';
+
+  @override
+  String get recordTimeLabel => 'Record time';
+
+  @override
+  String get recordTimer => 'Timer';
+
+  @override
+  String get recordManual => 'Manual';
+
+  @override
+  String get quickAddDurations => 'Quick add';
+
+  @override
+  String get minutesAbbrev => 'min';
+
+  @override
+  String get secondsAbbrev => 'sec';
+
+  @override
+  String get stretchingEntryMethodTimer => 'Timer';
+
+  @override
+  String get stretchingEntryMethodManual => 'Manual';
+
+  @override
+  String get deleteStretchingTitle => 'Delete stretching entry?';
+
+  @override
+  String get deleteStretchingMessage =>
+      'This will remove this stretching entry from the workout.';
+
+  @override
+  String get stretchPresetStandingHamstring => 'Standing Hamstring Stretch';
+
+  @override
+  String get stretchPresetSeatedForwardFold => 'Seated Forward Fold';
+
+  @override
+  String get stretchPresetStandingQuad => 'Standing Quadriceps Stretch';
+
+  @override
+  String get stretchPresetLowLungeHipFlexor => 'Low Lunge Hip Flexor';
+
+  @override
+  String get stretchPresetPigeon => 'Pigeon Pose';
+
+  @override
+  String get stretchPresetButterfly => 'Butterfly Stretch';
+
+  @override
+  String get stretchPresetChildsPose => 'Child\'s Pose';
+
+  @override
+  String get stretchPresetCobra => 'Cobra Stretch';
+
+  @override
+  String get stretchPresetCatCow => 'Cat–Cow';
+
+  @override
+  String get stretchPresetDownwardDog => 'Downward-Facing Dog';
+
+  @override
+  String get stretchPresetCrossBodyShoulder => 'Cross-Body Shoulder Stretch';
+
+  @override
+  String get stretchPresetDoorwayChest => 'Doorway Chest Stretch';
+
+  @override
+  String get stretchPresetStandingCalf => 'Standing Calf Stretch';
+
+  @override
+  String get stretchPresetSupineSpinalTwist => 'Supine Spinal Twist';
+
+  @override
+  String get stretchPresetNeckSideStretch => 'Neck Side Stretch';
+
+  @override
+  String get stretchPresetFigureFourGlute => 'Figure-4 Glute Stretch';
+
+  @override
+  String get stretchPresetNinetyNinety => '90/90 Hip Stretch';
+
+  @override
+  String get stretchPresetFrogPose => 'Frog Pose';
+
+  @override
+  String get stretchPresetFrontSplits => 'Front Splits';
+
+  @override
+  String get stretchPresetSideSplits => 'Side Splits (Middle Splits)';
 }

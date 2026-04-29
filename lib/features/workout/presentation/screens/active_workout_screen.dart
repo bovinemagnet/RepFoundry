@@ -11,6 +11,7 @@ import '../widgets/rest_timer_widget.dart';
 import '../../domain/models/workout_set.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../programmes/domain/models/programme.dart';
+import '../../../stretching/presentation/widgets/stretching_section.dart';
 import '../../../templates/domain/models/workout_template.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
@@ -274,6 +275,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
       return Column(
         children: [
           const RestTimerWidget(),
+          StretchingSection(workoutId: state.activeWorkout!.id),
           Expanded(
             child: Center(
               child: Column(
@@ -308,6 +310,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: 88),
       children: [
         const RestTimerWidget(),
+        StretchingSection(workoutId: state.activeWorkout!.id),
         for (final exercise in state.exercises) ...[
           if (supersetExerciseIds.contains(exercise.id)) ...[
             () {
