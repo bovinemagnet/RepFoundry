@@ -4,7 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
-import 'package:rep_foundry/features/exercises/domain/models/exercise.dart' as domain;
+import 'package:rep_foundry/features/exercises/domain/models/exercise.dart'
+    as domain;
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
 import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
 import 'package:rep_foundry/features/settings/application/export_data_use_case.dart';
@@ -90,7 +91,8 @@ void main() {
   group('exportAsCsv', () {
     test('returns three CSV files', () async {
       final csvFiles = await useCase.exportAsCsv();
-      expect(csvFiles.keys, containsAll(['sets.csv', 'cardio.csv', 'personal_records.csv']));
+      expect(csvFiles.keys,
+          containsAll(['sets.csv', 'cardio.csv', 'personal_records.csv']));
     });
 
     test('sets.csv has header row', () async {

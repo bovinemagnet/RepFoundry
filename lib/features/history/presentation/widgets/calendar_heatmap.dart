@@ -111,8 +111,7 @@ class _HeatmapGrid extends StatelessWidget {
                           for (int day = 0; day < _daysPerWeek; day++)
                             _buildCell(
                               context,
-                              gridStart
-                                  .add(Duration(days: week * 7 + day)),
+                              gridStart.add(Duration(days: week * 7 + day)),
                               today,
                               primaryColor,
                               emptyColor,

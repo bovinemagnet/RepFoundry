@@ -167,8 +167,8 @@ class _WeeklyVolumeChart extends StatelessWidget {
     final primaryColor = theme.colorScheme.primary;
     final textColor = theme.colorScheme.onSurfaceVariant;
 
-    final maxVolume =
-        data.fold<double>(0, (max, w) => w.totalVolume > max ? w.totalVolume : max);
+    final maxVolume = data.fold<double>(
+        0, (max, w) => w.totalVolume > max ? w.totalVolume : max);
 
     return SizedBox(
       height: 200,

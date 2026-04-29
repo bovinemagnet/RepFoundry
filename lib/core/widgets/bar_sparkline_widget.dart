@@ -25,8 +25,7 @@ class BarSparklineWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (data.isEmpty) return const SizedBox.shrink();
 
-    final effectiveBarColor =
-        barColor ?? Theme.of(context).colorScheme.primary;
+    final effectiveBarColor = barColor ?? Theme.of(context).colorScheme.primary;
     final effectiveGlowColor =
         glowColor ?? effectiveBarColor.withValues(alpha: 0.3);
 
@@ -96,8 +95,7 @@ class _BarSparklinePainter extends CustomPainter {
         canvas.drawRRect(rect, glowPaint);
       }
 
-      final barPaint = Paint()
-        ..color = barColor.withValues(alpha: alpha);
+      final barPaint = Paint()..color = barColor.withValues(alpha: alpha);
       canvas.drawRRect(rect, barPaint);
     }
   }

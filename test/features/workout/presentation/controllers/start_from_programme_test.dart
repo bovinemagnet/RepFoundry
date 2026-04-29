@@ -110,8 +110,7 @@ void main() {
 
   Programme buildTwoWeekProgramme({DateTime? startedAt}) {
     final today = DateTime.now().weekday;
-    return Programme.create(name: 'Two-week split', durationWeeks: 2)
-        .copyWith(
+    return Programme.create(name: 'Two-week split', durationWeeks: 2).copyWith(
       startedAt: startedAt,
       days: [
         ProgrammeDay.create(

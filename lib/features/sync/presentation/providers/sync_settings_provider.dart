@@ -82,7 +82,6 @@ class SyncStateNotifier extends Notifier<SyncState> {
   }
 }
 
-final syncStateProvider =
-    NotifierProvider<SyncStateNotifier, SyncState>(
+final syncStateProvider = NotifierProvider<SyncStateNotifier, SyncState>(
   SyncStateNotifier.new,
 );

@@ -82,7 +82,8 @@ void main() {
       expect(data.longestStreak, 3);
     });
 
-    test('current streak includes yesterday even if no workout today', () async {
+    test('current streak includes yesterday even if no workout today',
+        () async {
       final repo = InMemoryWorkoutRepository();
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);

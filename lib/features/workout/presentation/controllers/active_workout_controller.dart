@@ -24,9 +24,8 @@ Map<String, List<WorkoutSet>> linkSupersetSets(
   final groupId = const Uuid().v4();
   final updated = Map<String, List<WorkoutSet>>.from(setsByExercise);
   for (final eid in [exerciseId1, exerciseId2]) {
-    updated[eid] = (updated[eid] ?? [])
-        .map((s) => s.copyWith(groupId: groupId))
-        .toList();
+    updated[eid] =
+        (updated[eid] ?? []).map((s) => s.copyWith(groupId: groupId)).toList();
   }
   return updated;
 }
@@ -138,7 +137,8 @@ class ActiveWorkoutState {
 }
 
 class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
-  WorkoutRepository get _workoutRepository => ref.watch(workoutRepositoryProvider);
+  WorkoutRepository get _workoutRepository =>
+      ref.watch(workoutRepositoryProvider);
 
   @override
   ActiveWorkoutState build() {
@@ -242,8 +242,7 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     // right now, so currentWeek resolves to 1. Persistence is deferred until
     // we've confirmed there's an actual workout to start — anchoring sooner
     // would advance the programme clock for an unscheduled-day no-op.
-    final tentativeStartedAt =
-        programme.startedAt ?? DateTime.now().toUtc();
+    final tentativeStartedAt = programme.startedAt ?? DateTime.now().toUtc();
     final lookupProgramme = programme.isStarted
         ? programme
         : programme.copyWith(startedAt: tentativeStartedAt);
@@ -313,8 +312,7 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
         final healthSettings = ref.read(healthSyncSettingsProvider);
         if (healthSettings.enabled && healthSettings.writeWorkouts) {
           final healthService = ref.read(healthSyncServiceProvider);
-          final sets =
-              await _workoutRepository.getSetsForWorkout(workout.id);
+          final sets = await _workoutRepository.getSetsForWorkout(workout.id);
           final totalVolume = sets
               .where((s) => !s.isWarmUp)
               .fold(0.0, (sum, s) => sum + s.volume);
@@ -503,8 +501,8 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     state = state.copyWith(setsByExercise: updated);
     for (final entry in updated.entries) {
       for (final s in entry.value) {
-        if (oldSets[entry.key]
-                ?.any((old) => old.id == s.id && old.groupId == targetGroupId) ==
+        if (oldSets[entry.key]?.any(
+                (old) => old.id == s.id && old.groupId == targetGroupId) ==
             true) {
           await _workoutRepository.updateSet(s);
         }

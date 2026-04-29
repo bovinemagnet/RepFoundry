@@ -19,12 +19,16 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
   StreamSubscription<int>? _hrSub;
   StreamSubscription<HrConnectionState>? _hrConnectionSub;
 
-  CardioSessionRepository get _cardioRepository => ref.read(cardioSessionRepositoryProvider);
-  SaveCardioSessionUseCase get _saveUseCase => ref.read(saveCardioSessionUseCaseProvider);
+  CardioSessionRepository get _cardioRepository =>
+      ref.read(cardioSessionRepositoryProvider);
+  SaveCardioSessionUseCase get _saveUseCase =>
+      ref.read(saveCardioSessionUseCaseProvider);
   LocationService get _locationService => ref.read(locationServiceProvider);
   HeartRateService get _heartRateService => ref.read(heartRateServiceProvider);
-  HealthSyncService get _healthSyncService => ref.read(healthSyncServiceProvider);
-  HealthSyncSettings get _healthSyncSettings => ref.read(healthSyncSettingsProvider);
+  HealthSyncService get _healthSyncService =>
+      ref.read(healthSyncServiceProvider);
+  HealthSyncSettings get _healthSyncSettings =>
+      ref.read(healthSyncSettingsProvider);
 
   @override
   CardioTrackingState build() {
@@ -46,8 +50,7 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
     state = state.copyWith(
       isRunning: true,
       savedSuccessfully: false,
-      heartRateReadings:
-          isFreshSession ? const [] : state.heartRateReadings,
+      heartRateReadings: isFreshSession ? const [] : state.heartRateReadings,
     );
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
@@ -261,8 +264,7 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
 
       // Sync to health store if enabled
       try {
-        if (_healthSyncSettings.enabled &&
-            _healthSyncSettings.writeWorkouts) {
+        if (_healthSyncSettings.enabled && _healthSyncSettings.writeWorkouts) {
           // Rough calorie estimate: ~8 kcal/min for moderate cardio
           final calories = (state.elapsedSeconds / 60.0 * 8).round();
           await _healthSyncService.writeWorkout(
@@ -293,7 +295,6 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       state = state.copyWith(isSaving: false, error: e.message);
     }
   }
-
 }
 
 /// NON-autoDispose so the timer survives tab switches.

@@ -349,8 +349,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
                   isWarmUp: isWarmUp,
                 );
               },
-              onDeleteSet: (setId) =>
-                  controller.deleteSet(setId, exercise.id),
+              onDeleteSet: (setId) => controller.deleteSet(setId, exercise.id),
               onEditSet: (updatedSet) => controller.updateSet(updatedSet),
               onLinkSuperset: () =>
                   _showSupersetPicker(context, ref, exercise, state),
@@ -401,8 +400,9 @@ class ActiveWorkoutScreen extends ConsumerWidget {
     final supersetGroups = getSupersetGroups(state.setsByExercise);
     final supersetExerciseIds =
         supersetGroups.values.expand((ids) => ids).toSet();
-    final available =
-        otherExercises.where((e) => !supersetExerciseIds.contains(e.id)).toList();
+    final available = otherExercises
+        .where((e) => !supersetExerciseIds.contains(e.id))
+        .toList();
 
     if (available.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -594,7 +594,8 @@ class _ExerciseSectionContent extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 2),
                       child: Row(
                         children: [
-                          Icon(Icons.history, size: 12, color: cs.onSurfaceVariant),
+                          Icon(Icons.history,
+                              size: 12, color: cs.onSurfaceVariant),
                           const SizedBox(width: 4),
                           Text(
                             'Last: ${sets.last.weight}kg x ${sets.last.reps}',
@@ -712,29 +713,29 @@ class _SupersetGroup extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: _ExerciseSectionContent(
-                exercise: exercise,
-                sets: state.setsByExercise[exercise.id] ?? [],
-                ghostSets: state.remainingGhosts(exercise.id),
-                suggestion: state.nextGhostSet(exercise.id),
-                onLogSet: ({
-                  required double weight,
-                  required int reps,
-                  double? rpe,
-                  bool isWarmUp = false,
-                }) {
-                  controller.logSet(
-                    exerciseId: exercise.id,
-                    weight: weight,
-                    reps: reps,
-                    rpe: rpe,
-                    isWarmUp: isWarmUp,
-                  );
-                },
-                onDeleteSet: (setId) =>
-                    controller.deleteSet(setId, exercise.id),
-                onEditSet: (updatedSet) => controller.updateSet(updatedSet),
+                  exercise: exercise,
+                  sets: state.setsByExercise[exercise.id] ?? [],
+                  ghostSets: state.remainingGhosts(exercise.id),
+                  suggestion: state.nextGhostSet(exercise.id),
+                  onLogSet: ({
+                    required double weight,
+                    required int reps,
+                    double? rpe,
+                    bool isWarmUp = false,
+                  }) {
+                    controller.logSet(
+                      exerciseId: exercise.id,
+                      weight: weight,
+                      reps: reps,
+                      rpe: rpe,
+                      isWarmUp: isWarmUp,
+                    );
+                  },
+                  onDeleteSet: (setId) =>
+                      controller.deleteSet(setId, exercise.id),
+                  onEditSet: (updatedSet) => controller.updateSet(updatedSet),
+                ),
               ),
-            ),
           ],
         ),
       ),

@@ -45,12 +45,10 @@ class ProgrammeListScreen extends ConsumerWidget {
                     const SizedBox(height: 8),
                     Text(
                       s.noProgrammesYetSubtitle,
-                      style:
-                          Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                              ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                     ),
                   ],
                 ),
@@ -136,9 +134,7 @@ class ProgrammeListScreen extends ConsumerWidget {
         name: result.name,
         durationWeeks: result.weeks,
       );
-      await ref
-          .read(programmeRepositoryProvider)
-          .createProgramme(programme);
+      await ref.read(programmeRepositoryProvider).createProgramme(programme);
       if (context.mounted) {
         context.push('/programmes/${programme.id}');
       }

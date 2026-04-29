@@ -32,9 +32,8 @@ class ReminderDaysPicker extends ConsumerWidget {
             label: Text(entry.value),
             selected: selected,
             onSelected: (_) async {
-              final shouldProceed = onBeforeToggle == null
-                  ? true
-                  : await onBeforeToggle!();
+              final shouldProceed =
+                  onBeforeToggle == null ? true : await onBeforeToggle!();
               if (!shouldProceed) return;
               await ref
                   .read(reminderSettingsProvider.notifier)

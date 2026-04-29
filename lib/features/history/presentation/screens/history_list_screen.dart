@@ -18,8 +18,7 @@ class _WorkoutWithSets {
 
   const _WorkoutWithSets({required this.workout, required this.sets});
 
-  double get totalVolume =>
-      sets.fold<double>(0, (sum, s) => sum + s.volume);
+  double get totalVolume => sets.fold<double>(0, (sum, s) => sum + s.volume);
 }
 
 final _workoutHistoryProvider =
@@ -102,8 +101,18 @@ String _dateGroupLabel(DateTime date, S s) {
   if (diff < 14) return s.lastWeek;
 
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
   final label = months[date.month - 1];
   if (date.year != now.year) return '$label ${date.year}';
@@ -159,17 +168,14 @@ class _HistoryTab extends ConsumerWidget {
           widgets.add(DateGroupHeader(label: label));
           for (final item in groupItems) {
             // Per-set volumes for the sparkline (chronological order).
-            final setVolumes = item.sets
-                .map((s) => s.volume)
-                .toList();
+            final setVolumes = item.sets.map((s) => s.volume).toList();
 
             widgets.add(
               WorkoutHistoryTile(
                 workout: item.workout,
                 setCount: item.sets.length,
                 totalVolume: item.totalVolume,
-                sparklineData:
-                    setVolumes.length > 1 ? setVolumes : null,
+                sparklineData: setVolumes.length > 1 ? setVolumes : null,
                 onTap: () => context.go('/history/${item.workout.id}'),
               ),
             );

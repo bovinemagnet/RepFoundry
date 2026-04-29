@@ -63,9 +63,8 @@ class NotificationService {
 
   Future<NotificationPermission> permissionStatus() async {
     if (defaultTargetPlatform == TargetPlatform.android) {
-      final android = _plugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
       final enabled = await android?.areNotificationsEnabled();
       if (enabled == null) return NotificationPermission.unknown;
       return enabled
@@ -73,9 +72,8 @@ class NotificationService {
           : NotificationPermission.denied;
     }
     if (defaultTargetPlatform == TargetPlatform.iOS) {
-      final ios = _plugin
-          .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>();
+      final ios = _plugin.resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>();
       final options = await ios?.checkPermissions();
       if (options == null) return NotificationPermission.unknown;
       return options.isEnabled
@@ -87,15 +85,13 @@ class NotificationService {
 
   Future<bool> requestPermission() async {
     if (defaultTargetPlatform == TargetPlatform.android) {
-      final android = _plugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
       return (await android?.requestNotificationsPermission()) ?? false;
     }
     if (defaultTargetPlatform == TargetPlatform.iOS) {
-      final ios = _plugin
-          .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>();
+      final ios = _plugin.resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>();
       return (await ios?.requestPermissions(
             alert: true,
             badge: true,

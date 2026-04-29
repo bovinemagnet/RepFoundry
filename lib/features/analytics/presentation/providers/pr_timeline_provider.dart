@@ -9,7 +9,8 @@ class PrTimelineEntry {
   const PrTimelineEntry({required this.record, required this.exerciseName});
 }
 
-final prTimelineProvider = FutureProvider.autoDispose<List<PrTimelineEntry>>((ref) async {
+final prTimelineProvider =
+    FutureProvider.autoDispose<List<PrTimelineEntry>>((ref) async {
   final prRepo = ref.watch(personalRecordRepositoryProvider);
   final exerciseRepo = ref.watch(exerciseRepositoryProvider);
 
@@ -18,7 +19,9 @@ final prTimelineProvider = FutureProvider.autoDispose<List<PrTimelineEntry>>((re
   final exerciseMap = {for (final e in exercises) e.id: e};
 
   return records
-      .map((r) => PrTimelineEntry(record: r, exerciseName: exerciseMap[r.exerciseId]?.name ?? 'Unknown'))
+      .map((r) => PrTimelineEntry(
+          record: r,
+          exerciseName: exerciseMap[r.exerciseId]?.name ?? 'Unknown'))
       .toList()
     ..sort((a, b) => b.record.achievedAt.compareTo(a.record.achievedAt));
 });

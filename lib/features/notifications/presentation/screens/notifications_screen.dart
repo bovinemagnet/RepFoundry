@@ -13,8 +13,7 @@ class NotificationsScreen extends ConsumerWidget {
     final s = S.of(context)!;
     final settings = ref.watch(reminderSettingsProvider);
     final permission = ref.watch(notificationPermissionProvider);
-    final isDenied =
-        permission.value == NotificationPermission.denied;
+    final isDenied = permission.value == NotificationPermission.denied;
 
     return Scaffold(
       appBar: AppBar(title: Text(s.notificationsScreenTitle)),
@@ -126,9 +125,7 @@ class _PermissionDeniedBanner extends ConsumerWidget {
                 .read(notificationServiceProvider)
                 .openNotificationSettings();
             // Re-check after returning from system settings.
-            await ref
-                .read(notificationPermissionProvider.notifier)
-                .refresh();
+            await ref.read(notificationPermissionProvider.notifier).refresh();
           },
           child: Text(s.openSystemSettings),
         ),

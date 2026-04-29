@@ -31,7 +31,8 @@ class BodyMetric {
       id: id ?? this.id,
       date: date ?? this.date,
       weight: weight ?? this.weight,
-      bodyFatPercent: clearBodyFat ? null : (bodyFatPercent ?? this.bodyFatPercent),
+      bodyFatPercent:
+          clearBodyFat ? null : (bodyFatPercent ?? this.bodyFatPercent),
       notes: clearNotes ? null : (notes ?? this.notes),
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -63,6 +64,5 @@ class BodyMetric {
   int get hashCode => id.hashCode;
 
   @override
-  String toString() =>
-      'BodyMetric(id: $id, date: $date, weight: $weight)';
+  String toString() => 'BodyMetric(id: $id, date: $date, weight: $weight)';
 }

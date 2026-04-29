@@ -23,15 +23,12 @@ class BodyMetricsScreen extends ConsumerWidget {
         if (weight != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text(s.importWeightPrompt(weight.toStringAsFixed(1))),
+              content: Text(s.importWeightPrompt(weight.toStringAsFixed(1))),
               action: SnackBarAction(
                 label: s.importWeightAction,
                 onPressed: () async {
                   final metric = BodyMetric.create(weight: weight);
-                  await ref
-                      .read(bodyMetricRepositoryProvider)
-                      .create(metric);
+                  await ref.read(bodyMetricRepositoryProvider).create(metric);
                 },
               ),
               duration: const Duration(seconds: 8),
@@ -87,8 +84,7 @@ class BodyMetricsScreen extends ConsumerWidget {
                     ),
               ),
               const SizedBox(height: 8),
-              for (final metric in metrics)
-                _MetricTile(metric: metric),
+              for (final metric in metrics) _MetricTile(metric: metric),
             ],
           );
         },
@@ -170,9 +166,8 @@ class BodyMetricsScreen extends ConsumerWidget {
               final bf = bfController.text.isNotEmpty
                   ? double.tryParse(bfController.text)
                   : null;
-              final notes = notesController.text.isNotEmpty
-                  ? notesController.text
-                  : null;
+              final notes =
+                  notesController.text.isNotEmpty ? notesController.text : null;
               Navigator.pop(
                 ctx,
                 BodyMetric.create(
@@ -230,7 +225,8 @@ class _WeightChart extends StatelessWidget {
     final points = metrics.reversed
         .map((m) => ProgressDataPoint(date: m.date, value: m.weight))
         .toList();
-    return ProgressChartWidget(label: s.bodyWeightTrendTitle, dataPoints: points);
+    return ProgressChartWidget(
+        label: s.bodyWeightTrendTitle, dataPoints: points);
   }
 }
 

@@ -14,7 +14,10 @@ void main() {
           body: SetInputCard(
             key: key,
             onLogSet: (
-                {required double weight, required int reps, double? rpe, bool isWarmUp = false}) {},
+                {required double weight,
+                required int reps,
+                double? rpe,
+                bool isWarmUp = false}) {},
             suggestion: suggestion,
           ),
         ),

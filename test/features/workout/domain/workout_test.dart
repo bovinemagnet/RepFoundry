@@ -43,9 +43,18 @@ void main() {
     });
 
     test('equality is based on id', () {
-      final a = Workout(id: 'same', startedAt: DateTime.now().toUtc(), updatedAt: DateTime.utc(2024));
-      final b = Workout(id: 'same', startedAt: DateTime.now().toUtc(), updatedAt: DateTime.utc(2024));
-      final c = Workout(id: 'other', startedAt: DateTime.now().toUtc(), updatedAt: DateTime.utc(2024));
+      final a = Workout(
+          id: 'same',
+          startedAt: DateTime.now().toUtc(),
+          updatedAt: DateTime.utc(2024));
+      final b = Workout(
+          id: 'same',
+          startedAt: DateTime.now().toUtc(),
+          updatedAt: DateTime.utc(2024));
+      final c = Workout(
+          id: 'other',
+          startedAt: DateTime.now().toUtc(),
+          updatedAt: DateTime.utc(2024));
       expect(a, equals(b));
       expect(a, isNot(equals(c)));
     });

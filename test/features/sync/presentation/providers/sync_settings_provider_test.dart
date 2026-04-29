@@ -18,7 +18,9 @@ void main() {
       container.dispose();
     });
 
-    test('initial state has enabled false, consentGiven false, non-empty UUID deviceId', () async {
+    test(
+        'initial state has enabled false, consentGiven false, non-empty UUID deviceId',
+        () async {
       final settings = container.read(syncSettingsProvider);
 
       expect(settings.enabled, isFalse);
@@ -63,7 +65,8 @@ void main() {
       expect(container.read(syncSettingsProvider).lastSyncAt, equals(now));
 
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getInt('cloud_sync_last_sync_at'), equals(now.millisecondsSinceEpoch));
+      expect(prefs.getInt('cloud_sync_last_sync_at'),
+          equals(now.millisecondsSinceEpoch));
     });
 
     test('disableAndClear resets all fields but preserves deviceId', () async {
@@ -138,7 +141,8 @@ void main() {
       final notifier = container.read(syncStateProvider.notifier);
 
       notifier.setStatus(SyncStatus.syncing);
-      expect(container.read(syncStateProvider).status, equals(SyncStatus.syncing));
+      expect(
+          container.read(syncStateProvider).status, equals(SyncStatus.syncing));
 
       final now = DateTime.utc(2026, 3, 9, 14, 0, 0);
       notifier.setStatus(SyncStatus.success, lastSyncAt: now);

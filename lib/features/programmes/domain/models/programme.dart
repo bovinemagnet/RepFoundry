@@ -44,8 +44,7 @@ class Programme {
 
   bool get isStarted => startedAt != null;
 
-  static Programme create(
-      {required String name, required int durationWeeks}) {
+  static Programme create({required String name, required int durationWeeks}) {
     final now = DateTime.now().toUtc();
     return Programme(
       id: const Uuid().v4(),
@@ -80,9 +79,7 @@ class Programme {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Programme &&
-          runtimeType == other.runtimeType &&
-          id == other.id;
+      other is Programme && runtimeType == other.runtimeType && id == other.id;
 
   @override
   int get hashCode => id.hashCode;

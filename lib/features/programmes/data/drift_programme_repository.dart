@@ -52,8 +52,7 @@ class DriftProgrammeRepository implements ProgrammeRepository {
 
   @override
   Future<Programme> updateProgramme(Programme programme) async {
-    await (_db.update(_db.programmes)
-          ..where((t) => t.id.equals(programme.id)))
+    await (_db.update(_db.programmes)..where((t) => t.id.equals(programme.id)))
         .write(
       db.ProgrammesCompanion(
         name: Value(programme.name),
@@ -73,8 +72,7 @@ class DriftProgrammeRepository implements ProgrammeRepository {
     DateTime? startedAt,
   }) async {
     final at = startedAt ?? DateTime.now().toUtc();
-    await (_db.update(_db.programmes)
-          ..where((t) => t.id.equals(programmeId)))
+    await (_db.update(_db.programmes)..where((t) => t.id.equals(programmeId)))
         .write(
       db.ProgrammesCompanion(
         startedAt: Value(dateTimeToEpochMs(at)),
@@ -200,9 +198,8 @@ class DriftProgrammeRepository implements ProgrammeRepository {
       durationWeeks: row.durationWeeks,
       createdAt: dateTimeFromEpochMs(row.createdAt),
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
-      startedAt: row.startedAt == null
-          ? null
-          : dateTimeFromEpochMs(row.startedAt!),
+      startedAt:
+          row.startedAt == null ? null : dateTimeFromEpochMs(row.startedAt!),
       days: days,
       rules: rules,
     );

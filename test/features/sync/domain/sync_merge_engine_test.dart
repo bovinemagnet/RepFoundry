@@ -246,24 +246,20 @@ void main() {
 
       // Exercise ex-1: remote newer → remote wins
       expect(result.exercises, hasLength(2));
-      final mergedEx1 =
-          result.exercises.firstWhere((e) => e.id == 'ex-1');
+      final mergedEx1 = result.exercises.firstWhere((e) => e.id == 'ex-1');
       expect(mergedEx1.name, equals('Remote Exercise'));
 
       // Exercise ex-2: local only → kept
-      final mergedEx2 =
-          result.exercises.firstWhere((e) => e.id == 'ex-2');
+      final mergedEx2 = result.exercises.firstWhere((e) => e.id == 'ex-2');
       expect(mergedEx2.name, equals('Only Local'));
 
       // Workout wo-1: local newer → local wins
       expect(result.workouts, hasLength(2));
-      final mergedWo1 =
-          result.workouts.firstWhere((w) => w.id == 'wo-1');
+      final mergedWo1 = result.workouts.firstWhere((w) => w.id == 'wo-1');
       expect(mergedWo1.notes, equals('Local workout'));
 
       // Workout wo-2: remote only → kept
-      final mergedWo2 =
-          result.workouts.firstWhere((w) => w.id == 'wo-2');
+      final mergedWo2 = result.workouts.firstWhere((w) => w.id == 'wo-2');
       expect(mergedWo2.notes, equals('Only Remote'));
     });
   });

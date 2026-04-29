@@ -41,7 +41,8 @@ void main() {
         locationServiceProvider.overrideWithValue(locationService),
         heartRateServiceProvider.overrideWithValue(heartRateService),
         healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
-        healthSyncSettingsProvider.overrideWith(() => HealthSyncSettingsNotifier()),
+        healthSyncSettingsProvider
+            .overrideWith(() => HealthSyncSettingsNotifier()),
       ],
     );
     controller = container.read(cardioTrackingProvider.notifier);

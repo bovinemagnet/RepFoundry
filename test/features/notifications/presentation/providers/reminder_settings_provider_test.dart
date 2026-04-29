@@ -165,8 +165,7 @@ void main() {
     });
 
     test('request denies permission when service returns false', () async {
-      final fake = FakeNotificationService()
-        ..requestResult = false;
+      final fake = FakeNotificationService()..requestResult = false;
       final container = _makeContainer(fake);
       await container.read(notificationPermissionProvider.future);
 
@@ -188,9 +187,7 @@ void main() {
       await container.read(notificationPermissionProvider.future);
 
       fake.status = NotificationPermission.granted;
-      await container
-          .read(notificationPermissionProvider.notifier)
-          .refresh();
+      await container.read(notificationPermissionProvider.notifier).refresh();
 
       expect(
         container.read(notificationPermissionProvider).value,

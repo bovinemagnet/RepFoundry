@@ -69,8 +69,7 @@ class PrHistoryScreen extends ConsumerWidget {
                   Text(
                     s.prHistoryEmptySubtitle,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                     textAlign: TextAlign.center,
                   ),
@@ -183,12 +182,10 @@ class _ExercisePrCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      s.prAchievedOn(
-                          record.achievedAt.toLocal().relativeLabel),
+                      s.prAchievedOn(record.achievedAt.toLocal().relativeLabel),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                     ),
                   ],

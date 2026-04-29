@@ -133,8 +133,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
               labelText: s.inclineLabel,
               prefixIcon: const Icon(Icons.trending_up),
             ),
-            keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
           const SizedBox(height: 12),
 
@@ -196,8 +195,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
                         distanceMeters:
                             double.tryParse(_distanceController.text),
                         incline: double.tryParse(_inclineController.text),
-                        avgHeartRate:
-                            int.tryParse(_heartRateController.text),
+                        avgHeartRate: int.tryParse(_heartRateController.text),
                       )
                   : null,
               icon: cardioState.isSaving
@@ -338,8 +336,9 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
             onPressed: () => showHrSetupGuide(context),
           ),
           FilledButton.tonal(
-            onPressed:
-                cardioState.isSaving ? null : () => _showHrDevicePicker(controller),
+            onPressed: cardioState.isSaving
+                ? null
+                : () => _showHrDevicePicker(controller),
             child: Text(s.connect),
           ),
         ],
@@ -448,8 +447,7 @@ class _ExerciseChipSelector extends StatelessWidget {
                     Text(
                       ex.name,
                       style: tt.labelMedium?.copyWith(
-                        color:
-                            isSelected ? cs.primary : cs.onSurfaceVariant,
+                        color: isSelected ? cs.primary : cs.onSurfaceVariant,
                         fontWeight:
                             isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
@@ -750,8 +748,7 @@ class _LastSessionCard extends StatelessWidget {
               if (session.distanceMeters != null)
                 _GhostStat(
                   icon: Icons.directions_run,
-                  value:
-                      '${session.distanceMeters!.toStringAsFixed(0)} m',
+                  value: '${session.distanceMeters!.toStringAsFixed(0)} m',
                 ),
               if (session.paceMinutesPerKm != null)
                 _GhostStat(

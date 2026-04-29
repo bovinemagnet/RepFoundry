@@ -91,8 +91,7 @@ class WorkoutHistoryTile extends StatelessWidget {
                         _MetricChip(
                           icon: Icons.fitness_center,
                           label: totalVolume != null
-                              ? s.totalVolumeKg(
-                                  totalVolume!.toStringAsFixed(0))
+                              ? s.totalVolumeKg(totalVolume!.toStringAsFixed(0))
                               : s.setsCount(setCount),
                         ),
                         if (personalRecord != null) ...[
@@ -118,8 +117,7 @@ class WorkoutHistoryTile extends StatelessWidget {
                       ],
                     ),
                     // Row 3: Embedded sparkline area.
-                    if (sparklineData != null &&
-                        sparklineData!.isNotEmpty) ...[
+                    if (sparklineData != null && sparklineData!.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       Container(
                         decoration: BoxDecoration(
@@ -130,8 +128,7 @@ class WorkoutHistoryTile extends StatelessWidget {
                         child: Column(
                           children: [
                             Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   s.volumeProgress.toUpperCase(),

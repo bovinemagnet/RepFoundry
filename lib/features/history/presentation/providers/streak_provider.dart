@@ -60,9 +60,9 @@ final streakProvider = FutureProvider.autoDispose<StreakData>((ref) async {
     final a = sortedDays[i - 1];
     final b = sortedDays[i];
     final dayDiff = DateTime(a.year, a.month, a.day)
-            .toUtc()
-            .difference(DateTime(b.year, b.month, b.day).toUtc())
-            .inDays;
+        .toUtc()
+        .difference(DateTime(b.year, b.month, b.day).toUtc())
+        .inDays;
     if (dayDiff == 1) {
       runningStreak++;
     } else {

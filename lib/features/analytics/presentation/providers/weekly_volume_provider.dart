@@ -14,7 +14,8 @@ class WeeklyVolume {
   final double totalVolume;
   final double? percentChange;
 
-  const WeeklyVolume({required this.weekStart, required this.totalVolume, this.percentChange});
+  const WeeklyVolume(
+      {required this.weekStart, required this.totalVolume, this.percentChange});
 }
 
 List<WeeklyVolume> computeWeeklyVolume(List<SetData> sets) {
@@ -25,18 +26,25 @@ List<WeeklyVolume> computeWeeklyVolume(List<SetData> sets) {
     byWeek[key] = (byWeek[key] ?? 0) + s.volume;
   }
 
-  final sorted = byWeek.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+  final sorted = byWeek.entries.toList()
+    ..sort((a, b) => a.key.compareTo(b.key));
 
   final result = <WeeklyVolume>[];
   for (var i = 0; i < sorted.length; i++) {
     final prev = i > 0 ? sorted[i - 1].value : null;
-    final change = prev != null && prev > 0 ? ((sorted[i].value - prev) / prev) * 100 : null;
-    result.add(WeeklyVolume(weekStart: sorted[i].key, totalVolume: sorted[i].value, percentChange: change));
+    final change = prev != null && prev > 0
+        ? ((sorted[i].value - prev) / prev) * 100
+        : null;
+    result.add(WeeklyVolume(
+        weekStart: sorted[i].key,
+        totalVolume: sorted[i].value,
+        percentChange: change));
   }
   return result;
 }
 
-final weeklyVolumeProvider = FutureProvider.autoDispose<List<WeeklyVolume>>((ref) async {
+final weeklyVolumeProvider =
+    FutureProvider.autoDispose<List<WeeklyVolume>>((ref) async {
   final repo = ref.watch(workoutRepositoryProvider);
   final workouts = await repo.getWorkoutHistory(limit: 200);
   final allSets = <SetData>[];

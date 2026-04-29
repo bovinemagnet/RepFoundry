@@ -47,7 +47,8 @@ final _workoutDetailProvider =
     final allPrs = await prRepo.getAllRecords(limit: 500);
     final setIds = sets.map((s) => s.id).toSet();
     final prSetIds = allPrs
-        .where((pr) => pr.workoutSetId != null && setIds.contains(pr.workoutSetId))
+        .where(
+            (pr) => pr.workoutSetId != null && setIds.contains(pr.workoutSetId))
         .map((pr) => pr.workoutSetId!)
         .toSet();
 
@@ -229,8 +230,7 @@ class _ExerciseSetsCard extends StatelessWidget {
                 ],
                 Expanded(
                   child: GestureDetector(
-                    onTap: () =>
-                        context.push('/history/exercise/$exerciseId'),
+                    onTap: () => context.push('/history/exercise/$exerciseId'),
                     child: Text(
                       name,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(

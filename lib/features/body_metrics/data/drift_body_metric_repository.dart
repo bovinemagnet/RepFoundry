@@ -27,8 +27,7 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
 
   @override
   Future<BodyMetric> update(BodyMetric metric) async {
-    await (_db.update(_db.bodyMetrics)
-          ..where((t) => t.id.equals(metric.id)))
+    await (_db.update(_db.bodyMetrics)..where((t) => t.id.equals(metric.id)))
         .write(
       db.BodyMetricsCompanion(
         date: Value(dateTimeToEpochMs(metric.date)),

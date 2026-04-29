@@ -176,8 +176,7 @@ class SyncSnapshotSerialiser {
               db.WorkoutsCompanion.insert(
                 id: w.id,
                 startedAt: dateTimeToEpochMs(w.startedAt),
-                completedAt:
-                    Value(nullableDateTimeToEpochMs(w.completedAt)),
+                completedAt: Value(nullableDateTimeToEpochMs(w.completedAt)),
                 templateId: Value(w.templateId),
                 notes: Value(w.notes),
                 updatedAt: Value(dateTimeToEpochMs(w.updatedAt)),
@@ -234,9 +233,7 @@ class SyncSnapshotSerialiser {
       }
 
       for (final t in snapshot.workoutTemplates) {
-        await database
-            .into(database.workoutTemplates)
-            .insertOnConflictUpdate(
+        await database.into(database.workoutTemplates).insertOnConflictUpdate(
               db.WorkoutTemplatesCompanion.insert(
                 id: t.id,
                 name: t.name,
@@ -247,9 +244,7 @@ class SyncSnapshotSerialiser {
       }
 
       for (final te in snapshot.templateExercises) {
-        await database
-            .into(database.templateExercises)
-            .insertOnConflictUpdate(
+        await database.into(database.templateExercises).insertOnConflictUpdate(
               db.TemplateExercisesCompanion.insert(
                 id: te.id,
                 templateId: te.templateId,
@@ -306,9 +301,7 @@ class SyncSnapshotSerialiser {
       }
 
       for (final r in snapshot.progressionRules) {
-        await database
-            .into(database.progressionRules)
-            .insertOnConflictUpdate(
+        await database.into(database.progressionRules).insertOnConflictUpdate(
               db.ProgressionRulesCompanion.insert(
                 id: r.id,
                 programmeId: r.programmeId,
@@ -330,7 +323,9 @@ class SyncSnapshotSerialiser {
     T Function(Map<String, dynamic>) fromMap,
   ) {
     if (list == null) return [];
-    return (list as List).map((e) => fromMap(e as Map<String, dynamic>)).toList();
+    return (list as List)
+        .map((e) => fromMap(e as Map<String, dynamic>))
+        .toList();
   }
 
   // ── Domain ↔ DB mappers ─────────────────────────────────────────────
@@ -340,8 +335,7 @@ class SyncSnapshotSerialiser {
         name: row.name,
         category: enumFromString(ExerciseCategory.values, row.category),
         muscleGroup: enumFromString(MuscleGroup.values, row.muscleGroup),
-        equipmentType:
-            enumFromString(EquipmentType.values, row.equipmentType),
+        equipmentType: enumFromString(EquipmentType.values, row.equipmentType),
         isCustom: row.isCustom,
         imageAsset: row.imageAsset,
         updatedAt: dateTimeFromEpochMs(row.updatedAt),

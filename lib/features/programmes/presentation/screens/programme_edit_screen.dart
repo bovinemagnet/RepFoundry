@@ -488,8 +488,7 @@ class _ProgrammeEditScreenState extends ConsumerState<ProgrammeEditScreen> {
           color: templateName != null
               ? Theme.of(context).colorScheme.primary
               : Theme.of(context).colorScheme.onSurfaceVariant,
-          fontStyle:
-              templateName != null ? FontStyle.normal : FontStyle.italic,
+          fontStyle: templateName != null ? FontStyle.normal : FontStyle.italic,
         ),
       ),
       trailing: const Icon(Icons.chevron_right),
@@ -512,8 +511,7 @@ class _ProgrammeEditScreenState extends ConsumerState<ProgrammeEditScreen> {
 
     return Column(
       children: _rules.map((rule) {
-        final exerciseName =
-            _exerciseNames[rule.exerciseId] ?? rule.exerciseId;
+        final exerciseName = _exerciseNames[rule.exerciseId] ?? rule.exerciseId;
         final typeLabel = _progressionTypeLabel(s, rule.type);
         final frequencyLabel = s.everyNWeeks(rule.frequencyWeeks);
 

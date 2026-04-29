@@ -56,8 +56,7 @@ class FakeConnectivity implements Connectivity {
       Stream.value(result);
 
   @override
-  dynamic noSuchMethod(Invocation invocation) =>
-      super.noSuchMethod(invocation);
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class FakeSyncSnapshotSerialiser extends SyncSnapshotSerialiser {

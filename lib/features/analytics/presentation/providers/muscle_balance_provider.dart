@@ -9,7 +9,8 @@ class MuscleBalance {
   const MuscleBalance({required this.group, required this.volumePercent});
 }
 
-final muscleBalanceProvider = FutureProvider.autoDispose<List<MuscleBalance>>((ref) async {
+final muscleBalanceProvider =
+    FutureProvider.autoDispose<List<MuscleBalance>>((ref) async {
   final workoutRepo = ref.watch(workoutRepositoryProvider);
   final exerciseRepo = ref.watch(exerciseRepositoryProvider);
 
@@ -26,7 +27,8 @@ final muscleBalanceProvider = FutureProvider.autoDispose<List<MuscleBalance>>((r
       if (s.isWarmUp) continue;
       final exercise = exerciseMap[s.exerciseId];
       if (exercise == null) continue;
-      volumeByGroup[exercise.muscleGroup] = (volumeByGroup[exercise.muscleGroup] ?? 0) + s.volume;
+      volumeByGroup[exercise.muscleGroup] =
+          (volumeByGroup[exercise.muscleGroup] ?? 0) + s.volume;
     }
   }
 
@@ -35,7 +37,8 @@ final muscleBalanceProvider = FutureProvider.autoDispose<List<MuscleBalance>>((r
 
   return volumeByGroup.entries
       .where((e) => e.key != MuscleGroup.cardio)
-      .map((e) => MuscleBalance(group: e.key, volumePercent: (e.value / total) * 100))
+      .map((e) =>
+          MuscleBalance(group: e.key, volumePercent: (e.value / total) * 100))
       .toList()
     ..sort((a, b) => a.group.index.compareTo(b.group.index));
 });

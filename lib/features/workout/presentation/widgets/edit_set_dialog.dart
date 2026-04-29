@@ -34,8 +34,7 @@ class _EditSetDialogState extends State<_EditSetDialog> {
     super.initState();
     _weightController =
         TextEditingController(text: _formatNum(widget.existingSet.weight));
-    _repsController =
-        TextEditingController(text: '${widget.existingSet.reps}');
+    _repsController = TextEditingController(text: '${widget.existingSet.reps}');
     _rpeController = TextEditingController(
       text: widget.existingSet.rpe != null
           ? _formatNum(widget.existingSet.rpe!)
