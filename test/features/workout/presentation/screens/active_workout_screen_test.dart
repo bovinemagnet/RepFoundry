@@ -141,6 +141,39 @@ void main() {
     );
 
     testWidgets(
+      'handleAddExercise_scrollsNewExerciseToTop_afterAdd',
+      (tester) async {
+        await tester.pumpWidget(buildScreen());
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Start Workout'));
+        await tester.pumpAndSettle();
+
+        final element = tester.element(find.byType(ActiveWorkoutScreen));
+        final container = ProviderScope.containerOf(element);
+        final notifier =
+            container.read(activeWorkoutControllerProvider.notifier);
+
+        // Pre-fill with enough exercises to overflow the viewport.
+        for (var i = 0; i < 8; i++) {
+          await notifier.addExercise(makeExercise('ex-$i', 'Exercise $i'));
+        }
+        await tester.pumpAndSettle();
+
+        final state = tester.state<ActiveWorkoutScreenState>(
+          find.byType(ActiveWorkoutScreen),
+        );
+        final offsetBefore = state.scrollController.offset;
+
+        await state.handleAddExercise(makeExercise('new-ex', 'New Exercise'));
+        await tester.pumpAndSettle();
+
+        expect(state.scrollController.offset, isNot(equals(offsetBefore)));
+        expect(state.scrollController.offset, greaterThan(0.0));
+      },
+    );
+
+    testWidgets(
       'scrollToExercise_movesScrollOffset_whenExerciseIsBelowFold',
       (tester) async {
         await tester.pumpWidget(buildScreen());

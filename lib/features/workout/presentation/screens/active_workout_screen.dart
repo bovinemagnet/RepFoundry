@@ -68,6 +68,18 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   void scrollToExercise(String exerciseId, {required double alignment}) =>
       _scrollToExercise(exerciseId, alignment: alignment);
 
+  @visibleForTesting
+  Future<void> handleAddExercise(Exercise exercise) async {
+    await ref
+        .read(activeWorkoutControllerProvider.notifier)
+        .addExercise(exercise);
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _scrollToExercise(exercise.id, alignment: 0.0);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
@@ -442,8 +454,8 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
 
   Future<void> _pickExercise(BuildContext context, WidgetRef ref) async {
     final exercise = await context.push<Exercise>('/exercises');
-    if (exercise != null) {
-      ref.read(activeWorkoutControllerProvider.notifier).addExercise(exercise);
+    if (exercise != null && mounted) {
+      await handleAddExercise(exercise);
     }
   }
 
