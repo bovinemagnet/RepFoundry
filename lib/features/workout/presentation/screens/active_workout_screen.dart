@@ -53,6 +53,21 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     _exerciseKeys.removeWhere((id, _) => !live.contains(id));
   }
 
+  void _scrollToExercise(String exerciseId, {required double alignment}) {
+    final ctx = _exerciseKeys[exerciseId]?.currentContext;
+    if (ctx == null) return;
+    Scrollable.ensureVisible(
+      ctx,
+      alignment: alignment,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @visibleForTesting
+  void scrollToExercise(String exerciseId, {required double alignment}) =>
+      _scrollToExercise(exerciseId, alignment: alignment);
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
@@ -359,6 +374,10 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     return ListView(
       controller: _scrollController,
       padding: const EdgeInsets.only(bottom: 88),
+      // Large cacheExtent ensures all exercise items are built even when
+      // below the fold, so GlobalKey.currentContext is non-null for every
+      // exercise and Scrollable.ensureVisible can locate them.
+      cacheExtent: 9999,
       children: [
         const RestTimerWidget(),
         StretchingSection(workoutId: state.activeWorkout!.id),
