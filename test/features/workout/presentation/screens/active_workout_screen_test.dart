@@ -60,6 +60,7 @@ void main() {
 
         expect(find.text('No active workout'), findsOneWidget);
         expect(find.text('Start Workout'), findsOneWidget);
+        expect(find.text('Start Stretching'), findsOneWidget);
         expect(find.text('Start from Template'), findsOneWidget);
         expect(find.text('Start from Programme'), findsOneWidget);
 

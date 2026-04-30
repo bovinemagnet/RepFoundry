@@ -8,6 +8,7 @@ import 'tables/personal_records_table.dart';
 import 'tables/programme_days_table.dart';
 import 'tables/programmes_table.dart';
 import 'tables/progression_rules_table.dart';
+import 'tables/stretching_sessions_table.dart';
 import 'tables/template_exercises_table.dart';
 import 'tables/workout_sets_table.dart';
 import 'tables/workout_templates_table.dart';
@@ -27,6 +28,7 @@ part 'app_database.g.dart';
   Programmes,
   ProgrammeDays,
   ProgressionRules,
+  StretchingSessions,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -35,7 +37,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -156,6 +158,23 @@ class AppDatabase extends _$AppDatabase {
                 mode: InsertMode.insertOrIgnore,
               );
             });
+          }
+          if (from < 9) {
+            await m.createTable(stretchingSessions);
+            await m.createIndex(
+              Index(
+                'idx_stretching_sessions_workout',
+                'CREATE INDEX IF NOT EXISTS idx_stretching_sessions_workout '
+                    'ON stretching_sessions (workout_id)',
+              ),
+            );
+            await m.createIndex(
+              Index(
+                'idx_stretching_sessions_type_updated',
+                'CREATE INDEX IF NOT EXISTS idx_stretching_sessions_type_updated '
+                    'ON stretching_sessions (type, updated_at)',
+              ),
+            );
           }
         },
       );

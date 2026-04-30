@@ -541,6 +541,9 @@ class SZh extends S {
   String get startWorkout => '开始训练';
 
   @override
+  String get startStretching => '开始拉伸';
+
+  @override
   String get noActiveWorkout => '当前没有进行中的训练';
 
   @override
@@ -1078,7 +1081,7 @@ class SZh extends S {
   String get bodyFatLabel => '体脂';
 
   @override
-  String get notesLabel => '备注';
+  String get notesLabel => '备注（可选）';
 
   @override
   String get bodyWeightTrendTitle => '体重趋势';
@@ -1629,6 +1632,141 @@ class SZh extends S {
 
   @override
   String get liveTracking => '实时追踪';
+
+  @override
+  String get stretchingSectionTitle => '拉伸';
+
+  @override
+  String get stretchingEmptySubtitle => '添加灵活性、热身或放松的拉伸动作。';
+
+  @override
+  String get addStretching => '添加拉伸';
+
+  @override
+  String get addStretchingShort => '添加';
+
+  @override
+  String stretchingTotalMinutes(String minutes) {
+    return '共 $minutes 分钟';
+  }
+
+  @override
+  String stretchingEntriesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 项',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get addStretchingTitle => '添加拉伸';
+
+  @override
+  String get stretchTypeLabel => '拉伸类型';
+
+  @override
+  String get customStretchLabel => '自定义…';
+
+  @override
+  String get customStretchHint => '拉伸名称';
+
+  @override
+  String get recordTimeLabel => '时间记录方式';
+
+  @override
+  String get recordTimer => '计时器';
+
+  @override
+  String get recordManual => '手动';
+
+  @override
+  String get recordUntimed => '不计时';
+
+  @override
+  String get untimedEntryHint => '仅记录你做过此拉伸 — 不记录时间。';
+
+  @override
+  String get quickAddDurations => '快速添加';
+
+  @override
+  String get minutesAbbrev => '分';
+
+  @override
+  String get secondsAbbrev => '秒';
+
+  @override
+  String get stretchingEntryMethodTimer => '计时器';
+
+  @override
+  String get stretchingEntryMethodManual => '手动';
+
+  @override
+  String get deleteStretchingTitle => '删除拉伸记录？';
+
+  @override
+  String get deleteStretchingMessage => '将从本次训练中移除此拉伸记录。';
+
+  @override
+  String get stretchPresetStandingHamstring => '站姿腘绳肌拉伸';
+
+  @override
+  String get stretchPresetSeatedForwardFold => '坐姿前屈';
+
+  @override
+  String get stretchPresetStandingQuad => '站姿股四头肌拉伸';
+
+  @override
+  String get stretchPresetLowLungeHipFlexor => '低弓步髋屈肌拉伸';
+
+  @override
+  String get stretchPresetPigeon => '鸽子式';
+
+  @override
+  String get stretchPresetButterfly => '蝴蝶式';
+
+  @override
+  String get stretchPresetChildsPose => '婴儿式';
+
+  @override
+  String get stretchPresetCobra => '眼镜蛇式';
+
+  @override
+  String get stretchPresetCatCow => '猫牛式';
+
+  @override
+  String get stretchPresetDownwardDog => '下犬式';
+
+  @override
+  String get stretchPresetCrossBodyShoulder => '肩部交叉拉伸';
+
+  @override
+  String get stretchPresetDoorwayChest => '门框胸部拉伸';
+
+  @override
+  String get stretchPresetStandingCalf => '站姿小腿拉伸';
+
+  @override
+  String get stretchPresetSupineSpinalTwist => '仰卧脊柱扭转';
+
+  @override
+  String get stretchPresetNeckSideStretch => '颈部侧拉伸';
+
+  @override
+  String get stretchPresetFigureFourGlute => '4 字臀部拉伸';
+
+  @override
+  String get stretchPresetNinetyNinety => '90/90 髋关节拉伸';
+
+  @override
+  String get stretchPresetFrogPose => '青蛙式';
+
+  @override
+  String get stretchPresetFrontSplits => '竖叉';
+
+  @override
+  String get stretchPresetSideSplits => '横叉（中间劈腿）';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -2168,6 +2306,9 @@ class SZhHans extends SZh {
   String get startWorkout => '开始训练';
 
   @override
+  String get startStretching => '开始拉伸';
+
+  @override
   String get noActiveWorkout => '当前没有进行中的训练';
 
   @override
@@ -2705,7 +2846,7 @@ class SZhHans extends SZh {
   String get bodyFatLabel => '体脂';
 
   @override
-  String get notesLabel => '备注';
+  String get notesLabel => '备注（可选）';
 
   @override
   String get bodyWeightTrendTitle => '体重趋势';
@@ -3214,4 +3355,139 @@ class SZhHans extends SZh {
 
   @override
   String get liveTracking => '实时追踪';
+
+  @override
+  String get stretchingSectionTitle => '拉伸';
+
+  @override
+  String get stretchingEmptySubtitle => '添加灵活性、热身或放松的拉伸动作。';
+
+  @override
+  String get addStretching => '添加拉伸';
+
+  @override
+  String get addStretchingShort => '添加';
+
+  @override
+  String stretchingTotalMinutes(String minutes) {
+    return '共 $minutes 分钟';
+  }
+
+  @override
+  String stretchingEntriesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 项',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get addStretchingTitle => '添加拉伸';
+
+  @override
+  String get stretchTypeLabel => '拉伸类型';
+
+  @override
+  String get customStretchLabel => '自定义…';
+
+  @override
+  String get customStretchHint => '拉伸名称';
+
+  @override
+  String get recordTimeLabel => '时间记录方式';
+
+  @override
+  String get recordTimer => '计时器';
+
+  @override
+  String get recordManual => '手动';
+
+  @override
+  String get recordUntimed => '不计时';
+
+  @override
+  String get untimedEntryHint => '仅记录你做过此拉伸 — 不记录时间。';
+
+  @override
+  String get quickAddDurations => '快速添加';
+
+  @override
+  String get minutesAbbrev => '分';
+
+  @override
+  String get secondsAbbrev => '秒';
+
+  @override
+  String get stretchingEntryMethodTimer => '计时器';
+
+  @override
+  String get stretchingEntryMethodManual => '手动';
+
+  @override
+  String get deleteStretchingTitle => '删除拉伸记录？';
+
+  @override
+  String get deleteStretchingMessage => '将从本次训练中移除此拉伸记录。';
+
+  @override
+  String get stretchPresetStandingHamstring => '站姿腘绳肌拉伸';
+
+  @override
+  String get stretchPresetSeatedForwardFold => '坐姿前屈';
+
+  @override
+  String get stretchPresetStandingQuad => '站姿股四头肌拉伸';
+
+  @override
+  String get stretchPresetLowLungeHipFlexor => '低弓步髋屈肌拉伸';
+
+  @override
+  String get stretchPresetPigeon => '鸽子式';
+
+  @override
+  String get stretchPresetButterfly => '蝴蝶式';
+
+  @override
+  String get stretchPresetChildsPose => '婴儿式';
+
+  @override
+  String get stretchPresetCobra => '眼镜蛇式';
+
+  @override
+  String get stretchPresetCatCow => '猫牛式';
+
+  @override
+  String get stretchPresetDownwardDog => '下犬式';
+
+  @override
+  String get stretchPresetCrossBodyShoulder => '肩部交叉拉伸';
+
+  @override
+  String get stretchPresetDoorwayChest => '门框胸部拉伸';
+
+  @override
+  String get stretchPresetStandingCalf => '站姿小腿拉伸';
+
+  @override
+  String get stretchPresetSupineSpinalTwist => '仰卧脊柱扭转';
+
+  @override
+  String get stretchPresetNeckSideStretch => '颈部侧拉伸';
+
+  @override
+  String get stretchPresetFigureFourGlute => '4 字臀部拉伸';
+
+  @override
+  String get stretchPresetNinetyNinety => '90/90 髋关节拉伸';
+
+  @override
+  String get stretchPresetFrogPose => '青蛙式';
+
+  @override
+  String get stretchPresetFrontSplits => '竖叉';
+
+  @override
+  String get stretchPresetSideSplits => '横叉（中间劈腿）';
 }

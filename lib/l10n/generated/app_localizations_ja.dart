@@ -544,6 +544,9 @@ class SJa extends S {
   String get startWorkout => 'ワークアウトを開始';
 
   @override
+  String get startStretching => 'ストレッチを開始';
+
+  @override
   String get noActiveWorkout => 'アクティブなワークアウトがありません';
 
   @override
@@ -1081,7 +1084,7 @@ class SJa extends S {
   String get bodyFatLabel => '体脂肪';
 
   @override
-  String get notesLabel => 'メモ';
+  String get notesLabel => 'メモ（任意）';
 
   @override
   String get bodyWeightTrendTitle => '体重トレンド';
@@ -1634,4 +1637,139 @@ class SJa extends S {
 
   @override
   String get liveTracking => 'ライブトラッキング';
+
+  @override
+  String get stretchingSectionTitle => 'ストレッチ';
+
+  @override
+  String get stretchingEmptySubtitle => 'モビリティ、ウォームアップ、クールダウンのストレッチを追加します。';
+
+  @override
+  String get addStretching => 'ストレッチを追加';
+
+  @override
+  String get addStretchingShort => '追加';
+
+  @override
+  String stretchingTotalMinutes(String minutes) {
+    return '合計 $minutes 分';
+  }
+
+  @override
+  String stretchingEntriesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 件',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get addStretchingTitle => 'ストレッチを追加';
+
+  @override
+  String get stretchTypeLabel => 'ストレッチの種類';
+
+  @override
+  String get customStretchLabel => 'カスタム…';
+
+  @override
+  String get customStretchHint => 'ストレッチ名';
+
+  @override
+  String get recordTimeLabel => '時間の記録方法';
+
+  @override
+  String get recordTimer => 'タイマー';
+
+  @override
+  String get recordManual => '手動';
+
+  @override
+  String get recordUntimed => '時間なし';
+
+  @override
+  String get untimedEntryHint => 'このストレッチを行ったことだけを記録します — 時間は記録しません。';
+
+  @override
+  String get quickAddDurations => 'クイック追加';
+
+  @override
+  String get minutesAbbrev => '分';
+
+  @override
+  String get secondsAbbrev => '秒';
+
+  @override
+  String get stretchingEntryMethodTimer => 'タイマー';
+
+  @override
+  String get stretchingEntryMethodManual => '手動';
+
+  @override
+  String get deleteStretchingTitle => 'ストレッチ記録を削除しますか？';
+
+  @override
+  String get deleteStretchingMessage => 'このストレッチ記録をワークアウトから削除します。';
+
+  @override
+  String get stretchPresetStandingHamstring => '立位ハムストリングストレッチ';
+
+  @override
+  String get stretchPresetSeatedForwardFold => '長座体前屈';
+
+  @override
+  String get stretchPresetStandingQuad => '立位大腿四頭筋ストレッチ';
+
+  @override
+  String get stretchPresetLowLungeHipFlexor => 'ローランジ（腸腰筋）';
+
+  @override
+  String get stretchPresetPigeon => '鳩のポーズ';
+
+  @override
+  String get stretchPresetButterfly => '合せき（バタフライ）';
+
+  @override
+  String get stretchPresetChildsPose => '子供のポーズ';
+
+  @override
+  String get stretchPresetCobra => 'コブラのポーズ';
+
+  @override
+  String get stretchPresetCatCow => 'キャット＆カウ';
+
+  @override
+  String get stretchPresetDownwardDog => '下向きの犬のポーズ';
+
+  @override
+  String get stretchPresetCrossBodyShoulder => '肩のクロスボディストレッチ';
+
+  @override
+  String get stretchPresetDoorwayChest => 'ドアフレーム胸ストレッチ';
+
+  @override
+  String get stretchPresetStandingCalf => '立位ふくらはぎストレッチ';
+
+  @override
+  String get stretchPresetSupineSpinalTwist => '仰向け脊柱ねじり';
+
+  @override
+  String get stretchPresetNeckSideStretch => '首の側面ストレッチ';
+
+  @override
+  String get stretchPresetFigureFourGlute => 'フィギュア4 臀部ストレッチ';
+
+  @override
+  String get stretchPresetNinetyNinety => '90/90 股関節ストレッチ';
+
+  @override
+  String get stretchPresetFrogPose => '蛙のポーズ';
+
+  @override
+  String get stretchPresetFrontSplits => '縦開脚（フロントスプリット）';
+
+  @override
+  String get stretchPresetSideSplits => '横開脚（中間スプリット）';
 }

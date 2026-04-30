@@ -1098,6 +1098,12 @@ abstract class S {
   /// **'Start Workout'**
   String get startWorkout;
 
+  /// No description provided for @startStretching.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Stretching'**
+  String get startStretching;
+
   /// No description provided for @noActiveWorkout.
   ///
   /// In en, this message translates to:
@@ -2067,7 +2073,7 @@ abstract class S {
   /// No description provided for @notesLabel.
   ///
   /// In en, this message translates to:
-  /// **'Notes'**
+  /// **'Notes (optional)'**
   String get notesLabel;
 
   /// No description provided for @bodyWeightTrendTitle.
@@ -3035,6 +3041,258 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Live Tracking'**
   String get liveTracking;
+
+  /// No description provided for @stretchingSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Stretching'**
+  String get stretchingSectionTitle;
+
+  /// No description provided for @stretchingEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add mobility, warm-up, or cool-down stretching.'**
+  String get stretchingEmptySubtitle;
+
+  /// No description provided for @addStretching.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Stretching'**
+  String get addStretching;
+
+  /// No description provided for @addStretchingShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get addStretchingShort;
+
+  /// No description provided for @stretchingTotalMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min total'**
+  String stretchingTotalMinutes(String minutes);
+
+  /// No description provided for @stretchingEntriesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 entry} other{{count} entries}}'**
+  String stretchingEntriesCount(int count);
+
+  /// No description provided for @addStretchingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Stretching'**
+  String get addStretchingTitle;
+
+  /// No description provided for @stretchTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Stretch type'**
+  String get stretchTypeLabel;
+
+  /// No description provided for @customStretchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom…'**
+  String get customStretchLabel;
+
+  /// No description provided for @customStretchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Stretch name'**
+  String get customStretchHint;
+
+  /// No description provided for @recordTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Record time'**
+  String get recordTimeLabel;
+
+  /// No description provided for @recordTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer'**
+  String get recordTimer;
+
+  /// No description provided for @recordManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get recordManual;
+
+  /// No description provided for @recordUntimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Untimed'**
+  String get recordUntimed;
+
+  /// No description provided for @untimedEntryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Just record that you did this stretch — no duration tracked.'**
+  String get untimedEntryHint;
+
+  /// No description provided for @quickAddDurations.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick add'**
+  String get quickAddDurations;
+
+  /// No description provided for @minutesAbbrev.
+  ///
+  /// In en, this message translates to:
+  /// **'min'**
+  String get minutesAbbrev;
+
+  /// No description provided for @secondsAbbrev.
+  ///
+  /// In en, this message translates to:
+  /// **'sec'**
+  String get secondsAbbrev;
+
+  /// No description provided for @stretchingEntryMethodTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer'**
+  String get stretchingEntryMethodTimer;
+
+  /// No description provided for @stretchingEntryMethodManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get stretchingEntryMethodManual;
+
+  /// No description provided for @deleteStretchingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete stretching entry?'**
+  String get deleteStretchingTitle;
+
+  /// No description provided for @deleteStretchingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove this stretching entry from the workout.'**
+  String get deleteStretchingMessage;
+
+  /// No description provided for @stretchPresetStandingHamstring.
+  ///
+  /// In en, this message translates to:
+  /// **'Standing Hamstring Stretch'**
+  String get stretchPresetStandingHamstring;
+
+  /// No description provided for @stretchPresetSeatedForwardFold.
+  ///
+  /// In en, this message translates to:
+  /// **'Seated Forward Fold'**
+  String get stretchPresetSeatedForwardFold;
+
+  /// No description provided for @stretchPresetStandingQuad.
+  ///
+  /// In en, this message translates to:
+  /// **'Standing Quadriceps Stretch'**
+  String get stretchPresetStandingQuad;
+
+  /// No description provided for @stretchPresetLowLungeHipFlexor.
+  ///
+  /// In en, this message translates to:
+  /// **'Low Lunge Hip Flexor'**
+  String get stretchPresetLowLungeHipFlexor;
+
+  /// No description provided for @stretchPresetPigeon.
+  ///
+  /// In en, this message translates to:
+  /// **'Pigeon Pose'**
+  String get stretchPresetPigeon;
+
+  /// No description provided for @stretchPresetButterfly.
+  ///
+  /// In en, this message translates to:
+  /// **'Butterfly Stretch'**
+  String get stretchPresetButterfly;
+
+  /// No description provided for @stretchPresetChildsPose.
+  ///
+  /// In en, this message translates to:
+  /// **'Child\'s Pose'**
+  String get stretchPresetChildsPose;
+
+  /// No description provided for @stretchPresetCobra.
+  ///
+  /// In en, this message translates to:
+  /// **'Cobra Stretch'**
+  String get stretchPresetCobra;
+
+  /// No description provided for @stretchPresetCatCow.
+  ///
+  /// In en, this message translates to:
+  /// **'Cat–Cow'**
+  String get stretchPresetCatCow;
+
+  /// No description provided for @stretchPresetDownwardDog.
+  ///
+  /// In en, this message translates to:
+  /// **'Downward-Facing Dog'**
+  String get stretchPresetDownwardDog;
+
+  /// No description provided for @stretchPresetCrossBodyShoulder.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross-Body Shoulder Stretch'**
+  String get stretchPresetCrossBodyShoulder;
+
+  /// No description provided for @stretchPresetDoorwayChest.
+  ///
+  /// In en, this message translates to:
+  /// **'Doorway Chest Stretch'**
+  String get stretchPresetDoorwayChest;
+
+  /// No description provided for @stretchPresetStandingCalf.
+  ///
+  /// In en, this message translates to:
+  /// **'Standing Calf Stretch'**
+  String get stretchPresetStandingCalf;
+
+  /// No description provided for @stretchPresetSupineSpinalTwist.
+  ///
+  /// In en, this message translates to:
+  /// **'Supine Spinal Twist'**
+  String get stretchPresetSupineSpinalTwist;
+
+  /// No description provided for @stretchPresetNeckSideStretch.
+  ///
+  /// In en, this message translates to:
+  /// **'Neck Side Stretch'**
+  String get stretchPresetNeckSideStretch;
+
+  /// No description provided for @stretchPresetFigureFourGlute.
+  ///
+  /// In en, this message translates to:
+  /// **'Figure-4 Glute Stretch'**
+  String get stretchPresetFigureFourGlute;
+
+  /// No description provided for @stretchPresetNinetyNinety.
+  ///
+  /// In en, this message translates to:
+  /// **'90/90 Hip Stretch'**
+  String get stretchPresetNinetyNinety;
+
+  /// No description provided for @stretchPresetFrogPose.
+  ///
+  /// In en, this message translates to:
+  /// **'Frog Pose'**
+  String get stretchPresetFrogPose;
+
+  /// No description provided for @stretchPresetFrontSplits.
+  ///
+  /// In en, this message translates to:
+  /// **'Front Splits'**
+  String get stretchPresetFrontSplits;
+
+  /// No description provided for @stretchPresetSideSplits.
+  ///
+  /// In en, this message translates to:
+  /// **'Side Splits (Middle Splits)'**
+  String get stretchPresetSideSplits;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {
