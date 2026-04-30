@@ -551,6 +551,24 @@
       "minute": { "type": "String" }
     }
   },
+  "notificationsScreenTitle": "通知",
+  "notificationsTileTitle": "通知",
+  "notificationsTileSubtitleEmpty": "リマインダーは設定されていません",
+  "notificationsTileSubtitleSummary": "{days} {time}",
+  "@notificationsTileSubtitleSummary": {
+    "placeholders": {
+      "days": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
+  "permissionDeniedBanner": "通知がブロックされています。システム設定で有効にしないとリマインダーは届きません。",
+  "openSystemSettings": "設定を開く",
+  "sendTestNotification": "テスト通知を送信",
+  "sendTestNotificationSubtitle": "サンプル通知を表示して設定を確認します",
+  "testNotificationTitle": "RepFoundry テスト通知",
+  "testNotificationBody": "これが表示されればリマインダーは正しく動作します。",
+  "testNotificationSentSnack": "テスト通知を送信しました",
+  "testNotificationBlockedSnack": "通知がブロックされています — まずシステム設定で有効にしてください",
 
   "analyticsTitle": "分析",
   "weeklyVolumeTitle": "週間ボリュームトレンド",

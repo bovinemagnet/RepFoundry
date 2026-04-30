@@ -534,6 +534,24 @@
       "minute": { "type": "String" }
     }
   },
+  "notificationsScreenTitle": "通知",
+  "notificationsTileTitle": "通知",
+  "notificationsTileSubtitleEmpty": "未设置提醒",
+  "notificationsTileSubtitleSummary": "{days} {time}",
+  "@notificationsTileSubtitleSummary": {
+    "placeholders": {
+      "days": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
+  "permissionDeniedBanner": "通知已被屏蔽。需要在系统设置中开启后提醒才会触发。",
+  "openSystemSettings": "打开设置",
+  "sendTestNotification": "发送测试通知",
+  "sendTestNotificationSubtitle": "立即显示一条示例通知以验证设置",
+  "testNotificationTitle": "RepFoundry 测试通知",
+  "testNotificationBody": "如果你能看到这条通知，提醒功能就能正常工作。",
+  "testNotificationSentSnack": "测试通知已发送",
+  "testNotificationBlockedSnack": "通知已被屏蔽 — 请先在系统设置中开启",
 
   "analyticsTitle": "数据分析",
   "weeklyVolumeTitle": "每周训练量趋势",

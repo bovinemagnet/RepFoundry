@@ -1203,46 +1203,42 @@ class SZh extends S {
   }
 
   @override
-  String get notificationsScreenTitle => 'Notifications';
+  String get notificationsScreenTitle => '通知';
 
   @override
-  String get notificationsTileTitle => 'Notifications';
+  String get notificationsTileTitle => '通知';
 
   @override
-  String get notificationsTileSubtitleEmpty => 'No reminders configured';
+  String get notificationsTileSubtitleEmpty => '未设置提醒';
 
   @override
   String notificationsTileSubtitleSummary(String days, String time) {
-    return '$days at $time';
+    return '$days $time';
   }
 
   @override
-  String get permissionDeniedBanner =>
-      'Notifications are blocked. Reminders won\'t fire until you enable them in system settings.';
+  String get permissionDeniedBanner => '通知已被屏蔽。需要在系统设置中开启后提醒才会触发。';
 
   @override
-  String get openSystemSettings => 'Open settings';
+  String get openSystemSettings => '打开设置';
 
   @override
-  String get sendTestNotification => 'Send test notification';
+  String get sendTestNotification => '发送测试通知';
 
   @override
-  String get sendTestNotificationSubtitle =>
-      'Show a sample notification now to verify setup';
+  String get sendTestNotificationSubtitle => '立即显示一条示例通知以验证设置';
 
   @override
-  String get testNotificationTitle => 'RepFoundry test notification';
+  String get testNotificationTitle => 'RepFoundry 测试通知';
 
   @override
-  String get testNotificationBody =>
-      'If you can see this, reminders will work.';
+  String get testNotificationBody => '如果你能看到这条通知，提醒功能就能正常工作。';
 
   @override
-  String get testNotificationSentSnack => 'Test notification sent';
+  String get testNotificationSentSnack => '测试通知已发送';
 
   @override
-  String get testNotificationBlockedSnack =>
-      'Notifications are blocked — enable them in system settings first';
+  String get testNotificationBlockedSnack => '通知已被屏蔽 — 请先在系统设置中开启';
 
   @override
   String get analyticsTitle => '数据分析';
@@ -2966,6 +2962,44 @@ class SZhHans extends SZh {
   String reminderTimeOfDay(String hour, String minute) {
     return '$hour:$minute';
   }
+
+  @override
+  String get notificationsScreenTitle => '通知';
+
+  @override
+  String get notificationsTileTitle => '通知';
+
+  @override
+  String get notificationsTileSubtitleEmpty => '未设置提醒';
+
+  @override
+  String notificationsTileSubtitleSummary(String days, String time) {
+    return '$days $time';
+  }
+
+  @override
+  String get permissionDeniedBanner => '通知已被屏蔽。需要在系统设置中开启后提醒才会触发。';
+
+  @override
+  String get openSystemSettings => '打开设置';
+
+  @override
+  String get sendTestNotification => '发送测试通知';
+
+  @override
+  String get sendTestNotificationSubtitle => '立即显示一条示例通知以验证设置';
+
+  @override
+  String get testNotificationTitle => 'RepFoundry 测试通知';
+
+  @override
+  String get testNotificationBody => '如果你能看到这条通知，提醒功能就能正常工作。';
+
+  @override
+  String get testNotificationSentSnack => '测试通知已发送';
+
+  @override
+  String get testNotificationBlockedSnack => '通知已被屏蔽 — 请先在系统设置中开启';
 
   @override
   String get analyticsTitle => '数据分析';

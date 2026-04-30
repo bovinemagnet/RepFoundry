@@ -551,6 +551,24 @@
       "minute": { "type": "String" }
     }
   },
+  "notificationsScreenTitle": "알림",
+  "notificationsTileTitle": "알림",
+  "notificationsTileSubtitleEmpty": "설정된 알림이 없습니다",
+  "notificationsTileSubtitleSummary": "{days} {time}",
+  "@notificationsTileSubtitleSummary": {
+    "placeholders": {
+      "days": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
+  "permissionDeniedBanner": "알림이 차단되어 있습니다. 시스템 설정에서 활성화해야 알림이 전송됩니다.",
+  "openSystemSettings": "설정 열기",
+  "sendTestNotification": "테스트 알림 보내기",
+  "sendTestNotificationSubtitle": "샘플 알림을 보내 설정 상태를 확인하세요",
+  "testNotificationTitle": "RepFoundry 테스트 알림",
+  "testNotificationBody": "이 알림이 보이면 리마인더가 정상적으로 작동합니다.",
+  "testNotificationSentSnack": "테스트 알림이 전송되었습니다",
+  "testNotificationBlockedSnack": "알림이 차단되었습니다 — 시스템 설정에서 먼저 활성화하세요",
 
   "analyticsTitle": "분석",
   "weeklyVolumeTitle": "주간 볼륨 추세",

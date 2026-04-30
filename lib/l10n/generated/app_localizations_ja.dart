@@ -1207,46 +1207,44 @@ class SJa extends S {
   }
 
   @override
-  String get notificationsScreenTitle => 'Notifications';
+  String get notificationsScreenTitle => '通知';
 
   @override
-  String get notificationsTileTitle => 'Notifications';
+  String get notificationsTileTitle => '通知';
 
   @override
-  String get notificationsTileSubtitleEmpty => 'No reminders configured';
+  String get notificationsTileSubtitleEmpty => 'リマインダーは設定されていません';
 
   @override
   String notificationsTileSubtitleSummary(String days, String time) {
-    return '$days at $time';
+    return '$days $time';
   }
 
   @override
   String get permissionDeniedBanner =>
-      'Notifications are blocked. Reminders won\'t fire until you enable them in system settings.';
+      '通知がブロックされています。システム設定で有効にしないとリマインダーは届きません。';
 
   @override
-  String get openSystemSettings => 'Open settings';
+  String get openSystemSettings => '設定を開く';
 
   @override
-  String get sendTestNotification => 'Send test notification';
+  String get sendTestNotification => 'テスト通知を送信';
 
   @override
-  String get sendTestNotificationSubtitle =>
-      'Show a sample notification now to verify setup';
+  String get sendTestNotificationSubtitle => 'サンプル通知を表示して設定を確認します';
 
   @override
-  String get testNotificationTitle => 'RepFoundry test notification';
+  String get testNotificationTitle => 'RepFoundry テスト通知';
 
   @override
-  String get testNotificationBody =>
-      'If you can see this, reminders will work.';
+  String get testNotificationBody => 'これが表示されればリマインダーは正しく動作します。';
 
   @override
-  String get testNotificationSentSnack => 'Test notification sent';
+  String get testNotificationSentSnack => 'テスト通知を送信しました';
 
   @override
   String get testNotificationBlockedSnack =>
-      'Notifications are blocked — enable them in system settings first';
+      '通知がブロックされています — まずシステム設定で有効にしてください';
 
   @override
   String get analyticsTitle => '分析';
