@@ -17,6 +17,11 @@ class FakeCloudSyncService implements CloudSyncService {
   bool throwOnUpload = false;
   String uploadError = 'Cloud upload failed';
 
+  /// Records the order in which orchestrator steps fire on the fakes.
+  /// Used to assert "upload-first" ordering: the entry "upload" must
+  /// appear before "apply" for any sync that succeeds.
+  final List<String> callLog = [];
+
   /// Completer to delay downloadSnapshot until we release it.
   Completer<String?>? downloadCompleter;
 
@@ -25,6 +30,7 @@ class FakeCloudSyncService implements CloudSyncService {
 
   @override
   Future<void> uploadSnapshot(String jsonData) async {
+    callLog.add('upload');
     if (throwOnUpload) {
       throw Exception(uploadError);
     }
@@ -62,6 +68,7 @@ class FakeConnectivity implements Connectivity {
 class FakeSyncSnapshotSerialiser extends SyncSnapshotSerialiser {
   late SyncSnapshot snapshotToReturn;
   SyncSnapshot? appliedSnapshot;
+  List<String>? callLog;
 
   @override
   Future<SyncSnapshot> createFromDatabase(
@@ -76,6 +83,7 @@ class FakeSyncSnapshotSerialiser extends SyncSnapshotSerialiser {
     AppDatabase database,
     SyncSnapshot snapshot,
   ) async {
+    callLog?.add('apply');
     appliedSnapshot = snapshot;
   }
 }
@@ -190,10 +198,44 @@ void main() {
       // isSyncing should be reset so another sync is possible.
       expect(orchestrator.isSyncing, isFalse);
 
+      // Upload-first guarantee: applyToDatabase must NOT have been called
+      // when the upload failed; local state stays consistent with cloud.
+      expect(serialiser.appliedSnapshot, isNull);
+
       // Verify a subsequent sync is not blocked.
       cloudService.throwOnUpload = false;
       final result2 = await orchestrator.sync();
       expect(result2.success, isTrue);
+    });
+
+    test('upload happens before applyToDatabase (upload-first ordering)',
+        () async {
+      // Wire shared call log.
+      serialiser.callLog = cloudService.callLog;
+
+      final result = await orchestrator.sync();
+
+      expect(result.success, isTrue);
+      expect(cloudService.callLog, equals(['upload', 'apply']));
+    });
+
+    test('schema-version-too-new from remote propagates as error', () async {
+      // Construct a JSON snapshot claiming schema 999 (newer than this app).
+      cloudService.storedJson = '{"snapshotAt":"2026-04-30T00:00:00.000Z",'
+          '"deviceId":"future-device","schemaVersion":999}';
+
+      // Use the real serialiser so fromJson actually parses + validates.
+      final realOrchestrator = SyncOrchestrator(
+        database: db,
+        cloudService: cloudService,
+        deviceId: 'test-device',
+        connectivity: connectivity,
+      );
+
+      final result = await realOrchestrator.sync();
+
+      expect(result.success, isFalse);
+      expect(result.errorMessage, contains('newer version'));
     });
 
     test('deleteCloudData delegates to cloud service', () async {

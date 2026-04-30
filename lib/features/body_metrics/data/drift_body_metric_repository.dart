@@ -35,6 +35,7 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
         bodyFatPercent: Value(metric.bodyFatPercent),
         notes: Value(metric.notes),
         updatedAt: Value(dateTimeToEpochMs(metric.updatedAt)),
+        deletedAt: Value(nullableDateTimeToEpochMs(metric.deletedAt)),
       ),
     );
     return metric;
@@ -42,12 +43,19 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
 
   @override
   Future<void> delete(String id) async {
-    await (_db.delete(_db.bodyMetrics)..where((t) => t.id.equals(id))).go();
+    final now = dateTimeToEpochMs(DateTime.now().toUtc());
+    await (_db.update(_db.bodyMetrics)..where((t) => t.id.equals(id))).write(
+      db.BodyMetricsCompanion(
+        deletedAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
   }
 
   @override
   Future<List<BodyMetric>> getAll({int limit = 100}) async {
     final q = _db.select(_db.bodyMetrics)
+      ..where((t) => t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.date)])
       ..limit(limit);
     final rows = await q.get();
@@ -57,6 +65,7 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
   @override
   Future<BodyMetric?> getLatest() async {
     final q = _db.select(_db.bodyMetrics)
+      ..where((t) => t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.date)])
       ..limit(1);
     final row = await q.getSingleOrNull();
@@ -66,6 +75,7 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
   @override
   Stream<List<BodyMetric>> watchAll() {
     final q = _db.select(_db.bodyMetrics)
+      ..where((t) => t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.date)]);
     return q.watch().map((rows) => rows.map(_toDomain).toList());
   }
@@ -78,6 +88,7 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
       bodyFatPercent: row.bodyFatPercent,
       notes: row.notes,
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
+      deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );
   }
 }

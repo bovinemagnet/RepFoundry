@@ -41,7 +41,8 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
 
   @override
   Future<WorkoutTemplate?> getTemplate(String id) async {
-    final q = _db.select(_db.workoutTemplates)..where((t) => t.id.equals(id));
+    final q = _db.select(_db.workoutTemplates)
+      ..where((t) => t.id.equals(id) & t.deletedAt.isNull());
     final row = await q.getSingleOrNull();
     if (row == null) return null;
 
@@ -52,6 +53,7 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
   @override
   Future<List<WorkoutTemplate>> getAllTemplates() async {
     final q = _db.select(_db.workoutTemplates)
+      ..where((t) => t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
     final rows = await q.get();
     return Future.wait(rows.map((row) async {
@@ -62,6 +64,7 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
 
   @override
   Future<WorkoutTemplate> updateTemplate(WorkoutTemplate template) async {
+    final nowMs = dateTimeToEpochMs(DateTime.now().toUtc());
     await _db.transaction(() async {
       await (_db.update(_db.workoutTemplates)
             ..where((t) => t.id.equals(template.id)))
@@ -71,12 +74,21 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
           updatedAt: Value(dateTimeToEpochMs(template.updatedAt)),
         ),
       );
-      // Delete-and-reinsert children.
-      await (_db.delete(_db.templateExercises)
-            ..where((t) => t.templateId.equals(template.id)))
-          .go();
+      // Soft-delete previous children (preserves tombstones for sync) and
+      // insert the new set. New rows with the same id will upsert via
+      // primary-key conflict; new ids appear as new rows.
+      await (_db.update(_db.templateExercises)
+            ..where(
+              (t) => t.templateId.equals(template.id) & t.deletedAt.isNull(),
+            ))
+          .write(
+        db.TemplateExercisesCompanion(
+          deletedAt: Value(nowMs),
+          updatedAt: Value(nowMs),
+        ),
+      );
       for (final ex in template.exercises) {
-        await _db.into(_db.templateExercises).insert(
+        await _db.into(_db.templateExercises).insertOnConflictUpdate(
               db.TemplateExercisesCompanion.insert(
                 id: ex.id,
                 templateId: template.id,
@@ -86,6 +98,8 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
                 targetReps: ex.targetReps,
                 orderIndex: ex.orderIndex,
                 updatedAt: Value(dateTimeToEpochMs(ex.updatedAt)),
+                // Resurrect: explicit null clears any prior tombstone.
+                deletedAt: const Value(null),
               ),
             );
       }
@@ -95,18 +109,30 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
 
   @override
   Future<void> deleteTemplate(String id) async {
+    final nowMs = dateTimeToEpochMs(DateTime.now().toUtc());
     await _db.transaction(() async {
-      await (_db.delete(_db.templateExercises)
-            ..where((t) => t.templateId.equals(id)))
-          .go();
-      await (_db.delete(_db.workoutTemplates)..where((t) => t.id.equals(id)))
-          .go();
+      await (_db.update(_db.templateExercises)
+            ..where((t) => t.templateId.equals(id) & t.deletedAt.isNull()))
+          .write(
+        db.TemplateExercisesCompanion(
+          deletedAt: Value(nowMs),
+          updatedAt: Value(nowMs),
+        ),
+      );
+      await (_db.update(_db.workoutTemplates)..where((t) => t.id.equals(id)))
+          .write(
+        db.WorkoutTemplatesCompanion(
+          deletedAt: Value(nowMs),
+          updatedAt: Value(nowMs),
+        ),
+      );
     });
   }
 
   @override
   Stream<List<WorkoutTemplate>> watchAllTemplates() {
     final q = _db.select(_db.workoutTemplates)
+      ..where((t) => t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
     return q.watch().asyncMap((rows) async {
       return Future.wait(rows.map((row) async {
@@ -120,7 +146,7 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
     String templateId,
   ) async {
     final q = _db.select(_db.templateExercises)
-      ..where((t) => t.templateId.equals(templateId))
+      ..where((t) => t.templateId.equals(templateId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.asc(t.orderIndex)]);
     final rows = await q.get();
     return rows.map(_exerciseToDomain).toList();
@@ -135,6 +161,7 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
       name: row.name,
       createdAt: dateTimeFromEpochMs(row.createdAt),
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
+      deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       exercises: exercises,
     );
   }
@@ -149,6 +176,7 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
       targetReps: row.targetReps,
       orderIndex: row.orderIndex,
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
+      deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );
   }
 }

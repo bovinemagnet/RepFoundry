@@ -9,6 +9,7 @@ class TemplateExercise {
   final int targetReps;
   final int orderIndex;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   const TemplateExercise({
     required this.id,
@@ -19,7 +20,10 @@ class TemplateExercise {
     required this.targetReps,
     required this.orderIndex,
     required this.updatedAt,
+    this.deletedAt,
   });
+
+  bool get isDeleted => deletedAt != null;
 }
 
 class WorkoutTemplate {
@@ -27,6 +31,7 @@ class WorkoutTemplate {
   final String name;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
   final List<TemplateExercise> exercises;
 
   const WorkoutTemplate({
@@ -34,8 +39,11 @@ class WorkoutTemplate {
     required this.name,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
     this.exercises = const [],
   });
+
+  bool get isDeleted => deletedAt != null;
 
   static WorkoutTemplate create({
     required String name,
@@ -56,6 +64,7 @@ class WorkoutTemplate {
     String? name,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? deletedAt,
     List<TemplateExercise>? exercises,
   }) {
     return WorkoutTemplate(
@@ -63,6 +72,7 @@ class WorkoutTemplate {
       name: name ?? this.name,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
       exercises: exercises ?? this.exercises,
     );
   }

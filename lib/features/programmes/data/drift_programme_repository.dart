@@ -29,7 +29,8 @@ class DriftProgrammeRepository implements ProgrammeRepository {
 
   @override
   Future<Programme?> getProgramme(String id) async {
-    final q = _db.select(_db.programmes)..where((t) => t.id.equals(id));
+    final q = _db.select(_db.programmes)
+      ..where((t) => t.id.equals(id) & t.deletedAt.isNull());
     final row = await q.getSingleOrNull();
     if (row == null) return null;
 
@@ -41,6 +42,7 @@ class DriftProgrammeRepository implements ProgrammeRepository {
   @override
   Future<List<Programme>> getAllProgrammes() async {
     final q = _db.select(_db.programmes)
+      ..where((t) => t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
     final rows = await q.get();
     return Future.wait(rows.map((row) async {
@@ -83,20 +85,37 @@ class DriftProgrammeRepository implements ProgrammeRepository {
 
   @override
   Future<void> deleteProgramme(String id) async {
+    final nowMs = dateTimeToEpochMs(DateTime.now().toUtc());
     await _db.transaction(() async {
-      await (_db.delete(_db.programmeDays)
-            ..where((t) => t.programmeId.equals(id)))
-          .go();
-      await (_db.delete(_db.progressionRules)
-            ..where((t) => t.programmeId.equals(id)))
-          .go();
-      await (_db.delete(_db.programmes)..where((t) => t.id.equals(id))).go();
+      await (_db.update(_db.programmeDays)
+            ..where(
+              (t) => t.programmeId.equals(id) & t.deletedAt.isNull(),
+            ))
+          .write(db.ProgrammeDaysCompanion(
+        deletedAt: Value(nowMs),
+        updatedAt: Value(nowMs),
+      ));
+      await (_db.update(_db.progressionRules)
+            ..where(
+              (t) => t.programmeId.equals(id) & t.deletedAt.isNull(),
+            ))
+          .write(db.ProgressionRulesCompanion(
+        deletedAt: Value(nowMs),
+        updatedAt: Value(nowMs),
+      ));
+      await (_db.update(_db.programmes)..where((t) => t.id.equals(id))).write(
+        db.ProgrammesCompanion(
+          deletedAt: Value(nowMs),
+          updatedAt: Value(nowMs),
+        ),
+      );
     });
   }
 
   @override
   Stream<List<Programme>> watchAllProgrammes() {
     final q = _db.select(_db.programmes)
+      ..where((t) => t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
     return q.watch().asyncMap((rows) async {
       return Future.wait(rows.map((row) async {
@@ -124,8 +143,12 @@ class DriftProgrammeRepository implements ProgrammeRepository {
 
   @override
   Future<void> removeDay(String dayId) async {
-    await (_db.delete(_db.programmeDays)..where((t) => t.id.equals(dayId)))
-        .go();
+    final now = dateTimeToEpochMs(DateTime.now().toUtc());
+    await (_db.update(_db.programmeDays)..where((t) => t.id.equals(dayId)))
+        .write(db.ProgrammeDaysCompanion(
+      deletedAt: Value(now),
+      updatedAt: Value(now),
+    ));
   }
 
   @override
@@ -150,8 +173,12 @@ class DriftProgrammeRepository implements ProgrammeRepository {
 
   @override
   Future<void> removeRule(String ruleId) async {
-    await (_db.delete(_db.progressionRules)..where((t) => t.id.equals(ruleId)))
-        .go();
+    final now = dateTimeToEpochMs(DateTime.now().toUtc());
+    await (_db.update(_db.progressionRules)..where((t) => t.id.equals(ruleId)))
+        .write(db.ProgressionRulesCompanion(
+      deletedAt: Value(now),
+      updatedAt: Value(now),
+    ));
   }
 
   @override
@@ -169,7 +196,9 @@ class DriftProgrammeRepository implements ProgrammeRepository {
     String programmeId,
   ) async {
     final q = _db.select(_db.programmeDays)
-      ..where((t) => t.programmeId.equals(programmeId))
+      ..where(
+        (t) => t.programmeId.equals(programmeId) & t.deletedAt.isNull(),
+      )
       ..orderBy([
         (t) => OrderingTerm.asc(t.weekNumber),
         (t) => OrderingTerm.asc(t.dayOfWeek),
@@ -182,7 +211,9 @@ class DriftProgrammeRepository implements ProgrammeRepository {
     String programmeId,
   ) async {
     final q = _db.select(_db.progressionRules)
-      ..where((t) => t.programmeId.equals(programmeId));
+      ..where(
+        (t) => t.programmeId.equals(programmeId) & t.deletedAt.isNull(),
+      );
     final rows = await q.get();
     return rows.map(_ruleToDomain).toList();
   }
@@ -200,6 +231,7 @@ class DriftProgrammeRepository implements ProgrammeRepository {
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
       startedAt:
           row.startedAt == null ? null : dateTimeFromEpochMs(row.startedAt!),
+      deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       days: days,
       rules: rules,
     );
@@ -214,6 +246,7 @@ class DriftProgrammeRepository implements ProgrammeRepository {
       templateId: row.templateId,
       templateName: row.templateName,
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
+      deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );
   }
 
@@ -226,6 +259,7 @@ class DriftProgrammeRepository implements ProgrammeRepository {
       value: row.value,
       frequencyWeeks: row.frequencyWeeks,
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
+      deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );
   }
 }

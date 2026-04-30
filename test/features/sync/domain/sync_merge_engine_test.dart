@@ -28,6 +28,7 @@ void main() {
     required String id,
     required String name,
     required DateTime updatedAt,
+    DateTime? deletedAt,
   }) =>
       Exercise(
         id: id,
@@ -36,18 +37,21 @@ void main() {
         muscleGroup: MuscleGroup.chest,
         equipmentType: EquipmentType.barbell,
         updatedAt: updatedAt,
+        deletedAt: deletedAt,
       );
 
   Workout makeWorkout({
     required String id,
     required DateTime updatedAt,
     String? notes,
+    DateTime? deletedAt,
   }) =>
       Workout(
         id: id,
         startedAt: baseTime,
         updatedAt: updatedAt,
         notes: notes,
+        deletedAt: deletedAt,
       );
 
   setUp(() {
@@ -261,6 +265,143 @@ void main() {
       // Workout wo-2: remote only → kept
       final mergedWo2 = result.workouts.firstWhere((w) => w.id == 'wo-2');
       expect(mergedWo2.notes, equals('Only Remote'));
+    });
+
+    group('tombstones', () {
+      test('tombstone beats live, regardless of updatedAt order', () {
+        // Local has live row updated *after* the remote tombstone — but
+        // the tombstone must still win, otherwise deletes resurrect.
+        final liveLocal = makeExercise(
+          id: 'ex-1',
+          name: 'Resurrected',
+          updatedAt: later,
+        );
+        final tombstonedRemote = makeExercise(
+          id: 'ex-1',
+          name: 'Deleted',
+          updatedAt: earlier,
+          deletedAt: earlier,
+        );
+
+        final local = makeSnapshot(exercises: [liveLocal]);
+        final remote = makeSnapshot(
+          deviceId: 'device-remote',
+          exercises: [tombstonedRemote],
+        );
+
+        final result = engine.merge(local: local, remote: remote);
+
+        expect(result.exercises, hasLength(1));
+        expect(result.exercises.first.deletedAt, isNotNull);
+        expect(result.exercises.first.name, equals('Deleted'));
+      });
+
+      test('live remote vs tombstoned local — local tombstone wins', () {
+        final tombstonedLocal = makeExercise(
+          id: 'ex-1',
+          name: 'Deleted Locally',
+          updatedAt: earlier,
+          deletedAt: earlier,
+        );
+        final liveRemote = makeExercise(
+          id: 'ex-1',
+          name: 'Live Remote',
+          updatedAt: later,
+        );
+
+        final local = makeSnapshot(exercises: [tombstonedLocal]);
+        final remote = makeSnapshot(
+          deviceId: 'device-remote',
+          exercises: [liveRemote],
+        );
+
+        final result = engine.merge(local: local, remote: remote);
+
+        expect(result.exercises, hasLength(1));
+        expect(result.exercises.first.deletedAt, isNotNull);
+      });
+
+      test('both tombstoned — larger deletedAt wins', () {
+        final earlyTombstoneLocal = makeExercise(
+          id: 'ex-1',
+          name: 'Early',
+          updatedAt: baseTime,
+          deletedAt: earlier,
+        );
+        final lateTombstoneRemote = makeExercise(
+          id: 'ex-1',
+          name: 'Late',
+          updatedAt: baseTime,
+          deletedAt: later,
+        );
+
+        final local = makeSnapshot(exercises: [earlyTombstoneLocal]);
+        final remote = makeSnapshot(
+          deviceId: 'device-remote',
+          exercises: [lateTombstoneRemote],
+        );
+
+        final result = engine.merge(local: local, remote: remote);
+
+        expect(result.exercises, hasLength(1));
+        expect(result.exercises.first.name, equals('Late'));
+        expect(result.exercises.first.deletedAt, equals(later));
+      });
+
+      test('both live — falls through to updatedAt comparison', () {
+        // Sanity: deletedAt awareness must not regress the existing
+        // live/live behaviour.
+        final localLive = makeExercise(
+          id: 'ex-1',
+          name: 'Old',
+          updatedAt: earlier,
+        );
+        final remoteLive = makeExercise(
+          id: 'ex-1',
+          name: 'New',
+          updatedAt: later,
+        );
+
+        final local = makeSnapshot(exercises: [localLive]);
+        final remote = makeSnapshot(
+          deviceId: 'device-remote',
+          exercises: [remoteLive],
+        );
+
+        final result = engine.merge(local: local, remote: remote);
+
+        expect(result.exercises.first.name, equals('New'));
+        expect(result.exercises.first.deletedAt, isNull);
+      });
+
+      test('delete-then-edit-on-other-device — tombstone propagates', () {
+        // Device A deletes a workout (tombstone). Device B edits the
+        // same workout before syncing. After merge: tombstone wins,
+        // edits are discarded.
+        final tombstonedFromA = makeWorkout(
+          id: 'wo-1',
+          updatedAt: earlier,
+          deletedAt: earlier,
+          notes: 'before delete',
+        );
+        final editedOnB = makeWorkout(
+          id: 'wo-1',
+          updatedAt: later,
+          notes: 'edits made on B',
+        );
+
+        // Local is B (edited), remote is A (deleted).
+        final local = makeSnapshot(workouts: [editedOnB]);
+        final remote = makeSnapshot(
+          deviceId: 'device-a',
+          workouts: [tombstonedFromA],
+        );
+
+        final result = engine.merge(local: local, remote: remote);
+
+        expect(result.workouts, hasLength(1));
+        expect(result.workouts.first.deletedAt, isNotNull);
+      });
     });
   });
 }

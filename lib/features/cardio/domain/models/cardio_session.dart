@@ -9,6 +9,7 @@ class CardioSession {
   final double? incline;
   final int? avgHeartRate;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   const CardioSession({
     required this.id,
@@ -19,7 +20,10 @@ class CardioSession {
     this.incline,
     this.avgHeartRate,
     required this.updatedAt,
+    this.deletedAt,
   });
+
+  bool get isDeleted => deletedAt != null;
 
   Duration get duration => Duration(seconds: durationSeconds);
 

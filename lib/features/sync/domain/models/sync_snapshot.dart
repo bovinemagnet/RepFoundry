@@ -3,6 +3,7 @@ import '../../../cardio/domain/models/cardio_session.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../history/domain/models/personal_record.dart';
 import '../../../programmes/domain/models/programme.dart';
+import '../../../stretching/domain/models/stretching_session.dart';
 import '../../../templates/domain/models/workout_template.dart';
 import '../../../workout/domain/models/workout.dart';
 import '../../../workout/domain/models/workout_set.dart';
@@ -22,6 +23,7 @@ class SyncSnapshot {
   final List<Programme> programmes;
   final List<ProgrammeDay> programmeDays;
   final List<ProgressionRule> progressionRules;
+  final List<StretchingSession> stretchingSessions;
 
   const SyncSnapshot({
     required this.snapshotAt,
@@ -38,5 +40,6 @@ class SyncSnapshot {
     this.programmes = const [],
     this.programmeDays = const [],
     this.progressionRules = const [],
+    this.stretchingSessions = const [],
   });
 }

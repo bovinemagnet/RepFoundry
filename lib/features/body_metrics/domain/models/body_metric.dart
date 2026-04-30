@@ -7,6 +7,7 @@ class BodyMetric {
   final double? bodyFatPercent;
   final String? notes;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   const BodyMetric({
     required this.id,
@@ -15,7 +16,10 @@ class BodyMetric {
     this.bodyFatPercent,
     this.notes,
     required this.updatedAt,
+    this.deletedAt,
   });
+
+  bool get isDeleted => deletedAt != null;
 
   BodyMetric copyWith({
     String? id,
@@ -26,6 +30,7 @@ class BodyMetric {
     bool clearBodyFat = false,
     bool clearNotes = false,
     DateTime? updatedAt,
+    DateTime? deletedAt,
   }) {
     return BodyMetric(
       id: id ?? this.id,
@@ -35,6 +40,7 @@ class BodyMetric {
           clearBodyFat ? null : (bodyFatPercent ?? this.bodyFatPercent),
       notes: clearNotes ? null : (notes ?? this.notes),
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 

@@ -12,6 +12,7 @@ class WorkoutSet {
   final bool isWarmUp;
   final String? groupId;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   const WorkoutSet({
     required this.id,
@@ -25,7 +26,10 @@ class WorkoutSet {
     this.isWarmUp = false,
     this.groupId,
     required this.updatedAt,
+    this.deletedAt,
   });
+
+  bool get isDeleted => deletedAt != null;
 
   double get volume => weight * reps;
 
@@ -48,6 +52,7 @@ class WorkoutSet {
     String? groupId,
     bool clearGroupId = false,
     DateTime? updatedAt,
+    DateTime? deletedAt,
   }) {
     return WorkoutSet(
       id: id ?? this.id,
@@ -61,6 +66,7 @@ class WorkoutSet {
       isWarmUp: isWarmUp ?? this.isWarmUp,
       groupId: clearGroupId ? null : (groupId ?? this.groupId),
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 

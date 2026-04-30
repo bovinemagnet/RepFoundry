@@ -142,7 +142,7 @@ void main() {
     });
 
     group('deleteSession', () {
-      test('hard-deletes a session', () async {
+      test('soft-deletes: getSession returns null after delete', () async {
         final workout = await createParentWorkout();
         final session = newSession(workoutId: workout.id);
         await repo.createSession(session);
@@ -150,6 +150,39 @@ void main() {
 
         final fetched = await repo.getSession(session.id);
         expect(fetched, isNull);
+      });
+
+      test('row is preserved in DB with deletedAt non-null', () async {
+        final workout = await createParentWorkout();
+        final session = newSession(workoutId: workout.id);
+        await repo.createSession(session);
+        await repo.deleteSession(session.id);
+
+        // Bypass the repo filter and inspect the table directly.
+        final raw = await database.select(database.cardioSessions).get();
+        expect(raw, hasLength(1));
+        expect(raw.single.id, session.id);
+        expect(raw.single.deletedAt, isNotNull);
+      });
+
+      test('tombstone is hidden from list reads', () async {
+        final workout = await createParentWorkout();
+        final live = newSession(workoutId: workout.id);
+        final deleted = newSession(workoutId: workout.id);
+        await repo.createSession(live);
+        await repo.createSession(deleted);
+        await repo.deleteSession(deleted.id);
+
+        final forWorkout = await repo.getSessionsForWorkout(workout.id);
+        expect(forWorkout, hasLength(1));
+        expect(forWorkout.single.id, live.id);
+
+        final all = await repo.getAllSessions();
+        expect(all, hasLength(1));
+
+        final lastForExercise = await repo.getLastSessionForExercise('16');
+        expect(lastForExercise, isNotNull);
+        expect(lastForExercise!.id, live.id);
       });
     });
 

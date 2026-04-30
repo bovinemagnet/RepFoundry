@@ -16,6 +16,7 @@ class Programme {
   /// When the user pressed "Start programme". Null until they start.
   /// Used to compute [currentWeek] so multi-week programmes advance.
   final DateTime? startedAt;
+  final DateTime? deletedAt;
   final List<ProgrammeDay> days;
   final List<ProgressionRule> rules;
 
@@ -26,9 +27,12 @@ class Programme {
     required this.createdAt,
     required this.updatedAt,
     this.startedAt,
+    this.deletedAt,
     this.days = const [],
     this.rules = const [],
   });
+
+  bool get isDeleted => deletedAt != null;
 
   /// 1-based current week of the programme, clamped to [1, durationWeeks].
   /// Returns 1 if the programme has not been started yet.
@@ -61,6 +65,7 @@ class Programme {
     DateTime? updatedAt,
     DateTime? startedAt,
     bool clearStartedAt = false,
+    DateTime? deletedAt,
     List<ProgrammeDay>? days,
     List<ProgressionRule>? rules,
   }) {
@@ -71,6 +76,7 @@ class Programme {
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       startedAt: clearStartedAt ? null : (startedAt ?? this.startedAt),
+      deletedAt: deletedAt ?? this.deletedAt,
       days: days ?? this.days,
       rules: rules ?? this.rules,
     );
@@ -93,6 +99,7 @@ class ProgrammeDay {
   final String templateId;
   final String templateName;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   const ProgrammeDay({
     required this.id,
@@ -102,7 +109,10 @@ class ProgrammeDay {
     required this.templateId,
     required this.templateName,
     required this.updatedAt,
+    this.deletedAt,
   });
+
+  bool get isDeleted => deletedAt != null;
 
   static ProgrammeDay create({
     required String programmeId,
@@ -128,6 +138,7 @@ class ProgrammeDay {
     String? templateId,
     String? templateName,
     DateTime? updatedAt,
+    DateTime? deletedAt,
   }) {
     return ProgrammeDay(
       id: id,
@@ -137,6 +148,7 @@ class ProgrammeDay {
       templateId: templateId ?? this.templateId,
       templateName: templateName ?? this.templateName,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -159,6 +171,7 @@ class ProgressionRule {
   final double value;
   final int frequencyWeeks;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   const ProgressionRule({
     required this.id,
@@ -168,7 +181,10 @@ class ProgressionRule {
     required this.value,
     this.frequencyWeeks = 1,
     required this.updatedAt,
+    this.deletedAt,
   });
+
+  bool get isDeleted => deletedAt != null;
 
   static ProgressionRule create({
     required String programmeId,

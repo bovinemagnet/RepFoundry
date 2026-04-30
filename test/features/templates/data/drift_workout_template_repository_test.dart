@@ -151,7 +151,7 @@ void main() {
     });
 
     group('deleteTemplate', () {
-      test('hard-deletes template and its exercises', () async {
+      test('soft-deletes template and cascades to exercises', () async {
         final template = newTemplate();
         final withExercise = template.copyWith(
           exercises: [
@@ -165,8 +165,33 @@ void main() {
         await repo.createTemplate(withExercise);
         await repo.deleteTemplate(template.id);
 
+        // Public reads filter the tombstoned template.
         final fetched = await repo.getTemplate(template.id);
         expect(fetched, isNull);
+
+        // Bypass the filter and confirm both rows are preserved with
+        // deletedAt set, so a sync can propagate the cascading delete.
+        final rawTemplates =
+            await database.select(database.workoutTemplates).get();
+        expect(rawTemplates, hasLength(1));
+        expect(rawTemplates.single.deletedAt, isNotNull);
+
+        final rawExercises =
+            await database.select(database.templateExercises).get();
+        expect(rawExercises, hasLength(1));
+        expect(rawExercises.single.deletedAt, isNotNull);
+      });
+
+      test('tombstoned templates are excluded from getAllTemplates', () async {
+        final live = newTemplate(name: 'Push');
+        final dead = newTemplate(name: 'Legs');
+        await repo.createTemplate(live);
+        await repo.createTemplate(dead);
+        await repo.deleteTemplate(dead.id);
+
+        final all = await repo.getAllTemplates();
+        expect(all, hasLength(1));
+        expect(all.single.name, 'Push');
       });
     });
 
