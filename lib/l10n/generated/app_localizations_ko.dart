@@ -1207,46 +1207,43 @@ class SKo extends S {
   }
 
   @override
-  String get notificationsScreenTitle => 'Notifications';
+  String get notificationsScreenTitle => '알림';
 
   @override
-  String get notificationsTileTitle => 'Notifications';
+  String get notificationsTileTitle => '알림';
 
   @override
-  String get notificationsTileSubtitleEmpty => 'No reminders configured';
+  String get notificationsTileSubtitleEmpty => '설정된 알림이 없습니다';
 
   @override
   String notificationsTileSubtitleSummary(String days, String time) {
-    return '$days at $time';
+    return '$days $time';
   }
 
   @override
   String get permissionDeniedBanner =>
-      'Notifications are blocked. Reminders won\'t fire until you enable them in system settings.';
+      '알림이 차단되어 있습니다. 시스템 설정에서 활성화해야 알림이 전송됩니다.';
 
   @override
-  String get openSystemSettings => 'Open settings';
+  String get openSystemSettings => '설정 열기';
 
   @override
-  String get sendTestNotification => 'Send test notification';
+  String get sendTestNotification => '테스트 알림 보내기';
 
   @override
-  String get sendTestNotificationSubtitle =>
-      'Show a sample notification now to verify setup';
+  String get sendTestNotificationSubtitle => '샘플 알림을 보내 설정 상태를 확인하세요';
 
   @override
-  String get testNotificationTitle => 'RepFoundry test notification';
+  String get testNotificationTitle => 'RepFoundry 테스트 알림';
 
   @override
-  String get testNotificationBody =>
-      'If you can see this, reminders will work.';
+  String get testNotificationBody => '이 알림이 보이면 리마인더가 정상적으로 작동합니다.';
 
   @override
-  String get testNotificationSentSnack => 'Test notification sent';
+  String get testNotificationSentSnack => '테스트 알림이 전송되었습니다';
 
   @override
-  String get testNotificationBlockedSnack =>
-      'Notifications are blocked — enable them in system settings first';
+  String get testNotificationBlockedSnack => '알림이 차단되었습니다 — 시스템 설정에서 먼저 활성화하세요';
 
   @override
   String get analyticsTitle => '분석';
