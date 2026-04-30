@@ -11,6 +11,7 @@ class TemplateExercises extends Table {
   IntColumn get targetReps => integer()();
   IntColumn get orderIndex => integer()();
   IntColumn get updatedAt => integer().withDefault(const Constant(0))();
+  IntColumn get deletedAt => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

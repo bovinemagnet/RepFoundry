@@ -117,7 +117,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
   @override
   Future<List<WorkoutSet>> getSetsForWorkout(String workoutId) async {
     final q = _db.select(_db.workoutSets)
-      ..where((t) => t.workoutId.equals(workoutId))
+      ..where((t) => t.workoutId.equals(workoutId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.asc(t.setOrder)]);
     final rows = await q.get();
     return rows.map(_setToDomain).toList();
@@ -129,7 +129,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
     int limit = 50,
   }) async {
     final q = _db.select(_db.workoutSets)
-      ..where((t) => t.exerciseId.equals(exerciseId))
+      ..where((t) => t.exerciseId.equals(exerciseId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.timestamp)])
       ..limit(limit);
     final rows = await q.get();
@@ -139,7 +139,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
   @override
   Future<WorkoutSet?> getLastSetForExercise(String exerciseId) async {
     final q = _db.select(_db.workoutSets)
-      ..where((t) => t.exerciseId.equals(exerciseId))
+      ..where((t) => t.exerciseId.equals(exerciseId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.timestamp)])
       ..limit(1);
     final row = await q.getSingleOrNull();
@@ -161,6 +161,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
         isWarmUp: Value(set.isWarmUp),
         groupId: Value(set.groupId),
         updatedAt: Value(dateTimeToEpochMs(set.updatedAt)),
+        deletedAt: Value(nullableDateTimeToEpochMs(set.deletedAt)),
       ),
     );
     return set;
@@ -168,7 +169,12 @@ class DriftWorkoutRepository implements WorkoutRepository {
 
   @override
   Future<void> deleteSet(String setId) async {
-    await (_db.delete(_db.workoutSets)..where((t) => t.id.equals(setId))).go();
+    final now = dateTimeToEpochMs(DateTime.now().toUtc());
+    await (_db.update(_db.workoutSets)..where((t) => t.id.equals(setId)))
+        .write(db.WorkoutSetsCompanion(
+      deletedAt: Value(now),
+      updatedAt: Value(now),
+    ));
   }
 
   @override
@@ -192,7 +198,10 @@ class DriftWorkoutRepository implements WorkoutRepository {
     // Fetch all sets for that exercise in that workout, ordered by setOrder.
     final q = _db.select(_db.workoutSets)
       ..where(
-        (t) => t.workoutId.equals(workoutId) & t.exerciseId.equals(exerciseId),
+        (t) =>
+            t.workoutId.equals(workoutId) &
+            t.exerciseId.equals(exerciseId) &
+            t.deletedAt.isNull(),
       )
       ..orderBy([(t) => OrderingTerm.asc(t.setOrder)]);
     final rows = await q.get();
@@ -214,7 +223,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
   @override
   Stream<List<WorkoutSet>> watchSetsForWorkout(String workoutId) {
     final q = _db.select(_db.workoutSets)
-      ..where((t) => t.workoutId.equals(workoutId))
+      ..where((t) => t.workoutId.equals(workoutId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.asc(t.setOrder)]);
     return q.watch().map((rows) => rows.map(_setToDomain).toList());
   }
@@ -246,6 +255,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
       isWarmUp: row.isWarmUp,
       groupId: row.groupId,
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
+      deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );
   }
 }

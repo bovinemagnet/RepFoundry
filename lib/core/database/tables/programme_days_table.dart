@@ -8,6 +8,7 @@ class ProgrammeDays extends Table {
   TextColumn get templateId => text()();
   TextColumn get templateName => text()();
   IntColumn get updatedAt => integer().withDefault(const Constant(0))();
+  IntColumn get deletedAt => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

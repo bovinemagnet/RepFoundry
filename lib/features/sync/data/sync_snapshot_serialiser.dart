@@ -9,10 +9,12 @@ import '../../cardio/domain/models/cardio_session.dart';
 import '../../exercises/domain/models/exercise.dart';
 import '../../history/domain/models/personal_record.dart';
 import '../../programmes/domain/models/programme.dart';
+import '../../stretching/domain/models/stretching_session.dart';
 import '../../templates/domain/models/workout_template.dart';
 import '../../workout/domain/models/workout.dart';
 import '../../workout/domain/models/workout_set.dart';
 import '../domain/models/sync_snapshot.dart';
+import '../domain/sync_schema_version_exception.dart';
 
 class SyncSnapshotSerialiser {
   /// Read all data from the database, including soft-deleted rows.
@@ -48,6 +50,7 @@ class SyncSnapshotSerialiser {
               name: row.name,
               createdAt: dateTimeFromEpochMs(row.createdAt),
               updatedAt: dateTimeFromEpochMs(row.updatedAt),
+              deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
             ))
         .toList();
 
@@ -71,6 +74,7 @@ class SyncSnapshotSerialiser {
               startedAt: row.startedAt == null
                   ? null
                   : dateTimeFromEpochMs(row.startedAt!),
+              deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
             ))
         .toList();
 
@@ -82,10 +86,15 @@ class SyncSnapshotSerialiser {
     final ruleRows = await database.select(database.progressionRules).get();
     final progressionRules = ruleRows.map(_progressionRuleToDomain).toList();
 
+    // Stretching sessions — include soft-deleted (no WHERE filter)
+    final stretchingRows =
+        await database.select(database.stretchingSessions).get();
+    final stretchingSessions = stretchingRows.map(_stretchingToDomain).toList();
+
     return SyncSnapshot(
       snapshotAt: DateTime.now().toUtc(),
       deviceId: deviceId,
-      schemaVersion: 7,
+      schemaVersion: db.AppDatabase.schemaVersionConst,
       exercises: exercises,
       workouts: workouts,
       workoutSets: workoutSets,
@@ -97,6 +106,7 @@ class SyncSnapshotSerialiser {
       programmes: programmes,
       programmeDays: programmeDays,
       progressionRules: progressionRules,
+      stretchingSessions: stretchingSessions,
     );
   }
 
@@ -121,16 +131,29 @@ class SyncSnapshotSerialiser {
       'programmeDays': snapshot.programmeDays.map(_programmeDayToMap).toList(),
       'progressionRules':
           snapshot.progressionRules.map(_progressionRuleToMap).toList(),
+      'stretchingSessions':
+          snapshot.stretchingSessions.map(_stretchingToMap).toList(),
     };
     return jsonEncode(data);
   }
 
   SyncSnapshot fromJson(String jsonString) {
     final data = jsonDecode(jsonString) as Map<String, dynamic>;
+    final remoteSchema = data['schemaVersion'] as int? ?? 0;
+    if (remoteSchema > db.AppDatabase.schemaVersionConst) {
+      // Refuse to merge: an older client would silently drop fields it
+      // doesn't recognise and re-upload a degraded blob.
+      throw SyncSchemaVersionException.tooNew(
+        remoteSchema,
+        db.AppDatabase.schemaVersionConst,
+      );
+    }
+    // remoteSchema < local is accepted: per-field readers are null-safe and
+    // missing keys produce empty lists via _mapList.
     return SyncSnapshot(
       snapshotAt: DateTime.parse(data['snapshotAt'] as String),
       deviceId: data['deviceId'] as String,
-      schemaVersion: data['schemaVersion'] as int,
+      schemaVersion: remoteSchema,
       exercises: _mapList(data['exercises'], _exerciseFromMap),
       workouts: _mapList(data['workouts'], _workoutFromMap),
       workoutSets: _mapList(data['workoutSets'], _setFromMap),
@@ -146,6 +169,8 @@ class SyncSnapshotSerialiser {
       programmeDays: _mapList(data['programmeDays'], _programmeDayFromMap),
       progressionRules:
           _mapList(data['progressionRules'], _progressionRuleFromMap),
+      stretchingSessions:
+          _mapList(data['stretchingSessions'], _stretchingFromMap),
     );
   }
 
@@ -199,6 +224,7 @@ class SyncSnapshotSerialiser {
                 isWarmUp: Value(s.isWarmUp),
                 groupId: Value(s.groupId),
                 updatedAt: Value(dateTimeToEpochMs(s.updatedAt)),
+                deletedAt: Value(nullableDateTimeToEpochMs(s.deletedAt)),
               ),
             );
       }
@@ -214,6 +240,7 @@ class SyncSnapshotSerialiser {
                 incline: Value(c.incline),
                 avgHeartRate: Value(c.avgHeartRate),
                 updatedAt: Value(dateTimeToEpochMs(c.updatedAt)),
+                deletedAt: Value(nullableDateTimeToEpochMs(c.deletedAt)),
               ),
             );
       }
@@ -228,6 +255,7 @@ class SyncSnapshotSerialiser {
                 achievedAt: dateTimeToEpochMs(pr.achievedAt),
                 workoutSetId: Value(pr.workoutSetId),
                 updatedAt: Value(dateTimeToEpochMs(pr.updatedAt)),
+                deletedAt: Value(nullableDateTimeToEpochMs(pr.deletedAt)),
               ),
             );
       }
@@ -239,6 +267,7 @@ class SyncSnapshotSerialiser {
                 name: t.name,
                 createdAt: dateTimeToEpochMs(t.createdAt),
                 updatedAt: dateTimeToEpochMs(t.updatedAt),
+                deletedAt: Value(nullableDateTimeToEpochMs(t.deletedAt)),
               ),
             );
       }
@@ -254,6 +283,7 @@ class SyncSnapshotSerialiser {
                 targetReps: te.targetReps,
                 orderIndex: te.orderIndex,
                 updatedAt: Value(dateTimeToEpochMs(te.updatedAt)),
+                deletedAt: Value(nullableDateTimeToEpochMs(te.deletedAt)),
               ),
             );
       }
@@ -267,6 +297,7 @@ class SyncSnapshotSerialiser {
                 bodyFatPercent: Value(bm.bodyFatPercent),
                 notes: Value(bm.notes),
                 updatedAt: Value(dateTimeToEpochMs(bm.updatedAt)),
+                deletedAt: Value(nullableDateTimeToEpochMs(bm.deletedAt)),
               ),
             );
       }
@@ -282,6 +313,7 @@ class SyncSnapshotSerialiser {
                 startedAt: Value(p.startedAt == null
                     ? null
                     : dateTimeToEpochMs(p.startedAt!)),
+                deletedAt: Value(nullableDateTimeToEpochMs(p.deletedAt)),
               ),
             );
       }
@@ -296,6 +328,7 @@ class SyncSnapshotSerialiser {
                 templateId: d.templateId,
                 templateName: d.templateName,
                 updatedAt: Value(dateTimeToEpochMs(d.updatedAt)),
+                deletedAt: Value(nullableDateTimeToEpochMs(d.deletedAt)),
               ),
             );
       }
@@ -310,6 +343,27 @@ class SyncSnapshotSerialiser {
                 value: r.value,
                 frequencyWeeks: Value(r.frequencyWeeks),
                 updatedAt: Value(dateTimeToEpochMs(r.updatedAt)),
+                deletedAt: Value(nullableDateTimeToEpochMs(r.deletedAt)),
+              ),
+            );
+      }
+
+      for (final s in snapshot.stretchingSessions) {
+        await database.into(database.stretchingSessions).insertOnConflictUpdate(
+              db.StretchingSessionsCompanion.insert(
+                id: s.id,
+                workoutId: s.workoutId,
+                type: s.type,
+                customName: Value(s.customName),
+                bodyArea: Value(s.bodyArea?.name),
+                side: Value(s.side?.name),
+                durationSeconds: s.durationSeconds,
+                startedAt: Value(nullableDateTimeToEpochMs(s.startedAt)),
+                endedAt: Value(nullableDateTimeToEpochMs(s.endedAt)),
+                entryMethod: s.entryMethod.name,
+                notes: Value(s.notes),
+                updatedAt: Value(dateTimeToEpochMs(s.updatedAt)),
+                deletedAt: Value(nullableDateTimeToEpochMs(s.deletedAt)),
               ),
             );
       }
@@ -364,6 +418,7 @@ class SyncSnapshotSerialiser {
         isWarmUp: row.isWarmUp,
         groupId: row.groupId,
         updatedAt: dateTimeFromEpochMs(row.updatedAt),
+        deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       );
 
   CardioSession _cardioToDomain(db.CardioSession row) => CardioSession(
@@ -375,6 +430,7 @@ class SyncSnapshotSerialiser {
         incline: row.incline,
         avgHeartRate: row.avgHeartRate,
         updatedAt: dateTimeFromEpochMs(row.updatedAt),
+        deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       );
 
   PersonalRecord _personalRecordToDomain(db.PersonalRecord row) =>
@@ -386,6 +442,7 @@ class SyncSnapshotSerialiser {
         achievedAt: dateTimeFromEpochMs(row.achievedAt),
         workoutSetId: row.workoutSetId,
         updatedAt: dateTimeFromEpochMs(row.updatedAt),
+        deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       );
 
   TemplateExercise _templateExerciseToDomain(db.TemplateExercise row) =>
@@ -398,6 +455,7 @@ class SyncSnapshotSerialiser {
         targetReps: row.targetReps,
         orderIndex: row.orderIndex,
         updatedAt: dateTimeFromEpochMs(row.updatedAt),
+        deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       );
 
   BodyMetric _bodyMetricToDomain(db.BodyMetric row) => BodyMetric(
@@ -407,6 +465,7 @@ class SyncSnapshotSerialiser {
         bodyFatPercent: row.bodyFatPercent,
         notes: row.notes,
         updatedAt: dateTimeFromEpochMs(row.updatedAt),
+        deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       );
 
   ProgrammeDay _programmeDayToDomain(db.ProgrammeDay row) => ProgrammeDay(
@@ -417,6 +476,7 @@ class SyncSnapshotSerialiser {
         templateId: row.templateId,
         templateName: row.templateName,
         updatedAt: dateTimeFromEpochMs(row.updatedAt),
+        deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       );
 
   ProgressionRule _progressionRuleToDomain(db.ProgressionRule row) =>
@@ -428,6 +488,26 @@ class SyncSnapshotSerialiser {
         value: row.value,
         frequencyWeeks: row.frequencyWeeks,
         updatedAt: dateTimeFromEpochMs(row.updatedAt),
+        deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
+      );
+
+  StretchingSession _stretchingToDomain(db.StretchingSession row) =>
+      StretchingSession(
+        id: row.id,
+        workoutId: row.workoutId,
+        type: row.type,
+        customName: row.customName,
+        bodyArea: row.bodyArea == null
+            ? null
+            : StretchingBodyArea.values.byName(row.bodyArea!),
+        side: row.side == null ? null : StretchingSide.values.byName(row.side!),
+        durationSeconds: row.durationSeconds,
+        startedAt: nullableDateTimeFromEpochMs(row.startedAt),
+        endedAt: nullableDateTimeFromEpochMs(row.endedAt),
+        entryMethod: StretchingEntryMethod.values.byName(row.entryMethod),
+        notes: row.notes,
+        updatedAt: dateTimeFromEpochMs(row.updatedAt),
+        deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       );
 
   // ── Domain → JSON maps ─────────────────────────────────────────────
@@ -466,6 +546,7 @@ class SyncSnapshotSerialiser {
         'isWarmUp': s.isWarmUp,
         'groupId': s.groupId,
         'updatedAt': s.updatedAt.toIso8601String(),
+        'deletedAt': s.deletedAt?.toIso8601String(),
       };
 
   Map<String, dynamic> _cardioToMap(CardioSession c) => {
@@ -477,6 +558,7 @@ class SyncSnapshotSerialiser {
         'incline': c.incline,
         'avgHeartRate': c.avgHeartRate,
         'updatedAt': c.updatedAt.toIso8601String(),
+        'deletedAt': c.deletedAt?.toIso8601String(),
       };
 
   Map<String, dynamic> _personalRecordToMap(PersonalRecord pr) => {
@@ -487,6 +569,7 @@ class SyncSnapshotSerialiser {
         'achievedAt': pr.achievedAt.toIso8601String(),
         'workoutSetId': pr.workoutSetId,
         'updatedAt': pr.updatedAt.toIso8601String(),
+        'deletedAt': pr.deletedAt?.toIso8601String(),
       };
 
   Map<String, dynamic> _workoutTemplateToMap(WorkoutTemplate t) => {
@@ -494,6 +577,7 @@ class SyncSnapshotSerialiser {
         'name': t.name,
         'createdAt': t.createdAt.toIso8601String(),
         'updatedAt': t.updatedAt.toIso8601String(),
+        'deletedAt': t.deletedAt?.toIso8601String(),
       };
 
   Map<String, dynamic> _templateExerciseToMap(TemplateExercise te) => {
@@ -505,6 +589,7 @@ class SyncSnapshotSerialiser {
         'targetReps': te.targetReps,
         'orderIndex': te.orderIndex,
         'updatedAt': te.updatedAt.toIso8601String(),
+        'deletedAt': te.deletedAt?.toIso8601String(),
       };
 
   Map<String, dynamic> _bodyMetricToMap(BodyMetric bm) => {
@@ -514,6 +599,7 @@ class SyncSnapshotSerialiser {
         'bodyFatPercent': bm.bodyFatPercent,
         'notes': bm.notes,
         'updatedAt': bm.updatedAt.toIso8601String(),
+        'deletedAt': bm.deletedAt?.toIso8601String(),
       };
 
   Map<String, dynamic> _programmeToMap(Programme p) => {
@@ -523,6 +609,7 @@ class SyncSnapshotSerialiser {
         'createdAt': p.createdAt.toIso8601String(),
         'updatedAt': p.updatedAt.toIso8601String(),
         'startedAt': p.startedAt?.toIso8601String(),
+        'deletedAt': p.deletedAt?.toIso8601String(),
       };
 
   Map<String, dynamic> _programmeDayToMap(ProgrammeDay d) => {
@@ -533,6 +620,7 @@ class SyncSnapshotSerialiser {
         'templateId': d.templateId,
         'templateName': d.templateName,
         'updatedAt': d.updatedAt.toIso8601String(),
+        'deletedAt': d.deletedAt?.toIso8601String(),
       };
 
   Map<String, dynamic> _progressionRuleToMap(ProgressionRule r) => {
@@ -543,6 +631,23 @@ class SyncSnapshotSerialiser {
         'value': r.value,
         'frequencyWeeks': r.frequencyWeeks,
         'updatedAt': r.updatedAt.toIso8601String(),
+        'deletedAt': r.deletedAt?.toIso8601String(),
+      };
+
+  Map<String, dynamic> _stretchingToMap(StretchingSession s) => {
+        'id': s.id,
+        'workoutId': s.workoutId,
+        'type': s.type,
+        'customName': s.customName,
+        'bodyArea': s.bodyArea?.name,
+        'side': s.side?.name,
+        'durationSeconds': s.durationSeconds,
+        'startedAt': s.startedAt?.toIso8601String(),
+        'endedAt': s.endedAt?.toIso8601String(),
+        'entryMethod': s.entryMethod.name,
+        'notes': s.notes,
+        'updatedAt': s.updatedAt.toIso8601String(),
+        'deletedAt': s.deletedAt?.toIso8601String(),
       };
 
   // ── JSON → Domain maps ─────────────────────────────────────────────
@@ -588,6 +693,7 @@ class SyncSnapshotSerialiser {
         isWarmUp: m['isWarmUp'] as bool? ?? false,
         groupId: m['groupId'] as String?,
         updatedAt: DateTime.parse(m['updatedAt'] as String),
+        deletedAt: _parseNullableDate(m['deletedAt']),
       );
 
   CardioSession _cardioFromMap(Map<String, dynamic> m) => CardioSession(
@@ -599,6 +705,7 @@ class SyncSnapshotSerialiser {
         incline: (m['incline'] as num?)?.toDouble(),
         avgHeartRate: m['avgHeartRate'] as int?,
         updatedAt: DateTime.parse(m['updatedAt'] as String),
+        deletedAt: _parseNullableDate(m['deletedAt']),
       );
 
   PersonalRecord _personalRecordFromMap(Map<String, dynamic> m) =>
@@ -610,6 +717,7 @@ class SyncSnapshotSerialiser {
         achievedAt: DateTime.parse(m['achievedAt'] as String),
         workoutSetId: m['workoutSetId'] as String?,
         updatedAt: DateTime.parse(m['updatedAt'] as String),
+        deletedAt: _parseNullableDate(m['deletedAt']),
       );
 
   WorkoutTemplate _workoutTemplateFromMap(Map<String, dynamic> m) =>
@@ -618,6 +726,7 @@ class SyncSnapshotSerialiser {
         name: m['name'] as String,
         createdAt: DateTime.parse(m['createdAt'] as String),
         updatedAt: DateTime.parse(m['updatedAt'] as String),
+        deletedAt: _parseNullableDate(m['deletedAt']),
       );
 
   TemplateExercise _templateExerciseFromMap(Map<String, dynamic> m) =>
@@ -630,6 +739,7 @@ class SyncSnapshotSerialiser {
         targetReps: m['targetReps'] as int,
         orderIndex: m['orderIndex'] as int,
         updatedAt: DateTime.parse(m['updatedAt'] as String),
+        deletedAt: _parseNullableDate(m['deletedAt']),
       );
 
   BodyMetric _bodyMetricFromMap(Map<String, dynamic> m) => BodyMetric(
@@ -639,6 +749,7 @@ class SyncSnapshotSerialiser {
         bodyFatPercent: (m['bodyFatPercent'] as num?)?.toDouble(),
         notes: m['notes'] as String?,
         updatedAt: DateTime.parse(m['updatedAt'] as String),
+        deletedAt: _parseNullableDate(m['deletedAt']),
       );
 
   Programme _programmeFromMap(Map<String, dynamic> m) => Programme(
@@ -647,9 +758,8 @@ class SyncSnapshotSerialiser {
         durationWeeks: m['durationWeeks'] as int,
         createdAt: DateTime.parse(m['createdAt'] as String),
         updatedAt: DateTime.parse(m['updatedAt'] as String),
-        startedAt: m['startedAt'] == null
-            ? null
-            : DateTime.parse(m['startedAt'] as String),
+        startedAt: _parseNullableDate(m['startedAt']),
+        deletedAt: _parseNullableDate(m['deletedAt']),
       );
 
   ProgrammeDay _programmeDayFromMap(Map<String, dynamic> m) => ProgrammeDay(
@@ -660,6 +770,7 @@ class SyncSnapshotSerialiser {
         templateId: m['templateId'] as String,
         templateName: m['templateName'] as String,
         updatedAt: DateTime.parse(m['updatedAt'] as String),
+        deletedAt: _parseNullableDate(m['deletedAt']),
       );
 
   ProgressionRule _progressionRuleFromMap(Map<String, dynamic> m) =>
@@ -671,5 +782,33 @@ class SyncSnapshotSerialiser {
         value: (m['value'] as num).toDouble(),
         frequencyWeeks: m['frequencyWeeks'] as int? ?? 1,
         updatedAt: DateTime.parse(m['updatedAt'] as String),
+        deletedAt: _parseNullableDate(m['deletedAt']),
       );
+
+  StretchingSession _stretchingFromMap(Map<String, dynamic> m) =>
+      StretchingSession(
+        id: m['id'] as String,
+        workoutId: m['workoutId'] as String,
+        type: m['type'] as String,
+        customName: m['customName'] as String?,
+        bodyArea: m['bodyArea'] == null
+            ? null
+            : StretchingBodyArea.values.byName(m['bodyArea'] as String),
+        side: m['side'] == null
+            ? null
+            : StretchingSide.values.byName(m['side'] as String),
+        durationSeconds: m['durationSeconds'] as int,
+        startedAt: _parseNullableDate(m['startedAt']),
+        endedAt: _parseNullableDate(m['endedAt']),
+        entryMethod:
+            StretchingEntryMethod.values.byName(m['entryMethod'] as String),
+        notes: m['notes'] as String?,
+        updatedAt: DateTime.parse(m['updatedAt'] as String),
+        deletedAt: _parseNullableDate(m['deletedAt']),
+      );
+
+  static DateTime? _parseNullableDate(dynamic value) {
+    if (value == null) return null;
+    return DateTime.parse(value as String);
+  }
 }

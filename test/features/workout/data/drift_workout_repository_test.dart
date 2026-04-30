@@ -281,7 +281,7 @@ void main() {
     });
 
     group('deleteSet', () {
-      test('hard-deletes a set', () async {
+      test('soft-deletes: getSetsForWorkout excludes the set', () async {
         final workout = newWorkout();
         await repo.createWorkout(workout);
 
@@ -291,6 +291,41 @@ void main() {
 
         final sets = await repo.getSetsForWorkout(workout.id);
         expect(sets, isEmpty);
+      });
+
+      test('row is preserved in DB with deletedAt non-null', () async {
+        final workout = newWorkout();
+        await repo.createWorkout(workout);
+
+        final set = newSet(workoutId: workout.id);
+        await repo.addSet(set);
+        await repo.deleteSet(set.id);
+
+        // Bypass the repo filter and inspect the table directly. The
+        // tombstone must persist so a subsequent sync can propagate the
+        // delete; a hard-delete would let the next sync resurrect the row.
+        final raw = await database.select(database.workoutSets).get();
+        expect(raw, hasLength(1));
+        expect(raw.single.id, set.id);
+        expect(raw.single.deletedAt, isNotNull);
+      });
+
+      test('tombstone is hidden from getLastSetForExercise', () async {
+        final workout = newWorkout();
+        await repo.createWorkout(workout);
+
+        final live = newSet(workoutId: workout.id);
+        final deleted = newSet(workoutId: workout.id);
+        await repo.addSet(live);
+        await repo.addSet(deleted);
+        await repo.deleteSet(deleted.id);
+
+        final last = await repo.getLastSetForExercise(live.exerciseId);
+        expect(last, isNotNull);
+        expect(last!.id, anyOf(live.id, deleted.id));
+        // Whichever of the two was returned, it must not be the tombstoned
+        // one — getLastSetForExercise filters deletedAt IS NULL.
+        expect(last.deletedAt, isNull);
       });
     });
 

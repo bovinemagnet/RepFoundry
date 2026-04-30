@@ -36,8 +36,12 @@ class AppDatabase extends _$AppDatabase {
   /// Constructor for tests — accepts any [QueryExecutor].
   AppDatabase.forTesting(super.e);
 
+  /// Static accessor for the schema version, usable from non-database code
+  /// (e.g. the sync serialiser) without an `AppDatabase` instance.
+  static const int schemaVersionConst = 10;
+
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => schemaVersionConst;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -175,6 +179,79 @@ class AppDatabase extends _$AppDatabase {
                     'ON stretching_sessions (type, updated_at)',
               ),
             );
+          }
+          if (from < 10) {
+            // Tombstone columns: 9 tables that were missing soft-delete.
+            // Exercise / Workout / StretchingSession already have deleted_at.
+            const tablesToAddDeletedAt = [
+              'workout_sets',
+              'cardio_sessions',
+              'personal_records',
+              'workout_templates',
+              'template_exercises',
+              'body_metrics',
+              'programmes',
+              'programme_days',
+              'progression_rules',
+            ];
+            for (final t in tablesToAddDeletedAt) {
+              await customStatement(
+                'ALTER TABLE $t ADD COLUMN deleted_at INTEGER',
+              );
+            }
+
+            // Backfill: the v6 migration defaulted updated_at to 0, which
+            // poisons last-write-wins (any post-v6 write always beats a
+            // pre-v6 row). Where the table carries a meaningful timestamp
+            // column, lift updated_at to that value.
+            await customStatement(
+              "UPDATE workout_sets SET updated_at = "
+              "MAX(updated_at, COALESCE(timestamp, 0)) "
+              "WHERE updated_at = 0",
+            );
+            await customStatement(
+              "UPDATE personal_records SET updated_at = "
+              "MAX(updated_at, COALESCE(achieved_at, 0)) "
+              "WHERE updated_at = 0",
+            );
+            await customStatement(
+              "UPDATE body_metrics SET updated_at = "
+              "MAX(updated_at, COALESCE(date, 0)) "
+              "WHERE updated_at = 0",
+            );
+            await customStatement(
+              "UPDATE workouts SET updated_at = "
+              "MAX(updated_at, COALESCE(started_at, 0)) "
+              "WHERE updated_at = 0",
+            );
+            await customStatement(
+              "UPDATE workout_templates SET updated_at = "
+              "MAX(updated_at, COALESCE(created_at, 0)) "
+              "WHERE updated_at = 0",
+            );
+            await customStatement(
+              "UPDATE programmes SET updated_at = "
+              "MAX(updated_at, COALESCE(created_at, 0)) "
+              "WHERE updated_at = 0",
+            );
+
+            // Tables without their own meaningful timestamp: stamp the
+            // migration moment so post-migration rows do not always win.
+            const migrationNow =
+                "CAST((strftime('%s','now') * 1000) AS INTEGER)";
+            const tablesWithoutOwnTimestamp = [
+              'exercises',
+              'cardio_sessions',
+              'template_exercises',
+              'programme_days',
+              'progression_rules',
+            ];
+            for (final t in tablesWithoutOwnTimestamp) {
+              await customStatement(
+                'UPDATE $t SET updated_at = $migrationNow '
+                'WHERE updated_at = 0',
+              );
+            }
           }
         },
       );

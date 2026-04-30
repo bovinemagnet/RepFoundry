@@ -5,7 +5,9 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../core/database/app_database.dart';
 import '../data/sync_snapshot_serialiser.dart';
 import '../domain/models/sync_result.dart';
+import '../domain/models/sync_snapshot.dart';
 import '../domain/sync_merge_engine.dart';
+import '../domain/sync_schema_version_exception.dart';
 import '../domain/sync_service.dart';
 
 class SyncOrchestrator {
@@ -56,20 +58,35 @@ class SyncOrchestrator {
       // 3. Download remote snapshot (null on first sync)
       final remoteJson = await _cloudService.downloadSnapshot();
 
-      // 4. Merge local + remote
-      final merged = remoteJson != null
-          ? _mergeEngine.merge(
-              local: localSnapshot,
-              remote: _serialiser.fromJson(remoteJson),
-            )
-          : localSnapshot;
+      // 4. Merge local + remote.
+      //
+      // fromJson can throw SyncSchemaVersionException when the remote
+      // snapshot was created by a newer client; surface that as a typed
+      // failure so the UI can display upgrade copy.
+      final SyncSnapshot merged;
+      try {
+        merged = remoteJson != null
+            ? _mergeEngine.merge(
+                local: localSnapshot,
+                remote: _serialiser.fromJson(remoteJson),
+              )
+            : localSnapshot;
+      } on SyncSchemaVersionException catch (e) {
+        return SyncResult.error(e.message);
+      }
 
-      // 5. Apply merged result to local DB
-      await _serialiser.applyToDatabase(_database, merged);
-
-      // 6. Upload merged snapshot to cloud
+      // 5. Upload merged snapshot to cloud FIRST.
+      //
+      // Upload-first makes cloud the source of truth: if the upload
+      // throws (network blip), the local DB stays untouched and a retry
+      // can compose a fresh merge. The previous order — apply-then-upload
+      // — left local ahead of cloud after a failed upload, which let the
+      // next syncing device overwrite the unrelayed work.
       final mergedJson = _serialiser.toJson(merged);
       await _cloudService.uploadSnapshot(mergedJson);
+
+      // 6. Apply merged result to local DB (only after upload succeeds).
+      await _serialiser.applyToDatabase(_database, merged);
 
       final totalEntities = merged.exercises.length +
           merged.workouts.length +
@@ -81,7 +98,8 @@ class SyncOrchestrator {
           merged.bodyMetrics.length +
           merged.programmes.length +
           merged.programmeDays.length +
-          merged.progressionRules.length;
+          merged.progressionRules.length +
+          merged.stretchingSessions.length;
 
       return SyncResult.success(entitiesMerged: totalEntities);
     } on Exception catch (e) {

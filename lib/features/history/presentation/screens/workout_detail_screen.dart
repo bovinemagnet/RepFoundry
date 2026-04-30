@@ -183,8 +183,8 @@ class _StretchingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
-    final timedSessions = sessions
-        .where((sn) => sn.entryMethod != StretchingEntryMethod.untimed);
+    final timedSessions =
+        sessions.where((sn) => sn.entryMethod != StretchingEntryMethod.untimed);
     final totalSeconds =
         timedSessions.fold<int>(0, (sum, sn) => sum + sn.durationSeconds);
     final totalMinutes = (totalSeconds / 60).round();
@@ -246,10 +246,10 @@ class _StretchingCard extends StatelessWidget {
                         fontFeatures: const [
                           FontFeature.tabularFigures(),
                         ],
-                        color: session.entryMethod ==
-                                StretchingEntryMethod.untimed
-                            ? Theme.of(context).colorScheme.onSurfaceVariant
-                            : null,
+                        color:
+                            session.entryMethod == StretchingEntryMethod.untimed
+                                ? Theme.of(context).colorScheme.onSurfaceVariant
+                                : null,
                       ),
                     ),
                   ],

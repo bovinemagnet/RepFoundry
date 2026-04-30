@@ -29,8 +29,8 @@ class StretchingSection extends ConsumerWidget {
 
     // Untimed entries are excluded from the minute total — by definition
     // they have no recorded duration.
-    final timedSessions = sessions
-        .where((sn) => sn.entryMethod != StretchingEntryMethod.untimed);
+    final timedSessions =
+        sessions.where((sn) => sn.entryMethod != StretchingEntryMethod.untimed);
     final totalSeconds =
         timedSessions.fold<int>(0, (sum, sn) => sum + sn.durationSeconds);
     final totalMinutes = (totalSeconds / 60).round();

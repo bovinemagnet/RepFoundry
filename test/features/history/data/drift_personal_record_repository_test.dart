@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart' as db;
@@ -96,6 +97,75 @@ void main() {
 
         final all = await repo.getAllRecords(limit: 3);
         expect(all, hasLength(3));
+      });
+    });
+
+    group('soft-delete (tombstone-from-sync)', () {
+      // Personal records have no public delete method on the repository
+      // (the model is append-only from the user's point of view), but
+      // tombstones can still arrive via cloud sync. The read paths must
+      // skip them so a deleted-on-another-device record does not show up
+      // as a current PR locally.
+
+      test('tombstoned record is excluded from getRecordsForExercise',
+          () async {
+        final live = newRecord(value: 100);
+        final tombstoned = newRecord(value: 150);
+        await repo.createRecord(live);
+        await repo.createRecord(tombstoned);
+
+        // Apply a tombstone directly, simulating a sync-applied delete.
+        await (database.update(database.personalRecords)
+              ..where((t) => t.id.equals(tombstoned.id)))
+            .write(
+          db.PersonalRecordsCompanion(
+            deletedAt: Value(DateTime.now().millisecondsSinceEpoch),
+          ),
+        );
+
+        final results = await repo.getRecordsForExercise('1');
+        expect(results, hasLength(1));
+        expect(results.single.id, live.id);
+      });
+
+      test('tombstoned record is excluded from getBestRecord', () async {
+        await repo.createRecord(newRecord(value: 100));
+        final highButTombstoned = newRecord(value: 250);
+        await repo.createRecord(highButTombstoned);
+
+        await (database.update(database.personalRecords)
+              ..where((t) => t.id.equals(highButTombstoned.id)))
+            .write(
+          db.PersonalRecordsCompanion(
+            deletedAt: Value(DateTime.now().millisecondsSinceEpoch),
+          ),
+        );
+
+        final best = await repo.getBestRecord(
+          '1',
+          RecordType.estimatedOneRepMax,
+        );
+        expect(best, isNotNull);
+        expect(best!.value, 100.0);
+      });
+
+      test('tombstoned record is excluded from getAllRecords', () async {
+        final live = newRecord(value: 100);
+        final dead = newRecord(value: 200);
+        await repo.createRecord(live);
+        await repo.createRecord(dead);
+
+        await (database.update(database.personalRecords)
+              ..where((t) => t.id.equals(dead.id)))
+            .write(
+          db.PersonalRecordsCompanion(
+            deletedAt: Value(DateTime.now().millisecondsSinceEpoch),
+          ),
+        );
+
+        final all = await repo.getAllRecords();
+        expect(all, hasLength(1));
+        expect(all.single.id, live.id);
       });
     });
 

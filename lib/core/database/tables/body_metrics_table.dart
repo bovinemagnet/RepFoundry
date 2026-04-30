@@ -7,6 +7,7 @@ class BodyMetrics extends Table {
   RealColumn get bodyFatPercent => real().nullable()();
   TextColumn get notes => text().nullable()();
   IntColumn get updatedAt => integer().withDefault(const Constant(0))();
+  IntColumn get deletedAt => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

@@ -11,6 +11,7 @@ class CardioSessions extends Table {
   RealColumn get incline => real().nullable()();
   IntColumn get avgHeartRate => integer().nullable()();
   IntColumn get updatedAt => integer().withDefault(const Constant(0))();
+  IntColumn get deletedAt => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

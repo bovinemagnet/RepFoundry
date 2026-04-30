@@ -29,7 +29,8 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
 
   @override
   Future<CardioSession?> getSession(String id) async {
-    final q = _db.select(_db.cardioSessions)..where((t) => t.id.equals(id));
+    final q = _db.select(_db.cardioSessions)
+      ..where((t) => t.id.equals(id) & t.deletedAt.isNull());
     final row = await q.getSingleOrNull();
     return row == null ? null : _toDomain(row);
   }
@@ -37,7 +38,7 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
   @override
   Future<List<CardioSession>> getSessionsForWorkout(String workoutId) async {
     final q = _db.select(_db.cardioSessions)
-      ..where((t) => t.workoutId.equals(workoutId));
+      ..where((t) => t.workoutId.equals(workoutId) & t.deletedAt.isNull());
     final rows = await q.get();
     return rows.map(_toDomain).toList();
   }
@@ -48,7 +49,7 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
     int limit = 50,
   }) async {
     final q = _db.select(_db.cardioSessions)
-      ..where((t) => t.exerciseId.equals(exerciseId))
+      ..where((t) => t.exerciseId.equals(exerciseId) & t.deletedAt.isNull())
       ..limit(limit);
     final rows = await q.get();
     return rows.map(_toDomain).toList();
@@ -56,7 +57,9 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
 
   @override
   Future<List<CardioSession>> getAllSessions() async {
-    final rows = await _db.select(_db.cardioSessions).get();
+    final q = _db.select(_db.cardioSessions)
+      ..where((t) => t.deletedAt.isNull());
+    final rows = await q.get();
     return rows.map(_toDomain).toList();
   }
 
@@ -68,7 +71,8 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
         _db.workouts.id.equalsExp(_db.cardioSessions.workoutId),
       ),
     ])
-      ..where(_db.cardioSessions.exerciseId.equals(exerciseId))
+      ..where(_db.cardioSessions.exerciseId.equals(exerciseId) &
+          _db.cardioSessions.deletedAt.isNull())
       ..orderBy([OrderingTerm.desc(_db.workouts.startedAt)])
       ..limit(1);
     final rows = await q.get();
@@ -78,13 +82,18 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
 
   @override
   Future<void> deleteSession(String id) async {
-    await (_db.delete(_db.cardioSessions)..where((t) => t.id.equals(id))).go();
+    final now = dateTimeToEpochMs(DateTime.now().toUtc());
+    await (_db.update(_db.cardioSessions)..where((t) => t.id.equals(id)))
+        .write(db.CardioSessionsCompanion(
+      deletedAt: Value(now),
+      updatedAt: Value(now),
+    ));
   }
 
   @override
   Stream<List<CardioSession>> watchSessionsForWorkout(String workoutId) {
     final q = _db.select(_db.cardioSessions)
-      ..where((t) => t.workoutId.equals(workoutId));
+      ..where((t) => t.workoutId.equals(workoutId) & t.deletedAt.isNull());
     return q.watch().map((rows) => rows.map(_toDomain).toList());
   }
 
@@ -98,6 +107,7 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
       incline: row.incline,
       avgHeartRate: row.avgHeartRate,
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
+      deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );
   }
 }

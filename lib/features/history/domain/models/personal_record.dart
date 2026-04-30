@@ -15,6 +15,7 @@ class PersonalRecord {
   final DateTime achievedAt;
   final String? workoutSetId;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   const PersonalRecord({
     required this.id,
@@ -24,7 +25,10 @@ class PersonalRecord {
     required this.achievedAt,
     this.workoutSetId,
     required this.updatedAt,
+    this.deletedAt,
   });
+
+  bool get isDeleted => deletedAt != null;
 
   static PersonalRecord create({
     required String exerciseId,

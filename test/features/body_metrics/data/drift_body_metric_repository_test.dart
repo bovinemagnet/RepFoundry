@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart' as db;
 import 'package:rep_foundry/features/body_metrics/data/drift_body_metric_repository.dart';
 import 'package:rep_foundry/features/body_metrics/domain/models/body_metric.dart';
+import 'package:drift/drift.dart' show Value;
 
 void main() {
   late db.AppDatabase database;
@@ -80,7 +81,7 @@ void main() {
     });
 
     group('delete', () {
-      test('removes the metric', () async {
+      test('removes the metric from public reads', () async {
         final metric = newMetric();
         await repo.create(metric);
 
@@ -88,6 +89,50 @@ void main() {
 
         final results = await repo.getAll();
         expect(results, isEmpty);
+      });
+
+      test('soft-deletes: row remains in DB with deletedAt set', () async {
+        // The soft-delete must keep the tombstone around so a subsequent
+        // sync can propagate the delete. A hard-delete here would silently
+        // resurrect the row on the next sync from another device.
+        final metric = newMetric();
+        await repo.create(metric);
+
+        await repo.delete(metric.id);
+
+        // Query the table directly, bypassing the repo's deletedAt filter.
+        final raw = await database.select(database.bodyMetrics).get();
+        expect(raw, hasLength(1));
+        expect(raw.single.id, metric.id);
+        expect(raw.single.deletedAt, isNotNull);
+      });
+
+      test('subsequent reads filter the tombstoned row', () async {
+        final metric = newMetric();
+        await repo.create(metric);
+        await repo.delete(metric.id);
+
+        expect(await repo.getAll(), isEmpty);
+        expect(await repo.getLatest(), isNull);
+      });
+
+      test('manually-tombstoned row (sync-applied) is filtered from reads',
+          () async {
+        // Simulate a tombstone arriving via cloud sync rather than via
+        // repo.delete(): apply a deletedAt directly. Public reads must
+        // still hide it.
+        final metric = newMetric();
+        await repo.create(metric);
+
+        await (database.update(database.bodyMetrics)
+              ..where((t) => t.id.equals(metric.id)))
+            .write(
+          db.BodyMetricsCompanion(
+            deletedAt: Value(DateTime.now().millisecondsSinceEpoch),
+          ),
+        );
+
+        expect(await repo.getAll(), isEmpty);
       });
     });
 
