@@ -11,6 +11,7 @@ import 'package:rep_foundry/features/health_sync/presentation/providers/health_s
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
 import 'package:rep_foundry/features/sync/presentation/providers/sync_settings_provider.dart';
 import 'package:rep_foundry/features/templates/data/workout_template_repository_impl.dart';
+import 'package:rep_foundry/features/templates/domain/models/workout_template.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import 'package:rep_foundry/features/workout/presentation/controllers/active_workout_controller.dart';
 import 'package:rep_foundry/core/widgets/loading_widget.dart';
@@ -250,6 +251,56 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(state.scrollController.offset, greaterThan(0.0));
+      },
+    );
+
+    testWidgets(
+      'startFromTemplate_doesNotAutoScroll_evenWithManyExercises',
+      (tester) async {
+        await tester.pumpWidget(buildScreen());
+        await tester.pumpAndSettle();
+
+        final element = tester.element(find.byType(ActiveWorkoutScreen));
+        final container = ProviderScope.containerOf(element);
+        final notifier =
+            container.read(activeWorkoutControllerProvider.notifier);
+
+        // Pre-create exercises in the in-memory exercise repository so the
+        // template can resolve them, plus matching TemplateExercise rows.
+        final exerciseRepo = container.read(exerciseRepositoryProvider);
+        final templateExercises = <TemplateExercise>[];
+        for (var i = 0; i < 8; i++) {
+          final ex = makeExercise('tmpl-ex-$i', 'Template Exercise $i');
+          await exerciseRepo.createExercise(ex);
+          templateExercises.add(
+            TemplateExercise(
+              id: 'te-$i',
+              templateId: 'tmpl-1',
+              exerciseId: ex.id,
+              exerciseName: ex.name,
+              targetSets: 3,
+              targetReps: 10,
+              orderIndex: i,
+              updatedAt: DateTime(2025, 1, 1),
+            ),
+          );
+        }
+
+        final template = WorkoutTemplate(
+          id: 'tmpl-1',
+          name: 'Big Day',
+          exercises: templateExercises,
+          createdAt: DateTime(2025, 1, 1),
+          updatedAt: DateTime(2025, 1, 1),
+        );
+
+        await notifier.startFromTemplate(template);
+        await tester.pumpAndSettle();
+
+        final state = tester.state<ActiveWorkoutScreenState>(
+          find.byType(ActiveWorkoutScreen),
+        );
+        expect(state.scrollController.offset, 0.0);
       },
     );
   });
