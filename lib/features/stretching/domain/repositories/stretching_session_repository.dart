@@ -5,6 +5,10 @@ abstract class StretchingSessionRepository {
   Future<StretchingSession?> getSession(String id);
   Future<List<StretchingSession>> getSessionsForWorkout(String workoutId);
   Future<List<StretchingSession>> getRecentSessions({int limit = 20});
+
+  /// All non-deleted sessions, used by export-data and similar bulk paths.
+  Future<List<StretchingSession>> getAllSessions();
+
   Future<List<StretchingSession>> getSessionsByType(
     String type, {
     int limit = 50,

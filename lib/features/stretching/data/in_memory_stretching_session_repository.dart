@@ -39,6 +39,13 @@ class InMemoryStretchingSessionRepository
   }
 
   @override
+  Future<List<StretchingSession>> getAllSessions() async {
+    final live = _live();
+    live.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return live;
+  }
+
+  @override
   Future<List<StretchingSession>> getSessionsByType(
     String type, {
     int limit = 50,
