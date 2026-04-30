@@ -3120,6 +3120,18 @@ abstract class S {
   /// **'Manual'**
   String get recordManual;
 
+  /// No description provided for @recordUntimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Untimed'**
+  String get recordUntimed;
+
+  /// No description provided for @untimedEntryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Just record that you did this stretch — no duration tracked.'**
+  String get untimedEntryHint;
+
   /// No description provided for @quickAddDurations.
   ///
   /// In en, this message translates to:

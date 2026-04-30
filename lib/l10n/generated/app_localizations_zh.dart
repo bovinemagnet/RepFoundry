@@ -1682,6 +1682,12 @@ class SZh extends S {
   String get recordManual => '手动';
 
   @override
+  String get recordUntimed => '不计时';
+
+  @override
+  String get untimedEntryHint => '仅记录你做过此拉伸 — 不记录时间。';
+
+  @override
   String get quickAddDurations => '快速添加';
 
   @override
@@ -3397,6 +3403,12 @@ class SZhHans extends SZh {
 
   @override
   String get recordManual => '手动';
+
+  @override
+  String get recordUntimed => '不计时';
+
+  @override
+  String get untimedEntryHint => '仅记录你做过此拉伸 — 不记录时间。';
 
   @override
   String get quickAddDurations => '快速添加';

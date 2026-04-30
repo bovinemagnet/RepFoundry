@@ -78,15 +78,23 @@ class SaveStretchingSessionUseCase {
     if (input.type.isEmpty) {
       throw const SaveStretchingSessionException('Stretch type required');
     }
-    if (input.durationSeconds <= 0) {
-      throw const SaveStretchingSessionException(
-        'Duration must be greater than zero',
-      );
-    }
-    if (input.durationSeconds > _maxDurationSeconds) {
-      throw const SaveStretchingSessionException(
-        'Duration must be 12 hours or less',
-      );
+    if (input.entryMethod == StretchingEntryMethod.untimed) {
+      if (input.durationSeconds != 0) {
+        throw const SaveStretchingSessionException(
+          'Untimed entries must have zero duration',
+        );
+      }
+    } else {
+      if (input.durationSeconds <= 0) {
+        throw const SaveStretchingSessionException(
+          'Duration must be greater than zero',
+        );
+      }
+      if (input.durationSeconds > _maxDurationSeconds) {
+        throw const SaveStretchingSessionException(
+          'Duration must be 12 hours or less',
+        );
+      }
     }
     if (input.type == StretchingSession.customStretchType) {
       if (cleanedCustomName == null || cleanedCustomName.isEmpty) {

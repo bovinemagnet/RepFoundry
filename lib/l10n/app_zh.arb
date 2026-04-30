@@ -746,6 +746,8 @@
   "recordTimeLabel": "时间记录方式",
   "recordTimer": "计时器",
   "recordManual": "手动",
+  "recordUntimed": "不计时",
+  "untimedEntryHint": "仅记录你做过此拉伸 — 不记录时间。",
   "quickAddDurations": "快速添加",
   "minutesAbbrev": "分",
   "secondsAbbrev": "秒",

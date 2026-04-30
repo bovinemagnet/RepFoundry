@@ -766,6 +766,8 @@
   "recordTimeLabel": "Record time",
   "recordTimer": "Timer",
   "recordManual": "Manual",
+  "recordUntimed": "Untimed",
+  "untimedEntryHint": "Just record that you did this stretch — no duration tracked.",
   "quickAddDurations": "Quick add",
   "minutesAbbrev": "min",
   "secondsAbbrev": "sec",

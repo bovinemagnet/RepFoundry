@@ -26,7 +26,18 @@ class AddStretchingSheet extends ConsumerStatefulWidget {
   ConsumerState<AddStretchingSheet> createState() => _AddStretchingSheetState();
 }
 
-enum _Mode { timer, manual }
+enum _Mode { timer, manual, untimed }
+
+StretchingEntryMethod _entryMethodFor(_Mode mode) {
+  switch (mode) {
+    case _Mode.timer:
+      return StretchingEntryMethod.timer;
+    case _Mode.manual:
+      return StretchingEntryMethod.manual;
+    case _Mode.untimed:
+      return StretchingEntryMethod.untimed;
+  }
+}
 
 class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
   _Mode _mode = _Mode.manual;
@@ -80,7 +91,10 @@ class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
     final controller = ref.read(stretchingTimerProvider.notifier);
     if (_mode == _Mode.manual) _applyManualDuration();
     controller.setNotes(_notesController.text.trim());
-    final ok = await controller.save(workoutId: widget.workoutId);
+    final ok = await controller.save(
+      workoutId: widget.workoutId,
+      entryMethod: _entryMethodFor(_mode),
+    );
     if (!mounted) return;
     if (ok) Navigator.of(context).pop(true);
   }
@@ -173,6 +187,11 @@ class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
                     label: Text(s.recordTimer),
                     icon: const Icon(Icons.timer_outlined),
                   ),
+                  ButtonSegment(
+                    value: _Mode.untimed,
+                    label: Text(s.recordUntimed),
+                    icon: const Icon(Icons.remove),
+                  ),
                 ],
                 selected: {_mode},
                 onSelectionChanged: (sel) => setState(() => _mode = sel.first),
@@ -185,7 +204,7 @@ class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
                   onChanged: _applyManualDuration,
                   onQuickAdd: _applyQuickAdd,
                 )
-              else
+              else if (_mode == _Mode.timer)
                 _TimerEntry(
                   elapsedSeconds: state.elapsedSeconds,
                   isRunning: state.isRunning,
@@ -195,7 +214,9 @@ class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
                       ref.read(stretchingTimerProvider.notifier).pause(),
                   onReset: () =>
                       ref.read(stretchingTimerProvider.notifier).reset(),
-                ),
+                )
+              else
+                _UntimedEntry(),
               const SizedBox(height: 20),
               TextField(
                 controller: _notesController,
@@ -236,6 +257,34 @@ class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _UntimedEntry extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context)!;
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.remove, size: 32, color: cs.onSurfaceVariant),
+          const SizedBox(height: 8),
+          Text(
+            s.untimedEntryHint,
+            style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

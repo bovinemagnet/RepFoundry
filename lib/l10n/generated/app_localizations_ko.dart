@@ -1687,6 +1687,12 @@ class SKo extends S {
   String get recordManual => '수동';
 
   @override
+  String get recordUntimed => '시간 없음';
+
+  @override
+  String get untimedEntryHint => '이 스트레칭을 했다는 사실만 기록합니다 — 시간은 기록하지 않습니다.';
+
+  @override
   String get quickAddDurations => '빠른 추가';
 
   @override

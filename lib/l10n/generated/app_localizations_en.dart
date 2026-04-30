@@ -1724,6 +1724,13 @@ class SEn extends S {
   String get recordManual => 'Manual';
 
   @override
+  String get recordUntimed => 'Untimed';
+
+  @override
+  String get untimedEntryHint =>
+      'Just record that you did this stretch — no duration tracked.';
+
+  @override
   String get quickAddDurations => 'Quick add';
 
   @override

@@ -26,9 +26,11 @@ class StretchingEntryTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(
-            session.entryMethod == StretchingEntryMethod.timer
-                ? Icons.timer_outlined
-                : Icons.edit_note,
+            switch (session.entryMethod) {
+              StretchingEntryMethod.timer => Icons.timer_outlined,
+              StretchingEntryMethod.manual => Icons.edit_note,
+              StretchingEntryMethod.untimed => Icons.remove,
+            },
             size: 18,
             color: cs.onSurfaceVariant,
           ),
@@ -60,10 +62,15 @@ class StretchingEntryTile extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            formatStretchDuration(session.durationSeconds),
-            style: tt.titleSmall?.copyWith(fontFeatures: const [
-              FontFeature.tabularFigures(),
-            ]),
+            session.entryMethod == StretchingEntryMethod.untimed
+                ? '—'
+                : formatStretchDuration(session.durationSeconds),
+            style: tt.titleSmall?.copyWith(
+              fontFeatures: const [FontFeature.tabularFigures()],
+              color: session.entryMethod == StretchingEntryMethod.untimed
+                  ? cs.onSurfaceVariant
+                  : null,
+            ),
           ),
           if (onDelete != null)
             IconButton(

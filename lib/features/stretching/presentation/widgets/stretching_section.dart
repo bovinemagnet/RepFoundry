@@ -27,9 +27,14 @@ class StretchingSection extends ConsumerWidget {
       orElse: () => const <StretchingSession>[],
     );
 
+    // Untimed entries are excluded from the minute total — by definition
+    // they have no recorded duration.
+    final timedSessions = sessions
+        .where((sn) => sn.entryMethod != StretchingEntryMethod.untimed);
     final totalSeconds =
-        sessions.fold<int>(0, (sum, sn) => sum + sn.durationSeconds);
+        timedSessions.fold<int>(0, (sum, sn) => sum + sn.durationSeconds);
     final totalMinutes = (totalSeconds / 60).round();
+    final hasAnyTimed = timedSessions.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -56,8 +61,10 @@ class StretchingSection extends ConsumerWidget {
                 ),
                 if (sessions.isNotEmpty)
                   Text(
-                    '${s.stretchingEntriesCount(sessions.length)} · '
-                    '${s.stretchingTotalMinutes(totalMinutes.toString())}',
+                    hasAnyTimed
+                        ? '${s.stretchingEntriesCount(sessions.length)} · '
+                            '${s.stretchingTotalMinutes(totalMinutes.toString())}'
+                        : s.stretchingEntriesCount(sessions.length),
                     style: tt.bodySmall?.copyWith(
                       color: cs.onSurfaceVariant,
                     ),

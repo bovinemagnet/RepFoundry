@@ -748,6 +748,8 @@
   "recordTimeLabel": "시간 기록 방법",
   "recordTimer": "타이머",
   "recordManual": "수동",
+  "recordUntimed": "시간 없음",
+  "untimedEntryHint": "이 스트레칭을 했다는 사실만 기록합니다 — 시간은 기록하지 않습니다.",
   "quickAddDurations": "빠른 추가",
   "minutesAbbrev": "분",
   "secondsAbbrev": "초",

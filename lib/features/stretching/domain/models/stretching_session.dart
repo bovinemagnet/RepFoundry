@@ -7,6 +7,10 @@ enum StretchingEntryMethod {
 
   /// User typed in a duration directly.
   manual,
+
+  /// User logged the stretch without recording a duration. Stored with
+  /// `durationSeconds = 0`; excluded from minute totals.
+  untimed,
 }
 
 /// Optional side-of-body label for unilateral stretches.

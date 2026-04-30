@@ -1687,6 +1687,12 @@ class SJa extends S {
   String get recordManual => '手動';
 
   @override
+  String get recordUntimed => '時間なし';
+
+  @override
+  String get untimedEntryHint => 'このストレッチを行ったことだけを記録します — 時間は記録しません。';
+
+  @override
   String get quickAddDurations => 'クイック追加';
 
   @override

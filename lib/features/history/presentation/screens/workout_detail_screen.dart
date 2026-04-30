@@ -183,9 +183,12 @@ class _StretchingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
+    final timedSessions = sessions
+        .where((sn) => sn.entryMethod != StretchingEntryMethod.untimed);
     final totalSeconds =
-        sessions.fold<int>(0, (sum, sn) => sum + sn.durationSeconds);
+        timedSessions.fold<int>(0, (sum, sn) => sum + sn.durationSeconds);
     final totalMinutes = (totalSeconds / 60).round();
+    final hasAnyTimed = timedSessions.isNotEmpty;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -210,12 +213,13 @@ class _StretchingCard extends StatelessWidget {
                         ),
                   ),
                 ),
-                Text(
-                  s.stretchingTotalMinutes(totalMinutes.toString()),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
+                if (hasAnyTimed)
+                  Text(
+                    s.stretchingTotalMinutes(totalMinutes.toString()),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
               ],
             ),
             const SizedBox(height: 8),
@@ -235,11 +239,17 @@ class _StretchingCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      formatStretchDuration(session.durationSeconds),
+                      session.entryMethod == StretchingEntryMethod.untimed
+                          ? '—'
+                          : formatStretchDuration(session.durationSeconds),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontFeatures: const [
                           FontFeature.tabularFigures(),
                         ],
+                        color: session.entryMethod ==
+                                StretchingEntryMethod.untimed
+                            ? Theme.of(context).colorScheme.onSurfaceVariant
+                            : null,
                       ),
                     ),
                   ],

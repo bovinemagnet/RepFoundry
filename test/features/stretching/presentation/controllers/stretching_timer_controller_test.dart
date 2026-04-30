@@ -80,21 +80,30 @@ void main() {
     test('save with empty workoutId returns false and sets error', () async {
       controller.selectType(type: 'pigeon');
       controller.setManualDuration(60);
-      final ok = await controller.save(workoutId: '');
+      final ok = await controller.save(
+        workoutId: '',
+        entryMethod: StretchingEntryMethod.manual,
+      );
       expect(ok, isFalse);
       expect(controller.state.error, isNotNull);
     });
 
     test('save without selected type returns false', () async {
       controller.setManualDuration(60);
-      final ok = await controller.save(workoutId: 'w1');
+      final ok = await controller.save(
+        workoutId: 'w1',
+        entryMethod: StretchingEntryMethod.manual,
+      );
       expect(ok, isFalse);
       expect(controller.state.error, isNotNull);
     });
 
     test('save without duration returns false', () async {
       controller.selectType(type: 'pigeon');
-      final ok = await controller.save(workoutId: 'w1');
+      final ok = await controller.save(
+        workoutId: 'w1',
+        entryMethod: StretchingEntryMethod.manual,
+      );
       expect(ok, isFalse);
     });
 
@@ -106,7 +115,10 @@ void main() {
       controller.setManualDuration(120);
       controller.setNotes('Post-leg-day');
 
-      final ok = await controller.save(workoutId: 'w1');
+      final ok = await controller.save(
+        workoutId: 'w1',
+        entryMethod: StretchingEntryMethod.manual,
+      );
       expect(ok, isTrue);
       expect(controller.state.savedSuccessfully, isTrue);
 
@@ -118,6 +130,25 @@ void main() {
 
       // After save, controller is reset for a fresh entry.
       expect(controller.state.selectedType, isNull);
+    });
+
+    test('untimed save persists with zero duration regardless of inputs',
+        () async {
+      controller.selectType(type: 'frontSplits');
+      // User has previously been fiddling with manual / timer values; switching
+      // to untimed at save time must override them.
+      controller.setManualDuration(120);
+
+      final ok = await controller.save(
+        workoutId: 'w1',
+        entryMethod: StretchingEntryMethod.untimed,
+      );
+      expect(ok, isTrue);
+
+      final stored = await repo.getSessionsForWorkout('w1');
+      expect(stored, hasLength(1));
+      expect(stored.first.entryMethod, StretchingEntryMethod.untimed);
+      expect(stored.first.durationSeconds, 0);
     });
 
     test('save persists a timer entry with timer entryMethod', () async {
@@ -135,7 +166,10 @@ void main() {
       controller.pause();
       expect(controller.state.elapsedSeconds, greaterThanOrEqualTo(1));
 
-      final ok = await controller.save(workoutId: 'w1');
+      final ok = await controller.save(
+        workoutId: 'w1',
+        entryMethod: StretchingEntryMethod.timer,
+      );
       expect(ok, isTrue);
 
       final stored = await repo.getSessionsForWorkout('w1');

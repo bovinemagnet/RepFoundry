@@ -99,6 +99,49 @@ void main() {
     });
   });
 
+  group('SaveStretchingSessionUseCase untimed', () {
+    test('accepts zero duration when entryMethod is untimed', () async {
+      final session = await useCase.execute(
+        const SaveStretchingSessionInput(
+          workoutId: 'w1',
+          type: 'pigeon',
+          durationSeconds: 0,
+          entryMethod: StretchingEntryMethod.untimed,
+        ),
+      );
+      expect(session.entryMethod, StretchingEntryMethod.untimed);
+      expect(session.durationSeconds, 0);
+    });
+
+    test('rejects non-zero duration on untimed entries', () {
+      expect(
+        () => useCase.execute(
+          const SaveStretchingSessionInput(
+            workoutId: 'w1',
+            type: 'pigeon',
+            durationSeconds: 60,
+            entryMethod: StretchingEntryMethod.untimed,
+          ),
+        ),
+        throwsA(isA<SaveStretchingSessionException>()),
+      );
+    });
+
+    test('still rejects zero duration on manual entries', () {
+      expect(
+        () => useCase.execute(
+          const SaveStretchingSessionInput(
+            workoutId: 'w1',
+            type: 'pigeon',
+            durationSeconds: 0,
+            entryMethod: StretchingEntryMethod.manual,
+          ),
+        ),
+        throwsA(isA<SaveStretchingSessionException>()),
+      );
+    });
+  });
+
   group('SaveStretchingSessionUseCase persists', () {
     test('saves a manual session', () async {
       final session = await useCase.execute(

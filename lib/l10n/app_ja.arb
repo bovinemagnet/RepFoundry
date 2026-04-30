@@ -748,6 +748,8 @@
   "recordTimeLabel": "時間の記録方法",
   "recordTimer": "タイマー",
   "recordManual": "手動",
+  "recordUntimed": "時間なし",
+  "untimedEntryHint": "このストレッチを行ったことだけを記録します — 時間は記録しません。",
   "quickAddDurations": "クイック追加",
   "minutesAbbrev": "分",
   "secondsAbbrev": "秒",
