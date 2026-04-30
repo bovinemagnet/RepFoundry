@@ -160,8 +160,8 @@ void main() {
         }
         await tester.pumpAndSettle();
 
-        final state = tester.state<ActiveWorkoutScreenState>(
-            find.byType(ActiveWorkoutScreen));
+        final state = tester
+            .state<ActiveWorkoutScreenState>(find.byType(ActiveWorkoutScreen));
         expect(state.scrollController.offset, 0.0);
 
         state.scrollToExercise('ex-9', alignment: 0.0);

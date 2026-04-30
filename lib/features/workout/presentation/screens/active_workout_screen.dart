@@ -374,9 +374,11 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     return ListView(
       controller: _scrollController,
       padding: const EdgeInsets.only(bottom: 88),
-      // Large cacheExtent ensures all exercise items are built even when
-      // below the fold, so GlobalKey.currentContext is non-null for every
-      // exercise and Scrollable.ensureVisible can locate them.
+      // Force all exercise sections to be built even when below the fold,
+      // so GlobalKey.currentContext is non-null for every exercise and
+      // Scrollable.ensureVisible can locate them. 9999 logical px covers
+      // ~30 sections at ~330 px each — well above the practical workout
+      // length. If users start hitting longer sessions, raise this bound.
       cacheExtent: 9999,
       children: [
         const RestTimerWidget(),
