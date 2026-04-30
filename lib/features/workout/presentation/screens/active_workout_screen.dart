@@ -80,6 +80,32 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     });
   }
 
+  @visibleForTesting
+  void handleLogSet({
+    required String exerciseId,
+    required double weight,
+    required int reps,
+    double? rpe,
+    bool isWarmUp = false,
+  }) {
+    ref
+        .read(activeWorkoutControllerProvider.notifier)
+        .logSet(
+          exerciseId: exerciseId,
+          weight: weight,
+          reps: reps,
+          rpe: rpe,
+          isWarmUp: isWarmUp,
+        )
+        .then((_) {
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _scrollToExercise(exerciseId, alignment: 1.0);
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
@@ -431,7 +457,7 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                   double? rpe,
                   bool isWarmUp = false,
                 }) {
-                  controller.logSet(
+                  handleLogSet(
                     exerciseId: exercise.id,
                     weight: weight,
                     reps: reps,

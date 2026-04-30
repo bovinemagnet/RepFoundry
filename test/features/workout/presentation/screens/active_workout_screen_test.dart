@@ -174,6 +174,55 @@ void main() {
     );
 
     testWidgets(
+      'handleLogSet_scrollsExerciseInputCardIntoView_afterLog',
+      (tester) async {
+        await tester.pumpWidget(buildScreen());
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Start Workout'));
+        await tester.pumpAndSettle();
+
+        final element = tester.element(find.byType(ActiveWorkoutScreen));
+        final container = ProviderScope.containerOf(element);
+        final notifier =
+            container.read(activeWorkoutControllerProvider.notifier);
+
+        // First exercise will be off-screen once we add many more.
+        final target = makeExercise('target-ex', 'Target Exercise');
+        await notifier.addExercise(target);
+        for (var i = 0; i < 8; i++) {
+          await notifier.addExercise(makeExercise('ex-$i', 'Exercise $i'));
+        }
+        await tester.pumpAndSettle();
+
+        final state = tester.state<ActiveWorkoutScreenState>(
+          find.byType(ActiveWorkoutScreen),
+        );
+
+        // Manually scroll past the target so the next log will need to come back up.
+        state.scrollController.jumpTo(
+          state.scrollController.position.maxScrollExtent,
+        );
+        await tester.pumpAndSettle();
+
+        final offsetBefore = state.scrollController.offset;
+        expect(offsetBefore, greaterThan(0.0));
+
+        state.handleLogSet(
+          exerciseId: 'target-ex',
+          weight: 50.0,
+          reps: 10,
+          rpe: null,
+          isWarmUp: false,
+        );
+        await tester.pumpAndSettle();
+
+        // Scrolling target into view from below means offset should decrease.
+        expect(state.scrollController.offset, lessThan(offsetBefore));
+      },
+    );
+
+    testWidgets(
       'scrollToExercise_movesScrollOffset_whenExerciseIsBelowFold',
       (tester) async {
         await tester.pumpWidget(buildScreen());
