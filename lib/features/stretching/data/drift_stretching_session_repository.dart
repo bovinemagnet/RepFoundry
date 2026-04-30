@@ -46,6 +46,15 @@ class DriftStretchingSessionRepository implements StretchingSessionRepository {
   }
 
   @override
+  Future<List<StretchingSession>> getAllSessions() async {
+    final q = _db.select(_db.stretchingSessions)
+      ..where((t) => t.deletedAt.isNull())
+      ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]);
+    final rows = await q.get();
+    return rows.map(_toDomain).toList();
+  }
+
+  @override
   Future<List<StretchingSession>> getSessionsByType(
     String type, {
     int limit = 50,

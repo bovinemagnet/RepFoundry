@@ -6,6 +6,8 @@ import '../../exercises/domain/models/exercise.dart';
 import '../../exercises/domain/repositories/exercise_repository.dart';
 import '../../history/domain/models/personal_record.dart';
 import '../../history/domain/repositories/personal_record_repository.dart';
+import '../../stretching/domain/models/stretching_session.dart';
+import '../../stretching/domain/repositories/stretching_session_repository.dart';
 import '../../workout/domain/models/workout.dart';
 import '../../workout/domain/models/workout_set.dart';
 import '../../workout/domain/repositories/workout_repository.dart';
@@ -16,6 +18,8 @@ class ImportResult {
   final int setsImported;
   final int cardioSessionsImported;
   final int personalRecordsImported;
+  final int stretchingSessionsImported;
+  final int stretchingSessionsSkipped;
 
   const ImportResult({
     this.exercisesImported = 0,
@@ -23,6 +27,8 @@ class ImportResult {
     this.setsImported = 0,
     this.cardioSessionsImported = 0,
     this.personalRecordsImported = 0,
+    this.stretchingSessionsImported = 0,
+    this.stretchingSessionsSkipped = 0,
   });
 }
 
@@ -31,12 +37,14 @@ class ImportDataUseCase {
   final ExerciseRepository exerciseRepository;
   final CardioSessionRepository cardioSessionRepository;
   final PersonalRecordRepository personalRecordRepository;
+  final StretchingSessionRepository stretchingSessionRepository;
 
   const ImportDataUseCase({
     required this.workoutRepository,
     required this.exerciseRepository,
     required this.cardioSessionRepository,
     required this.personalRecordRepository,
+    required this.stretchingSessionRepository,
   });
 
   Future<ImportResult> importFromJson(String jsonString) async {
@@ -47,6 +55,14 @@ class ImportDataUseCase {
     int setsImported = 0;
     int cardioSessionsImported = 0;
     int prsImported = 0;
+    int stretchingImported = 0;
+    int stretchingSkipped = 0;
+
+    // Track which workout ids landed locally; stretching sessions that
+    // reference a missing parent are skipped rather than failing the whole
+    // import. Pre-load by querying each candidate; the per-row lookup is
+    // cheap on import which is a one-shot operation.
+    final landedWorkoutIds = <String>{};
 
     // Import custom exercises.
     final exercisesList = data['exercises'] as List<dynamic>? ?? [];
@@ -91,8 +107,12 @@ class ImportDataUseCase {
       try {
         await workoutRepository.createWorkout(workout);
         workoutsImported++;
+        landedWorkoutIds.add(workout.id);
       } catch (_) {
-        // Skip duplicates.
+        // Duplicate parent: still treat its id as valid so child rows can
+        // attach to the existing workout (matches user expectation that a
+        // re-import doesn't orphan child entities).
+        landedWorkoutIds.add(workout.id);
         continue;
       }
 
@@ -167,12 +187,71 @@ class ImportDataUseCase {
       }
     }
 
+    // Import stretching sessions.
+    //
+    // Older exports won't have this key — `?? []` handles that. Sessions
+    // whose parent workout did not land locally are skipped (counted in
+    // stretchingSessionsSkipped) rather than failing the whole import.
+    final stretchingList = data['stretchingSessions'] as List<dynamic>? ?? [];
+    for (final entry in stretchingList) {
+      final map = entry as Map<String, dynamic>;
+      final workoutId = map['workoutId'] as String;
+
+      // If the workout did not arrive in this import, also accept the
+      // case where it already existed locally before the import started.
+      if (!landedWorkoutIds.contains(workoutId)) {
+        final existing = await workoutRepository.getWorkout(workoutId);
+        if (existing == null) {
+          stretchingSkipped++;
+          continue;
+        }
+        landedWorkoutIds.add(workoutId);
+      }
+
+      final session = StretchingSession(
+        id: map['id'] as String,
+        workoutId: workoutId,
+        type: map['type'] as String,
+        customName: map['customName'] as String?,
+        bodyArea: map['bodyArea'] != null
+            ? _parseEnum(
+                StretchingBodyArea.values,
+                map['bodyArea'] as String,
+              )
+            : null,
+        side: map['side'] != null
+            ? _parseEnum(StretchingSide.values, map['side'] as String)
+            : null,
+        durationSeconds: map['durationSeconds'] as int,
+        startedAt: map['startedAt'] != null
+            ? DateTime.parse(map['startedAt'] as String)
+            : null,
+        endedAt: map['endedAt'] != null
+            ? DateTime.parse(map['endedAt'] as String)
+            : null,
+        entryMethod: _parseEnum(
+          StretchingEntryMethod.values,
+          map['entryMethod'] as String,
+        ),
+        notes: map['notes'] as String?,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      try {
+        await stretchingSessionRepository.createSession(session);
+        stretchingImported++;
+      } catch (_) {
+        // Skip duplicates.
+      }
+    }
+
     return ImportResult(
       exercisesImported: exercisesImported,
       workoutsImported: workoutsImported,
       setsImported: setsImported,
       cardioSessionsImported: cardioSessionsImported,
       personalRecordsImported: prsImported,
+      stretchingSessionsImported: stretchingImported,
+      stretchingSessionsSkipped: stretchingSkipped,
     );
   }
 

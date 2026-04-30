@@ -153,6 +153,7 @@ final exportDataUseCaseProvider = Provider<ExportDataUseCase>((ref) {
     exerciseRepository: ref.watch(exerciseRepositoryProvider),
     cardioSessionRepository: ref.watch(cardioSessionRepositoryProvider),
     personalRecordRepository: ref.watch(personalRecordRepositoryProvider),
+    stretchingSessionRepository: ref.watch(stretchingSessionRepositoryProvider),
   );
 });
 
@@ -162,6 +163,7 @@ final importDataUseCaseProvider = Provider<ImportDataUseCase>((ref) {
     exerciseRepository: ref.watch(exerciseRepositoryProvider),
     cardioSessionRepository: ref.watch(cardioSessionRepositoryProvider),
     personalRecordRepository: ref.watch(personalRecordRepositoryProvider),
+    stretchingSessionRepository: ref.watch(stretchingSessionRepositoryProvider),
   );
 });
 

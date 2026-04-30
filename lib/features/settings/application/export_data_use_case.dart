@@ -8,6 +8,8 @@ import '../../exercises/domain/models/exercise.dart';
 import '../../exercises/domain/repositories/exercise_repository.dart';
 import '../../history/domain/models/personal_record.dart';
 import '../../history/domain/repositories/personal_record_repository.dart';
+import '../../stretching/domain/models/stretching_session.dart';
+import '../../stretching/domain/repositories/stretching_session_repository.dart';
 import '../../workout/domain/models/workout.dart';
 import '../../workout/domain/models/workout_set.dart';
 import '../../workout/domain/repositories/workout_repository.dart';
@@ -17,12 +19,14 @@ class ExportDataUseCase {
   final ExerciseRepository exerciseRepository;
   final CardioSessionRepository cardioSessionRepository;
   final PersonalRecordRepository personalRecordRepository;
+  final StretchingSessionRepository stretchingSessionRepository;
 
   const ExportDataUseCase({
     required this.workoutRepository,
     required this.exerciseRepository,
     required this.cardioSessionRepository,
     required this.personalRecordRepository,
+    required this.stretchingSessionRepository,
   });
 
   Future<String> exportAsJson() async {
@@ -32,6 +36,8 @@ class ExportDataUseCase {
     final personalRecords = await personalRecordRepository.getAllRecords(
       limit: 10000,
     );
+    final stretchingSessions =
+        await stretchingSessionRepository.getAllSessions();
 
     final workoutsWithSets = <Map<String, dynamic>>[];
     for (final workout in workouts) {
@@ -48,6 +54,7 @@ class ExportDataUseCase {
       'workouts': workoutsWithSets,
       'cardioSessions': cardioSessions.map(_cardioToMap).toList(),
       'personalRecords': personalRecords.map(_prToMap).toList(),
+      'stretchingSessions': stretchingSessions.map(_stretchingToMap).toList(),
     };
 
     return const JsonEncoder.withIndent('  ').convert(data);
@@ -62,6 +69,8 @@ class ExportDataUseCase {
     final personalRecords = await personalRecordRepository.getAllRecords(
       limit: 10000,
     );
+    final stretchingSessions =
+        await stretchingSessionRepository.getAllSessions();
 
     final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
 
@@ -108,10 +117,40 @@ class ExportDataUseCase {
       prLines.writeln('$date,$name,${pr.recordType.name},${pr.value}');
     }
 
+    // stretching.csv — one row per session. workoutDate is the parent
+    // workout's startedAt (blank if the parent has been deleted).
+    final stretchingLines = StringBuffer()
+      ..writeln(
+        'workout_date,type,custom_name,body_area,side,duration_seconds,'
+        'started_at,ended_at,entry_method,notes',
+      );
+    for (final s in stretchingSessions) {
+      final parent = await workoutRepository.getWorkout(s.workoutId);
+      final workoutDate =
+          parent != null ? dateFormat.format(parent.startedAt) : '';
+      final startedAt =
+          s.startedAt != null ? s.startedAt!.toUtc().toIso8601String() : '';
+      final endedAt =
+          s.endedAt != null ? s.endedAt!.toUtc().toIso8601String() : '';
+      stretchingLines.writeln(
+        '$workoutDate,'
+        '${_escapeCsv(s.type)},'
+        '${_escapeCsv(s.customName ?? '')},'
+        '${s.bodyArea?.name ?? ''},'
+        '${s.side?.name ?? ''},'
+        '${s.durationSeconds},'
+        '$startedAt,'
+        '$endedAt,'
+        '${s.entryMethod.name},'
+        '${_escapeCsv(s.notes ?? '')}',
+      );
+    }
+
     return {
       'sets.csv': setLines.toString(),
       'cardio.csv': cardioLines.toString(),
       'personal_records.csv': prLines.toString(),
+      'stretching.csv': stretchingLines.toString(),
     };
   }
 
@@ -170,5 +209,20 @@ class ExportDataUseCase {
         'value': pr.value,
         'achievedAt': pr.achievedAt.toIso8601String(),
         'workoutSetId': pr.workoutSetId,
+      };
+
+  Map<String, dynamic> _stretchingToMap(StretchingSession s) => {
+        'id': s.id,
+        'workoutId': s.workoutId,
+        'type': s.type,
+        'customName': s.customName,
+        'bodyArea': s.bodyArea?.name,
+        'side': s.side?.name,
+        'durationSeconds': s.durationSeconds,
+        'startedAt': s.startedAt?.toIso8601String(),
+        'endedAt': s.endedAt?.toIso8601String(),
+        'entryMethod': s.entryMethod.name,
+        'notes': s.notes,
+        'updatedAt': s.updatedAt.toIso8601String(),
       };
 }
