@@ -328,12 +328,24 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
         // Health sync is best-effort — don't fail the workout
       }
 
-      // Cloud sync after workout — fire-and-forget
+      // Cloud sync after workout — fire-and-forget.
+      //
+      // The orchestrator catches `Exception` internally but lets `Error`
+      // subclasses (e.g. `UnimplementedError` from a plugin's platform
+      // interface) escape. Without this catch, that escapes the
+      // unawaited future and is printed by the VM error handler.
       try {
         final syncSettings = ref.read(syncSettingsProvider);
         if (syncSettings.enabled) {
           final orchestrator = ref.read(syncOrchestratorProvider);
-          unawaited(orchestrator.sync());
+          unawaited(() async {
+            try {
+              await orchestrator.sync();
+            } catch (_) {
+              // Best-effort; failures are surfaced via SyncState for
+              // awaited callers (Settings → Sync now).
+            }
+          }());
         }
       } catch (_) {
         // Cloud sync is best-effort — don't fail the workout
