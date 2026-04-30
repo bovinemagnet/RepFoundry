@@ -23,14 +23,43 @@ final _templatePickerProvider =
   return ref.watch(workoutTemplateRepositoryProvider).watchAllTemplates();
 });
 
-class ActiveWorkoutScreen extends ConsumerWidget {
+class ActiveWorkoutScreen extends ConsumerStatefulWidget {
   const ActiveWorkoutScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ActiveWorkoutScreen> createState() =>
+      ActiveWorkoutScreenState();
+}
+
+@visibleForTesting
+class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
+  final ScrollController _scrollController = ScrollController();
+  final Map<String, GlobalKey> _exerciseKeys = {};
+
+  @visibleForTesting
+  ScrollController get scrollController => _scrollController;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  GlobalKey _keyFor(String exerciseId) =>
+      _exerciseKeys.putIfAbsent(exerciseId, () => GlobalKey());
+
+  void _pruneStaleKeys(List<String> currentExerciseIds) {
+    final live = currentExerciseIds.toSet();
+    _exerciseKeys.removeWhere((id, _) => !live.contains(id));
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final s = S.of(context)!;
     final state = ref.watch(activeWorkoutControllerProvider);
     final controller = ref.read(activeWorkoutControllerProvider.notifier);
+
+    _pruneStaleKeys(state.exercises.map((e) => e.id).toList());
 
     ref.listen<ActiveWorkoutState>(
       activeWorkoutControllerProvider,
@@ -328,6 +357,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
     final renderedGroups = <String>{};
 
     return ListView(
+      controller: _scrollController,
       padding: const EdgeInsets.only(bottom: 88),
       children: [
         const RestTimerWidget(),
@@ -349,34 +379,39 @@ class ActiveWorkoutScreen extends ConsumerWidget {
                   controller: controller,
                   onUnlink: (exerciseId) =>
                       controller.unlinkSuperset(exerciseId),
+                  exerciseKeys: _exerciseKeys,
                 );
               }
               return const SizedBox.shrink();
             }(),
           ] else ...[
-            _ExerciseSection(
-              exercise: exercise,
-              sets: state.setsByExercise[exercise.id] ?? [],
-              ghostSets: state.remainingGhosts(exercise.id),
-              suggestion: state.nextGhostSet(exercise.id),
-              onLogSet: ({
-                required double weight,
-                required int reps,
-                double? rpe,
-                bool isWarmUp = false,
-              }) {
-                controller.logSet(
-                  exerciseId: exercise.id,
-                  weight: weight,
-                  reps: reps,
-                  rpe: rpe,
-                  isWarmUp: isWarmUp,
-                );
-              },
-              onDeleteSet: (setId) => controller.deleteSet(setId, exercise.id),
-              onEditSet: (updatedSet) => controller.updateSet(updatedSet),
-              onLinkSuperset: () =>
-                  _showSupersetPicker(context, ref, exercise, state),
+            KeyedSubtree(
+              key: _keyFor(exercise.id),
+              child: _ExerciseSection(
+                exercise: exercise,
+                sets: state.setsByExercise[exercise.id] ?? [],
+                ghostSets: state.remainingGhosts(exercise.id),
+                suggestion: state.nextGhostSet(exercise.id),
+                onLogSet: ({
+                  required double weight,
+                  required int reps,
+                  double? rpe,
+                  bool isWarmUp = false,
+                }) {
+                  controller.logSet(
+                    exerciseId: exercise.id,
+                    weight: weight,
+                    reps: reps,
+                    rpe: rpe,
+                    isWarmUp: isWarmUp,
+                  );
+                },
+                onDeleteSet: (setId) =>
+                    controller.deleteSet(setId, exercise.id),
+                onEditSet: (updatedSet) => controller.updateSet(updatedSet),
+                onLinkSuperset: () =>
+                    _showSupersetPicker(context, ref, exercise, state),
+              ),
             ),
           ],
         ],
@@ -683,12 +718,14 @@ class _SupersetGroup extends StatelessWidget {
     required this.state,
     required this.controller,
     required this.onUnlink,
+    required this.exerciseKeys,
   });
 
   final List<Exercise> exercises;
   final ActiveWorkoutState state;
   final ActiveWorkoutController controller;
   final void Function(String exerciseId) onUnlink;
+  final Map<String, GlobalKey> exerciseKeys;
 
   @override
   Widget build(BuildContext context) {
@@ -734,30 +771,33 @@ class _SupersetGroup extends StatelessWidget {
               ),
             ),
             for (final exercise in exercises)
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: _ExerciseSectionContent(
-                  exercise: exercise,
-                  sets: state.setsByExercise[exercise.id] ?? [],
-                  ghostSets: state.remainingGhosts(exercise.id),
-                  suggestion: state.nextGhostSet(exercise.id),
-                  onLogSet: ({
-                    required double weight,
-                    required int reps,
-                    double? rpe,
-                    bool isWarmUp = false,
-                  }) {
-                    controller.logSet(
-                      exerciseId: exercise.id,
-                      weight: weight,
-                      reps: reps,
-                      rpe: rpe,
-                      isWarmUp: isWarmUp,
-                    );
-                  },
-                  onDeleteSet: (setId) =>
-                      controller.deleteSet(setId, exercise.id),
-                  onEditSet: (updatedSet) => controller.updateSet(updatedSet),
+              KeyedSubtree(
+                key: exerciseKeys.putIfAbsent(exercise.id, () => GlobalKey()),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: _ExerciseSectionContent(
+                    exercise: exercise,
+                    sets: state.setsByExercise[exercise.id] ?? [],
+                    ghostSets: state.remainingGhosts(exercise.id),
+                    suggestion: state.nextGhostSet(exercise.id),
+                    onLogSet: ({
+                      required double weight,
+                      required int reps,
+                      double? rpe,
+                      bool isWarmUp = false,
+                    }) {
+                      controller.logSet(
+                        exerciseId: exercise.id,
+                        weight: weight,
+                        reps: reps,
+                        rpe: rpe,
+                        isWarmUp: isWarmUp,
+                      );
+                    },
+                    onDeleteSet: (setId) =>
+                        controller.deleteSet(setId, exercise.id),
+                    onEditSet: (updatedSet) => controller.updateSet(updatedSet),
+                  ),
                 ),
               ),
           ],
