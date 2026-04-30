@@ -439,6 +439,7 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                   onUnlink: (exerciseId) =>
                       controller.unlinkSuperset(exerciseId),
                   exerciseKeys: _exerciseKeys,
+                  onLogSet: handleLogSet,
                 );
               }
               return const SizedBox.shrink();
@@ -778,6 +779,7 @@ class _SupersetGroup extends StatelessWidget {
     required this.controller,
     required this.onUnlink,
     required this.exerciseKeys,
+    required this.onLogSet,
   });
 
   final List<Exercise> exercises;
@@ -785,6 +787,13 @@ class _SupersetGroup extends StatelessWidget {
   final ActiveWorkoutController controller;
   final void Function(String exerciseId) onUnlink;
   final Map<String, GlobalKey> exerciseKeys;
+  final void Function({
+    required String exerciseId,
+    required double weight,
+    required int reps,
+    double? rpe,
+    bool isWarmUp,
+  }) onLogSet;
 
   @override
   Widget build(BuildContext context) {
@@ -845,7 +854,7 @@ class _SupersetGroup extends StatelessWidget {
                       double? rpe,
                       bool isWarmUp = false,
                     }) {
-                      controller.logSet(
+                      onLogSet(
                         exerciseId: exercise.id,
                         weight: weight,
                         reps: reps,
