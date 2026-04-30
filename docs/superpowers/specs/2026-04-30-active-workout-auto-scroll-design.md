@@ -56,19 +56,27 @@ if (exercise != null) {
 
 ### Trigger 2 — set logged
 
-`controller.logSet` is `Future<void>` and awaits a DB write before mutating state. To ensure the new set chip is in the tree before we measure the section's bottom, the `onLogSet` callback signature on `_ExerciseSection` and `_ExerciseSectionContent` is widened from `void Function({...})` to `Future<void> Function({...})`. The screen's callback awaits the controller, then schedules a post-frame scroll:
+`controller.logSet` is `Future<void>` and awaits a DB write before mutating state. To ensure the new set chip is in the tree before we measure the section's bottom, the screen chains the post-frame scroll off the future via `.then(...)`. No typedef changes are needed — the `onLogSet` callbacks on `_ExerciseSection`, `_ExerciseSectionContent`, and `SetInputCard` remain `void Function({...})`:
 
 ```dart
-onLogSet: ({required weight, required reps, rpe, isWarmUp = false}) async {
-  await controller.logSet(exerciseId: exercise.id, /* ... */);
-  if (!mounted) return;
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    _scrollToExercise(exercise.id, alignment: 1.0);
+onLogSet: ({required weight, required reps, rpe, isWarmUp = false}) {
+  final exerciseId = exercise.id;
+  controller.logSet(
+    exerciseId: exerciseId,
+    weight: weight,
+    reps: reps,
+    rpe: rpe,
+    isWarmUp: isWarmUp,
+  ).then((_) {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToExercise(exerciseId, alignment: 1.0);
+    });
   });
 },
 ```
 
-`alignment: 1.0` aligns the exercise section's bottom with the viewport's bottom, bringing the `SetInputCard` into view. The same wiring applies inside `_SupersetGroup`. `SetInputCard` itself does not need a signature change — it already calls `onLogSet` synchronously and ignores the return value, which is a valid Dart pattern.
+`alignment: 1.0` aligns the exercise section's bottom with the viewport's bottom, bringing the `SetInputCard` into view. The same wiring applies inside `_SupersetGroup`.
 
 ### Why `Scrollable.ensureVisible` over `ScrollController.animateTo`
 
