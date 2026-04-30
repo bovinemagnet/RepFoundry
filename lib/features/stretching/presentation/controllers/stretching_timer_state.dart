@@ -1,9 +1,9 @@
 import '../../domain/models/stretching_session.dart';
 
-/// State for the in-progress add/edit stretching flow. The active workout
-/// owner sets [workoutId] before saving.
+/// State for the in-progress add/edit stretching flow. The owning widget
+/// passes the active workout id at save time — it's a widget prop rather
+/// than runtime state, so it isn't kept here.
 class StretchingTimerState {
-  final String? workoutId;
   final String? selectedType;
   final String? customName;
   final StretchingBodyArea? bodyArea;
@@ -27,7 +27,6 @@ class StretchingTimerState {
   final DateTime? startedAt;
 
   const StretchingTimerState({
-    this.workoutId,
     this.selectedType,
     this.customName,
     this.bodyArea,
@@ -48,8 +47,6 @@ class StretchingTimerState {
       manualSeconds > 0 ? manualSeconds : elapsedSeconds;
 
   StretchingTimerState copyWith({
-    String? workoutId,
-    bool clearWorkoutId = false,
     String? selectedType,
     bool clearSelectedType = false,
     String? customName,
@@ -70,7 +67,6 @@ class StretchingTimerState {
     bool clearStartedAt = false,
   }) {
     return StretchingTimerState(
-      workoutId: clearWorkoutId ? null : (workoutId ?? this.workoutId),
       selectedType:
           clearSelectedType ? null : (selectedType ?? this.selectedType),
       customName: clearCustomName ? null : (customName ?? this.customName),

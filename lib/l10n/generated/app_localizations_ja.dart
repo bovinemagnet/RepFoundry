@@ -544,6 +544,9 @@ class SJa extends S {
   String get startWorkout => 'ワークアウトを開始';
 
   @override
+  String get startStretching => 'ストレッチを開始';
+
+  @override
   String get noActiveWorkout => 'アクティブなワークアウトがありません';
 
   @override
@@ -1081,7 +1084,7 @@ class SJa extends S {
   String get bodyFatLabel => '体脂肪';
 
   @override
-  String get notesLabel => 'メモ';
+  String get notesLabel => 'メモ（任意）';
 
   @override
   String get bodyWeightTrendTitle => '体重トレンド';
@@ -1636,21 +1639,20 @@ class SJa extends S {
   String get liveTracking => 'ライブトラッキング';
 
   @override
-  String get stretchingSectionTitle => 'Stretching';
+  String get stretchingSectionTitle => 'ストレッチ';
 
   @override
-  String get stretchingEmptySubtitle =>
-      'Add mobility, warm-up, or cool-down stretching.';
+  String get stretchingEmptySubtitle => 'モビリティ、ウォームアップ、クールダウンのストレッチを追加します。';
 
   @override
-  String get addStretching => 'Add Stretching';
+  String get addStretching => 'ストレッチを追加';
 
   @override
-  String get addStretchingShort => 'Add';
+  String get addStretchingShort => '追加';
 
   @override
   String stretchingTotalMinutes(String minutes) {
-    return '$minutes min total';
+    return '合計 $minutes 分';
   }
 
   @override
@@ -1658,112 +1660,110 @@ class SJa extends S {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count entries',
-      one: '1 entry',
+      other: '$count 件',
     );
     return '$_temp0';
   }
 
   @override
-  String get addStretchingTitle => 'Add Stretching';
+  String get addStretchingTitle => 'ストレッチを追加';
 
   @override
-  String get stretchTypeLabel => 'Stretch type';
+  String get stretchTypeLabel => 'ストレッチの種類';
 
   @override
-  String get customStretchLabel => 'Custom…';
+  String get customStretchLabel => 'カスタム…';
 
   @override
-  String get customStretchHint => 'Stretch name';
+  String get customStretchHint => 'ストレッチ名';
 
   @override
-  String get recordTimeLabel => 'Record time';
+  String get recordTimeLabel => '時間の記録方法';
 
   @override
-  String get recordTimer => 'Timer';
+  String get recordTimer => 'タイマー';
 
   @override
-  String get recordManual => 'Manual';
+  String get recordManual => '手動';
 
   @override
-  String get quickAddDurations => 'Quick add';
+  String get quickAddDurations => 'クイック追加';
 
   @override
-  String get minutesAbbrev => 'min';
+  String get minutesAbbrev => '分';
 
   @override
-  String get secondsAbbrev => 'sec';
+  String get secondsAbbrev => '秒';
 
   @override
-  String get stretchingEntryMethodTimer => 'Timer';
+  String get stretchingEntryMethodTimer => 'タイマー';
 
   @override
-  String get stretchingEntryMethodManual => 'Manual';
+  String get stretchingEntryMethodManual => '手動';
 
   @override
-  String get deleteStretchingTitle => 'Delete stretching entry?';
+  String get deleteStretchingTitle => 'ストレッチ記録を削除しますか？';
 
   @override
-  String get deleteStretchingMessage =>
-      'This will remove this stretching entry from the workout.';
+  String get deleteStretchingMessage => 'このストレッチ記録をワークアウトから削除します。';
 
   @override
-  String get stretchPresetStandingHamstring => 'Standing Hamstring Stretch';
+  String get stretchPresetStandingHamstring => '立位ハムストリングストレッチ';
 
   @override
-  String get stretchPresetSeatedForwardFold => 'Seated Forward Fold';
+  String get stretchPresetSeatedForwardFold => '長座体前屈';
 
   @override
-  String get stretchPresetStandingQuad => 'Standing Quadriceps Stretch';
+  String get stretchPresetStandingQuad => '立位大腿四頭筋ストレッチ';
 
   @override
-  String get stretchPresetLowLungeHipFlexor => 'Low Lunge Hip Flexor';
+  String get stretchPresetLowLungeHipFlexor => 'ローランジ（腸腰筋）';
 
   @override
-  String get stretchPresetPigeon => 'Pigeon Pose';
+  String get stretchPresetPigeon => '鳩のポーズ';
 
   @override
-  String get stretchPresetButterfly => 'Butterfly Stretch';
+  String get stretchPresetButterfly => '合せき（バタフライ）';
 
   @override
-  String get stretchPresetChildsPose => 'Child\'s Pose';
+  String get stretchPresetChildsPose => '子供のポーズ';
 
   @override
-  String get stretchPresetCobra => 'Cobra Stretch';
+  String get stretchPresetCobra => 'コブラのポーズ';
 
   @override
-  String get stretchPresetCatCow => 'Cat–Cow';
+  String get stretchPresetCatCow => 'キャット＆カウ';
 
   @override
-  String get stretchPresetDownwardDog => 'Downward-Facing Dog';
+  String get stretchPresetDownwardDog => '下向きの犬のポーズ';
 
   @override
-  String get stretchPresetCrossBodyShoulder => 'Cross-Body Shoulder Stretch';
+  String get stretchPresetCrossBodyShoulder => '肩のクロスボディストレッチ';
 
   @override
-  String get stretchPresetDoorwayChest => 'Doorway Chest Stretch';
+  String get stretchPresetDoorwayChest => 'ドアフレーム胸ストレッチ';
 
   @override
-  String get stretchPresetStandingCalf => 'Standing Calf Stretch';
+  String get stretchPresetStandingCalf => '立位ふくらはぎストレッチ';
 
   @override
-  String get stretchPresetSupineSpinalTwist => 'Supine Spinal Twist';
+  String get stretchPresetSupineSpinalTwist => '仰向け脊柱ねじり';
 
   @override
-  String get stretchPresetNeckSideStretch => 'Neck Side Stretch';
+  String get stretchPresetNeckSideStretch => '首の側面ストレッチ';
 
   @override
-  String get stretchPresetFigureFourGlute => 'Figure-4 Glute Stretch';
+  String get stretchPresetFigureFourGlute => 'フィギュア4 臀部ストレッチ';
 
   @override
-  String get stretchPresetNinetyNinety => '90/90 Hip Stretch';
+  String get stretchPresetNinetyNinety => '90/90 股関節ストレッチ';
 
   @override
-  String get stretchPresetFrogPose => 'Frog Pose';
+  String get stretchPresetFrogPose => '蛙のポーズ';
 
   @override
-  String get stretchPresetFrontSplits => 'Front Splits';
+  String get stretchPresetFrontSplits => '縦開脚（フロントスプリット）';
 
   @override
-  String get stretchPresetSideSplits => 'Side Splits (Middle Splits)';
+  String get stretchPresetSideSplits => '横開脚（中間スプリット）';
 }

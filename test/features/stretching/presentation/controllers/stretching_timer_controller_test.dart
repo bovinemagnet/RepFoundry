@@ -32,7 +32,6 @@ void main() {
       expect(controller.state.elapsedSeconds, 0);
       expect(controller.state.manualSeconds, 0);
       expect(controller.state.selectedType, isNull);
-      expect(controller.state.workoutId, isNull);
     });
 
     test('selectType updates selectedType and bodyArea', () {
@@ -57,12 +56,10 @@ void main() {
     });
 
     test('discard clears all state', () {
-      controller.setWorkoutId('w1');
       controller.selectType(type: 'pigeon');
       controller.start();
       controller.discard();
       expect(controller.state.selectedType, isNull);
-      expect(controller.state.workoutId, isNull);
       expect(controller.state.elapsedSeconds, 0);
     });
 
@@ -80,31 +77,28 @@ void main() {
       expect(controller.state.manualSeconds, 0);
     });
 
-    test('save without workoutId returns false and sets error', () async {
+    test('save with empty workoutId returns false and sets error', () async {
       controller.selectType(type: 'pigeon');
       controller.setManualDuration(60);
-      final ok = await controller.save();
+      final ok = await controller.save(workoutId: '');
       expect(ok, isFalse);
       expect(controller.state.error, isNotNull);
     });
 
     test('save without selected type returns false', () async {
-      controller.setWorkoutId('w1');
       controller.setManualDuration(60);
-      final ok = await controller.save();
+      final ok = await controller.save(workoutId: 'w1');
       expect(ok, isFalse);
       expect(controller.state.error, isNotNull);
     });
 
     test('save without duration returns false', () async {
-      controller.setWorkoutId('w1');
       controller.selectType(type: 'pigeon');
-      final ok = await controller.save();
+      final ok = await controller.save(workoutId: 'w1');
       expect(ok, isFalse);
     });
 
     test('save persists a manual entry and resets state', () async {
-      controller.setWorkoutId('w1');
       controller.selectType(
         type: 'pigeon',
         bodyArea: StretchingBodyArea.hips,
@@ -112,7 +106,7 @@ void main() {
       controller.setManualDuration(120);
       controller.setNotes('Post-leg-day');
 
-      final ok = await controller.save();
+      final ok = await controller.save(workoutId: 'w1');
       expect(ok, isTrue);
       expect(controller.state.savedSuccessfully, isTrue);
 
@@ -122,13 +116,11 @@ void main() {
       expect(stored.first.durationSeconds, 120);
       expect(stored.first.notes, 'Post-leg-day');
 
-      // After save, workoutId is preserved so the user can add another.
-      expect(controller.state.workoutId, 'w1');
+      // After save, controller is reset for a fresh entry.
       expect(controller.state.selectedType, isNull);
     });
 
     test('save persists a timer entry with timer entryMethod', () async {
-      controller.setWorkoutId('w1');
       controller.selectType(type: 'frontSplits');
       controller.start();
       // Simulate elapsed time
@@ -143,7 +135,7 @@ void main() {
       controller.pause();
       expect(controller.state.elapsedSeconds, greaterThanOrEqualTo(1));
 
-      final ok = await controller.save();
+      final ok = await controller.save(workoutId: 'w1');
       expect(ok, isTrue);
 
       final stored = await repo.getSessionsForWorkout('w1');

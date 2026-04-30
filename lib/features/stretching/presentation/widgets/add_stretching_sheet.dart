@@ -38,9 +38,10 @@ class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
   @override
   void initState() {
     super.initState();
-    final controller = ref.read(stretchingTimerProvider.notifier);
+    // Read-only access in initState is fine; mutating the Riverpod provider
+    // here would throw because the widget tree is still building. The
+    // workoutId is passed to save() at submit time, so no mutation needed.
     final state = ref.read(stretchingTimerProvider);
-    controller.setWorkoutId(widget.workoutId);
     _customNameController.text = state.customName ?? '';
     _notesController.text = state.notes;
     if (state.manualSeconds > 0) {
@@ -79,7 +80,7 @@ class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
     final controller = ref.read(stretchingTimerProvider.notifier);
     if (_mode == _Mode.manual) _applyManualDuration();
     controller.setNotes(_notesController.text.trim());
-    final ok = await controller.save();
+    final ok = await controller.save(workoutId: widget.workoutId);
     if (!mounted) return;
     if (ok) Navigator.of(context).pop(true);
   }

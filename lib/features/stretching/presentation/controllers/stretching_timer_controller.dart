@@ -22,10 +22,6 @@ class StretchingTimerController extends Notifier<StretchingTimerState> {
     return const StretchingTimerState();
   }
 
-  void setWorkoutId(String workoutId) {
-    state = state.copyWith(workoutId: workoutId);
-  }
-
   void selectType({
     required String type,
     String? customName,
@@ -106,12 +102,11 @@ class StretchingTimerController extends Notifier<StretchingTimerState> {
     state = const StretchingTimerState();
   }
 
-  Future<bool> save() async {
+  Future<bool> save({required String workoutId}) async {
     final type = state.selectedType;
-    final workoutId = state.workoutId;
     final duration = state.effectiveDurationSeconds;
 
-    if (workoutId == null || workoutId.isEmpty) {
+    if (workoutId.isEmpty) {
       state = state.copyWith(error: 'No active workout');
       return false;
     }
@@ -150,10 +145,7 @@ class StretchingTimerController extends Notifier<StretchingTimerState> {
           notes: state.notes,
         ),
       );
-      state = StretchingTimerState(
-        workoutId: workoutId,
-        savedSuccessfully: true,
-      );
+      state = const StretchingTimerState(savedSuccessfully: true);
       return true;
     } on SaveStretchingSessionException catch (e) {
       state = state.copyWith(isSaving: false, error: e.message);

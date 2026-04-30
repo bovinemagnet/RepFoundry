@@ -1098,6 +1098,12 @@ abstract class S {
   /// **'Start Workout'**
   String get startWorkout;
 
+  /// No description provided for @startStretching.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Stretching'**
+  String get startStretching;
+
   /// No description provided for @noActiveWorkout.
   ///
   /// In en, this message translates to:

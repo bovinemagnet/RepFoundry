@@ -542,6 +542,9 @@ class SKo extends S {
   String get startWorkout => '운동 시작';
 
   @override
+  String get startStretching => '스트레칭 시작';
+
+  @override
   String get noActiveWorkout => '진행 중인 운동이 없습니다';
 
   @override
@@ -1081,7 +1084,7 @@ class SKo extends S {
   String get bodyFatLabel => '체지방';
 
   @override
-  String get notesLabel => '메모';
+  String get notesLabel => '메모(선택)';
 
   @override
   String get bodyWeightTrendTitle => '체중 추세';
@@ -1636,21 +1639,20 @@ class SKo extends S {
   String get liveTracking => '실시간 추적';
 
   @override
-  String get stretchingSectionTitle => 'Stretching';
+  String get stretchingSectionTitle => '스트레칭';
 
   @override
-  String get stretchingEmptySubtitle =>
-      'Add mobility, warm-up, or cool-down stretching.';
+  String get stretchingEmptySubtitle => '유연성, 워밍업 또는 쿨다운 스트레칭을 추가하세요.';
 
   @override
-  String get addStretching => 'Add Stretching';
+  String get addStretching => '스트레칭 추가';
 
   @override
-  String get addStretchingShort => 'Add';
+  String get addStretchingShort => '추가';
 
   @override
   String stretchingTotalMinutes(String minutes) {
-    return '$minutes min total';
+    return '총 $minutes분';
   }
 
   @override
@@ -1658,112 +1660,110 @@ class SKo extends S {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count entries',
-      one: '1 entry',
+      other: '$count개 항목',
     );
     return '$_temp0';
   }
 
   @override
-  String get addStretchingTitle => 'Add Stretching';
+  String get addStretchingTitle => '스트레칭 추가';
 
   @override
-  String get stretchTypeLabel => 'Stretch type';
+  String get stretchTypeLabel => '스트레칭 종류';
 
   @override
-  String get customStretchLabel => 'Custom…';
+  String get customStretchLabel => '사용자 지정…';
 
   @override
-  String get customStretchHint => 'Stretch name';
+  String get customStretchHint => '스트레칭 이름';
 
   @override
-  String get recordTimeLabel => 'Record time';
+  String get recordTimeLabel => '시간 기록 방법';
 
   @override
-  String get recordTimer => 'Timer';
+  String get recordTimer => '타이머';
 
   @override
-  String get recordManual => 'Manual';
+  String get recordManual => '수동';
 
   @override
-  String get quickAddDurations => 'Quick add';
+  String get quickAddDurations => '빠른 추가';
 
   @override
-  String get minutesAbbrev => 'min';
+  String get minutesAbbrev => '분';
 
   @override
-  String get secondsAbbrev => 'sec';
+  String get secondsAbbrev => '초';
 
   @override
-  String get stretchingEntryMethodTimer => 'Timer';
+  String get stretchingEntryMethodTimer => '타이머';
 
   @override
-  String get stretchingEntryMethodManual => 'Manual';
+  String get stretchingEntryMethodManual => '수동';
 
   @override
-  String get deleteStretchingTitle => 'Delete stretching entry?';
+  String get deleteStretchingTitle => '스트레칭 기록을 삭제하시겠습니까?';
 
   @override
-  String get deleteStretchingMessage =>
-      'This will remove this stretching entry from the workout.';
+  String get deleteStretchingMessage => '이 스트레칭 기록이 운동에서 제거됩니다.';
 
   @override
-  String get stretchPresetStandingHamstring => 'Standing Hamstring Stretch';
+  String get stretchPresetStandingHamstring => '서서 하는 햄스트링 스트레칭';
 
   @override
-  String get stretchPresetSeatedForwardFold => 'Seated Forward Fold';
+  String get stretchPresetSeatedForwardFold => '앉아서 전굴';
 
   @override
-  String get stretchPresetStandingQuad => 'Standing Quadriceps Stretch';
+  String get stretchPresetStandingQuad => '서서 하는 대퇴사두근 스트레칭';
 
   @override
-  String get stretchPresetLowLungeHipFlexor => 'Low Lunge Hip Flexor';
+  String get stretchPresetLowLungeHipFlexor => '로우 런지 고관절 굴곡근';
 
   @override
-  String get stretchPresetPigeon => 'Pigeon Pose';
+  String get stretchPresetPigeon => '비둘기 자세';
 
   @override
-  String get stretchPresetButterfly => 'Butterfly Stretch';
+  String get stretchPresetButterfly => '나비 자세';
 
   @override
-  String get stretchPresetChildsPose => 'Child\'s Pose';
+  String get stretchPresetChildsPose => '아기 자세';
 
   @override
-  String get stretchPresetCobra => 'Cobra Stretch';
+  String get stretchPresetCobra => '코브라 자세';
 
   @override
-  String get stretchPresetCatCow => 'Cat–Cow';
+  String get stretchPresetCatCow => '고양이-소 자세';
 
   @override
-  String get stretchPresetDownwardDog => 'Downward-Facing Dog';
+  String get stretchPresetDownwardDog => '다운독 자세';
 
   @override
-  String get stretchPresetCrossBodyShoulder => 'Cross-Body Shoulder Stretch';
+  String get stretchPresetCrossBodyShoulder => '어깨 크로스바디 스트레칭';
 
   @override
-  String get stretchPresetDoorwayChest => 'Doorway Chest Stretch';
+  String get stretchPresetDoorwayChest => '문틀 가슴 스트레칭';
 
   @override
-  String get stretchPresetStandingCalf => 'Standing Calf Stretch';
+  String get stretchPresetStandingCalf => '서서 하는 종아리 스트레칭';
 
   @override
-  String get stretchPresetSupineSpinalTwist => 'Supine Spinal Twist';
+  String get stretchPresetSupineSpinalTwist => '누워서 척추 비틀기';
 
   @override
-  String get stretchPresetNeckSideStretch => 'Neck Side Stretch';
+  String get stretchPresetNeckSideStretch => '목 측면 스트레칭';
 
   @override
-  String get stretchPresetFigureFourGlute => 'Figure-4 Glute Stretch';
+  String get stretchPresetFigureFourGlute => '피겨4 둔근 스트레칭';
 
   @override
-  String get stretchPresetNinetyNinety => '90/90 Hip Stretch';
+  String get stretchPresetNinetyNinety => '90/90 고관절 스트레칭';
 
   @override
-  String get stretchPresetFrogPose => 'Frog Pose';
+  String get stretchPresetFrogPose => '개구리 자세';
 
   @override
-  String get stretchPresetFrontSplits => 'Front Splits';
+  String get stretchPresetFrontSplits => '앞 다리 찢기';
 
   @override
-  String get stretchPresetSideSplits => 'Side Splits (Middle Splits)';
+  String get stretchPresetSideSplits => '옆 다리 찢기 (중간 스플릿)';
 }

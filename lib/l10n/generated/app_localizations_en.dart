@@ -557,6 +557,9 @@ class SEn extends S {
   String get startWorkout => 'Start Workout';
 
   @override
+  String get startStretching => 'Start Stretching';
+
+  @override
   String get noActiveWorkout => 'No active workout';
 
   @override

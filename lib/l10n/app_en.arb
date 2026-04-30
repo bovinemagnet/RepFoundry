@@ -244,6 +244,7 @@
   "loadingWorkout": "Loading workout\u2026",
   "addExercise": "Add Exercise",
   "startWorkout": "Start Workout",
+  "startStretching": "Start Stretching",
   "noActiveWorkout": "No active workout",
   "noActiveWorkoutSubtitle": "Start a new workout to begin logging sets.",
   "addExercisesHint": "Add exercises using the button below",
