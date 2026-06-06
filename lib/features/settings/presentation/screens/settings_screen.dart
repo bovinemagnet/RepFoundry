@@ -409,6 +409,13 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.push('/programmes'),
           ),
           ListTile(
+            leading: const Icon(Icons.view_list_outlined),
+            title: Text(s.templatesTitle),
+            subtitle: Text(s.templatesSubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/templates'),
+          ),
+          ListTile(
             leading: const Icon(Icons.monitor_weight_outlined),
             title: Text(s.bodyMetricsTitle),
             subtitle: Text(s.bodyMetricsSubtitle),

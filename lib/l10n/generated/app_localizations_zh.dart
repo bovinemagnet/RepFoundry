@@ -852,6 +852,9 @@ class SZh extends S {
   String get templatesTitle => '模板';
 
   @override
+  String get templatesSubtitle => '管理训练模板以快速开始训练';
+
+  @override
   String get noTemplatesYet => '还没有模板';
 
   @override
@@ -2611,6 +2614,9 @@ class SZhHans extends SZh {
 
   @override
   String get templatesTitle => '模板';
+
+  @override
+  String get templatesSubtitle => '管理训练模板以快速开始训练';
 
   @override
   String get noTemplatesYet => '还没有模板';

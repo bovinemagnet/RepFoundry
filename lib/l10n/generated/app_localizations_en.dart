@@ -877,6 +877,10 @@ class SEn extends S {
   String get templatesTitle => 'Templates';
 
   @override
+  String get templatesSubtitle =>
+      'Manage workout templates for quick session setup';
+
+  @override
   String get noTemplatesYet => 'No templates yet';
 
   @override

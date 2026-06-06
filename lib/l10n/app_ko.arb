@@ -378,6 +378,7 @@
   "setupHelp": "설정 도움말",
 
   "templatesTitle": "템플릿",
+  "templatesSubtitle": "빠른 세션 설정을 위한 운동 템플릿 관리",
   "noTemplatesYet": "아직 템플릿이 없습니다",
   "noTemplatesYetSubtitle": "템플릿을 만들어 빠르게 운동을 시작하세요.",
   "failedToLoadTemplates": "템플릿 로딩 실패: {error}",

@@ -1686,6 +1686,12 @@ abstract class S {
   /// **'Templates'**
   String get templatesTitle;
 
+  /// No description provided for @templatesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage workout templates for quick session setup'**
+  String get templatesSubtitle;
+
   /// No description provided for @noTemplatesYet.
   ///
   /// In en, this message translates to:

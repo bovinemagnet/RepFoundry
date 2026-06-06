@@ -378,6 +378,7 @@
   "setupHelp": "セットアップヘルプ",
 
   "templatesTitle": "テンプレート",
+  "templatesSubtitle": "ワークアウトテンプレートを管理して素早くセッションを開始",
   "noTemplatesYet": "テンプレートがまだありません",
   "noTemplatesYetSubtitle": "テンプレートを作成してワークアウトを素早く開始しましょう。",
   "failedToLoadTemplates": "テンプレートの読み込みに失敗：{error}",

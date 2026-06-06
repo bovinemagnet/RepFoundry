@@ -855,6 +855,9 @@ class SJa extends S {
   String get templatesTitle => 'テンプレート';
 
   @override
+  String get templatesSubtitle => 'ワークアウトテンプレートを管理して素早くセッションを開始';
+
+  @override
   String get noTemplatesYet => 'テンプレートがまだありません';
 
   @override

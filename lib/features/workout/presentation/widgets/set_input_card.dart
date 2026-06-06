@@ -4,7 +4,12 @@ import '../models/ghost_set.dart';
 
 /// A card widget for entering a new set's weight and reps.
 class SetInputCard extends StatefulWidget {
-  const SetInputCard({super.key, required this.onLogSet, this.suggestion});
+  const SetInputCard({
+    super.key,
+    required this.onLogSet,
+    this.suggestion,
+    this.autofocusWeight = false,
+  });
 
   final void Function({
     required double weight,
@@ -15,6 +20,11 @@ class SetInputCard extends StatefulWidget {
 
   final GhostSet? suggestion;
 
+  /// When true, the Weight field grabs keyboard focus on first build.
+  /// Used so a freshly added exercise becomes the active input target
+  /// instead of leaving focus on the previously edited exercise.
+  final bool autofocusWeight;
+
   @override
   State<SetInputCard> createState() => _SetInputCardState();
 }
@@ -23,6 +33,7 @@ class _SetInputCardState extends State<SetInputCard> {
   late final TextEditingController _weightController;
   late final TextEditingController _repsController;
   final _rpeController = TextEditingController();
+  final _weightFocusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
   bool _showRpe = false;
   bool _isWarmUp = false;
@@ -40,6 +51,25 @@ class _SetInputCardState extends State<SetInputCard> {
     if (s?.rpe != null) {
       _rpeController.text = _formatWeight(s!.rpe!);
       _showRpe = true;
+    }
+    if (widget.autofocusWeight) {
+      // Defer until after the picker route's pop transition completes
+      // (~300 ms Material route default); requesting earlier loses the
+      // focus race against the route transition and the keyboard never
+      // appears.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Future.delayed(const Duration(milliseconds: 350), () {
+          if (!mounted) return;
+          _weightFocusNode.requestFocus();
+          // Select all text so the user can immediately overwrite the
+          // pre-filled ghost-set value (or the default "0").
+          _weightController.selection = TextSelection(
+            baseOffset: 0,
+            extentOffset: _weightController.text.length,
+          );
+        });
+      });
     }
   }
 
@@ -68,6 +98,7 @@ class _SetInputCardState extends State<SetInputCard> {
     _weightController.dispose();
     _repsController.dispose();
     _rpeController.dispose();
+    _weightFocusNode.dispose();
     super.dispose();
   }
 
@@ -98,6 +129,7 @@ class _SetInputCardState extends State<SetInputCard> {
               Expanded(
                 child: _NumberField(
                   controller: _weightController,
+                  focusNode: _weightFocusNode,
                   label: s.weightKgLabel,
                   isDouble: true,
                 ),
@@ -179,6 +211,7 @@ class _NumberField extends StatelessWidget {
     required this.isDouble,
     this.isRequired = true,
     this.validator,
+    this.focusNode,
   });
 
   final TextEditingController controller;
@@ -186,12 +219,14 @@ class _NumberField extends StatelessWidget {
   final bool isDouble;
   final bool isRequired;
   final String? Function(String?)? validator;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),

@@ -361,6 +361,7 @@
   "setupHelp": "设置帮助",
 
   "templatesTitle": "模板",
+  "templatesSubtitle": "管理训练模板以快速开始训练",
   "noTemplatesYet": "还没有模板",
   "noTemplatesYetSubtitle": "创建模板以快速开始训练。",
   "failedToLoadTemplates": "加载模板失败：{error}",

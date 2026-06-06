@@ -378,6 +378,7 @@
   "setupHelp": "Setup Help",
 
   "templatesTitle": "Templates",
+  "templatesSubtitle": "Manage workout templates for quick session setup",
   "noTemplatesYet": "No templates yet",
   "noTemplatesYetSubtitle": "Create a template to quickly start workouts.",
   "failedToLoadTemplates": "Failed to load templates: {error}",

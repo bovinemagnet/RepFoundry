@@ -855,6 +855,9 @@ class SKo extends S {
   String get templatesTitle => '템플릿';
 
   @override
+  String get templatesSubtitle => '빠른 세션 설정을 위한 운동 템플릿 관리';
+
+  @override
   String get noTemplatesYet => '아직 템플릿이 없습니다';
 
   @override

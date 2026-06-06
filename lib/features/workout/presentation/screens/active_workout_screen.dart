@@ -36,6 +36,11 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _exerciseKeys = {};
 
+  /// ID of the most recently added exercise. Used by SetInputCard to
+  /// autofocus its Weight field so the new exercise becomes the active
+  /// input target instead of leaving focus on the prior exercise.
+  String? _lastAddedExerciseId;
+
   @visibleForTesting
   ScrollController get scrollController => _scrollController;
 
@@ -74,9 +79,12 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
         .read(activeWorkoutControllerProvider.notifier)
         .addExercise(exercise);
     if (!mounted) return;
+    setState(() {
+      _lastAddedExerciseId = exercise.id;
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _scrollToExercise(exercise.id, alignment: 0.0);
+      _scrollToExercise(exercise.id, alignment: 1.0);
     });
   }
 
@@ -158,13 +166,14 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           : state.hasActiveWorkout
               ? _buildActiveWorkout(context, ref, state, controller)
               : _buildNoWorkout(context, ref, controller),
-      floatingActionButton: state.hasActiveWorkout
-          ? FloatingActionButton.extended(
-              onPressed: () => _pickExercise(context, ref),
-              icon: const Icon(Icons.add),
-              label: Text(s.addExercise),
-            )
-          : null,
+      floatingActionButton:
+          state.hasActiveWorkout && MediaQuery.viewInsetsOf(context).bottom == 0
+              ? FloatingActionButton.extended(
+                  onPressed: () => _pickExercise(context, ref),
+                  icon: const Icon(Icons.add),
+                  label: Text(s.addExercise),
+                )
+              : null,
     );
   }
 
@@ -440,6 +449,7 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                       controller.unlinkSuperset(exerciseId),
                   exerciseKeys: _exerciseKeys,
                   onLogSet: handleLogSet,
+                  autofocusExerciseId: _lastAddedExerciseId,
                 );
               }
               return const SizedBox.shrink();
@@ -452,6 +462,7 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                 sets: state.setsByExercise[exercise.id] ?? [],
                 ghostSets: state.remainingGhosts(exercise.id),
                 suggestion: state.nextGhostSet(exercise.id),
+                autofocusWeight: exercise.id == _lastAddedExerciseId,
                 onLogSet: ({
                   required double weight,
                   required int reps,
@@ -597,6 +608,7 @@ class _ExerciseSection extends StatelessWidget {
     required this.onDeleteSet,
     required this.onEditSet,
     this.onLinkSuperset,
+    this.autofocusWeight = false,
   });
 
   final Exercise exercise;
@@ -612,6 +624,7 @@ class _ExerciseSection extends StatelessWidget {
   final void Function(String setId) onDeleteSet;
   final void Function(WorkoutSet updatedSet) onEditSet;
   final VoidCallback? onLinkSuperset;
+  final bool autofocusWeight;
 
   @override
   Widget build(BuildContext context) {
@@ -653,6 +666,7 @@ class _ExerciseSection extends StatelessWidget {
             onLogSet: onLogSet,
             onDeleteSet: onDeleteSet,
             onEditSet: onEditSet,
+            autofocusWeight: autofocusWeight,
           ),
         ),
       ),
@@ -669,6 +683,7 @@ class _ExerciseSectionContent extends StatelessWidget {
     required this.onLogSet,
     required this.onDeleteSet,
     required this.onEditSet,
+    this.autofocusWeight = false,
   });
 
   final Exercise exercise;
@@ -683,6 +698,7 @@ class _ExerciseSectionContent extends StatelessWidget {
   }) onLogSet;
   final void Function(String setId) onDeleteSet;
   final void Function(WorkoutSet updatedSet) onEditSet;
+  final bool autofocusWeight;
 
   @override
   Widget build(BuildContext context) {
@@ -766,7 +782,11 @@ class _ExerciseSectionContent extends StatelessWidget {
           ),
           const SizedBox(height: 12),
         ],
-        SetInputCard(onLogSet: onLogSet, suggestion: suggestion),
+        SetInputCard(
+          onLogSet: onLogSet,
+          suggestion: suggestion,
+          autofocusWeight: autofocusWeight,
+        ),
       ],
     );
   }
@@ -780,6 +800,7 @@ class _SupersetGroup extends StatelessWidget {
     required this.onUnlink,
     required this.exerciseKeys,
     required this.onLogSet,
+    this.autofocusExerciseId,
   });
 
   final List<Exercise> exercises;
@@ -787,6 +808,7 @@ class _SupersetGroup extends StatelessWidget {
   final ActiveWorkoutController controller;
   final void Function(String exerciseId) onUnlink;
   final Map<String, GlobalKey> exerciseKeys;
+  final String? autofocusExerciseId;
   final void Function({
     required String exerciseId,
     required double weight,
@@ -848,6 +870,7 @@ class _SupersetGroup extends StatelessWidget {
                     sets: state.setsByExercise[exercise.id] ?? [],
                     ghostSets: state.remainingGhosts(exercise.id),
                     suggestion: state.nextGhostSet(exercise.id),
+                    autofocusWeight: exercise.id == autofocusExerciseId,
                     onLogSet: ({
                       required double weight,
                       required int reps,
