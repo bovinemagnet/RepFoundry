@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/providers.dart';
+import '../../../../core/widgets/kinetic.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../controllers/cardio_tracking_controller.dart';
 import '../controllers/cardio_tracking_state.dart';
@@ -39,7 +41,6 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
   Widget build(BuildContext context) {
     final s = S.of(context)!;
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
     final cardioState = ref.watch(cardioTrackingProvider);
     final controller = ref.read(cardioTrackingProvider.notifier);
     final exercisesAsync = ref.watch(_cardioExercisesProvider);
@@ -61,28 +62,44 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
     });
 
     return Scaffold(
-      appBar: AppBar(title: Text(s.cardioTitle)),
+      // The Kinetic redesign embeds the app header inside the scroll area.
+      // A zero-height AppBar satisfies the shell-route chrome while the
+      // KineticAppHeader + screen title below provide the visible heading.
+      appBar: AppBar(
+        toolbarHeight: 0,
+        elevation: 0,
+        backgroundColor: cs.surface,
+        // Semantics label used by screen readers and kept for test discovery.
+        title: Text(s.cardioTitle),
+      ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+        padding: const EdgeInsets.fromLTRB(22, 0, 22, 96),
         children: [
-          // ── Exercise selector chips ──────────────────────────
-          _ExerciseChipSelector(
+          // ── Kinetic app header ──────────────────────────────
+          const KineticAppHeader(),
+
+          // ── Screen title (pagehead eyebrow) ────────────────
+          KineticEyebrow(s.cardioTitle),
+          const SizedBox(height: 12),
+
+          // ── Sport segmented control (.seg pill) ────────────
+          _ExerciseSegControl(
             exercisesAsync: exercisesAsync,
             selectedId: cardioState.selectedExerciseId,
             onSelected: (id, name) => controller.selectExercise(id, name),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 26),
 
           // ── Hero timer display ──────────────────────────────
           _HeroTimer(
             elapsedSeconds: cardioState.elapsedSeconds,
             isRunning: cardioState.isRunning,
           ),
-          const SizedBox(height: 20),
-
-          // ── Kinetic metric bento ────────────────────────────
-          _MetricBento(cardioState: cardioState),
           const SizedBox(height: 24),
+
+          // ── Avg pace + Distance stat tiles (2-up) ──────────
+          _MetricStatRow(cardioState: cardioState),
+          const SizedBox(height: 22),
 
           // ── GPS tracking card ───────────────────────────────
           _GpsCard(
@@ -95,7 +112,7 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
           _buildHeartRateCard(context, cardioState, controller),
           const SizedBox(height: 12),
 
-          // ── Last session ghost card ─────────────────────────
+          // ── Last session ghost tiles ─────────────────────────
           if (cardioState.lastSession != null) ...[
             _LastSessionCard(session: cardioState.lastSession!),
             const SizedBox(height: 12),
@@ -103,92 +120,79 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
 
           // ── Manual input fields ─────────────────────────────
           if (!cardioState.gpsEnabled) ...[
-            TextField(
+            _KineticInputField(
               controller: _distanceController,
-              decoration: InputDecoration(
-                labelText: s.distanceMetresLabel,
-                prefixIcon: const Icon(Icons.directions_run),
-              ),
+              label: s.distanceMetresLabel,
+              icon: Icons.directions_run,
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
               onChanged: (_) => setState(() {}),
             ),
             if (_computedPace != null) ...[
               Padding(
-                padding: const EdgeInsets.only(top: 4, left: 16),
+                padding: const EdgeInsets.only(top: 4, left: 4),
                 child: Text(
                   s.paceLabel(_computedPace!),
-                  style: tt.bodySmall?.copyWith(
+                  style: KineticText.mono(
+                    size: 11,
+                    weight: FontWeight.w600,
+                    letterSpacing: 0.5,
                     color: cs.onSurfaceVariant,
                   ),
                 ),
               ),
             ],
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
           ],
 
-          TextField(
+          _KineticInputField(
             controller: _inclineController,
-            decoration: InputDecoration(
-              labelText: s.inclineLabel,
-              prefixIcon: const Icon(Icons.trending_up),
-            ),
+            label: s.inclineLabel,
+            icon: Icons.trending_up,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
 
           if (!cardioState.hrConnected) ...[
-            TextField(
+            _KineticInputField(
               controller: _heartRateController,
-              decoration: InputDecoration(
-                labelText: s.avgHeartRateLabel,
-                prefixIcon: const Icon(Icons.favorite_outline),
-              ),
+              label: s.avgHeartRateLabel,
+              icon: Icons.favorite_outline,
               keyboardType: TextInputType.number,
             ),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: 22),
 
-          // ── Save / Start controls ───────────────────────────
-          Row(
-            children: [
-              // Timer controls
-              if (!cardioState.isRunning)
-                Expanded(
-                  child: _ActionButton(
-                    onPressed: controller.start,
-                    icon: Icons.play_arrow,
-                    label: cardioState.elapsedSeconds == 0
-                        ? s.startSession.toUpperCase()
-                        : s.resume.toUpperCase(),
-                    isPrimary: true,
-                  ),
-                )
-              else
-                Expanded(
-                  child: _ActionButton(
-                    onPressed: controller.pause,
-                    icon: Icons.pause,
-                    label: s.pause.toUpperCase(),
-                    isPrimary: false,
-                  ),
-                ),
-              if (cardioState.elapsedSeconds > 0) ...[
-                const SizedBox(width: 12),
-                _ActionButton(
-                  onPressed: controller.reset,
-                  icon: Icons.stop,
-                  label: s.reset.toUpperCase(),
-                  isPrimary: false,
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 12),
+          // ── Timer controls ──────────────────────────────────
+          if (!cardioState.isRunning)
+            KineticCta(
+              label:
+                  cardioState.elapsedSeconds == 0 ? s.startSession : s.resume,
+              icon: Icons.play_arrow,
+              onPressed: controller.start,
+            )
+          else
+            _SecondaryActionButton(
+              onPressed: controller.pause,
+              icon: Icons.pause,
+              label: s.pause.toUpperCase(),
+            ),
 
-          // Save button
-          if (cardioState.elapsedSeconds > 0)
-            FilledButton.icon(
+          if (cardioState.elapsedSeconds > 0) ...[
+            const SizedBox(height: 10),
+            _SecondaryActionButton(
+              onPressed: controller.reset,
+              icon: Icons.stop,
+              label: s.reset.toUpperCase(),
+            ),
+          ],
+
+          // ── Save button ─────────────────────────────────────
+          if (cardioState.elapsedSeconds > 0) ...[
+            const SizedBox(height: 10),
+            KineticCta(
+              label: s.saveSession,
+              icon: cardioState.isSaving ? null : Icons.save,
               onPressed: cardioState.selectedExerciseId != null &&
                       !cardioState.isSaving
                   ? () => controller.save(
@@ -198,15 +202,8 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
                         avgHeartRate: int.tryParse(_heartRateController.text),
                       )
                   : null,
-              icon: cardioState.isSaving
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.save),
-              label: Text(s.saveSession),
             ),
+          ],
         ],
       ),
     );
@@ -219,13 +216,13 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
   ) {
     final s = S.of(context)!;
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
 
     if (cardioState.hrConnecting || cardioState.hrReconnecting) {
+      // Connecting / reconnecting state
       return Container(
         decoration: BoxDecoration(
           color: cs.surfaceContainer,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(22),
         ),
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -241,7 +238,11 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
                 cardioState.hrReconnecting
                     ? s.reconnectingTo(cardioState.hrDeviceName ?? 'device')
                     : s.connectingTo(cardioState.hrDeviceName ?? 'device'),
-                style: tt.bodyMedium,
+                style: GoogleFonts.manrope(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurfaceVariant,
+                ),
               ),
             ),
           ],
@@ -250,30 +251,34 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
     }
 
     if (cardioState.hrConnected) {
+      // Connected — live BPM tile (mirrors .route__chip heart in the design)
       return Container(
         decoration: BoxDecoration(
           color: cs.surfaceContainer,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(22),
         ),
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           children: [
-            Icon(Icons.favorite, color: cs.error, size: 32),
+            Icon(Icons.favorite, color: cs.error, size: 28),
             const SizedBox(width: 12),
             Text(
               cardioState.currentHeartRate != null
                   ? '${cardioState.currentHeartRate}'
                   : '--',
-              style: tt.headlineLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+              style: KineticText.mono(
+                size: 36,
+                weight: FontWeight.w800,
+                letterSpacing: -1.0,
                 color: cs.error,
-                fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 6),
             Text(
               s.bpmSuffix,
-              style: tt.bodyMedium?.copyWith(
+              style: KineticText.mono(
+                size: 13,
+                weight: FontWeight.w600,
                 color: cs.onSurfaceVariant,
               ),
             ),
@@ -283,16 +288,21 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
               children: [
                 Text(
                   cardioState.hrDeviceName ?? '',
-                  style: tt.bodySmall?.copyWith(
+                  style: KineticText.mono(
+                    size: 10,
+                    weight: FontWeight.w600,
+                    letterSpacing: 0.5,
                     color: cs.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 GestureDetector(
                   onTap: () => controller.disconnectHeartRate(),
                   child: Text(
-                    s.disconnect,
-                    style: tt.labelSmall?.copyWith(
+                    s.disconnect.toUpperCase(),
+                    style: KineticText.mono(
+                      size: 10,
+                      letterSpacing: 0.8,
                       color: cs.primary,
                     ),
                   ),
@@ -304,34 +314,50 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
       );
     }
 
-    // Disconnected state
+    // Disconnected — BLE connect prompt
     return Container(
       decoration: BoxDecoration(
         color: cs.surfaceContainer,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
-          Icon(Icons.bluetooth, color: cs.primary, size: 28),
-          const SizedBox(width: 16),
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: cs.primary.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: Icon(Icons.bluetooth, color: cs.primary, size: 22),
+          ),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   s.heartRateMonitorCard,
-                  style: tt.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                  style: KineticText.display(
+                    size: 15,
+                    letterSpacing: -0.2,
+                    color: cs.onSurface,
+                  ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   s.heartRateMonitorSubtitle,
-                  style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  style: GoogleFonts.manrope(
+                    fontSize: 12,
+                    color: cs.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.help_outline),
+            icon: Icon(Icons.help_outline, color: cs.onSurfaceVariant),
             tooltip: s.setupGuide,
             onPressed: () => showHrSetupGuide(context),
           ),
@@ -389,10 +415,12 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
   }
 }
 
-// ── Exercise Chip Selector ───────────────────────────────────────────────
+// ── Sport Segmented Control (.seg) ──────────────────────────────────────────
+// Renders as a pill-shaped row where the active item has an accent fill,
+// matching rf.css `.seg` / `.seg__item` / `.seg__item--on`.
 
-class _ExerciseChipSelector extends StatelessWidget {
-  const _ExerciseChipSelector({
+class _ExerciseSegControl extends StatelessWidget {
+  const _ExerciseSegControl({
     required this.exercisesAsync,
     required this.selectedId,
     required this.onSelected,
@@ -405,62 +433,66 @@ class _ExerciseChipSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
 
     return exercisesAsync.when(
-      data: (exercises) => SizedBox(
-        height: 42,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: exercises.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 10),
-          itemBuilder: (context, index) {
-            final ex = exercises[index];
-            final isSelected = ex.id == selectedId;
-
-            return GestureDetector(
-              onTap: () => onSelected(ex.id, ex.name),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? cs.surfaceContainerHighest
-                      : cs.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(100),
-                  border: isSelected
-                      ? Border.all(
-                          color: cs.primary.withValues(alpha: 0.2),
-                        )
-                      : null,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.directions_run,
-                      size: 16,
-                      color: isSelected ? cs.primary : cs.onSurfaceVariant,
+      data: (exercises) {
+        if (exercises.isEmpty) return const SizedBox.shrink();
+        return Container(
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(
+            children: exercises.map((ex) {
+              final isSelected = ex.id == selectedId;
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => onSelected(ex.id, ex.name),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 11,
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      ex.name,
-                      style: tt.labelMedium?.copyWith(
-                        color: isSelected ? cs.primary : cs.onSurfaceVariant,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
+                    decoration: BoxDecoration(
+                      color: isSelected ? cs.primary : Colors.transparent,
+                      borderRadius: BorderRadius.circular(999),
                     ),
-                  ],
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.directions_run,
+                          size: 17,
+                          color:
+                              isSelected ? cs.onPrimary : cs.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            ex.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: KineticText.mono(
+                              size: 12,
+                              letterSpacing: 0.4,
+                              color: isSelected
+                                  ? cs.onPrimary
+                                  : cs.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            );
-          },
-        ),
-      ),
+              );
+            }).toList(),
+          ),
+        );
+      },
       loading: () => const SizedBox(
-        height: 42,
+        height: 48,
         child: Center(child: LinearProgressIndicator()),
       ),
       error: (_, __) => const Text('Failed to load exercises'),
@@ -468,7 +500,9 @@ class _ExerciseChipSelector extends StatelessWidget {
   }
 }
 
-// ── Hero Timer ───────────────────────────────────────────────────────────
+// ── Hero Timer ───────────────────────────────────────────────────────────────
+// Centred display: mono "ACTIVE DURATION" eyebrow, then 64/800 MM:SS with an
+// accent-coloured separator colon, and a dim ".00" centisecond stub.
 
 class _HeroTimer extends StatelessWidget {
   const _HeroTimer({
@@ -483,63 +517,75 @@ class _HeroTimer extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = S.of(context)!;
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
     final duration = Duration(seconds: elapsedSeconds);
     final mins = duration.inMinutes;
     final secs = duration.inSeconds % 60;
-    final centis = 0; // No centiseconds in current timer
+
+    final digitColor = isRunning ? cs.onSurface : cs.onSurfaceVariant;
 
     return Column(
       children: [
+        // Eyebrow label — mono uppercase, accent
         Text(
           s.activeDuration.toUpperCase(),
-          style: tt.labelSmall?.copyWith(
-            color: cs.primary.withValues(alpha: 0.6),
-            letterSpacing: 1.5,
-            fontWeight: FontWeight.w600,
+          style: KineticText.mono(
+            size: 10.5,
+            weight: FontWeight.w700,
+            letterSpacing: 2.2,
+            color: cs.primary,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 14),
+        // Hero numeral row
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
               mins.toString().padLeft(2, '0'),
-              style: tt.displayLarge?.copyWith(
-                fontSize: 72,
-                fontWeight: FontWeight.w900,
-                height: 1.0,
-                color: isRunning ? cs.onSurface : cs.onSurfaceVariant,
-                fontFeatures: const [FontFeature.tabularFigures()],
+              style: KineticText.mono(
+                size: 64,
+                weight: FontWeight.w800,
+                letterSpacing: -2.5,
+                color: digitColor,
+                height: 0.9,
               ),
             ),
-            Text(
-              ':',
-              style: tt.displayLarge?.copyWith(
-                fontSize: 72,
-                fontWeight: FontWeight.w900,
-                height: 1.0,
-                color: const Color(0xFF8354F4), // primary-dim
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                ':',
+                style: KineticText.mono(
+                  size: 64,
+                  weight: FontWeight.w800,
+                  letterSpacing: 0,
+                  color: cs.primary,
+                  height: 0.9,
+                ),
               ),
             ),
             Text(
               secs.toString().padLeft(2, '0'),
-              style: tt.displayLarge?.copyWith(
-                fontSize: 72,
-                fontWeight: FontWeight.w900,
-                height: 1.0,
-                color: isRunning ? cs.onSurface : cs.onSurfaceVariant,
-                fontFeatures: const [FontFeature.tabularFigures()],
+              style: KineticText.mono(
+                size: 64,
+                weight: FontWeight.w800,
+                letterSpacing: -2.5,
+                color: digitColor,
+                height: 0.9,
               ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              '.${centis.toString().padLeft(2, '0')}',
-              style: tt.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w300,
-                color: cs.onSurfaceVariant,
+            const SizedBox(width: 4),
+            // Centisecond stub — dim, smaller
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                '.00',
+                style: KineticText.mono(
+                  size: 20,
+                  weight: FontWeight.w700,
+                  color: cs.primary,
+                  height: 1.0,
+                ),
               ),
             ),
           ],
@@ -549,20 +595,21 @@ class _HeroTimer extends StatelessWidget {
   }
 }
 
-// ── Kinetic Metric Bento ─────────────────────────────────────────────────
+// ── Metric Stat Row (avg pace + distance) ────────────────────────────────────
+// Two KineticStatTile widgets side by side, fed from live GPS/manual state.
 
-class _MetricBento extends StatelessWidget {
-  const _MetricBento({required this.cardioState});
+class _MetricStatRow extends StatelessWidget {
+  const _MetricStatRow({required this.cardioState});
 
   final CardioTrackingState cardioState;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
+    final s = S.of(context)!;
 
-    // Calculate pace
+    // Calculate avg pace
     String paceDisplay = '--';
+    String? paceUnit;
     if (cardioState.gpsEnabled &&
         cardioState.gpsDistanceMeters > 0 &&
         cardioState.elapsedSeconds > 0) {
@@ -571,86 +618,35 @@ class _MetricBento extends StatelessWidget {
       final mins = pace.floor();
       final secs = ((pace - mins) * 60).round();
       paceDisplay = "$mins'${secs.toString().padLeft(2, '0')}\"";
+      paceUnit = '/km';
     }
 
     // Calculate distance
     String distanceDisplay = '--';
+    String? distUnit;
     if (cardioState.gpsEnabled && cardioState.gpsDistanceMeters > 0) {
       distanceDisplay =
           (cardioState.gpsDistanceMeters / 1000).toStringAsFixed(2);
+      distUnit = 'km';
     }
 
     return Row(
       children: [
         Expanded(
-          child: AspectRatio(
-            aspectRatio: 1,
-            child: Container(
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.speed, color: cs.tertiary),
-                  const Spacer(),
-                  Text(
-                    paceDisplay,
-                    style: tt.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    S.of(context)!.avgPaceLabel.toUpperCase(),
-                    style: tt.labelSmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                      letterSpacing: 0.8,
-                      fontSize: 9,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          child: KineticStatTile(
+            label: s.avgPaceLabel,
+            value: paceDisplay,
+            unit: paceUnit,
+            valueSize: 26,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
-          child: AspectRatio(
-            aspectRatio: 1,
-            child: Container(
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.straighten, color: cs.primary),
-                  const Spacer(),
-                  Text(
-                    distanceDisplay,
-                    style: tt.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    S.of(context)!.distanceLabel.toUpperCase(),
-                    style: tt.labelSmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                      letterSpacing: 0.8,
-                      fontSize: 9,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          child: KineticStatTile(
+            label: s.distanceLabel,
+            value: distanceDisplay,
+            unit: distUnit,
+            valueSize: 26,
           ),
         ),
       ],
@@ -658,7 +654,9 @@ class _MetricBento extends StatelessWidget {
   }
 }
 
-// ── GPS Card ─────────────────────────────────────────────────────────────
+// ── GPS Card ─────────────────────────────────────────────────────────────────
+// Uses a custom row inside Material to avoid the ListTile-in-DecoratedBox
+// assertion (the root cause of the 4 pre-existing test failures).
 
 class _GpsCard extends StatelessWidget {
   const _GpsCard({
@@ -673,40 +671,81 @@ class _GpsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = S.of(context)!;
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.surfaceContainer,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: SwitchListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+    // Subtitle text
+    final subtitle = cardioState.gpsAcquiring
+        ? s.gpsAcquiring
+        : cardioState.gpsEnabled
+            ? s.gpsMetresTracked(
+                cardioState.gpsDistanceMeters.toStringAsFixed(0))
+            : s.gpsSubtitle;
+
+    return Material(
+      color: cs.surfaceContainer,
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: cardioState.isSaving ? null : onToggle,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: cardioState.gpsEnabled
+                      ? cs.primary.withValues(alpha: 0.14)
+                      : cs.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Icon(
+                  Icons.gps_fixed,
+                  size: 22,
+                  color:
+                      cardioState.gpsEnabled ? cs.primary : cs.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      s.gpsDistanceTracking,
+                      style: KineticText.display(
+                        size: 15,
+                        letterSpacing: -0.2,
+                        color: cs.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.manrope(
+                        fontSize: 12,
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: cardioState.gpsEnabled,
+                onChanged: cardioState.isSaving ? null : (_) => onToggle(),
+                activeThumbColor: cs.onPrimary,
+                activeTrackColor: cs.primary,
+              ),
+            ],
+          ),
         ),
-        title: Text(
-          s.gpsDistanceTracking,
-          style: tt.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        subtitle: cardioState.gpsAcquiring
-            ? Text(s.gpsAcquiring)
-            : cardioState.gpsEnabled
-                ? Text(s.gpsMetresTracked(
-                    cardioState.gpsDistanceMeters.toStringAsFixed(0)))
-                : Text(s.gpsSubtitle),
-        secondary: Icon(
-          Icons.gps_fixed,
-          color: cardioState.gpsEnabled ? cs.primary : cs.outline,
-        ),
-        value: cardioState.gpsEnabled,
-        onChanged: cardioState.isSaving ? null : (_) => onToggle(),
       ),
     );
   }
 }
 
-// ── Last Session Card ────────────────────────────────────────────────────
+// ── Last Session Card ─────────────────────────────────────────────────────────
+// Shows previous session stats as a row of compact mono metric tiles (.mtile).
 
 class _LastSessionCard extends StatelessWidget {
   const _LastSessionCard({required this.session});
@@ -716,139 +755,183 @@ class _LastSessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            s.lastSession.toUpperCase(),
-            style: tt.labelSmall?.copyWith(
-              color: cs.onSurfaceVariant,
-              letterSpacing: 1.0,
-              fontWeight: FontWeight.bold,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        KineticSectionLabel(s.lastSession),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _MetricTile(
+              value: session.duration.formatted,
+              label: 'duration',
             ),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 16,
-            runSpacing: 8,
-            children: [
-              _GhostStat(
-                icon: Icons.timer,
-                value: session.duration.formatted,
+            if (session.distanceMeters != null)
+              _MetricTile(
+                value: '${session.distanceMeters!.toStringAsFixed(0)} m',
+                label: 'distance',
               ),
-              if (session.distanceMeters != null)
-                _GhostStat(
-                  icon: Icons.directions_run,
-                  value: '${session.distanceMeters!.toStringAsFixed(0)} m',
-                ),
-              if (session.paceMinutesPerKm != null)
-                _GhostStat(
-                  icon: Icons.speed,
-                  value: _formatPace(session.paceMinutesPerKm!),
-                ),
-              if (session.avgHeartRate != null)
-                _GhostStat(
-                  icon: Icons.favorite_outline,
-                  value: '${session.avgHeartRate} bpm',
-                ),
-            ],
-          ),
-        ],
-      ),
+            if (session.paceMinutesPerKm != null)
+              _MetricTile(
+                value: _formatPace(session.paceMinutesPerKm!),
+                label: 'pace',
+              ),
+            if (session.avgHeartRate != null)
+              _MetricTile(
+                value: '${session.avgHeartRate}',
+                label: 'avg bpm',
+              ),
+          ],
+        ),
+      ],
     );
   }
 
   static String _formatPace(double minutesPerKm) {
     final mins = minutesPerKm.floor();
     final secs = ((minutesPerKm - mins) * 60).round();
-    return '$mins:${secs.toString().padLeft(2, '0')} min/km';
+    return '$mins:${secs.toString().padLeft(2, '0')}';
   }
 }
 
-// ── Action Button ────────────────────────────────────────────────────────
+// ── Compact Metric Tile (.mtile) ─────────────────────────────────────────────
+// Matches rf.css `.mtile`: centred big mono value + small uppercase label.
 
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
+class _MetricTile extends StatelessWidget {
+  const _MetricTile({required this.value, required this.label});
+
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 14),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            value,
+            style: KineticText.mono(
+              size: 22,
+              weight: FontWeight.w700,
+              letterSpacing: -0.9,
+              color: cs.onSurface,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label.toUpperCase(),
+            style: KineticText.mono(
+              size: 9.5,
+              weight: FontWeight.w600,
+              letterSpacing: 1.2,
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Secondary Action Button ───────────────────────────────────────────────────
+// Non-primary controls (Pause, Reset) — surfaceContainer bg, outlined style.
+
+class _SecondaryActionButton extends StatelessWidget {
+  const _SecondaryActionButton({
     required this.onPressed,
     required this.icon,
     required this.label,
-    required this.isPrimary,
   });
 
   final VoidCallback onPressed;
   final IconData icon;
   final String label;
-  final bool isPrimary;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        decoration: BoxDecoration(
-          color: isPrimary ? cs.primaryContainer : cs.surfaceContainer,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: isPrimary ? cs.onPrimaryContainer : cs.onSurface,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: tt.labelMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.8,
-                color: isPrimary ? cs.onPrimaryContainer : cs.onSurface,
+    return Material(
+      color: cs.surfaceContainer,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(18),
+        child: SizedBox(
+          height: 52,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 20, color: cs.onSurface),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: KineticText.mono(
+                  size: 13,
+                  letterSpacing: 0.8,
+                  color: cs.onSurface,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// ── Ghost Stat ───────────────────────────────────────────────────────────
+// ── Kinetic Input Field ───────────────────────────────────────────────────────
+// Manual entry fields styled with surfaceContainerLow background and
+// accent focus ring, matching rf.css `.field--focus`.
 
-class _GhostStat extends StatelessWidget {
-  const _GhostStat({required this.icon, required this.value});
+class _KineticInputField extends StatelessWidget {
+  const _KineticInputField({
+    required this.controller,
+    required this.label,
+    required this.icon,
+    this.keyboardType,
+    this.onChanged,
+  });
 
+  final TextEditingController controller;
+  final String label;
   final IconData icon;
-  final String value;
+  final TextInputType? keyboardType;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: cs.outline),
-        const SizedBox(width: 4),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      onChanged: onChanged,
+      style: KineticText.mono(size: 14, color: cs.onSurface),
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: 20),
+        filled: true,
+        fillColor: cs.surfaceContainerLow,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
         ),
-      ],
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: cs.primary, width: 1.5),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
     );
   }
 }

@@ -129,6 +129,29 @@ void main() {
         expect(sets.first.weight, 100);
         expect(sets.first.reps, 5);
       });
+
+      test(
+          'surfaces a clean error message (not the exception class name) '
+          'for invalid reps', () async {
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+
+        final exercises = await exerciseRepo.getAllExercises();
+        final exercise = exercises.first;
+        await controller.addExercise(exercise);
+
+        await controller.logSet(
+          exerciseId: exercise.id,
+          weight: 100,
+          reps: 0,
+        );
+
+        // Invalid input logs no set.
+        expect(readState().setsByExercise[exercise.id] ?? const [], isEmpty);
+        // The user-facing error must not leak the exception class name.
+        expect(readState().error, 'Reps must be greater than zero');
+      });
     });
 
     group('updateSet', () {

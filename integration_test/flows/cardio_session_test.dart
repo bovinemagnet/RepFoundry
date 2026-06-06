@@ -16,10 +16,10 @@ void main() {
       await tester.tap(find.text('CARDIO'));
       await tester.pumpAndSettle();
 
-      // Cardio screen should be visible with its controls.
-      // The exact content depends on the screen, but we verify
-      // it renders without errors.
-      expect(find.text('CARDIO'), findsOneWidget);
+      // Cardio screen should be visible with its controls. The redesign
+      // renders "CARDIO" twice (eyebrow + nav label); the AppBar title
+      // "Cardio" (mixed case) uniquely identifies the screen.
+      expect(find.text('Cardio'), findsOneWidget);
 
       await testApp.database.close();
     });

@@ -60,9 +60,16 @@ void main() {
       await tester.tap(find.text('HISTORY'));
       await tester.pumpAndSettle();
 
-      // The workout should appear in the list.
+      // The redesigned history list shows a session card named "Workout" with
+      // aggregate stats rather than per-exercise names.
+      await pumpUntilFound(tester, find.text('Workout'));
+      expect(find.text('Workout'), findsOneWidget);
+
+      // Open the session detail screen, which lists the exercises performed.
+      await tester.tap(find.text('Workout'));
+      await tester.pumpAndSettle();
       await pumpUntilFound(tester, find.text(exercise.name));
-      expect(find.text(exercise.name), findsOneWidget);
+      expect(find.text(exercise.name), findsWidgets);
 
       await testApp.database.close();
     });

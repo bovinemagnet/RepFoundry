@@ -81,9 +81,9 @@ class _GlassNavBar extends StatelessWidget {
 
     final items = [
       (Icons.fitness_center, s.navWorkout),
-      (Icons.history, s.navHistory),
+      (Icons.bar_chart, s.navHistory),
       (Icons.directions_run, s.navCardio),
-      (Icons.monitor_heart, s.navHeartRate),
+      (Icons.favorite, s.navHeartRate),
       (Icons.settings, s.navSettings),
     ];
 
@@ -136,7 +136,7 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activeColor = colorScheme.primary;
-    final inactiveColor = colorScheme.primaryContainer.withValues(alpha: 0.5);
+    final inactiveColor = colorScheme.onSurfaceVariant.withValues(alpha: 0.7);
 
     return GestureDetector(
       onTap: onTap,

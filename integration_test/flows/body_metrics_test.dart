@@ -18,8 +18,15 @@ void main() {
       await tester.pumpAndSettle();
 
       // Scroll to and tap Body Metrics.
+      // The Body Metrics tile is in the DATA section, far down the settings
+      // ListView, so it must be scrolled into view before it is built.
       final bodyMetricsTile = find.text('Body Metrics');
-      await tester.ensureVisible(bodyMetricsTile);
+      await tester.scrollUntilVisible(
+        bodyMetricsTile,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(bodyMetricsTile);
       await tester.pumpAndSettle();
 
@@ -41,8 +48,15 @@ void main() {
       await tester.tap(find.text('SETTINGS'));
       await tester.pumpAndSettle();
 
+      // The Body Metrics tile is in the DATA section, far down the settings
+      // ListView, so it must be scrolled into view before it is built.
       final bodyMetricsTile = find.text('Body Metrics');
-      await tester.ensureVisible(bodyMetricsTile);
+      await tester.scrollUntilVisible(
+        bodyMetricsTile,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(bodyMetricsTile);
       await tester.pumpAndSettle();
 

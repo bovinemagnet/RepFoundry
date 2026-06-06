@@ -19,8 +19,15 @@ void main() {
       await tester.pumpAndSettle();
 
       // Scroll to and tap Programmes.
+      // The Programmes tile is in the DATA section, far down the settings
+      // ListView, so it must be scrolled into view before it is built.
       final programmesTile = find.text('Programmes');
-      await tester.ensureVisible(programmesTile);
+      await tester.scrollUntilVisible(
+        programmesTile,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(programmesTile);
       await tester.pumpAndSettle();
 
@@ -39,8 +46,15 @@ void main() {
       await tester.tap(find.text('SETTINGS'));
       await tester.pumpAndSettle();
 
+      // The Programmes tile is in the DATA section, far down the settings
+      // ListView, so it must be scrolled into view before it is built.
       final programmesTile = find.text('Programmes');
-      await tester.ensureVisible(programmesTile);
+      await tester.scrollUntilVisible(
+        programmesTile,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(programmesTile);
       await tester.pumpAndSettle();
 
