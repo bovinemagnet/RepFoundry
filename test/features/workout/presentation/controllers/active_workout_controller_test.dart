@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,6 +34,11 @@ class _FakeCloudSyncService implements CloudSyncService {
   Future<void> uploadSnapshot(String jsonData) async {}
 }
 
+class _TestHealthSyncSettingsNotifier extends HealthSyncSettingsNotifier {
+  @override
+  HealthSyncSettings build() => const HealthSyncSettings();
+}
+
 class _RecordingSyncOrchestrator extends SyncOrchestrator {
   _RecordingSyncOrchestrator._(this._database)
       : super(
@@ -46,11 +53,17 @@ class _RecordingSyncOrchestrator extends SyncOrchestrator {
       );
 
   final AppDatabase _database;
+  final Completer<void> _syncCalled = Completer<void>();
   int syncCalls = 0;
+
+  Future<void> get syncCalled => _syncCalled.future;
 
   @override
   Future<SyncResult> sync() async {
     syncCalls += 1;
+    if (!_syncCalled.isCompleted) {
+      _syncCalled.complete();
+    }
     return SyncResult.success(entitiesMerged: 0);
   }
 
@@ -81,7 +94,7 @@ void main() {
         workoutTemplateRepositoryProvider.overrideWithValue(templateRepo),
         healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
         healthSyncSettingsProvider
-            .overrideWith(() => HealthSyncSettingsNotifier()),
+            .overrideWith(() => _TestHealthSyncSettingsNotifier()),
         syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
         syncOrchestratorProvider.overrideWithValue(syncOrchestrator),
       ],
@@ -284,21 +297,18 @@ void main() {
             workoutTemplateRepositoryProvider.overrideWithValue(templateRepo),
             healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
             healthSyncSettingsProvider
-                .overrideWith(() => HealthSyncSettingsNotifier()),
+                .overrideWith(() => _TestHealthSyncSettingsNotifier()),
             syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
             syncOrchestratorProvider.overrideWithValue(syncOrchestrator),
           ],
         );
 
         await waitForInit();
-        container.read(healthSyncSettingsProvider);
-        await Future<void>.delayed(const Duration(milliseconds: 50));
-
         final controller = readController();
         await controller.startWorkout();
 
         await controller.finishWorkout();
-        await Future<void>.delayed(Duration.zero);
+        await syncOrchestrator.syncCalled;
 
         expect(syncOrchestrator.syncCalls, 1);
       });

@@ -10,6 +10,8 @@ class SyncSettingsNotifier extends Notifier<SyncSettings> {
   static const _keyLastSyncAt = 'cloud_sync_last_sync_at';
   static const _keyDeviceId = 'cloud_sync_device_id';
   static const _keyConsentGiven = 'cloud_sync_consent_given';
+  // Cache the initial preferences read so every caller of ensureLoaded()
+  // awaits the same work instead of racing multiple overlapping loads.
   Future<void>? _loadFuture;
 
   @override
