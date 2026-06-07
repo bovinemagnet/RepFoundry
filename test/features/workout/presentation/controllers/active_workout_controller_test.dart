@@ -78,15 +78,8 @@ void main() {
   late ProviderContainer container;
   late _RecordingSyncOrchestrator syncOrchestrator;
 
-  setUp(() {
-    TestWidgetsFlutterBinding.ensureInitialized();
-    SharedPreferences.setMockInitialValues({});
-    workoutRepo = InMemoryWorkoutRepository();
-    exerciseRepo = InMemoryExerciseRepository();
-    prRepo = InMemoryPersonalRecordRepository();
-    templateRepo = InMemoryWorkoutTemplateRepository();
-    syncOrchestrator = _RecordingSyncOrchestrator();
-    container = ProviderContainer(
+  ProviderContainer createContainer() {
+    return ProviderContainer(
       overrides: [
         workoutRepositoryProvider.overrideWithValue(workoutRepo),
         exerciseRepositoryProvider.overrideWithValue(exerciseRepo),
@@ -99,6 +92,17 @@ void main() {
         syncOrchestratorProvider.overrideWithValue(syncOrchestrator),
       ],
     );
+  }
+
+  setUp(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    workoutRepo = InMemoryWorkoutRepository();
+    exerciseRepo = InMemoryExerciseRepository();
+    prRepo = InMemoryPersonalRecordRepository();
+    templateRepo = InMemoryWorkoutTemplateRepository();
+    syncOrchestrator = _RecordingSyncOrchestrator();
+    container = createContainer();
   });
 
   tearDown(() async {
@@ -289,19 +293,7 @@ void main() {
         container.dispose();
         await syncOrchestrator.dispose();
         syncOrchestrator = _RecordingSyncOrchestrator();
-        container = ProviderContainer(
-          overrides: [
-            workoutRepositoryProvider.overrideWithValue(workoutRepo),
-            exerciseRepositoryProvider.overrideWithValue(exerciseRepo),
-            personalRecordRepositoryProvider.overrideWithValue(prRepo),
-            workoutTemplateRepositoryProvider.overrideWithValue(templateRepo),
-            healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
-            healthSyncSettingsProvider
-                .overrideWith(() => _TestHealthSyncSettingsNotifier()),
-            syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
-            syncOrchestratorProvider.overrideWithValue(syncOrchestrator),
-          ],
-        );
+        container = createContainer();
 
         await waitForInit();
         final controller = readController();

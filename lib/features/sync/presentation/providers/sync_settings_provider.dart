@@ -13,11 +13,14 @@ class SyncSettingsNotifier extends Notifier<SyncSettings> {
   // Cache the initial preferences read so every caller of ensureLoaded()
   // awaits the same work instead of racing multiple overlapping loads.
   Future<void>? _loadFuture;
+  late final SyncSettings _initialSettings =
+      SyncSettings(deviceId: const Uuid().v4());
+  SyncSettings? _loadedSettings;
 
   @override
   SyncSettings build() {
     _loadFuture ??= _load();
-    return SyncSettings(deviceId: const Uuid().v4());
+    return _loadedSettings ?? _initialSettings;
   }
 
   Future<void> ensureLoaded() async {
@@ -27,14 +30,14 @@ class SyncSettingsNotifier extends Notifier<SyncSettings> {
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final deviceId = prefs.getString(_keyDeviceId) ?? state.deviceId;
+    final deviceId = prefs.getString(_keyDeviceId) ?? _initialSettings.deviceId;
     // Persist device ID on first load
     if (!prefs.containsKey(_keyDeviceId)) {
       await prefs.setString(_keyDeviceId, deviceId);
     }
 
     final lastSyncMs = prefs.getInt(_keyLastSyncAt);
-    state = SyncSettings(
+    final loadedSettings = SyncSettings(
       enabled: prefs.getBool(_keyEnabled) ?? false,
       lastSyncAt: lastSyncMs != null
           ? DateTime.fromMillisecondsSinceEpoch(lastSyncMs, isUtc: true)
@@ -42,28 +45,38 @@ class SyncSettingsNotifier extends Notifier<SyncSettings> {
       deviceId: deviceId,
       consentGiven: prefs.getBool(_keyConsentGiven) ?? false,
     );
+    _loadedSettings = loadedSettings;
+    state = loadedSettings;
   }
 
   Future<void> setEnabled(bool enabled) async {
-    state = state.copyWith(enabled: enabled);
+    final nextState = state.copyWith(enabled: enabled);
+    _loadedSettings = nextState;
+    state = nextState;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyEnabled, enabled);
   }
 
   Future<void> setConsentGiven(bool given) async {
-    state = state.copyWith(consentGiven: given);
+    final nextState = state.copyWith(consentGiven: given);
+    _loadedSettings = nextState;
+    state = nextState;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyConsentGiven, given);
   }
 
   Future<void> updateLastSyncAt(DateTime time) async {
-    state = state.copyWith(lastSyncAt: time);
+    final nextState = state.copyWith(lastSyncAt: time);
+    _loadedSettings = nextState;
+    state = nextState;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_keyLastSyncAt, time.millisecondsSinceEpoch);
   }
 
   Future<void> disableAndClear() async {
-    state = SyncSettings(deviceId: state.deviceId);
+    final nextState = SyncSettings(deviceId: state.deviceId);
+    _loadedSettings = nextState;
+    state = nextState;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyEnabled);
     await prefs.remove(_keyLastSyncAt);
