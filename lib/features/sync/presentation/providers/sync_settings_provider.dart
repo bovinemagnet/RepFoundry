@@ -10,21 +10,29 @@ class SyncSettingsNotifier extends Notifier<SyncSettings> {
   static const _keyLastSyncAt = 'cloud_sync_last_sync_at';
   static const _keyDeviceId = 'cloud_sync_device_id';
   static const _keyConsentGiven = 'cloud_sync_consent_given';
-  // Cache the initial preferences read so every caller of ensureLoaded()
-  // awaits the same work instead of racing multiple overlapping loads.
+  // `_initialSettings` gives build() a stable device ID immediately,
+  // `_loadFuture` ensures every caller awaits the same preferences read,
+  // and `_loadedSettings` keeps the loaded state stable across rebuilds.
   Future<void>? _loadFuture;
-  late final SyncSettings _initialSettings =
-      SyncSettings(deviceId: const Uuid().v4());
+  final SyncSettings _initialSettings = SyncSettings(deviceId: const Uuid().v4());
   SyncSettings? _loadedSettings;
 
   @override
   SyncSettings build() {
-    _loadFuture ??= _load();
+    _ensureLoadStarted();
     return _loadedSettings ?? _initialSettings;
   }
 
   Future<void> ensureLoaded() async {
-    await (_loadFuture ??= _load());
+    await _ensureLoadStarted();
+  }
+
+  Future<void> _ensureLoadStarted() {
+    final loadFuture = _loadFuture;
+    if (loadFuture != null) return loadFuture;
+    final startedLoad = _load();
+    _loadFuture = startedLoad;
+    return startedLoad;
   }
 
   Future<void> _load() async {

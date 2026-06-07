@@ -34,7 +34,7 @@ class _FakeCloudSyncService implements CloudSyncService {
   Future<void> uploadSnapshot(String jsonData) async {}
 }
 
-class _TestHealthSyncSettingsNotifier extends HealthSyncSettingsNotifier {
+class _StubHealthSyncSettingsNotifier extends HealthSyncSettingsNotifier {
   @override
   HealthSyncSettings build() => const HealthSyncSettings();
 }
@@ -87,7 +87,7 @@ void main() {
         workoutTemplateRepositoryProvider.overrideWithValue(templateRepo),
         healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
         healthSyncSettingsProvider
-            .overrideWith(() => _TestHealthSyncSettingsNotifier()),
+            .overrideWith(() => _StubHealthSyncSettingsNotifier()),
         syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
         syncOrchestratorProvider.overrideWithValue(syncOrchestrator),
       ],
