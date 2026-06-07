@@ -10,11 +10,16 @@ class SyncSettingsNotifier extends Notifier<SyncSettings> {
   static const _keyLastSyncAt = 'cloud_sync_last_sync_at';
   static const _keyDeviceId = 'cloud_sync_device_id';
   static const _keyConsentGiven = 'cloud_sync_consent_given';
+  Future<void>? _loadFuture;
 
   @override
   SyncSettings build() {
-    _load();
+    _loadFuture ??= _load();
     return SyncSettings(deviceId: const Uuid().v4());
+  }
+
+  Future<void> ensureLoaded() async {
+    await (_loadFuture ??= _load());
   }
 
   Future<void> _load() async {

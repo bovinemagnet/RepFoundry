@@ -335,6 +335,8 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
       // interface) escape. Without this catch, that escapes the
       // unawaited future and is printed by the VM error handler.
       try {
+        final syncSettingsNotifier = ref.read(syncSettingsProvider.notifier);
+        await syncSettingsNotifier.ensureLoaded();
         final syncSettings = ref.read(syncSettingsProvider);
         if (syncSettings.enabled) {
           final orchestrator = ref.read(syncOrchestratorProvider);
