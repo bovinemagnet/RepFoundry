@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,44 +25,11 @@ import '../../../health_sync/presentation/providers/health_sync_settings_provide
 import '../providers/export_provider.dart';
 import '../providers/rest_timer_settings_provider.dart';
 import '../providers/show_exercise_images_provider.dart';
+import '../providers/theme_mode_provider.dart';
 import '../providers/user_age_provider.dart';
 import '../../../notifications/presentation/providers/reminder_settings_provider.dart';
 import '../../../notifications/domain/models/reminder_settings.dart';
-
-final _themeModeProvider = NotifierProvider<_ThemeModeNotifier, ThemeMode>(
-  _ThemeModeNotifier.new,
-);
-
-class _ThemeModeNotifier extends Notifier<ThemeMode> {
-  @override
-  ThemeMode build() {
-    _load();
-    return ThemeMode.dark;
-  }
-
-  Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final value = prefs.getString('theme_mode') ?? 'dark';
-    state = _fromString(value);
-  }
-
-  Future<void> set(ThemeMode mode) async {
-    state = mode;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('theme_mode', mode.name);
-  }
-
-  ThemeMode _fromString(String value) {
-    switch (value) {
-      case 'light':
-        return ThemeMode.light;
-      case 'system':
-        return ThemeMode.system;
-      default:
-        return ThemeMode.dark;
-    }
-  }
-}
+import '../../../../core/widgets/kinetic.dart';
 
 final _weightUnitProvider = NotifierProvider<_WeightUnitNotifier, String>(
   _WeightUnitNotifier.new,
@@ -86,387 +54,366 @@ class _WeightUnitNotifier extends Notifier<String> {
   }
 }
 
+// ─── Public screen ────────────────────────────────────────────────────────────
+
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(_themeModeProvider);
+    final themeMode = ref.watch(themeModeProvider);
     final weightUnit = ref.watch(_weightUnitProvider);
     final userAge = ref.watch(userAgeProvider);
     final profile = ref.watch(healthProfileProvider);
     final zoneConfig = ref.watch(zoneConfigurationProvider);
 
     final s = S.of(context)!;
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(s.settingsTitle)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-        children: [
-          // Editorial header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(4, 8, 4, 4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  s.settingsTitle,
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+      // No AppBar — the pagehead sits inside the scrollable body.
+      backgroundColor: cs.surface,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(22, 16, 22, 96),
+          children: [
+            // ── Pagehead ──────────────────────────────────────────────────
+            _Pagehead(s: s),
+
+            const SizedBox(height: 6),
+
+            // ── HEALTH PROFILE ────────────────────────────────────────────
+            KineticSectionLabel(s.sectionHealthProfile),
+            const SizedBox(height: 11),
+            _Set2Card(children: [
+              // Age
+              _Set2Row(
+                icon: Icons.cake_outlined,
+                title: s.ageLabel,
+                subtitle: userAge != null
+                    ? s.ageSubtitleSet(
+                        userAge,
+                        profile.estimatedMaxHr ??
+                            MaxHrFormula.tanaka.apply(userAge),
+                      )
+                    : s.ageSubtitleEmpty,
+                trailing: userAge != null
+                    ? _ClearButton(
+                        onPressed: () =>
+                            ref.read(userAgeProvider.notifier).setAge(null),
+                      )
+                    : null,
+                onTap: () => _showAgeDialog(context, ref, userAge),
+              ),
+              // Resting HR
+              _Set2Row(
+                icon: Icons.monitor_heart_outlined,
+                title: s.restingHeartRate,
+                subtitle: profile.restingHr != null
+                    ? s.restingHrSubtitleSet(profile.restingHr!)
+                    : s.restingHrSubtitleEmpty,
+                trailing: profile.restingHr != null
+                    ? _ClearButton(
+                        onPressed: () => ref
+                            .read(healthProfileProvider.notifier)
+                            .updateRestingHeartRate(null),
+                      )
+                    : null,
+                onTap: () => _showIntDialog(
+                  context,
+                  ref,
+                  title: s.restingHeartRate,
+                  label: s.bpmSuffix,
+                  hint: s.restingHrHint,
+                  suffix: s.bpmSuffix,
+                  current: profile.restingHr,
+                  min: 20,
+                  max: 220,
+                  onSave: (v) => ref
+                      .read(healthProfileProvider.notifier)
+                      .updateRestingHeartRate(v),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Fine-tune your performance experience.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurfaceVariant
-                            .withValues(alpha: 0.8),
-                      ),
+              ),
+              // Measured Max HR
+              _Set2Row(
+                icon: Icons.speed_outlined,
+                title: s.measuredMaxHeartRate,
+                subtitle: profile.measuredMaxHr != null
+                    ? s.measuredMaxHrSubtitleSet(profile.measuredMaxHr!)
+                    : s.measuredMaxHrSubtitleEmpty,
+                trailing: profile.measuredMaxHr != null
+                    ? _ClearButton(
+                        onPressed: () => ref
+                            .read(healthProfileProvider.notifier)
+                            .updateMeasuredMaxHeartRate(null),
+                      )
+                    : _ChevronTrailing(),
+                onTap: () => _showIntDialog(
+                  context,
+                  ref,
+                  title: s.measuredMaxHeartRate,
+                  label: s.bpmSuffix,
+                  hint: s.measuredMaxHrHint,
+                  suffix: s.bpmSuffix,
+                  current: profile.measuredMaxHr,
+                  min: 60,
+                  max: 250,
+                  onSave: (v) => ref
+                      .read(healthProfileProvider.notifier)
+                      .updateMeasuredMaxHeartRate(v),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          _SectionHeader(title: s.sectionHealthProfile),
-          ListTile(
-            leading: const Icon(Icons.cake_outlined),
-            title: Text(s.ageLabel),
-            subtitle: userAge != null
-                ? Text(s.ageSubtitleSet(
-                    userAge,
-                    profile.estimatedMaxHr ??
-                        MaxHrFormula.tanaka.apply(userAge),
-                  ))
-                : Text(s.ageSubtitleEmpty),
-            trailing: userAge != null
-                ? IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () =>
-                        ref.read(userAgeProvider.notifier).setAge(null),
-                  )
-                : null,
-            onTap: () => _showAgeDialog(context, ref, userAge),
-          ),
-          ListTile(
-            leading: const Icon(Icons.monitor_heart_outlined),
-            title: Text(s.restingHeartRate),
-            subtitle: profile.restingHr != null
-                ? Text(s.restingHrSubtitleSet(profile.restingHr!))
-                : Text(s.restingHrSubtitleEmpty),
-            trailing: profile.restingHr != null
-                ? IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () => ref
-                        .read(healthProfileProvider.notifier)
-                        .updateRestingHeartRate(null),
-                  )
-                : null,
-            onTap: () => _showIntDialog(
-              context,
-              ref,
-              title: s.restingHeartRate,
-              label: s.bpmSuffix,
-              hint: s.restingHrHint,
-              suffix: s.bpmSuffix,
-              current: profile.restingHr,
-              min: 20,
-              max: 220,
-              onSave: (v) => ref
-                  .read(healthProfileProvider.notifier)
-                  .updateRestingHeartRate(v),
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.speed_outlined),
-            title: Text(s.measuredMaxHeartRate),
-            subtitle: profile.measuredMaxHr != null
-                ? Text(s.measuredMaxHrSubtitleSet(profile.measuredMaxHr!))
-                : Text(s.measuredMaxHrSubtitleEmpty),
-            trailing: profile.measuredMaxHr != null
-                ? IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () => ref
-                        .read(healthProfileProvider.notifier)
-                        .updateMeasuredMaxHeartRate(null),
-                  )
-                : null,
-            onTap: () => _showIntDialog(
-              context,
-              ref,
-              title: s.measuredMaxHeartRate,
-              label: s.bpmSuffix,
-              hint: s.measuredMaxHrHint,
-              suffix: s.bpmSuffix,
-              current: profile.measuredMaxHr,
-              min: 60,
-              max: 250,
-              onSave: (v) => ref
-                  .read(healthProfileProvider.notifier)
-                  .updateMeasuredMaxHeartRate(v),
-            ),
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.medication_outlined),
-            title: Text(s.betaBlockerMedication),
-            subtitle: Text(s.betaBlockerSubtitle),
-            value: profile.betaBlocker,
-            onChanged: (v) => ref
-                .read(healthProfileProvider.notifier)
-                .setTakingBetaBlocker(v),
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.favorite_outline),
-            title: Text(s.heartConditionLabel),
-            subtitle: Text(s.heartConditionSubtitle),
-            value: profile.heartCondition,
-            onChanged: (v) => ref
-                .read(healthProfileProvider.notifier)
-                .setHasHeartCondition(v),
-          ),
-          ListTile(
-            leading: const Icon(Icons.medical_services_outlined),
-            title: Text(s.clinicianMaxHeartRate),
-            subtitle: profile.clinicianMaxHr != null
-                ? Text(s.clinicianMaxHrSubtitleSet(profile.clinicianMaxHr!))
-                : Text(s.clinicianMaxHrSubtitleEmpty),
-            trailing: profile.clinicianMaxHr != null
-                ? IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () => ref
-                        .read(healthProfileProvider.notifier)
-                        .setClinicianMaxHr(null),
-                  )
-                : null,
-            onTap: () => _showIntDialog(
-              context,
-              ref,
-              title: s.clinicianMaxHeartRate,
-              label: s.bpmSuffix,
-              hint: s.clinicianMaxHrHint,
-              suffix: s.bpmSuffix,
-              current: profile.clinicianMaxHr,
-              min: 60,
-              max: 250,
-              onSave: (v) =>
-                  ref.read(healthProfileProvider.notifier).setClinicianMaxHr(v),
-            ),
-          ),
-          if (zoneConfig != null)
-            ListTile(
-              leading: const Icon(Icons.bar_chart_outlined),
-              title: Text(s.zoneMethod),
-              subtitle: Text(
-                '${_methodLabel(zoneConfig.method, s)} · '
-                '${_reliabilityLabel(zoneConfig.reliability, s)} confidence',
+              ),
+              // Beta Blocker
+              _Set2Row(
+                icon: Icons.medication_outlined,
+                title: s.betaBlockerMedication,
+                subtitle: s.betaBlockerSubtitle,
+                trailing: _KineticToggle(
+                  value: profile.betaBlocker,
+                  onChanged: (v) => ref
+                      .read(healthProfileProvider.notifier)
+                      .setTakingBetaBlocker(v),
+                ),
+              ),
+              // Heart Condition
+              _Set2Row(
+                icon: Icons.favorite_outline,
+                title: s.heartConditionLabel,
+                subtitle: s.heartConditionSubtitle,
+                trailing: _KineticToggle(
+                  value: profile.heartCondition,
+                  onChanged: (v) => ref
+                      .read(healthProfileProvider.notifier)
+                      .setHasHeartCondition(v),
+                ),
+              ),
+              // Zone Method
+              if (zoneConfig != null)
+                _Set2Row(
+                  icon: Icons.bar_chart_outlined,
+                  title: s.zoneMethod,
+                  subtitle: '${_methodLabel(zoneConfig.method, s)} · '
+                      '${_reliabilityLabel(zoneConfig.reliability, s)} confidence',
+                  trailing: _ChevronTrailing(),
+                ),
+              // Set up HR Zones (guided onboarding)
+              _Set2Row(
+                icon: Icons.tune_outlined,
+                title: s.setUpHeartRateZones,
+                subtitle: s.stepByStepGuidedSetup,
+                trailing: _ChevronTrailing(),
+                onTap: () => showHealthProfileOnboarding(context),
+              ),
+              // Zone Colour Bands
+              _Set2Row(
+                icon: Icons.palette_outlined,
+                title: s.zoneColourBands,
+                subtitle: s.zoneColourBandsSubtitle,
+                trailing: _KineticToggle(
+                  value: ref.watch(zoneBandsProvider),
+                  onChanged: (_) =>
+                      ref.read(zoneBandsProvider.notifier).toggle(),
+                ),
+              ),
+            ]),
+
+            const SizedBox(height: 22),
+
+            // ── MAX HR ALERT ──────────────────────────────────────────────
+            KineticSectionLabel(s.sectionMaxHrAlert),
+            const SizedBox(height: 11),
+            _Set2Card(children: [
+              _Set2Row(
+                icon: Icons.vibration,
+                title: s.maxHrAlertVibration,
+                subtitle: s.maxHrAlertVibrationSubtitle,
+                trailing: _KineticToggle(
+                  value: ref.watch(maxHrAlertProvider).vibrationEnabled,
+                  onChanged: (_) =>
+                      ref.read(maxHrAlertProvider.notifier).toggleVibration(),
+                ),
+              ),
+              _Set2Row(
+                icon: Icons.volume_up_outlined,
+                title: s.maxHrAlertSound,
+                subtitle: s.maxHrAlertSoundSubtitle,
+                trailing: _KineticToggle(
+                  value: ref.watch(maxHrAlertProvider).soundEnabled,
+                  onChanged: (_) =>
+                      ref.read(maxHrAlertProvider.notifier).toggleSound(),
+                ),
+              ),
+              // Alert Cooldown — dropdown pill trailing
+              _Set2Row(
+                icon: Icons.timer_outlined,
+                title: s.maxHrAlertCooldown,
+                subtitle: s.maxHrAlertCooldownSubtitle,
+                trailing: _DropdownPill<int>(
+                  value: ref.watch(maxHrAlertProvider).cooldownSeconds,
+                  items: const [10, 15, 30, 60],
+                  labelBuilder: (v) => '${v}s',
+                  onChanged: (v) {
+                    if (v != null) {
+                      ref.read(maxHrAlertProvider.notifier).setCooldown(v);
+                    }
+                  },
+                ),
+              ),
+            ]),
+
+            // Disclaimer paragraph (faint, small) beneath Max HR Alert card
+            Padding(
+              padding: const EdgeInsets.fromLTRB(6, 12, 6, 0),
+              child: Text(
+                s.warningGeneralDisclaimer,
+                style: GoogleFonts.manrope(
+                  fontSize: 11.5,
+                  height: 1.5,
+                  color: cs.outline,
+                ),
               ),
             ),
-          ListTile(
-            leading: const Icon(Icons.tune_outlined),
-            title: Text(s.setUpHeartRateZones),
-            subtitle: Text(s.stepByStepGuidedSetup),
-            onTap: () => showHealthProfileOnboarding(context),
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.palette_outlined),
-            title: Text(s.zoneColourBands),
-            subtitle: Text(
-              s.zoneColourBandsSubtitle,
-            ),
-            value: ref.watch(zoneBandsProvider),
-            onChanged: (_) => ref.read(zoneBandsProvider.notifier).toggle(),
-          ),
-          _SectionHeader(title: s.sectionMaxHrAlert),
-          SwitchListTile(
-            secondary: const Icon(Icons.vibration),
-            title: Text(s.maxHrAlertVibration),
-            subtitle: Text(s.maxHrAlertVibrationSubtitle),
-            value: ref.watch(maxHrAlertProvider).vibrationEnabled,
-            onChanged: (_) =>
-                ref.read(maxHrAlertProvider.notifier).toggleVibration(),
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.volume_up_outlined),
-            title: Text(s.maxHrAlertSound),
-            subtitle: Text(s.maxHrAlertSoundSubtitle),
-            value: ref.watch(maxHrAlertProvider).soundEnabled,
-            onChanged: (_) =>
-                ref.read(maxHrAlertProvider.notifier).toggleSound(),
-          ),
-          ListTile(
-            leading: const Icon(Icons.timer_outlined),
-            title: Text(s.maxHrAlertCooldown),
-            subtitle: Text(s.maxHrAlertCooldownSubtitle),
-            trailing: DropdownButton<int>(
-              value: ref.watch(maxHrAlertProvider).cooldownSeconds,
-              underline: const SizedBox.shrink(),
-              items: const [10, 15, 30, 60]
-                  .map((v) => DropdownMenuItem(
-                        value: v,
-                        child: Text('${v}s'),
-                      ))
-                  .toList(),
-              onChanged: (v) {
-                if (v != null) {
-                  ref.read(maxHrAlertProvider.notifier).setCooldown(v);
-                }
-              },
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: Text(s.disclaimerLabel),
-            subtitle: Text(s.warningGeneralDisclaimer),
-          ),
-          _SectionHeader(title: s.sectionAppearance),
-          SwitchListTile(
-            secondary: const Icon(Icons.image_outlined),
-            title: Text(s.settingsShowExerciseImages),
-            subtitle: Text(s.settingsShowExerciseImagesSubtitle),
-            value: ref.watch(showExerciseImagesProvider),
-            onChanged: (_) =>
-                ref.read(showExerciseImagesProvider.notifier).toggle(),
-          ),
-          ListTile(
-            leading: const Icon(Icons.palette_outlined),
-            title: Text(s.themeLabel),
-            trailing: SegmentedButton<ThemeMode>(
-              segments: [
-                ButtonSegment(
-                  value: ThemeMode.light,
-                  icon: const Icon(Icons.light_mode),
-                  label: Text(s.themeLight),
+
+            const SizedBox(height: 22),
+
+            // ── APPEARANCE ────────────────────────────────────────────────
+            KineticSectionLabel(s.sectionAppearance),
+            const SizedBox(height: 11),
+            _Set2Card(children: [
+              _Set2Row(
+                icon: Icons.image_outlined,
+                title: s.settingsShowExerciseImages,
+                subtitle: s.settingsShowExerciseImagesSubtitle,
+                trailing: _KineticToggle(
+                  value: ref.watch(showExerciseImagesProvider),
+                  onChanged: (_) =>
+                      ref.read(showExerciseImagesProvider.notifier).toggle(),
                 ),
-                ButtonSegment(
-                  value: ThemeMode.dark,
-                  icon: const Icon(Icons.dark_mode),
-                  label: Text(s.themeDark),
+              ),
+              // Theme — compact segmented
+              _Set2Row(
+                icon: Icons.contrast,
+                title: s.themeLabel,
+                subtitle: null,
+                trailing: _CompactSegmented<ThemeMode>(
+                  selected: themeMode,
+                  options: [
+                    _SegOption(
+                      value: ThemeMode.light,
+                      icon: Icons.light_mode,
+                      label: s.themeLight,
+                    ),
+                    _SegOption(
+                      value: ThemeMode.dark,
+                      icon: Icons.dark_mode,
+                      label: s.themeDark,
+                    ),
+                    _SegOption(
+                      value: ThemeMode.system,
+                      icon: Icons.brightness_auto,
+                      label: s.themeAuto,
+                    ),
+                  ],
+                  onSelected: (v) =>
+                      ref.read(themeModeProvider.notifier).set(v),
                 ),
-                ButtonSegment(
-                  value: ThemeMode.system,
-                  icon: const Icon(Icons.brightness_auto),
-                  label: Text(s.themeAuto),
+              ),
+            ]),
+
+            const SizedBox(height: 22),
+
+            // ── UNITS ─────────────────────────────────────────────────────
+            KineticSectionLabel(s.sectionUnits),
+            const SizedBox(height: 11),
+            _Set2Card(children: [
+              _Set2Row(
+                icon: Icons.scale_outlined,
+                title: s.weightUnitLabel,
+                subtitle: null,
+                trailing: _CompactSegmented<String>(
+                  selected: weightUnit,
+                  options: [
+                    _SegOption(value: 'kg', label: s.kgUnit),
+                    _SegOption(value: 'lbs', label: s.lbsUnit),
+                  ],
+                  onSelected: (v) =>
+                      ref.read(_weightUnitProvider.notifier).set(v),
                 ),
-              ],
-              selected: {themeMode},
-              onSelectionChanged: (modes) {
-                ref.read(_themeModeProvider.notifier).set(modes.first);
-              },
-            ),
-          ),
-          _SectionHeader(title: s.sectionUnits),
-          ListTile(
-            leading: const Icon(Icons.scale_outlined),
-            title: Text(s.weightUnitLabel),
-            trailing: SegmentedButton<String>(
-              segments: [
-                ButtonSegment(
-                  value: 'kg',
-                  label: Text(s.kgUnit),
+              ),
+            ]),
+
+            const SizedBox(height: 22),
+
+            // ── REST TIMER ────────────────────────────────────────────────
+            KineticSectionLabel(s.sectionRestTimer),
+            const SizedBox(height: 11),
+            _Set2Card(children: [
+              _Set2Row(
+                icon: Icons.vibration,
+                title: s.vibrationAlert,
+                subtitle: s.vibrationAlertSubtitle,
+                trailing: _KineticToggle(
+                  value: ref.watch(restTimerSettingsProvider).vibrationEnabled,
+                  onChanged: (_) => ref
+                      .read(restTimerSettingsProvider.notifier)
+                      .toggleVibration(),
                 ),
-                ButtonSegment(
-                  value: 'lbs',
-                  label: Text(s.lbsUnit),
+              ),
+              _Set2Row(
+                icon: Icons.volume_up_outlined,
+                title: s.soundAlert,
+                subtitle: s.soundAlertSubtitle,
+                trailing: _KineticToggle(
+                  value: ref.watch(restTimerSettingsProvider).soundEnabled,
+                  onChanged: (_) => ref
+                      .read(restTimerSettingsProvider.notifier)
+                      .toggleSound(),
                 ),
-              ],
-              selected: {weightUnit},
-              onSelectionChanged: (units) {
-                ref.read(_weightUnitProvider.notifier).set(units.first);
-              },
-            ),
-          ),
-          _SectionHeader(title: s.sectionRestTimer),
-          SwitchListTile(
-            secondary: const Icon(Icons.vibration),
-            title: Text(s.vibrationAlert),
-            subtitle: Text(s.vibrationAlertSubtitle),
-            value: ref.watch(restTimerSettingsProvider).vibrationEnabled,
-            onChanged: (_) {
-              ref.read(restTimerSettingsProvider.notifier).toggleVibration();
-            },
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.volume_up_outlined),
-            title: Text(s.soundAlert),
-            subtitle: Text(s.soundAlertSubtitle),
-            value: ref.watch(restTimerSettingsProvider).soundEnabled,
-            onChanged: (_) {
-              ref.read(restTimerSettingsProvider.notifier).toggleSound();
-            },
-          ),
-          _SectionHeader(title: s.sectionReminders),
-          _NotificationsTile(),
-          _HealthSyncSection(),
-          _CloudSyncSection(),
-          _SectionHeader(title: s.sectionData),
-          ListTile(
-            leading: const Icon(Icons.calendar_month_outlined),
-            title: Text(s.programmesTitle),
-            subtitle: Text(s.noProgrammesYetSubtitle),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/programmes'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.view_list_outlined),
-            title: Text(s.templatesTitle),
-            subtitle: Text(s.templatesSubtitle),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/templates'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.monitor_weight_outlined),
-            title: Text(s.bodyMetricsTitle),
-            subtitle: Text(s.bodyMetricsSubtitle),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/body-metrics'),
-          ),
-          _ExportJsonTile(),
-          _ExportCsvTile(),
-          _ImportJsonTile(),
-          ListTile(
-            leading: const Icon(Icons.delete_forever_outlined),
-            title: Text(s.clearAllData),
-            subtitle: Text(
-              s.clearAllDataSubtitle,
-            ),
-            textColor: Theme.of(context).colorScheme.error,
-            iconColor: Theme.of(context).colorScheme.error,
-            onTap: () => _confirmClearData(context),
-          ),
-          _SectionHeader(title: s.sectionAbout),
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: Text(s.aboutAppName),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/settings/about'),
-          ),
-          // Branded footer
-          const SizedBox(height: 32),
-          Center(
-            child: Column(
-              children: [
-                Text(
-                  'REPFOUNDRY',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        fontStyle: FontStyle.italic,
-                        letterSpacing: 2.0,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withValues(alpha: 0.2),
-                      ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
+              ),
+            ]),
+
+            const SizedBox(height: 22),
+
+            // ── SYNC & REMINDERS ──────────────────────────────────────────
+            KineticSectionLabel(s.sectionReminders),
+            const SizedBox(height: 11),
+            _SyncRemindersCard(s: s),
+
+            const SizedBox(height: 22),
+
+            // ── DATA ──────────────────────────────────────────────────────
+            KineticSectionLabel(s.sectionData),
+            const SizedBox(height: 11),
+            _DataCard(s: s),
+
+            const SizedBox(height: 22),
+
+            // ── ABOUT ─────────────────────────────────────────────────────
+            KineticSectionLabel(s.sectionAbout),
+            const SizedBox(height: 11),
+            _Set2Card(children: [
+              _Set2Row(
+                icon: Icons.info_outline,
+                title: s.aboutAppName,
+                subtitle: null,
+                trailing: _ChevronTrailing(),
+                onTap: () => context.push('/settings/about'),
+              ),
+            ]),
+
+            const SizedBox(height: 28),
+
+            // ── Footer wordmark ───────────────────────────────────────────
+            _Footer(),
+
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
+
+  // ─── Dialogs ──────────────────────────────────────────────────────────────
 
   Future<void> _showAgeDialog(
     BuildContext context,
@@ -572,6 +519,8 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
+  // ─── Helper label methods ─────────────────────────────────────────────────
+
   String _methodLabel(ZoneMethod method, S s) {
     return switch (method) {
       ZoneMethod.custom => s.zoneMethodCustom,
@@ -590,16 +539,700 @@ class SettingsScreen extends ConsumerWidget {
       ZoneReliability.low => s.reliabilityLow,
     };
   }
+}
 
-  Future<void> _confirmClearData(BuildContext context) async {
-    final s = S.of(context)!;
+// ─── Pagehead ─────────────────────────────────────────────────────────────────
+
+class _Pagehead extends StatelessWidget {
+  const _Pagehead({required this.s});
+
+  final S s;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Eyebrow: "REPFOUNDRY V1.0"
+          const KineticEyebrow('RepFoundry v1.0'),
+          const SizedBox(height: 10),
+          // Large display title
+          Text(
+            s.settingsTitle,
+            style: KineticText.display(size: 32, letterSpacing: -0.8),
+          ),
+          const SizedBox(height: 8),
+          // Dim subtitle — matches design spec; no ARB key exists for this string
+          // (the original file also had this hardcoded).
+          Text(
+            'Fine-tune your performance experience.',
+            style: GoogleFonts.manrope(
+              fontSize: 13.5,
+              height: 1.5,
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Settings card container (.set2) ─────────────────────────────────────────
+
+/// Rounded card that groups setting rows with 1 px hairline dividers.
+/// Mirrors rf.css `.set2` — `surfaceContainerLow` background, radius 18.
+class _Set2Card extends StatelessWidget {
+  const _Set2Card({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: _withDividers(children, cs),
+      ),
+    );
+  }
+
+  static List<Widget> _withDividers(List<Widget> rows, ColorScheme cs) {
+    if (rows.isEmpty) return rows;
+    final result = <Widget>[rows.first];
+    for (int i = 1; i < rows.length; i++) {
+      result.add(Divider(
+        height: 1,
+        thickness: 1,
+        color: cs.outlineVariant,
+        indent: 0,
+        endIndent: 0,
+      ));
+      result.add(rows[i]);
+    }
+    return result;
+  }
+}
+
+// ─── Individual settings row (.set2row) ───────────────────────────────────────
+
+/// One row inside a [_Set2Card].
+/// Mirrors rf.css `.set2row`: 21 px outline accent icon, Space Grotesk title,
+/// dim subtitle, trailing control.
+class _Set2Row extends StatelessWidget {
+  const _Set2Row({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.trailing,
+    this.onTap,
+    this.danger = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+
+  /// When true, colours the icon and title with [ColorScheme.error].
+  final bool danger;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final iconColour = danger ? cs.error : cs.primary;
+    final titleColour = danger ? cs.error : cs.onSurface;
+
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Icon — 21 px, accent or error colour
+          SizedBox(
+            width: 24,
+            child: Icon(icon, size: 21, color: iconColour),
+          ),
+          const SizedBox(width: 14),
+          // Title + optional subtitle
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: KineticText.display(
+                    size: 14.5,
+                    weight: FontWeight.w600,
+                    letterSpacing: 0,
+                    color: titleColour,
+                  ),
+                ),
+                if (subtitle != null && subtitle!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    style: GoogleFonts.manrope(
+                      fontSize: 11.5,
+                      height: 1.35,
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (trailing != null) ...[
+            const SizedBox(width: 10),
+            trailing!,
+          ],
+        ],
+      ),
+    );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        child: content,
+      );
+    }
+    return content;
+  }
+}
+
+// ─── Trailing controls ────────────────────────────────────────────────────────
+
+/// iOS-style toggle that reflects the Kinetic Green design (.toggle / .toggle--on).
+/// Uses Flutter's [Switch] for accessibility; styled via the ambient theme.
+class _KineticToggle extends StatelessWidget {
+  const _KineticToggle({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Switch(
+      value: value,
+      onChanged: onChanged,
+      activeThumbColor: cs.onPrimary,
+      activeTrackColor: cs.primary,
+      inactiveThumbColor: cs.onSurfaceVariant,
+      inactiveTrackColor: cs.surfaceContainerHigh,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
+  }
+}
+
+/// Faint chevron_right icon (.set2row__chev).
+class _ChevronTrailing extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Icon(
+      Icons.chevron_right,
+      size: 20,
+      color: Theme.of(context).colorScheme.outline,
+    );
+  }
+}
+
+/// Small × button to clear a value.
+class _ClearButton extends StatelessWidget {
+  const _ClearButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Icon(
+        Icons.close,
+        size: 20,
+        color: Theme.of(context).colorScheme.outline,
+      ),
+    );
+  }
+}
+
+/// Compact segmented control (.segsm). Accepts generic type for the selected value.
+class _SegOption<T> {
+  const _SegOption({required this.value, this.icon, required this.label});
+
+  final T value;
+  final IconData? icon;
+  final String label;
+}
+
+class _CompactSegmented<T> extends StatelessWidget {
+  const _CompactSegmented({
+    required this.selected,
+    required this.options,
+    required this.onSelected,
+  });
+
+  final T selected;
+  final List<_SegOption<T>> options;
+  final ValueChanged<T> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: options.map((opt) {
+          final active = opt.value == selected;
+          return GestureDetector(
+            onTap: () => onSelected(opt.value),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+              decoration: BoxDecoration(
+                color: active ? cs.primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (opt.icon != null) ...[
+                    Icon(
+                      opt.icon,
+                      size: 15,
+                      color: active ? cs.onPrimary : cs.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 5),
+                  ],
+                  Text(
+                    opt.label,
+                    style: KineticText.mono(
+                      size: 12,
+                      weight: FontWeight.w700,
+                      color: active ? cs.onPrimary : cs.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+/// Dropdown pill (.ddpill) — a rounded chip that opens a Flutter DropdownButton.
+class _DropdownPill<T> extends StatelessWidget {
+  const _DropdownPill({
+    required this.value,
+    required this.items,
+    required this.labelBuilder,
+    required this.onChanged,
+  });
+
+  final T value;
+  final List<T> items;
+  final String Function(T) labelBuilder;
+  final ValueChanged<T?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainer,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: DropdownButton<T>(
+        value: value,
+        underline: const SizedBox.shrink(),
+        isDense: true,
+        icon: Icon(Icons.expand_more, size: 16, color: cs.onSurfaceVariant),
+        style: KineticText.mono(size: 12, color: cs.onSurface),
+        dropdownColor: cs.surfaceContainerHigh,
+        items: items
+            .map((v) => DropdownMenuItem<T>(
+                  value: v,
+                  child: Text(labelBuilder(v)),
+                ))
+            .toList(),
+        onChanged: onChanged,
+      ),
+    );
+  }
+}
+
+// ─── Sync & Reminders card (combines Notifications + Health Sync + Cloud Sync) ─
+
+/// Renders the "SYNC & REMINDERS" grouped card, incorporating
+/// [_NotificationsTile], [_HealthSyncSection], and [_CloudSyncSection] rows.
+class _SyncRemindersCard extends ConsumerWidget {
+  const _SyncRemindersCard({required this.s});
+
+  final S s;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Notifications
+    final reminderSettings = ref.watch(reminderSettingsProvider);
+    final reminderSubtitle = _reminderSummary(context, s, reminderSettings);
+
+    // Health sync
+    final healthSettings = ref.watch(healthSyncSettingsProvider);
+
+    // Cloud sync
+    final syncSettings = ref.watch(syncSettingsProvider);
+    final syncState = ref.watch(syncStateProvider);
+
+    final List<Widget> rows = [
+      // Notifications
+      _Set2Row(
+        icon: Icons.notifications_outlined,
+        title: s.notificationsTileTitle,
+        subtitle: reminderSubtitle,
+        trailing: _ChevronTrailing(),
+        onTap: () => context.push('/settings/notifications'),
+      ),
+
+      // Health Sync toggle
+      _Set2Row(
+        icon: Icons.favorite_outlined,
+        title: s.healthSyncEnabled,
+        subtitle: s.healthSyncSubtitle,
+        trailing: _KineticToggle(
+          value: healthSettings.enabled,
+          onChanged: (_) async {
+            if (!healthSettings.enabled) {
+              final service = ref.read(healthSyncServiceProvider);
+              final granted = await service.requestAuthorisation(
+                writeWorkouts: healthSettings.writeWorkouts,
+                writeWeight: healthSettings.writeWeight,
+                writeHeartRate: healthSettings.writeHeartRate,
+                readWeight: healthSettings.readWeight,
+              );
+              if (!granted && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(s.healthSyncPermissionDenied)),
+                );
+                return;
+              }
+            }
+            ref.read(healthSyncSettingsProvider.notifier).toggleEnabled();
+          },
+        ),
+      ),
+
+      // Expanded health sync sub-toggles (when enabled)
+      if (healthSettings.enabled) ...[
+        _Set2Row(
+          icon: Icons.fitness_center,
+          title: s.writeWorkoutsLabel,
+          subtitle: s.writeWorkoutsSubtitle,
+          trailing: _KineticToggle(
+            value: healthSettings.writeWorkouts,
+            onChanged: (_) => ref
+                .read(healthSyncSettingsProvider.notifier)
+                .toggleWriteWorkouts(),
+          ),
+        ),
+        _Set2Row(
+          icon: Icons.monitor_weight,
+          title: s.writeWeightLabel,
+          subtitle: s.writeWeightSubtitle,
+          trailing: _KineticToggle(
+            value: healthSettings.writeWeight,
+            onChanged: (_) => ref
+                .read(healthSyncSettingsProvider.notifier)
+                .toggleWriteWeight(),
+          ),
+        ),
+        _Set2Row(
+          icon: Icons.monitor_heart,
+          title: s.writeHeartRateLabel,
+          subtitle: s.writeHeartRateSubtitle,
+          trailing: _KineticToggle(
+            value: healthSettings.writeHeartRate,
+            onChanged: (_) => ref
+                .read(healthSyncSettingsProvider.notifier)
+                .toggleWriteHeartRate(),
+          ),
+        ),
+        _Set2Row(
+          icon: Icons.download,
+          title: s.readWeightLabel,
+          subtitle: s.readWeightSubtitle,
+          trailing: _KineticToggle(
+            value: healthSettings.readWeight,
+            onChanged: (_) => ref
+                .read(healthSyncSettingsProvider.notifier)
+                .toggleReadWeight(),
+          ),
+        ),
+      ],
+
+      // Cross-Device Sync toggle
+      _Set2Row(
+        icon: Icons.sync,
+        title: s.syncEnabled,
+        subtitle: s.syncEnabledSubtitle,
+        trailing: _KineticToggle(
+          value: syncSettings.enabled,
+          onChanged: (_) async {
+            if (!syncSettings.enabled) {
+              if (!syncSettings.consentGiven) {
+                final accepted = await SyncConsentDialog.show(context);
+                if (!accepted) return;
+                ref.read(syncSettingsProvider.notifier).setConsentGiven(true);
+              }
+              ref.read(syncSettingsProvider.notifier).setEnabled(true);
+            } else {
+              ref.read(syncSettingsProvider.notifier).setEnabled(false);
+            }
+          },
+        ),
+      ),
+
+      // Expanded cloud-sync rows (when enabled)
+      if (syncSettings.enabled) ...[
+        _Set2Row(
+          icon: Icons.access_time,
+          title: syncSettings.lastSyncAt != null
+              ? s.syncLastSynced(DateFormat.yMd()
+                  .add_jm()
+                  .format(syncSettings.lastSyncAt!.toLocal()))
+              : s.syncNeverSynced,
+          subtitle: null,
+        ),
+        _Set2Row(
+          icon: Icons.cloud_sync_outlined,
+          title: syncState.status == SyncStatus.syncing
+              ? s.syncSyncing
+              : s.syncNow,
+          subtitle: null,
+          trailing: syncState.status == SyncStatus.syncing
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : null,
+          onTap: syncState.status == SyncStatus.syncing
+              ? null
+              : () async {
+                  ref
+                      .read(syncStateProvider.notifier)
+                      .setStatus(SyncStatus.syncing);
+                  final result =
+                      await ref.read(syncOrchestratorProvider).sync();
+                  if (result.success) {
+                    ref.read(syncStateProvider.notifier).setStatus(
+                          SyncStatus.success,
+                          lastSyncAt: result.syncedAt,
+                        );
+                    ref
+                        .read(syncSettingsProvider.notifier)
+                        .updateLastSyncAt(result.syncedAt);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(s.syncSuccess)),
+                      );
+                    }
+                  } else {
+                    ref.read(syncStateProvider.notifier).setStatus(
+                          SyncStatus.error,
+                          error: result.errorMessage,
+                        );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(s.syncError(result.errorMessage ?? '')),
+                        ),
+                      );
+                    }
+                  }
+                },
+        ),
+        _Set2Row(
+          icon: Icons.delete_outline,
+          title: s.syncDisableAndDelete,
+          subtitle: null,
+          danger: true,
+          onTap: () async {
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: Text(s.syncDisableConfirmTitle),
+                content: Text(s.syncDisableConfirmBody),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: Text(s.cancel),
+                  ),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Theme.of(ctx).colorScheme.error,
+                    ),
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: Text(s.syncDisableConfirmAction),
+                  ),
+                ],
+              ),
+            );
+            if (confirmed == true) {
+              await ref.read(syncOrchestratorProvider).deleteCloudData();
+              ref.read(syncSettingsProvider.notifier).disableAndClear();
+              ref.read(syncStateProvider.notifier).setStatus(SyncStatus.idle);
+            }
+          },
+        ),
+      ],
+    ];
+
+    return _Set2Card(children: rows);
+  }
+
+  String _reminderSummary(
+    BuildContext context,
+    S s,
+    ReminderSettings settings,
+  ) {
+    if (!settings.hasReminders) {
+      return s.notificationsTileSubtitleEmpty;
+    }
+    final dayLabels = <int, String>{
+      DateTime.monday: s.mondayShort,
+      DateTime.tuesday: s.tuesdayShort,
+      DateTime.wednesday: s.wednesdayShort,
+      DateTime.thursday: s.thursdayShort,
+      DateTime.friday: s.fridayShort,
+      DateTime.saturday: s.saturdayShort,
+      DateTime.sunday: s.sundayShort,
+    };
+    final days = (settings.enabledDays.toList()..sort())
+        .map((d) => dayLabels[d]!)
+        .join(', ');
+    final time = s.reminderTimeOfDay(
+      settings.hour.toString().padLeft(2, '0'),
+      settings.minute.toString().padLeft(2, '0'),
+    );
+    return s.notificationsTileSubtitleSummary(days, time);
+  }
+}
+
+// ─── Data card ────────────────────────────────────────────────────────────────
+
+/// Groups all DATA-section rows, including the export/import tiles and the
+/// destructive "Clear All Data" row.
+class _DataCard extends ConsumerWidget {
+  const _DataCard({required this.s});
+
+  final S s;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final exportState = ref.watch(exportProvider);
+
+    ref.listen<ExportState>(exportProvider, (_, state) {
+      if (state.status == ExportStatus.completed) {
+        final message = state.savedPath != null
+            ? '${s.exportComplete} — ${state.savedPath}'
+            : s.exportComplete;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+        ref.read(exportProvider.notifier).reset();
+      } else if (state.status == ExportStatus.failed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.exportFailed(state.error ?? ''))),
+        );
+        ref.read(exportProvider.notifier).reset();
+      }
+    });
+
+    final exporting = exportState.status == ExportStatus.exporting;
+
+    final Widget progressIndicator = const SizedBox(
+      width: 20,
+      height: 20,
+      child: CircularProgressIndicator(strokeWidth: 2),
+    );
+
+    return _Set2Card(children: [
+      _Set2Row(
+        icon: Icons.calendar_month_outlined,
+        title: s.programmesTitle,
+        subtitle: s.noProgrammesYetSubtitle,
+        trailing: _ChevronTrailing(),
+        onTap: () => context.push('/programmes'),
+      ),
+      _Set2Row(
+        icon: Icons.view_list_outlined,
+        title: s.templatesTitle,
+        subtitle: s.templatesSubtitle,
+        trailing: _ChevronTrailing(),
+        onTap: () => context.push('/templates'),
+      ),
+      _Set2Row(
+        icon: Icons.monitor_weight_outlined,
+        title: s.bodyMetricsTitle,
+        subtitle: s.bodyMetricsSubtitle,
+        trailing: _ChevronTrailing(),
+        onTap: () => context.push('/body-metrics'),
+      ),
+      _Set2Row(
+        icon: Icons.data_object_outlined,
+        title: s.exportAsJson,
+        subtitle: s.exportAsJsonSubtitle,
+        trailing: exporting ? progressIndicator : _ChevronTrailing(),
+        onTap: exporting
+            ? null
+            : () => ref.read(exportProvider.notifier).exportJson(),
+      ),
+      _Set2Row(
+        icon: Icons.table_chart_outlined,
+        title: s.exportAsCsv,
+        subtitle: s.exportAsCsvSubtitle,
+        trailing: exporting ? progressIndicator : _ChevronTrailing(),
+        onTap: exporting
+            ? null
+            : () => ref.read(exportProvider.notifier).exportCsv(),
+      ),
+      _ImportRow(s: s),
+      // Danger row — no trailing control, error colour
+      _Set2Row(
+        icon: Icons.delete_forever_outlined,
+        title: s.clearAllData,
+        subtitle: s.clearAllDataSubtitle,
+        danger: true,
+        onTap: () => _confirmClearData(context, s),
+      ),
+    ]);
+  }
+
+  Future<void> _confirmClearData(BuildContext context, S s) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(s.clearAllDataConfirmTitle),
-        content: Text(
-          s.clearAllDataConfirmContent,
-        ),
+        content: Text(s.clearAllDataConfirmContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -628,81 +1261,22 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-class _ExportJsonTile extends ConsumerWidget {
+// ─── Import row (stateful — needs local _importing flag) ──────────────────────
+
+class _ImportRow extends ConsumerStatefulWidget {
+  const _ImportRow({required this.s});
+
+  final S s;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final s = S.of(context)!;
-    final exportState = ref.watch(exportProvider);
-
-    ref.listen<ExportState>(exportProvider, (_, state) {
-      if (state.status == ExportStatus.completed) {
-        final message = state.savedPath != null
-            ? '${s.exportComplete} — ${state.savedPath}'
-            : s.exportComplete;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
-        ref.read(exportProvider.notifier).reset();
-      } else if (state.status == ExportStatus.failed) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.exportFailed(state.error ?? ''))),
-        );
-        ref.read(exportProvider.notifier).reset();
-      }
-    });
-
-    return ListTile(
-      leading: const Icon(Icons.data_object_outlined),
-      title: Text(s.exportAsJson),
-      subtitle: Text(s.exportAsJsonSubtitle),
-      trailing: exportState.status == ExportStatus.exporting
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : null,
-      onTap: exportState.status == ExportStatus.exporting
-          ? null
-          : () => ref.read(exportProvider.notifier).exportJson(),
-    );
-  }
+  ConsumerState<_ImportRow> createState() => _ImportRowState();
 }
 
-class _ExportCsvTile extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final s = S.of(context)!;
-    final exportState = ref.watch(exportProvider);
-
-    return ListTile(
-      leading: const Icon(Icons.table_chart_outlined),
-      title: Text(s.exportAsCsv),
-      subtitle: Text(s.exportAsCsvSubtitle),
-      trailing: exportState.status == ExportStatus.exporting
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : null,
-      onTap: exportState.status == ExportStatus.exporting
-          ? null
-          : () => ref.read(exportProvider.notifier).exportCsv(),
-    );
-  }
-}
-
-class _ImportJsonTile extends ConsumerStatefulWidget {
-  @override
-  ConsumerState<_ImportJsonTile> createState() => _ImportJsonTileState();
-}
-
-class _ImportJsonTileState extends ConsumerState<_ImportJsonTile> {
+class _ImportRowState extends ConsumerState<_ImportRow> {
   bool _importing = false;
 
   Future<void> _import() async {
-    final s = S.of(context)!;
+    final s = widget.s;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -726,11 +1300,10 @@ class _ImportJsonTileState extends ConsumerState<_ImportJsonTile> {
     setState(() => _importing = true);
 
     try {
-      // Use file_picker to select a JSON file.
-      final result = await _pickJsonFile();
-      if (result != null) {
+      final json = await _pickJson();
+      if (json != null) {
         final useCase = ref.read(importDataUseCaseProvider);
-        final importResult = await useCase.importFromJson(result);
+        final importResult = await useCase.importFromJson(json);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -754,14 +1327,12 @@ class _ImportJsonTileState extends ConsumerState<_ImportJsonTile> {
     }
   }
 
-  Future<String?> _pickJsonFile() async {
-    // Use file_picker package if available, otherwise fall back.
-    // For now, show a text input dialog for pasting JSON.
+  Future<String?> _pickJson() async {
     final controller = TextEditingController();
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) {
-        final s = S.of(ctx)!;
+        final s = widget.s;
         return AlertDialog(
           title: Text(s.importPasteJsonTitle),
           content: SizedBox(
@@ -794,288 +1365,59 @@ class _ImportJsonTileState extends ConsumerState<_ImportJsonTile> {
 
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context)!;
-    return ListTile(
-      leading: const Icon(Icons.file_upload_outlined),
-      title: Text(s.importFromJson),
-      subtitle: Text(s.importFromJsonSubtitle),
+    final s = widget.s;
+    return _Set2Row(
+      icon: Icons.file_upload_outlined,
+      title: s.importFromJson,
+      subtitle: s.importFromJsonSubtitle,
       trailing: _importing
           ? const SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
-          : null,
+          : _ChevronTrailing(),
       onTap: _importing ? null : _import,
     );
   }
 }
 
-class _HealthSyncSection extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final s = S.of(context)!;
-    final settings = ref.watch(healthSyncSettingsProvider);
+// ─── Footer wordmark ──────────────────────────────────────────────────────────
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(title: s.healthSyncTitle),
-        SwitchListTile(
-          secondary: const Icon(Icons.favorite),
-          title: Text(s.healthSyncEnabled),
-          subtitle: Text(s.healthSyncSubtitle),
-          value: settings.enabled,
-          onChanged: (_) async {
-            if (!settings.enabled) {
-              // Turning on — request permissions first
-              final service = ref.read(healthSyncServiceProvider);
-              final granted = await service.requestAuthorisation(
-                writeWorkouts: settings.writeWorkouts,
-                writeWeight: settings.writeWeight,
-                writeHeartRate: settings.writeHeartRate,
-                readWeight: settings.readWeight,
-              );
-              if (!granted && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(s.healthSyncPermissionDenied)),
-                );
-                return; // Don't toggle if permissions denied
-              }
-            }
-            ref.read(healthSyncSettingsProvider.notifier).toggleEnabled();
-          },
-        ),
-        if (settings.enabled) ...[
-          SwitchListTile(
-            secondary: const Icon(Icons.fitness_center),
-            title: Text(s.writeWorkoutsLabel),
-            subtitle: Text(s.writeWorkoutsSubtitle),
-            value: settings.writeWorkouts,
-            onChanged: (_) => ref
-                .read(healthSyncSettingsProvider.notifier)
-                .toggleWriteWorkouts(),
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.monitor_weight),
-            title: Text(s.writeWeightLabel),
-            subtitle: Text(s.writeWeightSubtitle),
-            value: settings.writeWeight,
-            onChanged: (_) => ref
-                .read(healthSyncSettingsProvider.notifier)
-                .toggleWriteWeight(),
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.monitor_heart),
-            title: Text(s.writeHeartRateLabel),
-            subtitle: Text(s.writeHeartRateSubtitle),
-            value: settings.writeHeartRate,
-            onChanged: (_) => ref
-                .read(healthSyncSettingsProvider.notifier)
-                .toggleWriteHeartRate(),
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.download),
-            title: Text(s.readWeightLabel),
-            subtitle: Text(s.readWeightSubtitle),
-            value: settings.readWeight,
-            onChanged: (_) => ref
-                .read(healthSyncSettingsProvider.notifier)
-                .toggleReadWeight(),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _CloudSyncSection extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final s = S.of(context)!;
-    final settings = ref.watch(syncSettingsProvider);
-    final syncState = ref.watch(syncStateProvider);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(title: s.syncSectionTitle),
-        SwitchListTile(
-          secondary: const Icon(Icons.sync),
-          title: Text(s.syncEnabled),
-          subtitle: Text(s.syncEnabledSubtitle),
-          value: settings.enabled,
-          onChanged: (_) async {
-            if (!settings.enabled) {
-              if (!settings.consentGiven) {
-                final accepted = await SyncConsentDialog.show(context);
-                if (!accepted) return;
-                ref.read(syncSettingsProvider.notifier).setConsentGiven(true);
-              }
-              ref.read(syncSettingsProvider.notifier).setEnabled(true);
-            } else {
-              ref.read(syncSettingsProvider.notifier).setEnabled(false);
-            }
-          },
-        ),
-        if (settings.enabled) ...[
-          ListTile(
-            leading: const Icon(Icons.access_time),
-            title: Text(settings.lastSyncAt != null
-                ? s.syncLastSynced(DateFormat.yMd()
-                    .add_jm()
-                    .format(settings.lastSyncAt!.toLocal()))
-                : s.syncNeverSynced),
-          ),
-          ListTile(
-            leading: syncState.status == SyncStatus.syncing
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.cloud_sync_outlined),
-            title: Text(syncState.status == SyncStatus.syncing
-                ? s.syncSyncing
-                : s.syncNow),
-            onTap: syncState.status == SyncStatus.syncing
-                ? null
-                : () async {
-                    ref
-                        .read(syncStateProvider.notifier)
-                        .setStatus(SyncStatus.syncing);
-                    final result =
-                        await ref.read(syncOrchestratorProvider).sync();
-                    if (result.success) {
-                      ref.read(syncStateProvider.notifier).setStatus(
-                            SyncStatus.success,
-                            lastSyncAt: result.syncedAt,
-                          );
-                      ref
-                          .read(syncSettingsProvider.notifier)
-                          .updateLastSyncAt(result.syncedAt);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(s.syncSuccess)),
-                        );
-                      }
-                    } else {
-                      ref.read(syncStateProvider.notifier).setStatus(
-                            SyncStatus.error,
-                            error: result.errorMessage,
-                          );
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content:
-                                Text(s.syncError(result.errorMessage ?? '')),
-                          ),
-                        );
-                      }
-                    }
-                  },
-          ),
-          ListTile(
-            leading: Icon(Icons.delete_outline,
-                color: Theme.of(context).colorScheme.error),
-            title: Text(
-              s.syncDisableAndDelete,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-            onTap: () async {
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: Text(s.syncDisableConfirmTitle),
-                  content: Text(s.syncDisableConfirmBody),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx, false),
-                      child: Text(s.cancel),
-                    ),
-                    FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Theme.of(ctx).colorScheme.error,
-                      ),
-                      onPressed: () => Navigator.pop(ctx, true),
-                      child: Text(s.syncDisableConfirmAction),
-                    ),
-                  ],
-                ),
-              );
-              if (confirmed == true) {
-                await ref.read(syncOrchestratorProvider).deleteCloudData();
-                ref.read(syncSettingsProvider.notifier).disableAndClear();
-                ref.read(syncStateProvider.notifier).setStatus(SyncStatus.idle);
-              }
-            },
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title});
-
-  final String title;
-
+/// Ghosted "REPFOUNDRY" wordmark + mono caption.
+/// Mirrors the design's footer: very low opacity Space Grotesk + dim mono.
+class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 24, 4, 8),
-      child: Text(
-        title.toUpperCase(),
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.5,
+    final cs = Theme.of(context).colorScheme;
+    return Center(
+      child: Column(
+        children: [
+          Text(
+            'REPFOUNDRY',
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 6,
+              color: cs.onSurface.withValues(alpha: 0.16),
             ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'kinetic-green · made for lifters',
+            style: KineticText.mono(
+              size: 11,
+              weight: FontWeight.w600,
+              color: cs.outline,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _NotificationsTile extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final s = S.of(context)!;
-    final settings = ref.watch(reminderSettingsProvider);
-    final subtitle = _summary(context, s, settings);
-    return ListTile(
-      leading: const Icon(Icons.notifications_outlined),
-      title: Text(s.notificationsTileTitle),
-      subtitle: Text(subtitle),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () => context.push('/settings/notifications'),
-    );
-  }
-
-  String _summary(
-    BuildContext context,
-    S s,
-    ReminderSettings settings,
-  ) {
-    if (!settings.hasReminders) {
-      return s.notificationsTileSubtitleEmpty;
-    }
-    final dayLabels = <int, String>{
-      DateTime.monday: s.mondayShort,
-      DateTime.tuesday: s.tuesdayShort,
-      DateTime.wednesday: s.wednesdayShort,
-      DateTime.thursday: s.thursdayShort,
-      DateTime.friday: s.fridayShort,
-      DateTime.saturday: s.saturdayShort,
-      DateTime.sunday: s.sundayShort,
-    };
-    final days = (settings.enabledDays.toList()..sort())
-        .map((d) => dayLabels[d]!)
-        .join(', ');
-    final time = s.reminderTimeOfDay(
-      settings.hour.toString().padLeft(2, '0'),
-      settings.minute.toString().padLeft(2, '0'),
-    );
-    return s.notificationsTileSubtitleSummary(days, time);
-  }
-}
+// ─── Removed sub-sections (inlined into cards above) ─────────────────────────
+// _ExportJsonTile, _ExportCsvTile, _ImportJsonTile, _HealthSyncSection,
+// _CloudSyncSection, _SectionHeader, _NotificationsTile — all consolidated
+// into _Set2Card / _Set2Row / _SyncRemindersCard / _DataCard above.

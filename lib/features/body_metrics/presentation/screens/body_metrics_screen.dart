@@ -100,92 +100,10 @@ class BodyMetricsScreen extends ConsumerWidget {
   }
 
   Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
-    final s = S.of(context)!;
-    final weightController = TextEditingController();
-    final bfController = TextEditingController();
-    final notesController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
     final result = await showDialog<BodyMetric>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(s.addBodyMetric),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: weightController,
-                decoration: InputDecoration(
-                  labelText: s.bodyWeightLabel,
-                  border: const OutlineInputBorder(),
-                  suffixText: 'kg',
-                ),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                autofocus: true,
-                validator: (v) {
-                  if (v == null || v.isEmpty) return s.validationRequired;
-                  if (double.tryParse(v) == null) return s.validationInvalid;
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: bfController,
-                decoration: InputDecoration(
-                  labelText: s.bodyFatPercentLabel,
-                  border: const OutlineInputBorder(),
-                  suffixText: '%',
-                ),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: notesController,
-                decoration: InputDecoration(
-                  labelText: s.notesLabel,
-                  border: const OutlineInputBorder(),
-                ),
-                textCapitalization: TextCapitalization.sentences,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(s.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (!formKey.currentState!.validate()) return;
-              final weight = double.parse(weightController.text);
-              final bf = bfController.text.isNotEmpty
-                  ? double.tryParse(bfController.text)
-                  : null;
-              final notes =
-                  notesController.text.isNotEmpty ? notesController.text : null;
-              Navigator.pop(
-                ctx,
-                BodyMetric.create(
-                  weight: weight,
-                  bodyFatPercent: bf,
-                  notes: notes,
-                ),
-              );
-            },
-            child: Text(s.save),
-          ),
-        ],
-      ),
+      builder: (ctx) => const _AddBodyMetricDialog(),
     );
-
-    weightController.dispose();
-    bfController.dispose();
-    notesController.dispose();
 
     if (result != null) {
       await ref.read(bodyMetricRepositoryProvider).create(result);
@@ -210,6 +128,110 @@ class BodyMetricsScreen extends ConsumerWidget {
         // Health sync is best-effort
       }
     }
+  }
+}
+
+/// Add-measurement dialog. Owns its [TextEditingController]s in [State] so they
+/// are disposed only after the dialog route is removed — disposing them inline
+/// after `showDialog` returns triggers a "used after disposed" error when the
+/// dialog rebuilds during its exit transition.
+class _AddBodyMetricDialog extends StatefulWidget {
+  const _AddBodyMetricDialog();
+
+  @override
+  State<_AddBodyMetricDialog> createState() => _AddBodyMetricDialogState();
+}
+
+class _AddBodyMetricDialogState extends State<_AddBodyMetricDialog> {
+  final _weightController = TextEditingController();
+  final _bfController = TextEditingController();
+  final _notesController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    _weightController.dispose();
+    _bfController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context)!;
+    return AlertDialog(
+      title: Text(s.addBodyMetric),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _weightController,
+              decoration: InputDecoration(
+                labelText: s.bodyWeightLabel,
+                border: const OutlineInputBorder(),
+                suffixText: 'kg',
+              ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              autofocus: true,
+              validator: (v) {
+                if (v == null || v.isEmpty) return s.validationRequired;
+                if (double.tryParse(v) == null) return s.validationInvalid;
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _bfController,
+              decoration: InputDecoration(
+                labelText: s.bodyFatPercentLabel,
+                border: const OutlineInputBorder(),
+                suffixText: '%',
+              ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _notesController,
+              decoration: InputDecoration(
+                labelText: s.notesLabel,
+                border: const OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.sentences,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(s.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            if (!_formKey.currentState!.validate()) return;
+            final weight = double.parse(_weightController.text);
+            final bf = _bfController.text.isNotEmpty
+                ? double.tryParse(_bfController.text)
+                : null;
+            final notes =
+                _notesController.text.isNotEmpty ? _notesController.text : null;
+            Navigator.pop(
+              context,
+              BodyMetric.create(
+                weight: weight,
+                bodyFatPercent: bf,
+                notes: notes,
+              ),
+            );
+          },
+          child: Text(s.save),
+        ),
+      ],
+    );
   }
 }
 

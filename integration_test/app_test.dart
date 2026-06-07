@@ -37,10 +37,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Settings'), findsWidgets);
 
-      // Navigate back to Workout tab.
+      // Navigate back to Workout tab. The redesigned workout home shows the
+      // idle hero ("Ready to train?" / "Start Workout") rather than a literal
+      // "Workout" heading.
       await tester.tap(find.text('WORKOUT'));
       await tester.pumpAndSettle();
-      expect(find.text('Workout'), findsWidgets);
+      expect(find.text('Start Workout'), findsWidgets);
 
       await testApp.database.close();
     });

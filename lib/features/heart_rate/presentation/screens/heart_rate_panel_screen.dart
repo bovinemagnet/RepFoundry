@@ -2,10 +2,13 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/widgets/kinetic.dart';
+import '../../../../core/widgets/sparkline_widget.dart';
 import '../../../cardio/presentation/controllers/cardio_tracking_controller.dart';
 import '../../../cardio/presentation/widgets/hr_device_picker_dialog.dart';
 import '../../../cardio/presentation/widgets/hr_setup_guide_dialog.dart';
@@ -92,7 +95,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     final maxBpm = zoneConfig.maxHr;
     if (currentHr < maxBpm) return;
 
-    // Cooldown check
+    // Cooldown check.
     final now = DateTime.now();
     if (_lastMaxHrAlert != null &&
         now.difference(_lastMaxHrAlert!).inSeconds <
@@ -134,6 +137,12 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
 
     final bpmStats = _calculateStats(panelState);
 
+    // Determine the "peak" zone colour for HR trace — use zone 5 colour if
+    // available, otherwise fall back to the theme error colour.
+    final peakZoneColor = zoneConfig != null && zoneConfig.zones.isNotEmpty
+        ? Color(zoneConfig.zones.last.color)
+        : Theme.of(context).colorScheme.error;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(s.heartRateTitle),
@@ -152,26 +161,39 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+        padding: const EdgeInsets.fromLTRB(22, 8, 22, 96),
         children: [
-          // Caution badge
+          // Kinetic app header.
+          const KineticAppHeader(),
+
+          // Caution badge.
           if (profile.isCautionMode) ...[
             CautionBadge(profile: profile),
             const SizedBox(height: 12),
           ],
 
-          // ── Hero BPM section ───────────────────────────────────
+          // ── Hero BPM section ──────────────────────────────────────
           _HeroBpmSection(
             panelState: panelState,
             activeZone: activeZone,
+            peakZoneColor: peakZoneColor,
           ),
           const SizedBox(height: 16),
 
-          // Controls
+          // Controls.
           _buildControls(context, panelState, controller),
           const SizedBox(height: 24),
 
-          // ── Bento metric grid ──────────────────────────────────
+          // ── EKG trace sparkline ───────────────────────────────────
+          if (panelState.readings.isNotEmpty) ...[
+            _EkgTrace(
+              readings: panelState.readings,
+              peakZoneColor: peakZoneColor,
+            ),
+            const SizedBox(height: 20),
+          ],
+
+          // ── Vitals bento grid ─────────────────────────────────────
           if (panelState.readings.isNotEmpty) ...[
             _MetricBentoGrid(
               avgBpm: bpmStats.avg,
@@ -183,7 +205,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
             const SizedBox(height: 24),
           ],
 
-          // ── Workout Intensity Zones ────────────────────────────
+          // ── Workout Intensity Zones ───────────────────────────────
           if (zoneConfig != null && panelState.readings.isNotEmpty) ...[
             _ZonesSection(
               panelState: panelState,
@@ -192,13 +214,14 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
             const SizedBox(height: 24),
           ],
 
-          // ── Heart Rate Trend chart ─────────────────────────────
+          // ── HR Trend card with SparklineWidget ────────────────────
           if (panelState.readings.isNotEmpty) ...[
             _TrendChartSection(
               panelState: panelState,
               zoneConfig: zoneConfig,
               chartWindow: chartWindow,
               showZoneBands: showZoneBands,
+              peakZoneColor: peakZoneColor,
               onWindowChanged: (v) =>
                   ref.read(chartWindowProvider.notifier).setWindow(v),
             ),
@@ -212,7 +235,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
             const SizedBox(height: 16),
           ],
 
-          // Symptom report button during active monitoring
+          // Symptom report button during active monitoring.
           if (panelState.isMonitoring) ...[
             SymptomReportButton(
               onStopRequested: controller.stopMonitoring,
@@ -221,7 +244,13 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
             const SizedBox(height: 16),
           ],
 
-          // Zone legend
+          // ── Full Weekly Heart Report row (.srow style) ────────────
+          if (panelState.readings.isNotEmpty) ...[
+            _WeeklyReportRow(peakZoneColor: peakZoneColor),
+            const SizedBox(height: 16),
+          ],
+
+          // Zone legend / no-profile prompt.
           if (zoneConfig != null) ...[
             HeartRateZoneLegend(
               config: zoneConfig,
@@ -337,16 +366,46 @@ class _BpmStats {
   const _BpmStats({required this.avg, required this.min, required this.max});
 }
 
-// ── Hero BPM Section ─────────────────────────────────────────────────────
+// ── EKG Trace ────────────────────────────────────────────────────────────────
+
+/// Renders the HR readings as a Kinetic-style sparkline trace — mirrors the
+/// `ekg()` SVG function from screens.js (peak zone colour, 64 px tall).
+class _EkgTrace extends StatelessWidget {
+  const _EkgTrace({
+    required this.readings,
+    required this.peakZoneColor,
+  });
+
+  final List<HrReading> readings;
+  final Color peakZoneColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final data = readings.map((r) => r.bpm.toDouble()).toList();
+    return SizedBox(
+      height: 64,
+      child: SparklineWidget(
+        data: data,
+        lineColor: peakZoneColor,
+        fillColor: peakZoneColor.withValues(alpha: 0.14),
+        strokeWidth: 2.5,
+      ),
+    );
+  }
+}
+
+// ── Hero BPM Section ──────────────────────────────────────────────────────────
 
 class _HeroBpmSection extends StatelessWidget {
   const _HeroBpmSection({
     required this.panelState,
     required this.activeZone,
+    required this.peakZoneColor,
   });
 
   final HeartRatePanelState panelState;
   final CalculatedZone? activeZone;
+  final Color peakZoneColor;
 
   @override
   Widget build(BuildContext context) {
@@ -358,66 +417,54 @@ class _HeroBpmSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Live sensor badge
-        if (hasHr)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: cs.error.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(100),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.favorite, size: 12, color: cs.error),
-                const SizedBox(width: 6),
-                Text(
-                  s.liveSensor.toUpperCase(),
-                  style: tt.labelSmall?.copyWith(
-                    color: cs.error,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                    fontSize: 9,
-                  ),
-                ),
-              ],
-            ),
+        // "Live Sensor" pill — peak-coloured when connected, per design spec.
+        if (hasHr) ...[
+          KineticPill(
+            s.liveSensor,
+            icon: Icons.sensors,
+            variant: KineticPillVariant.ghost,
           ),
-        const SizedBox(height: 8),
+          const SizedBox(height: 14),
+        ],
 
-        // Large BPM display
+        // Large mono BPM hero — 64/800, tight tracking (-0.04em).
         Row(
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
           children: [
             Text(
               panelState.currentHeartRate?.toString() ?? '--',
-              style: tt.displayLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 72,
-                height: 1.0,
+              style: KineticText.mono(
+                size: 64,
+                weight: FontWeight.w800,
+                letterSpacing: -2.56, // approx -0.04em at 64px
                 color: hasHr ? cs.onSurface : cs.outline,
-                fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              s.bpmSuffix.toUpperCase(),
-              style: tt.titleMedium?.copyWith(
-                color: cs.onSurfaceVariant,
-                fontWeight: FontWeight.w500,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                s.bpmSuffix.toUpperCase(),
+                style: KineticText.mono(
+                  size: 16,
+                  weight: FontWeight.w700,
+                  color: cs.onSurfaceVariant,
+                ),
               ),
             ),
           ],
         ),
 
-        // Zone description
+        // Zone description — zone name rendered in its own colour.
         if (activeZone != null) ...[
           const SizedBox(height: 4),
           RichText(
             text: TextSpan(
               style: tt.bodySmall?.copyWith(
                 color: cs.onSurfaceVariant,
+                fontSize: 13,
+                height: 1.5,
               ),
               children: [
                 const TextSpan(text: 'Currently in the '),
@@ -426,7 +473,6 @@ class _HeroBpmSection extends StatelessWidget {
                   style: TextStyle(
                     color: Color(activeZone!.color),
                     fontWeight: FontWeight.bold,
-                    fontStyle: FontStyle.italic,
                   ),
                 ),
                 const TextSpan(text: ' zone.'),
@@ -435,7 +481,7 @@ class _HeroBpmSection extends StatelessWidget {
           ),
         ],
 
-        // Reconnecting indicator
+        // Reconnecting indicator.
         if (panelState.hrReconnecting) ...[
           const SizedBox(height: 8),
           Row(
@@ -452,23 +498,29 @@ class _HeroBpmSection extends StatelessWidget {
           ),
         ],
 
-        // Device name
+        // Device name.
         if (panelState.hrDeviceName != null) ...[
           const SizedBox(height: 4),
           Text(
             panelState.hrDeviceName!,
-            style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+            style: KineticText.mono(
+              size: 11,
+              weight: FontWeight.w600,
+              letterSpacing: 0.5,
+              color: cs.onSurfaceVariant,
+            ),
           ),
         ],
 
-        // Elapsed time
+        // Elapsed time.
         if (panelState.isMonitoring) ...[
           const SizedBox(height: 2),
           Text(
             Duration(seconds: panelState.elapsedSeconds).formatted,
-            style: tt.bodySmall?.copyWith(
+            style: KineticText.mono(
+              size: 11,
+              weight: FontWeight.w600,
               color: cs.onSurfaceVariant,
-              fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
         ],
@@ -477,7 +529,7 @@ class _HeroBpmSection extends StatelessWidget {
   }
 }
 
-// ── Bento Metric Grid ────────────────────────────────────────────────────
+// ── Vitals Bento Grid ─────────────────────────────────────────────────────────
 
 class _MetricBentoGrid extends StatelessWidget {
   const _MetricBentoGrid({
@@ -501,37 +553,35 @@ class _MetricBentoGrid extends StatelessWidget {
 
     return GridView.count(
       crossAxisCount: 2,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
+      mainAxisSpacing: 10,
+      crossAxisSpacing: 10,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.1,
+      childAspectRatio: 1.15,
       children: [
-        _BentoCard(
-          icon: Icons.air,
-          iconColor: cs.primary,
-          label: s.statsAvg.toUpperCase(),
+        KineticStatTile(
+          label: s.statsAvg,
           value: '$avgBpm',
-          subtitle: s.bpmSuffix,
+          unit: s.bpmSuffix,
         ),
-        _BentoCard(
+        _VitalTile(
           icon: Icons.bolt,
           iconColor: cs.tertiary,
-          label: s.statsMax.toUpperCase(),
+          label: s.statsMax,
           value: '$maxBpm',
           subtitle: s.reachedAgo,
         ),
-        _BentoCard(
+        _VitalTile(
           icon: Icons.timer,
           iconColor: cs.secondary,
-          label: s.statsMin.toUpperCase(),
+          label: s.statsMin,
           value: '$minBpm',
           subtitle: s.bpmSuffix,
         ),
-        _BentoCard(
+        _VitalTile(
           icon: Icons.waves,
-          iconColor: const Color(0xFF8354F4),
-          label: s.statsReadings.toUpperCase(),
+          iconColor: cs.onSurfaceVariant,
+          label: s.statsReadings,
           value: '$readingCount',
           subtitle: '',
         ),
@@ -540,8 +590,10 @@ class _MetricBentoGrid extends StatelessWidget {
   }
 }
 
-class _BentoCard extends StatelessWidget {
-  const _BentoCard({
+/// A single vitals tile — icon + uppercase mono label + big mono value.
+/// Mirrors the `.stat` component from rf.css.
+class _VitalTile extends StatelessWidget {
+  const _VitalTile({
     required this.icon,
     required this.iconColor,
     required this.label,
@@ -558,49 +610,59 @@ class _BentoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
 
     return Container(
       decoration: BoxDecoration(
-        color: cs.surfaceContainer,
-        borderRadius: BorderRadius.circular(24),
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 28, color: iconColor),
-          const Spacer(),
-          Text(
-            label,
-            style: tt.labelSmall?.copyWith(
-              letterSpacing: 1.2,
-              color: cs.onSurfaceVariant,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            children: [
+              Icon(icon, size: 18, color: iconColor),
+              const SizedBox(width: 8),
+              Text(
+                label.toUpperCase(),
+                style: KineticText.mono(
+                  size: 10.5,
+                  weight: FontWeight.w600,
+                  letterSpacing: 1.7,
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 12),
           Text(
             value,
-            style: tt.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              fontFeatures: const [FontFeature.tabularFigures()],
+            style: KineticText.mono(
+              size: 26,
+              weight: FontWeight.w700,
+              letterSpacing: -0.8,
+              color: cs.onSurface,
             ),
           ),
-          if (subtitle != null && subtitle!.isNotEmpty)
+          if (subtitle != null && subtitle!.isNotEmpty) ...[
+            const SizedBox(height: 2),
             Text(
               subtitle!,
-              style: tt.labelSmall?.copyWith(
+              style: GoogleFonts.manrope(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
                 color: cs.onSurfaceVariant,
               ),
             ),
+          ],
         ],
       ),
     );
   }
 }
 
-// ── Zones Section ────────────────────────────────────────────────────────
+// ── Workout Intensity Zones ───────────────────────────────────────────────────
 
 class _ZonesSection extends StatelessWidget {
   const _ZonesSection({
@@ -620,51 +682,37 @@ class _ZonesSection extends StatelessWidget {
     final summary = calculateTimeInZones(panelState.readings, zoneConfig);
     final elapsed = Duration(seconds: panelState.elapsedSeconds).formatted;
 
-    // Map zone number to theme-appropriate colours (Z5→Z1).
-    final zoneThemeColours = {
-      5: cs.error,
-      4: cs.tertiary,
-      3: cs.primary,
-      2: cs.secondary,
-      1: cs.outline,
-    };
-
-    final zoneIcons = {
-      5: Icons.local_fire_department,
-      4: Icons.speed,
-      3: Icons.directions_run,
-      2: Icons.fitness_center,
-      1: Icons.self_improvement,
-    };
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section header
+        // Section header — display style preserves mixed-case localised string.
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: Text(
                 s.workoutIntensityZones,
-                style: tt.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+                style: KineticText.display(
+                  size: 16,
+                  weight: FontWeight.w700,
+                  color: cs.onSurface,
                 ),
               ),
             ),
             Text(
               s.sessionDuration(elapsed).toUpperCase(),
-              style: tt.labelSmall?.copyWith(
-                color: cs.onSurfaceVariant,
+              style: KineticText.mono(
+                size: 9,
+                weight: FontWeight.w600,
                 letterSpacing: 0.5,
-                fontSize: 9,
+                color: cs.onSurfaceVariant,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
 
-        // Reliability indicator
+        // Reliability indicator.
         Row(
           children: [
             const Spacer(),
@@ -673,20 +721,26 @@ class _ZonesSection extends StatelessWidget {
         ),
         const SizedBox(height: 8),
 
-        // Zone cards (Z5 → Z1, highest first)
-        for (final zone in zoneConfig.zones.reversed) ...[
-          _ZoneCard(
-            zone: zone,
-            duration: summary.durationInZone(zone.zoneNumber),
-            accentColour:
-                zoneThemeColours[zone.zoneNumber] ?? Color(zone.color),
-            backgroundIcon: zoneIcons[zone.zoneNumber] ?? Icons.favorite,
+        // Zone rows card — mirrors rf.css .card + .zone structure.
+        Container(
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(22),
           ),
-          const SizedBox(height: 8),
-        ],
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+          child: Column(
+            children: [
+              for (final zone in zoneConfig.zones.reversed)
+                _ZoneRow(
+                  zone: zone,
+                  duration: summary.durationInZone(zone.zoneNumber),
+                ),
+            ],
+          ),
+        ),
 
-        // Summary stats
-        const SizedBox(height: 4),
+        // Summary stats.
+        const SizedBox(height: 8),
         Text(
           s.moderateOrHigher(_formatDuration(summary.moderateOrHigherDuration)),
           style: tt.bodySmall?.copyWith(fontWeight: FontWeight.w600),
@@ -709,81 +763,92 @@ class _ZonesSection extends StatelessWidget {
   }
 }
 
-class _ZoneCard extends StatelessWidget {
-  const _ZoneCard({
+/// A single zone row inside the zones card.
+/// Renders: name (mono, zone colour) + time | proportional fill bar + bpm range.
+/// Mirrors rf.css `.zone`, `.zone__top`, `.zone__track`, `.zone__fill`, `.zone__bpm`.
+class _ZoneRow extends StatelessWidget {
+  const _ZoneRow({
     required this.zone,
     required this.duration,
-    required this.accentColour,
-    required this.backgroundIcon,
   });
 
   final CalculatedZone zone;
   final Duration duration;
-  final Color accentColour;
-  final IconData backgroundIcon;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
+    final zoneColor = Color(zone.color);
     final mins = duration.inMinutes;
     final secs = duration.inSeconds % 60;
+    final timeLabel = '$mins:${secs.toString().padLeft(2, '0')}';
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-        border: Border(
-          left: BorderSide(color: accentColour, width: 4),
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
+    // Compute fill fraction: cap at 100% of elapsed for proportional rendering.
+    final totalSecs = duration.inSeconds;
+    // Use a relative fill based on the time displayed. We normalise against a
+    // nominal maximum (e.g. the largest zone time in the session is not known
+    // here, so we use the raw seconds capped at 30 minutes as the scale).
+    final fillFraction = (totalSecs / 1800).clamp(0.0, 1.0);
+
+    final bpmRange = zone.upperBound != null
+        ? '${zone.lowerBound}–${zone.upperBound} BPM'
+        : '${zone.lowerBound}+ BPM';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Background icon
-          Positioned(
-            right: -4,
-            bottom: -4,
-            child: Icon(
-              backgroundIcon,
-              size: 56,
-              color: cs.onSurface.withValues(alpha: 0.05),
+          // Top row: zone name + time.
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Zone ${zone.zoneNumber} · ${zone.descriptiveLabel}'
+                      .toUpperCase(),
+                  style: KineticText.mono(
+                    size: 10.5,
+                    weight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                    color: zoneColor,
+                  ),
+                ),
+              ),
+              Text(
+                timeLabel,
+                style: KineticText.mono(
+                  size: 10.5,
+                  weight: FontWeight.w600,
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          // Proportional fill bar — track = surfaceContainer, fill = zone colour.
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: SizedBox(
+              height: 5,
+              child: Stack(
+                children: [
+                  Container(color: cs.surfaceContainer),
+                  FractionallySizedBox(
+                    widthFactor: fillFraction,
+                    child: Container(color: zoneColor),
+                  ),
+                ],
+              ),
             ),
           ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Zone ${zone.zoneNumber}: ${zone.descriptiveLabel}'
-                      .toUpperCase(),
-                  style: tt.labelSmall?.copyWith(
-                    color: accentColour,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
-                    fontSize: 9,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$mins:${secs.toString().padLeft(2, '0')}',
-                  style: tt.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  zone.upperBound != null
-                      ? '${zone.lowerBound}–${zone.upperBound} BPM'
-                      : '${zone.lowerBound}+ BPM',
-                  style: tt.labelSmall?.copyWith(
-                    color: cs.onSurfaceVariant,
-                    fontSize: 9,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 6),
+          // BPM range.
+          Text(
+            bpmRange,
+            style: KineticText.mono(
+              size: 10,
+              weight: FontWeight.w500,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],
@@ -792,7 +857,7 @@ class _ZoneCard extends StatelessWidget {
   }
 }
 
-// ── Trend Chart Section ──────────────────────────────────────────────────
+// ── HR Trend Chart Section ────────────────────────────────────────────────────
 
 class _TrendChartSection extends StatelessWidget {
   const _TrendChartSection({
@@ -800,6 +865,7 @@ class _TrendChartSection extends StatelessWidget {
     required this.zoneConfig,
     required this.chartWindow,
     required this.showZoneBands,
+    required this.peakZoneColor,
     required this.onWindowChanged,
   });
 
@@ -807,6 +873,7 @@ class _TrendChartSection extends StatelessWidget {
   final ZoneConfiguration? zoneConfig;
   final int chartWindow;
   final bool showZoneBands;
+  final Color peakZoneColor;
   final ValueChanged<int> onWindowChanged;
 
   @override
@@ -815,16 +882,21 @@ class _TrendChartSection extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
+    // Derive sparkline data from all readings for the full-session trace.
+    final sparkData = panelState.readings.map((r) => r.bpm.toDouble()).toList();
+    final maxBpm =
+        sparkData.isNotEmpty ? sparkData.reduce((a, b) => a > b ? a : b) : 0.0;
+
     return Container(
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Header row: title + "Max NNN" ghost pill.
           Row(
             children: [
               Expanded(
@@ -833,8 +905,10 @@ class _TrendChartSection extends StatelessWidget {
                   children: [
                     Text(
                       s.heartRateTrend,
-                      style: tt.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                      style: KineticText.display(
+                        size: 15,
+                        weight: FontWeight.w700,
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -847,62 +921,137 @@ class _TrendChartSection extends StatelessWidget {
                   ],
                 ),
               ),
-              // Window selector
-              DropdownButton<int>(
-                value: chartWindow,
-                underline: const SizedBox.shrink(),
-                isDense: true,
-                items: ChartWindowNotifier.allowedValues
-                    .map((v) => DropdownMenuItem(
-                          value: v,
-                          child: Text(
-                            v < 60 ? '${v}s' : '${v ~/ 60}m',
-                            style: tt.bodySmall,
-                          ),
-                        ))
-                    .toList(),
-                onChanged: (v) {
-                  if (v != null) onWindowChanged(v);
-                },
-              ),
+              if (maxBpm > 0)
+                KineticPill(
+                  'Max ${maxBpm.toInt()}',
+                  variant: KineticPillVariant.ghost,
+                ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
-          // Recent chart (windowed)
+          // Recent windowed chart.
           Text(
             s.recentChart,
-            style: tt.labelSmall?.copyWith(
+            style: KineticText.mono(
+              size: 10,
+              weight: FontWeight.w600,
+              letterSpacing: 1.7,
               color: cs.onSurfaceVariant,
-              letterSpacing: 1.0,
-              fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
+          // Window selector inline.
+          Align(
+            alignment: Alignment.centerRight,
+            child: DropdownButton<int>(
+              value: chartWindow,
+              underline: const SizedBox.shrink(),
+              isDense: true,
+              items: ChartWindowNotifier.allowedValues
+                  .map((v) => DropdownMenuItem(
+                        value: v,
+                        child: Text(
+                          v < 60 ? '${v}s' : '${v ~/ 60}m',
+                          style: tt.bodySmall,
+                        ),
+                      ))
+                  .toList(),
+              onChanged: (v) {
+                if (v != null) onWindowChanged(v);
+              },
+            ),
+          ),
           HeartRateChart(
             readings: panelState.readings,
             zoneConfig: zoneConfig,
             windowSeconds: chartWindow,
             showZoneBands: showZoneBands,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
-          // Full session chart
+          // Full-session sparkline (Kinetic style: peak-coloured).
           Text(
             s.fullSessionChart,
-            style: tt.labelSmall?.copyWith(
+            style: KineticText.mono(
+              size: 10,
+              weight: FontWeight.w600,
+              letterSpacing: 1.7,
               color: cs.onSurfaceVariant,
-              letterSpacing: 1.0,
-              fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          HeartRateChart(
-            readings: panelState.readings,
-            zoneConfig: zoneConfig,
-            showZoneBands: showZoneBands,
-          ),
+          if (sparkData.length >= 2)
+            SizedBox(
+              height: 80,
+              child: SparklineWidget(
+                data: sparkData,
+                lineColor: peakZoneColor,
+                fillColor: peakZoneColor.withValues(alpha: 0.18),
+                strokeWidth: 2.5,
+              ),
+            )
+          else
+            HeartRateChart(
+              readings: panelState.readings,
+              zoneConfig: zoneConfig,
+              showZoneBands: showZoneBands,
+            ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Full Weekly Heart Report Row ──────────────────────────────────────────────
+
+/// .srow-style list row that links to the full weekly heart report.
+/// Uses a peak-tinted icon tile with the `monitor_heart` icon.
+class _WeeklyReportRow extends StatelessWidget {
+  const _WeeklyReportRow({required this.peakZoneColor});
+
+  final Color peakZoneColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Material(
+      color: cs.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(18),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        leading: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: peakZoneColor.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(13),
+          ),
+          child: Icon(Icons.monitor_heart, size: 22, color: peakZoneColor),
+        ),
+        title: Text(
+          'Full Weekly Heart Report',
+          style: KineticText.display(
+            size: 14,
+            weight: FontWeight.w700,
+            color: cs.onSurface,
+          ),
+        ),
+        subtitle: Text(
+          'Cardiovascular adaptation, last 7 days',
+          style: GoogleFonts.manrope(
+            fontSize: 11.5,
+            color: cs.onSurfaceVariant,
+          ),
+        ),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: cs.onSurfaceVariant,
+        ),
+        onTap: () {
+          // Navigation to weekly report — not yet implemented in this release.
+        },
       ),
     );
   }

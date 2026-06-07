@@ -24,7 +24,14 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  Widget buildScreen() {
+  Widget buildScreen({bool wrapInOuterScaffold = false}) {
+    // When [wrapInOuterScaffold] is true the screen is nested inside an outer
+    // Scaffold, mirroring the production ShellRoute's ScaffoldWithNavBar. The
+    // outer Scaffold consumes (zeroes) the keyboard's bottom viewInsets for its
+    // body, so the inner screen cannot detect the keyboard via
+    // MediaQuery.viewInsetsOf — this is the condition the FAB-hide guard must
+    // survive.
+    const screen = ActiveWorkoutScreen();
     return ProviderScope(
       overrides: [
         workoutRepositoryProvider
@@ -44,10 +51,10 @@ void main() {
         ),
         syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
-        home: ActiveWorkoutScreen(),
+        home: wrapInOuterScaffold ? const Scaffold(body: screen) : screen,
       ),
     );
   }
@@ -114,6 +121,38 @@ void main() {
         // FAB with "Add Exercise" label is visible
         expect(find.byType(FloatingActionButton), findsOneWidget);
         expect(find.text('Add Exercise'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'addExerciseFab_hidesWhenKeyboardOpen_evenNestedInOuterScaffold',
+      (tester) async {
+        // Reproduces the production layout: the screen is nested inside an
+        // outer Scaffold (ScaffoldWithNavBar) which consumes the keyboard's
+        // bottom viewInset for its body. The "Add Exercise" FAB must still hide
+        // when the keyboard opens so it does not cover the "Log Set" button.
+        addTearDown(tester.view.resetViewInsets);
+
+        await tester.pumpWidget(buildScreen(wrapInOuterScaffold: true));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Start Workout'));
+        await tester.pumpAndSettle();
+
+        // With no keyboard the FAB is visible.
+        expect(find.byType(FloatingActionButton), findsOneWidget);
+
+        // Simulate the soft keyboard opening.
+        tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+        await tester.pumpAndSettle();
+
+        // The FAB must be gone so it cannot overlap the Log Set CTA.
+        expect(find.byType(FloatingActionButton), findsNothing);
+
+        // Closing the keyboard brings the FAB back.
+        tester.view.resetViewInsets();
+        await tester.pumpAndSettle();
+        expect(find.byType(FloatingActionButton), findsOneWidget);
       },
     );
 

@@ -123,7 +123,8 @@ class _TemplateEditScreenState extends ConsumerState<TemplateEditScreen> {
     if (template == null) return;
 
     final exercises = List<TemplateExercise>.from(template.exercises);
-    if (newIndex > oldIndex) newIndex -= 1;
+    // [onReorderItem] already adjusts newIndex for the removed item, so no
+    // manual `newIndex -= 1` correction is needed here.
     final item = exercises.removeAt(oldIndex);
     exercises.insert(newIndex, item);
 
@@ -235,7 +236,7 @@ class _TemplateEditScreenState extends ConsumerState<TemplateEditScreen> {
                 : ReorderableListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: template.exercises.length,
-                    onReorder: _onReorder,
+                    onReorderItem: _onReorder,
                     itemBuilder: (context, index) {
                       final exercise = template.exercises[index];
                       return _TemplateExerciseTile(

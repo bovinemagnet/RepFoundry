@@ -59,9 +59,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.fitness_center), findsOneWidget);
-      expect(find.byIcon(Icons.history), findsOneWidget);
+      expect(find.byIcon(Icons.bar_chart), findsOneWidget);
       expect(find.byIcon(Icons.directions_run), findsOneWidget);
-      expect(find.byIcon(Icons.monitor_heart), findsOneWidget);
+      expect(find.byIcon(Icons.favorite), findsOneWidget);
       expect(find.byIcon(Icons.settings), findsOneWidget);
     });
 

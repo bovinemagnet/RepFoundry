@@ -461,7 +461,11 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
         state = state.copyWith(setsByExercise: updated);
       }
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      // Surface the validation message without the exception class name so it
+      // reads cleanly in the error SnackBar.
+      state = state.copyWith(
+        error: e is LogSetException ? e.message : e.toString(),
+      );
     }
   }
 

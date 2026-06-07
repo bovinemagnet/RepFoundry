@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hr_zones/hr_zones.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/cardio/application/save_cardio_session_use_case.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
-import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/controllers/heart_rate_panel_controller.dart';
@@ -334,7 +332,8 @@ void main() {
       expect(find.text('Full Session'), findsOneWidget);
     });
 
-    testWidgets('start / reset buttons render when connected but not monitoring',
+    testWidgets(
+        'start / reset buttons render when connected but not monitoring',
         (tester) async {
       await tester.pumpWidget(
         buildScreenWithState(
