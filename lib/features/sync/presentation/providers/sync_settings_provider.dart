@@ -12,7 +12,8 @@ class SyncSettingsNotifier extends Notifier<SyncSettings> {
   static const _keyConsentGiven = 'cloud_sync_consent_given';
   // `_initialSettings` gives build() a stable device ID immediately,
   // `_loadFuture` ensures every caller awaits the same preferences read,
-  // and `_loadedSettings` keeps the loaded state stable across rebuilds.
+  // and `_loadedSettings` lets rebuilds keep returning the last loaded
+  // state instead of temporarily falling back to `_initialSettings`.
   Future<void>? _loadFuture;
   final SyncSettings _initialSettings = SyncSettings(deviceId: const Uuid().v4());
   SyncSettings? _loadedSettings;
