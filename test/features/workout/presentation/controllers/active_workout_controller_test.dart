@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:drift/native.dart';
-import 'package:rep_foundry/core/database/app_database.dart';
+import 'package:rep_foundry/core/database/app_database.dart' show AppDatabase;
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
@@ -22,16 +22,19 @@ import 'package:rep_foundry/features/workout/presentation/controllers/active_wor
 
 class _FakeCloudSyncService implements CloudSyncService {
   @override
-  Future<void> deleteCloudData() async {}
+  Future<void> deleteCloudData({bool interactive = false}) async {}
 
   @override
-  Future<String?> downloadSnapshot() async => null;
+  Future<String?> downloadSnapshot({bool interactive = false}) async => null;
 
   @override
   Future<bool> isAvailable() async => true;
 
   @override
-  Future<void> uploadSnapshot(String jsonData) async {}
+  Future<void> uploadSnapshot(
+    String jsonData, {
+    bool interactive = false,
+  }) async {}
 }
 
 class _NoOpHealthSyncSettingsNotifier extends HealthSyncSettingsNotifier {
@@ -47,8 +50,7 @@ class _RecordingSyncOrchestrator extends SyncOrchestrator {
           deviceId: 'test-device',
         );
 
-  factory _RecordingSyncOrchestrator() =>
-      _RecordingSyncOrchestrator._(
+  factory _RecordingSyncOrchestrator() => _RecordingSyncOrchestrator._(
         AppDatabase.forTesting(NativeDatabase.memory()),
       );
 
@@ -59,7 +61,7 @@ class _RecordingSyncOrchestrator extends SyncOrchestrator {
   Future<void> get syncCalled => _syncCalled.future;
 
   @override
-  Future<SyncResult> sync() async {
+  Future<SyncResult> sync({bool interactive = false}) async {
     syncCalls += 1;
     if (!_syncCalled.isCompleted) {
       _syncCalled.complete();

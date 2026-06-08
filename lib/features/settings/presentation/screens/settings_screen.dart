@@ -1000,11 +1000,17 @@ class _SyncRemindersCard extends ConsumerWidget {
               if (!syncSettings.consentGiven) {
                 final accepted = await SyncConsentDialog.show(context);
                 if (!accepted) return;
-                ref.read(syncSettingsProvider.notifier).setConsentGiven(true);
+                await ref
+                    .read(syncSettingsProvider.notifier)
+                    .setConsentGiven(true);
               }
-              ref.read(syncSettingsProvider.notifier).setEnabled(true);
+              if (!context.mounted) return;
+              final result = await _runManualSync(context, ref);
+              if (result) {
+                await ref.read(syncSettingsProvider.notifier).setEnabled(true);
+              }
             } else {
-              ref.read(syncSettingsProvider.notifier).setEnabled(false);
+              await ref.read(syncSettingsProvider.notifier).setEnabled(false);
             }
           },
         ),
@@ -1036,39 +1042,7 @@ class _SyncRemindersCard extends ConsumerWidget {
               : null,
           onTap: syncState.status == SyncStatus.syncing
               ? null
-              : () async {
-                  ref
-                      .read(syncStateProvider.notifier)
-                      .setStatus(SyncStatus.syncing);
-                  final result =
-                      await ref.read(syncOrchestratorProvider).sync();
-                  if (result.success) {
-                    ref.read(syncStateProvider.notifier).setStatus(
-                          SyncStatus.success,
-                          lastSyncAt: result.syncedAt,
-                        );
-                    ref
-                        .read(syncSettingsProvider.notifier)
-                        .updateLastSyncAt(result.syncedAt);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(s.syncSuccess)),
-                      );
-                    }
-                  } else {
-                    ref.read(syncStateProvider.notifier).setStatus(
-                          SyncStatus.error,
-                          error: result.errorMessage,
-                        );
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(s.syncError(result.errorMessage ?? '')),
-                        ),
-                      );
-                    }
-                  }
-                },
+              : () => _runManualSync(context, ref),
         ),
         _Set2Row(
           icon: Icons.delete_outline,
@@ -1097,7 +1071,9 @@ class _SyncRemindersCard extends ConsumerWidget {
               ),
             );
             if (confirmed == true) {
-              await ref.read(syncOrchestratorProvider).deleteCloudData();
+              await ref
+                  .read(syncOrchestratorProvider)
+                  .deleteCloudData(interactive: true);
               ref.read(syncSettingsProvider.notifier).disableAndClear();
               ref.read(syncStateProvider.notifier).setStatus(SyncStatus.idle);
             }
@@ -1107,6 +1083,38 @@ class _SyncRemindersCard extends ConsumerWidget {
     ];
 
     return _Set2Card(children: rows);
+  }
+
+  Future<bool> _runManualSync(BuildContext context, WidgetRef ref) async {
+    ref.read(syncStateProvider.notifier).setStatus(SyncStatus.syncing);
+    final result =
+        await ref.read(syncOrchestratorProvider).sync(interactive: true);
+    if (result.success) {
+      ref.read(syncStateProvider.notifier).setStatus(
+            SyncStatus.success,
+            lastSyncAt: result.syncedAt,
+          );
+      await ref
+          .read(syncSettingsProvider.notifier)
+          .updateLastSyncAt(result.syncedAt);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.syncSuccess)),
+        );
+      }
+      return true;
+    }
+
+    ref.read(syncStateProvider.notifier).setStatus(
+          SyncStatus.error,
+          error: result.errorMessage,
+        );
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.syncError(result.errorMessage ?? ''))),
+      );
+    }
+    return false;
   }
 
   String _reminderSummary(

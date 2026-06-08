@@ -16,7 +16,10 @@ class CloudKitSyncService implements CloudSyncService {
   }
 
   @override
-  Future<void> uploadSnapshot(String jsonSnapshot) async {
+  Future<void> uploadSnapshot(
+    String jsonSnapshot, {
+    bool interactive = false,
+  }) async {
     await _channel.invokeMethod<bool>(
       'uploadSnapshot',
       {'json': jsonSnapshot},
@@ -24,13 +27,13 @@ class CloudKitSyncService implements CloudSyncService {
   }
 
   @override
-  Future<String?> downloadSnapshot() async {
+  Future<String?> downloadSnapshot({bool interactive = false}) async {
     final result = await _channel.invokeMethod<String>('downloadSnapshot');
     return result;
   }
 
   @override
-  Future<void> deleteCloudData() async {
+  Future<void> deleteCloudData({bool interactive = false}) async {
     await _channel.invokeMethod<bool>('deleteCloudData');
   }
 }
