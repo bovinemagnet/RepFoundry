@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/models/workout_template.dart';
+import '../widgets/templates_desktop_view.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/responsive/breakpoints.dart';
 
 final _templateListProvider =
     StreamProvider.autoDispose<List<WorkoutTemplate>>((ref) {
@@ -17,6 +19,12 @@ class TemplateListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
+
+    // Wide screens use the desktop library + canvas power layout.
+    if (context.isWide) {
+      return const TemplatesDesktopView();
+    }
+
     final templatesAsync = ref.watch(_templateListProvider);
 
     return Scaffold(

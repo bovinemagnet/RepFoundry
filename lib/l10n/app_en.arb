@@ -9,6 +9,72 @@
   "navHeartRate": "Heart Rate",
   "navSettings": "Settings",
 
+  "navGroupTrain": "Train",
+  "@navGroupTrain": {
+    "description": "Desktop side-rail group heading for training screens"
+  },
+  "navGroupReview": "Review",
+  "@navGroupReview": {
+    "description": "Desktop side-rail group heading for review/analysis screens"
+  },
+  "navGroupPlan": "Plan",
+  "@navGroupPlan": {
+    "description": "Desktop side-rail group heading for planning screens"
+  },
+
+  "desktopSessionsLabel": "Sessions",
+  "@desktopSessionsLabel": {
+    "description": "Heading for the session list pane in the desktop History layout"
+  },
+  "desktopVolumeLabel": "Volume",
+  "@desktopVolumeLabel": {
+    "description": "Stat label for total lifted volume"
+  },
+  "desktopDurationLabel": "Duration",
+  "@desktopDurationLabel": {
+    "description": "Stat label for a workout's duration"
+  },
+  "desktopSetsLabel": "Sets",
+  "@desktopSetsLabel": {
+    "description": "Stat label for the number of sets in a workout"
+  },
+  "desktopExercisesLabel": "Exercises",
+  "@desktopExercisesLabel": {
+    "description": "Stat label for the number of exercises in a workout"
+  },
+  "desktopPerSetVolume": "Per-set volume",
+  "@desktopPerSetVolume": {
+    "description": "Section label above the per-set volume chart"
+  },
+  "desktopExerciseBreakdown": "Exercise breakdown",
+  "@desktopExerciseBreakdown": {
+    "description": "Section label above the per-exercise set breakdown"
+  },
+  "desktopSelectSession": "Select a session to view its full breakdown.",
+  "@desktopSelectSession": {
+    "description": "Empty-state prompt in the desktop History detail pane"
+  },
+  "desktopSelectTemplate": "Select a template to view its exercises.",
+  "@desktopSelectTemplate": {
+    "description": "Empty-state prompt in the desktop Templates canvas pane"
+  },
+  "desktopTotalVolume": "Total volume",
+  "@desktopTotalVolume": {
+    "description": "Analytics KPI label for cumulative volume"
+  },
+  "desktopWorkoutsLabel": "Workouts",
+  "@desktopWorkoutsLabel": {
+    "description": "Analytics KPI label for the number of workouts"
+  },
+  "desktopAvgSessionLabel": "Avg session",
+  "@desktopAvgSessionLabel": {
+    "description": "Analytics KPI label for average session volume"
+  },
+  "desktopPrsLabel": "PRs",
+  "@desktopPrsLabel": {
+    "description": "Analytics KPI label for the number of personal records"
+  },
+
   "start": "Start",
   "pause": "Pause",
   "resume": "Resume",
@@ -125,6 +191,23 @@
   "themeLight": "Light",
   "themeDark": "Dark",
   "themeAuto": "Auto",
+
+  "layoutLabel": "Layout",
+  "@layoutLabel": {
+    "description": "Settings row title for the layout (mobile/desktop) override"
+  },
+  "layoutMobile": "Mobile",
+  "@layoutMobile": {
+    "description": "Layout option that forces the mobile layout on tablet+ widths"
+  },
+  "layoutDesktop": "Desktop",
+  "@layoutDesktop": {
+    "description": "Layout option that forces the desktop layout on tablet+ widths"
+  },
+  "layoutSubtitle": "Auto follows window size · applies on tablets and larger",
+  "@layoutSubtitle": {
+    "description": "Settings subtitle explaining the layout override scope"
+  },
 
   "weightUnitLabel": "Weight Unit",
 

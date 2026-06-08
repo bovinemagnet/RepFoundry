@@ -24,8 +24,10 @@ import '../../../sync/presentation/widgets/sync_consent_dialog.dart';
 import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../providers/export_provider.dart';
 import '../providers/rest_timer_settings_provider.dart';
+import '../providers/layout_mode_provider.dart';
 import '../providers/show_exercise_images_provider.dart';
 import '../providers/theme_mode_provider.dart';
+import '../../../../core/responsive/layout_mode.dart';
 import '../providers/user_age_provider.dart';
 import '../../../notifications/presentation/providers/reminder_settings_provider.dart';
 import '../../../notifications/domain/models/reminder_settings.dart';
@@ -62,6 +64,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
+    final layoutMode = ref.watch(layoutModeProvider);
     final weightUnit = ref.watch(_weightUnitProvider);
     final userAge = ref.watch(userAgeProvider);
     final profile = ref.watch(healthProfileProvider);
@@ -316,6 +319,34 @@ class SettingsScreen extends ConsumerWidget {
                   ],
                   onSelected: (v) =>
                       ref.read(themeModeProvider.notifier).set(v),
+                ),
+              ),
+              // Layout — Auto / Mobile / Desktop (override applies on tablet+).
+              _Set2Row(
+                icon: Icons.devices,
+                title: s.layoutLabel,
+                subtitle: s.layoutSubtitle,
+                trailing: _CompactSegmented<LayoutMode>(
+                  selected: layoutMode,
+                  options: [
+                    _SegOption(
+                      value: LayoutMode.auto,
+                      icon: Icons.brightness_auto,
+                      label: s.themeAuto,
+                    ),
+                    _SegOption(
+                      value: LayoutMode.mobile,
+                      icon: Icons.smartphone,
+                      label: s.layoutMobile,
+                    ),
+                    _SegOption(
+                      value: LayoutMode.desktop,
+                      icon: Icons.desktop_windows,
+                      label: s.layoutDesktop,
+                    ),
+                  ],
+                  onSelected: (v) =>
+                      ref.read(layoutModeProvider.notifier).set(v),
                 ),
               ),
             ]),
