@@ -7,6 +7,17 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  // The glass bottom navigation is mobile-only; pin a phone-sized viewport so
+  // these tests exercise it rather than the desktop side-rail.
+  Future<void> useMobileViewport(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+  }
+
   GoRouter buildRouter() {
     Widget label(String text) => Scaffold(body: Text(text));
 
@@ -41,8 +52,9 @@ void main() {
     );
   }
 
-  group('ScaffoldWithNavBar', () {
+  group('ScaffoldWithNavBar (mobile bottom nav)', () {
     testWidgets('renders all five nav labels in uppercase', (tester) async {
+      await useMobileViewport(tester);
       await tester.pumpWidget(buildApp(buildRouter()));
       await tester.pumpAndSettle();
 
@@ -55,6 +67,7 @@ void main() {
     });
 
     testWidgets('renders all five nav icons', (tester) async {
+      await useMobileViewport(tester);
       await tester.pumpWidget(buildApp(buildRouter()));
       await tester.pumpAndSettle();
 
@@ -67,6 +80,7 @@ void main() {
 
     testWidgets('initial location /workout shows the workout child',
         (tester) async {
+      await useMobileViewport(tester);
       await tester.pumpWidget(buildApp(buildRouter()));
       await tester.pumpAndSettle();
 
@@ -74,6 +88,7 @@ void main() {
     });
 
     testWidgets('tapping HISTORY navigates to /history', (tester) async {
+      await useMobileViewport(tester);
       final router = buildRouter();
       await tester.pumpWidget(buildApp(router));
       await tester.pumpAndSettle();
@@ -86,6 +101,7 @@ void main() {
     });
 
     testWidgets('tapping CARDIO navigates to /cardio', (tester) async {
+      await useMobileViewport(tester);
       final router = buildRouter();
       await tester.pumpWidget(buildApp(router));
       await tester.pumpAndSettle();
@@ -97,6 +113,7 @@ void main() {
     });
 
     testWidgets('tapping HEART RATE navigates to /heart-rate', (tester) async {
+      await useMobileViewport(tester);
       final router = buildRouter();
       await tester.pumpWidget(buildApp(router));
       await tester.pumpAndSettle();
@@ -111,6 +128,7 @@ void main() {
     });
 
     testWidgets('tapping SETTINGS navigates to /settings', (tester) async {
+      await useMobileViewport(tester);
       final router = buildRouter();
       await tester.pumpWidget(buildApp(router));
       await tester.pumpAndSettle();

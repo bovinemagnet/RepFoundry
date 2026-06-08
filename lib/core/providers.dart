@@ -4,6 +4,7 @@ import '../features/body_metrics/data/drift_body_metric_repository.dart';
 import '../features/body_metrics/domain/models/body_metric.dart';
 import '../features/body_metrics/domain/repositories/body_metric_repository.dart';
 import '../features/exercises/data/drift_exercise_repository.dart';
+import '../features/exercises/domain/models/exercise.dart';
 import '../features/exercises/domain/repositories/exercise_repository.dart';
 import '../features/workout/data/drift_workout_repository.dart';
 import '../features/workout/domain/repositories/workout_repository.dart';
@@ -48,6 +49,16 @@ final bodyMetricsStreamProvider =
 
 final exerciseRepositoryProvider = Provider<ExerciseRepository>((ref) {
   return DriftExerciseRepository(ref.watch(databaseProvider));
+});
+
+/// Maps exercise id → [Exercise] for resolving names and muscle groups in
+/// presentation (e.g. the desktop history detail and template panes), where
+/// only ids are stored on sets.
+final exerciseLookupProvider =
+    FutureProvider.autoDispose<Map<String, Exercise>>((ref) async {
+  final exercises =
+      await ref.watch(exerciseRepositoryProvider).getAllExercises();
+  return {for (final e in exercises) e.id: e};
 });
 
 final workoutRepositoryProvider = Provider<WorkoutRepository>((ref) {

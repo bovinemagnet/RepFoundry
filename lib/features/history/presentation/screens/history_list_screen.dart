@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../providers/volume_sparkline_provider.dart';
+import '../widgets/history_desktop_view.dart';
 import '../widgets/progress_view.dart';
+import '../../../../core/responsive/breakpoints.dart';
 import '../../../workout/domain/models/workout.dart';
 import '../../../workout/domain/models/workout_set.dart';
 import '../../../../core/providers.dart';
@@ -75,6 +77,11 @@ class _HistoryListScreenState extends State<HistoryListScreen>
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
+
+    // Wide screens use the desktop master–detail power layout.
+    if (context.isWide) {
+      return const HistoryDesktopView();
+    }
 
     return Scaffold(
       // The KineticAppHeader is rendered inside the scrollable History tab,

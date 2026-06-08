@@ -27,6 +27,56 @@ class SKo extends S {
   String get navSettings => '설정';
 
   @override
+  String get navGroupTrain => 'Train';
+
+  @override
+  String get navGroupReview => 'Review';
+
+  @override
+  String get navGroupPlan => 'Plan';
+
+  @override
+  String get desktopSessionsLabel => 'Sessions';
+
+  @override
+  String get desktopVolumeLabel => 'Volume';
+
+  @override
+  String get desktopDurationLabel => 'Duration';
+
+  @override
+  String get desktopSetsLabel => 'Sets';
+
+  @override
+  String get desktopExercisesLabel => 'Exercises';
+
+  @override
+  String get desktopPerSetVolume => 'Per-set volume';
+
+  @override
+  String get desktopExerciseBreakdown => 'Exercise breakdown';
+
+  @override
+  String get desktopSelectSession =>
+      'Select a session to view its full breakdown.';
+
+  @override
+  String get desktopSelectTemplate =>
+      'Select a template to view its exercises.';
+
+  @override
+  String get desktopTotalVolume => 'Total volume';
+
+  @override
+  String get desktopWorkoutsLabel => 'Workouts';
+
+  @override
+  String get desktopAvgSessionLabel => 'Avg session';
+
+  @override
+  String get desktopPrsLabel => 'PRs';
+
+  @override
   String get start => '시작';
 
   @override
@@ -268,6 +318,19 @@ class SKo extends S {
 
   @override
   String get themeAuto => '자동';
+
+  @override
+  String get layoutLabel => 'Layout';
+
+  @override
+  String get layoutMobile => 'Mobile';
+
+  @override
+  String get layoutDesktop => 'Desktop';
+
+  @override
+  String get layoutSubtitle =>
+      'Auto follows window size · applies on tablets and larger';
 
   @override
   String get weightUnitLabel => '무게 단위';

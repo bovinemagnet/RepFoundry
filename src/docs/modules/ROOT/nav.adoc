@@ -3,6 +3,7 @@
 * xref:architecture.adoc[Architecture]
 * xref:database.adoc[Database]
 * xref:state-management.adoc[State Management]
+* xref:responsive-desktop.adoc[Responsive Desktop Layouts]
 * Features
 ** xref:features/workout.adoc[Workout Logging]
 ** xref:features/cardio.adoc[Cardio Tracking]

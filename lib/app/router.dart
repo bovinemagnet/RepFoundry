@@ -23,6 +23,10 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/workout',
     routes: [
+      // Primary destinations live inside the adaptive nav shell so the desktop
+      // side-rail stays visible across all of them. On mobile only the five
+      // core tabs surface the bottom nav (see [ScaffoldWithNavBar]); the others
+      // keep their original full-screen presentation.
       ShellRoute(
         builder: (context, state, child) => ScaffoldWithNavBar(child: child),
         routes: [
@@ -51,6 +55,34 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const HeartRatePanelScreen(),
           ),
           GoRoute(
+            path: '/analytics',
+            builder: (context, state) => const AnalyticsScreen(),
+          ),
+          GoRoute(
+            path: '/templates',
+            builder: (context, state) => const TemplateListScreen(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) => TemplateEditScreen(
+                  templateId: state.pathParameters['id']!,
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/programmes',
+            builder: (context, state) => const ProgrammeListScreen(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) => ProgrammeEditScreen(
+                  programmeId: state.pathParameters['id']!,
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
             path: '/settings',
             builder: (context, state) => const SettingsScreen(),
             routes: [
@@ -66,18 +98,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      GoRoute(
-        path: '/templates',
-        builder: (context, state) => const TemplateListScreen(),
-        routes: [
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => TemplateEditScreen(
-              templateId: state.pathParameters['id']!,
-            ),
-          ),
-        ],
-      ),
+      // Deep / contextual routes that sit outside the nav shell.
       GoRoute(
         path: '/exercises',
         builder: (context, state) => const ExercisePickerScreen(),
@@ -95,22 +116,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/body-metrics',
         builder: (context, state) => const BodyMetricsScreen(),
-      ),
-      GoRoute(
-        path: '/analytics',
-        builder: (context, state) => const AnalyticsScreen(),
-      ),
-      GoRoute(
-        path: '/programmes',
-        builder: (context, state) => const ProgrammeListScreen(),
-        routes: [
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => ProgrammeEditScreen(
-              programmeId: state.pathParameters['id']!,
-            ),
-          ),
-        ],
       ),
     ],
   );

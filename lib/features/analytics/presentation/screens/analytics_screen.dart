@@ -8,6 +8,8 @@ import '../providers/weekly_volume_provider.dart';
 import '../providers/muscle_balance_provider.dart';
 import '../providers/pr_timeline_provider.dart';
 import '../providers/training_load_provider.dart';
+import '../widgets/analytics_desktop_view.dart';
+import '../../../../core/responsive/breakpoints.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -16,6 +18,11 @@ class AnalyticsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
     final theme = Theme.of(context);
+
+    // Wide screens use the desktop dashboard grid (all charts at once).
+    if (context.isWide) {
+      return const AnalyticsDesktopView();
+    }
 
     final volumeAsync = ref.watch(weeklyVolumeProvider);
     final balanceAsync = ref.watch(muscleBalanceProvider);
@@ -63,9 +70,9 @@ class AnalyticsScreen extends ConsumerWidget {
             child: volumeAsync.when(
               data: (data) => data.isEmpty
                   ? const SizedBox.shrink()
-                  : _WeeklyVolumeChart(data: data),
-              loading: () => const _ChartLoading(),
-              error: (e, _) => _ChartError(message: e.toString()),
+                  : WeeklyVolumeChart(data: data),
+              loading: () => const ChartLoading(),
+              error: (e, _) => ChartError(message: e.toString()),
             ),
           ),
           const SizedBox(height: 16),
@@ -77,9 +84,9 @@ class AnalyticsScreen extends ConsumerWidget {
             child: balanceAsync.when(
               data: (data) => data.isEmpty
                   ? const SizedBox.shrink()
-                  : _MuscleBalanceChart(data: data),
-              loading: () => const _ChartLoading(),
-              error: (e, _) => _ChartError(message: e.toString()),
+                  : MuscleBalanceChart(data: data),
+              loading: () => const ChartLoading(),
+              error: (e, _) => ChartError(message: e.toString()),
             ),
           ),
           const SizedBox(height: 16),
@@ -91,9 +98,9 @@ class AnalyticsScreen extends ConsumerWidget {
             child: prAsync.when(
               data: (data) => data.isEmpty
                   ? const SizedBox.shrink()
-                  : _PrTimeline(entries: data),
-              loading: () => const _ChartLoading(),
-              error: (e, _) => _ChartError(message: e.toString()),
+                  : PrTimeline(entries: data),
+              loading: () => const ChartLoading(),
+              error: (e, _) => ChartError(message: e.toString()),
             ),
           ),
           const SizedBox(height: 16),
@@ -106,9 +113,9 @@ class AnalyticsScreen extends ConsumerWidget {
             child: loadAsync.when(
               data: (data) => data.isEmpty
                   ? const SizedBox.shrink()
-                  : _TrainingLoadChart(data: data),
-              loading: () => const _ChartLoading(),
-              error: (e, _) => _ChartError(message: e.toString()),
+                  : TrainingLoadChart(data: data),
+              loading: () => const ChartLoading(),
+              error: (e, _) => ChartError(message: e.toString()),
             ),
           ),
         ],
@@ -155,8 +162,8 @@ class AnalyticsScreen extends ConsumerWidget {
 
 // --- Weekly Volume Line Chart ---
 
-class _WeeklyVolumeChart extends StatelessWidget {
-  const _WeeklyVolumeChart({required this.data});
+class WeeklyVolumeChart extends StatelessWidget {
+  const WeeklyVolumeChart({super.key, required this.data});
 
   final List<WeeklyVolume> data;
 
@@ -275,8 +282,8 @@ class _WeeklyVolumeChart extends StatelessWidget {
 
 // --- Muscle Balance Radar Chart ---
 
-class _MuscleBalanceChart extends StatelessWidget {
-  const _MuscleBalanceChart({required this.data});
+class MuscleBalanceChart extends StatelessWidget {
+  const MuscleBalanceChart({super.key, required this.data});
 
   final List<MuscleBalance> data;
 
@@ -332,8 +339,8 @@ class _MuscleBalanceChart extends StatelessWidget {
 
 // --- PR Timeline ---
 
-class _PrTimeline extends StatelessWidget {
-  const _PrTimeline({required this.entries});
+class PrTimeline extends StatelessWidget {
+  const PrTimeline({super.key, required this.entries});
 
   final List<PrTimelineEntry> entries;
 
@@ -414,8 +421,8 @@ class _PrTimeline extends StatelessWidget {
 
 // --- Training Load Bar Chart ---
 
-class _TrainingLoadChart extends StatelessWidget {
-  const _TrainingLoadChart({required this.data});
+class TrainingLoadChart extends StatelessWidget {
+  const TrainingLoadChart({super.key, required this.data});
 
   final List<WeeklyLoad> data;
 
@@ -546,8 +553,8 @@ class _TrainingLoadChart extends StatelessWidget {
 
 // --- Helper widgets ---
 
-class _ChartLoading extends StatelessWidget {
-  const _ChartLoading();
+class ChartLoading extends StatelessWidget {
+  const ChartLoading({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -558,8 +565,8 @@ class _ChartLoading extends StatelessWidget {
   }
 }
 
-class _ChartError extends StatelessWidget {
-  const _ChartError({required this.message});
+class ChartError extends StatelessWidget {
+  const ChartError({super.key, required this.message});
 
   final String message;
 

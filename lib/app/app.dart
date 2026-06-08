@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/responsive/layout_mode.dart';
+import '../features/settings/presentation/providers/layout_mode_provider.dart';
 import '../features/settings/presentation/providers/theme_mode_provider.dart';
 import '../l10n/generated/app_localizations.dart';
 import 'router.dart';
@@ -12,6 +14,7 @@ class RepFoundryApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final layoutMode = ref.watch(layoutModeProvider);
     return MaterialApp.router(
       title: 'RepFoundry',
       theme: AppTheme.light,
@@ -21,6 +24,12 @@ class RepFoundryApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       localizationsDelegates: S.localizationsDelegates,
       supportedLocales: S.supportedLocales,
+      // Make the user's layout override available to the width-based breakpoint
+      // helpers throughout the routed tree.
+      builder: (context, child) => LayoutModeScope(
+        mode: layoutMode,
+        child: child ?? const SizedBox.shrink(),
+      ),
     );
   }
 }

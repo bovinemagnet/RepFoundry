@@ -138,6 +138,102 @@ abstract class S {
   /// **'Settings'**
   String get navSettings;
 
+  /// Desktop side-rail group heading for training screens
+  ///
+  /// In en, this message translates to:
+  /// **'Train'**
+  String get navGroupTrain;
+
+  /// Desktop side-rail group heading for review/analysis screens
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get navGroupReview;
+
+  /// Desktop side-rail group heading for planning screens
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get navGroupPlan;
+
+  /// Heading for the session list pane in the desktop History layout
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get desktopSessionsLabel;
+
+  /// Stat label for total lifted volume
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get desktopVolumeLabel;
+
+  /// Stat label for a workout's duration
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get desktopDurationLabel;
+
+  /// Stat label for the number of sets in a workout
+  ///
+  /// In en, this message translates to:
+  /// **'Sets'**
+  String get desktopSetsLabel;
+
+  /// Stat label for the number of exercises in a workout
+  ///
+  /// In en, this message translates to:
+  /// **'Exercises'**
+  String get desktopExercisesLabel;
+
+  /// Section label above the per-set volume chart
+  ///
+  /// In en, this message translates to:
+  /// **'Per-set volume'**
+  String get desktopPerSetVolume;
+
+  /// Section label above the per-exercise set breakdown
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise breakdown'**
+  String get desktopExerciseBreakdown;
+
+  /// Empty-state prompt in the desktop History detail pane
+  ///
+  /// In en, this message translates to:
+  /// **'Select a session to view its full breakdown.'**
+  String get desktopSelectSession;
+
+  /// Empty-state prompt in the desktop Templates canvas pane
+  ///
+  /// In en, this message translates to:
+  /// **'Select a template to view its exercises.'**
+  String get desktopSelectTemplate;
+
+  /// Analytics KPI label for cumulative volume
+  ///
+  /// In en, this message translates to:
+  /// **'Total volume'**
+  String get desktopTotalVolume;
+
+  /// Analytics KPI label for the number of workouts
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts'**
+  String get desktopWorkoutsLabel;
+
+  /// Analytics KPI label for average session volume
+  ///
+  /// In en, this message translates to:
+  /// **'Avg session'**
+  String get desktopAvgSessionLabel;
+
+  /// Analytics KPI label for the number of personal records
+  ///
+  /// In en, this message translates to:
+  /// **'PRs'**
+  String get desktopPrsLabel;
+
   /// No description provided for @start.
   ///
   /// In en, this message translates to:
@@ -599,6 +695,30 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Auto'**
   String get themeAuto;
+
+  /// Settings row title for the layout (mobile/desktop) override
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get layoutLabel;
+
+  /// Layout option that forces the mobile layout on tablet+ widths
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile'**
+  String get layoutMobile;
+
+  /// Layout option that forces the desktop layout on tablet+ widths
+  ///
+  /// In en, this message translates to:
+  /// **'Desktop'**
+  String get layoutDesktop;
+
+  /// Settings subtitle explaining the layout override scope
+  ///
+  /// In en, this message translates to:
+  /// **'Auto follows window size · applies on tablets and larger'**
+  String get layoutSubtitle;
 
   /// No description provided for @weightUnitLabel.
   ///
