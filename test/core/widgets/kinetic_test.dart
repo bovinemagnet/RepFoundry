@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/app/theme.dart';
 import 'package:rep_foundry/core/widgets/kinetic.dart';
+import 'package:rep_foundry/core/widgets/rep_foundry_app_icon.dart';
 
 void main() {
   Widget host(Widget child) => MaterialApp(
@@ -69,11 +70,11 @@ void main() {
       expect(find.byIcon(Icons.trending_up), findsOneWidget);
     });
 
-    testWidgets('app header shows the bolt logo and notification button',
+    testWidgets('app header shows the app icon and notification button',
         (tester) async {
       await tester.pumpWidget(host(const KineticAppHeader()));
 
-      expect(find.byIcon(Icons.bolt), findsOneWidget);
+      expect(find.byType(RepFoundryAppIcon), findsOneWidget);
       expect(find.byIcon(Icons.notifications_outlined), findsOneWidget);
     });
 

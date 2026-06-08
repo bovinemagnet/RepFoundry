@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rep_foundry/core/widgets/rep_foundry_app_icon.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import 'kinetic.dart';
@@ -168,19 +169,12 @@ class _RailHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 22, 20, 16),
       child: Row(
         children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: cs.primary,
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Icon(Icons.bolt, size: 20, color: cs.onPrimary),
-          ),
+          const RepFoundryAppIcon(size: 34),
           const SizedBox(width: 10),
           Flexible(
             child: Text.rich(

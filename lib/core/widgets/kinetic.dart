@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rep_foundry/core/widgets/rep_foundry_app_icon.dart';
 
 /// Shared "Kinetic Green" design-system atoms recreated from the design
 /// handoff (`rf.css` / `screens.js`). These compose into the redesigned
@@ -295,15 +296,7 @@ class KineticAppHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: cs.primary,
-                  borderRadius: BorderRadius.circular(11),
-                ),
-                child: Icon(Icons.bolt, size: 20, color: cs.onPrimary),
-              ),
+              const RepFoundryAppIcon(size: 34),
               const SizedBox(width: 10),
               Text.rich(
                 TextSpan(

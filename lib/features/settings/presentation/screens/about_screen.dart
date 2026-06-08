@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:rep_foundry/core/widgets/rep_foundry_app_icon.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 
@@ -30,11 +31,7 @@ class AboutScreen extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
-                    Icon(
-                      Icons.fitness_center,
-                      size: 64,
-                      color: theme.colorScheme.primary,
-                    ),
+                    const RepFoundryAppIcon(size: 72),
                     const SizedBox(height: 12),
                     Text(
                       s.aboutAppName,
@@ -127,13 +124,9 @@ class AboutScreen extends StatelessWidget {
                   context: context,
                   applicationName: s.aboutAppName,
                   applicationVersion: versionDisplay,
-                  applicationIcon: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Icon(
-                      Icons.fitness_center,
-                      size: 48,
-                      color: theme.colorScheme.primary,
-                    ),
+                  applicationIcon: const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: RepFoundryAppIcon(size: 48),
                   ),
                 ),
               ),
