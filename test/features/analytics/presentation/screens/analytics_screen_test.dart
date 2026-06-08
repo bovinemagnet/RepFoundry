@@ -1,7 +1,9 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/analytics/presentation/providers/muscle_balance_provider.dart';
+import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/analytics/presentation/providers/pr_timeline_provider.dart';
 import 'package:rep_foundry/features/analytics/presentation/providers/training_load_provider.dart';
 import 'package:rep_foundry/features/analytics/presentation/providers/weekly_volume_provider.dart';
@@ -61,6 +63,40 @@ void main() {
       expect(find.text('Not enough data yet'), findsNothing);
       // All four section titles render as Cards with header text.
       expect(find.byType(Card), findsAtLeastNWidgets(1));
+    });
+  });
+
+  group('MuscleBalanceChart', () {
+    testWidgets('shows a prompt instead of crashing with fewer than 3 groups',
+        (tester) async {
+      await tester.pumpWidget(buildScreen(
+        balance: const [
+          MuscleBalance(group: MuscleGroup.chest, volumePercent: 60),
+          MuscleBalance(group: MuscleGroup.back, volumePercent: 40),
+        ],
+      ));
+      await tester.pumpAndSettle();
+
+      // The radar chart asserts on < 3 entries, so it must not be built.
+      expect(find.byType(RadarChart), findsNothing);
+      expect(
+        find.text('Train at least 3 muscle groups to see your balance.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('renders the radar chart with three or more groups',
+        (tester) async {
+      await tester.pumpWidget(buildScreen(
+        balance: const [
+          MuscleBalance(group: MuscleGroup.chest, volumePercent: 40),
+          MuscleBalance(group: MuscleGroup.back, volumePercent: 35),
+          MuscleBalance(group: MuscleGroup.shoulders, volumePercent: 25),
+        ],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RadarChart), findsOneWidget);
     });
   });
 }

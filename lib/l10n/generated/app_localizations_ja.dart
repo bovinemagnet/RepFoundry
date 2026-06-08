@@ -1324,6 +1324,9 @@ class SJa extends S {
   String get muscleBalanceTitle => '筋肉群バランス';
 
   @override
+  String get muscleBalanceNeedsMore => 'バランスを表示するには、少なくとも3つの筋肉群をトレーニングしてください。';
+
+  @override
   String get prTimelineTitle => '自己記録タイムライン';
 
   @override

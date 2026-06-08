@@ -578,6 +578,7 @@
     "placeholders": { "change": { "type": "String" } }
   },
   "muscleBalanceTitle": "筋肉群バランス",
+  "muscleBalanceNeedsMore": "バランスを表示するには、少なくとも3つの筋肉群をトレーニングしてください。",
   "prTimelineTitle": "自己記録タイムライン",
   "trainingLoadTitle": "週間トレーニング負荷",
   "trainingLoadSubtitle": "セット数 × 平均 RPE",

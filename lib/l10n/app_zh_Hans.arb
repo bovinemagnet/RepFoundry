@@ -561,6 +561,7 @@
     "placeholders": { "change": { "type": "String" } }
   },
   "muscleBalanceTitle": "肌群平衡",
+  "muscleBalanceNeedsMore": "至少训练 3 个肌群即可查看平衡分布。",
   "prTimelineTitle": "个人纪录时间线",
   "trainingLoadTitle": "每周训练负荷",
   "trainingLoadSubtitle": "组数 × 平均 RPE",

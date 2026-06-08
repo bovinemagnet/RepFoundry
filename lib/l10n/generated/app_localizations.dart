@@ -2520,6 +2520,12 @@ abstract class S {
   /// **'Muscle Group Balance'**
   String get muscleBalanceTitle;
 
+  /// No description provided for @muscleBalanceNeedsMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Train at least 3 muscle groups to see your balance.'**
+  String get muscleBalanceNeedsMore;
+
   /// No description provided for @prTimelineTitle.
   ///
   /// In en, this message translates to:

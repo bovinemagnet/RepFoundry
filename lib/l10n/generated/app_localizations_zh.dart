@@ -1318,6 +1318,9 @@ class SZh extends S {
   String get muscleBalanceTitle => '肌群平衡';
 
   @override
+  String get muscleBalanceNeedsMore => '至少訓練 3 個肌群即可查看平衡分佈。';
+
+  @override
   String get prTimelineTitle => '个人纪录时间线';
 
   @override
@@ -3140,6 +3143,9 @@ class SZhHans extends SZh {
 
   @override
   String get muscleBalanceTitle => '肌群平衡';
+
+  @override
+  String get muscleBalanceNeedsMore => '至少训练 3 个肌群即可查看平衡分布。';
 
   @override
   String get prTimelineTitle => '个人纪录时间线';

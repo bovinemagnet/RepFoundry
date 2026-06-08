@@ -1358,6 +1358,10 @@ class SEn extends S {
   String get muscleBalanceTitle => 'Muscle Group Balance';
 
   @override
+  String get muscleBalanceNeedsMore =>
+      'Train at least 3 muscle groups to see your balance.';
+
+  @override
   String get prTimelineTitle => 'PR Timeline';
 
   @override

@@ -578,6 +578,7 @@
     "placeholders": { "change": { "type": "String" } }
   },
   "muscleBalanceTitle": "근육 그룹 밸런스",
+  "muscleBalanceNeedsMore": "밸런스를 보려면 최소 3개의 근육 그룹을 운동하세요.",
   "prTimelineTitle": "개인 기록 타임라인",
   "trainingLoadTitle": "주간 트레이닝 부하",
   "trainingLoadSubtitle": "세트 × 평균 RPE",
