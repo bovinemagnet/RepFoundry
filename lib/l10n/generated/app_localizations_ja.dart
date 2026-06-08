@@ -27,54 +27,52 @@ class SJa extends S {
   String get navSettings => '設定';
 
   @override
-  String get navGroupTrain => 'Train';
+  String get navGroupTrain => 'トレーニング';
 
   @override
-  String get navGroupReview => 'Review';
+  String get navGroupReview => 'レビュー';
 
   @override
-  String get navGroupPlan => 'Plan';
+  String get navGroupPlan => '計画';
 
   @override
-  String get desktopSessionsLabel => 'Sessions';
+  String get desktopSessionsLabel => 'セッション';
 
   @override
-  String get desktopVolumeLabel => 'Volume';
+  String get desktopVolumeLabel => 'ボリューム';
 
   @override
-  String get desktopDurationLabel => 'Duration';
+  String get desktopDurationLabel => '時間';
 
   @override
-  String get desktopSetsLabel => 'Sets';
+  String get desktopSetsLabel => 'セット数';
 
   @override
-  String get desktopExercisesLabel => 'Exercises';
+  String get desktopExercisesLabel => 'エクササイズ';
 
   @override
-  String get desktopPerSetVolume => 'Per-set volume';
+  String get desktopPerSetVolume => 'セットごとのボリューム';
 
   @override
-  String get desktopExerciseBreakdown => 'Exercise breakdown';
+  String get desktopExerciseBreakdown => 'エクササイズ内訳';
 
   @override
-  String get desktopSelectSession =>
-      'Select a session to view its full breakdown.';
+  String get desktopSelectSession => 'セッションを選択すると詳細が表示されます。';
 
   @override
-  String get desktopSelectTemplate =>
-      'Select a template to view its exercises.';
+  String get desktopSelectTemplate => 'テンプレートを選択するとエクササイズが表示されます。';
 
   @override
-  String get desktopTotalVolume => 'Total volume';
+  String get desktopTotalVolume => '総ボリューム';
 
   @override
-  String get desktopWorkoutsLabel => 'Workouts';
+  String get desktopWorkoutsLabel => 'ワークアウト';
 
   @override
-  String get desktopAvgSessionLabel => 'Avg session';
+  String get desktopAvgSessionLabel => '平均セッション';
 
   @override
-  String get desktopPrsLabel => 'PRs';
+  String get desktopPrsLabel => '自己ベスト';
 
   @override
   String get start => 'スタート';
@@ -320,17 +318,16 @@ class SJa extends S {
   String get themeAuto => '自動';
 
   @override
-  String get layoutLabel => 'Layout';
+  String get layoutLabel => 'レイアウト';
 
   @override
-  String get layoutMobile => 'Mobile';
+  String get layoutMobile => 'モバイル';
 
   @override
-  String get layoutDesktop => 'Desktop';
+  String get layoutDesktop => 'デスクトップ';
 
   @override
-  String get layoutSubtitle =>
-      'Auto follows window size · applies on tablets and larger';
+  String get layoutSubtitle => 'ウィンドウサイズに自動で追従 · タブレット以上に適用';
 
   @override
   String get weightUnitLabel => '重量単位';
