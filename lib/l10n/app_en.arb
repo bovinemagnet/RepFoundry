@@ -661,6 +661,7 @@
     "placeholders": { "change": { "type": "String" } }
   },
   "muscleBalanceTitle": "Muscle Group Balance",
+  "muscleBalanceNeedsMore": "Train at least 3 muscle groups to see your balance.",
   "prTimelineTitle": "PR Timeline",
   "trainingLoadTitle": "Weekly Training Load",
   "trainingLoadSubtitle": "Sets × avg RPE",

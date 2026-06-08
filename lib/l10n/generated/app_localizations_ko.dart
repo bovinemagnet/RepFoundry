@@ -1323,6 +1323,9 @@ class SKo extends S {
   String get muscleBalanceTitle => '근육 그룹 밸런스';
 
   @override
+  String get muscleBalanceNeedsMore => '밸런스를 보려면 최소 3개의 근육 그룹을 운동하세요.';
+
+  @override
   String get prTimelineTitle => '개인 기록 타임라인';
 
   @override

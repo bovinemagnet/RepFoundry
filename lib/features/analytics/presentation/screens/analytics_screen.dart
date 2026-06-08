@@ -292,6 +292,25 @@ class MuscleBalanceChart extends StatelessWidget {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
 
+    // RadarChart requires at least 3 vertices; fewer groups would assert.
+    if (data.length < 3) {
+      return SizedBox(
+        height: 280,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              S.of(context)!.muscleBalanceNeedsMore,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return SizedBox(
       height: 280,
       child: RadarChart(
