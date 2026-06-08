@@ -27,54 +27,52 @@ class SZh extends S {
   String get navSettings => '设置';
 
   @override
-  String get navGroupTrain => 'Train';
+  String get navGroupTrain => '训练';
 
   @override
-  String get navGroupReview => 'Review';
+  String get navGroupReview => '回顾';
 
   @override
-  String get navGroupPlan => 'Plan';
+  String get navGroupPlan => '计划';
 
   @override
-  String get desktopSessionsLabel => 'Sessions';
+  String get desktopSessionsLabel => '训练记录';
 
   @override
-  String get desktopVolumeLabel => 'Volume';
+  String get desktopVolumeLabel => '训练量';
 
   @override
-  String get desktopDurationLabel => 'Duration';
+  String get desktopDurationLabel => '时长';
 
   @override
-  String get desktopSetsLabel => 'Sets';
+  String get desktopSetsLabel => '组数';
 
   @override
-  String get desktopExercisesLabel => 'Exercises';
+  String get desktopExercisesLabel => '动作';
 
   @override
-  String get desktopPerSetVolume => 'Per-set volume';
+  String get desktopPerSetVolume => '每组训练量';
 
   @override
-  String get desktopExerciseBreakdown => 'Exercise breakdown';
+  String get desktopExerciseBreakdown => '动作明细';
 
   @override
-  String get desktopSelectSession =>
-      'Select a session to view its full breakdown.';
+  String get desktopSelectSession => '选择一次训练以查看完整明细。';
 
   @override
-  String get desktopSelectTemplate =>
-      'Select a template to view its exercises.';
+  String get desktopSelectTemplate => '选择一个模板以查看其动作。';
 
   @override
-  String get desktopTotalVolume => 'Total volume';
+  String get desktopTotalVolume => '总训练量';
 
   @override
-  String get desktopWorkoutsLabel => 'Workouts';
+  String get desktopWorkoutsLabel => '训练';
 
   @override
-  String get desktopAvgSessionLabel => 'Avg session';
+  String get desktopAvgSessionLabel => '平均训练';
 
   @override
-  String get desktopPrsLabel => 'PRs';
+  String get desktopPrsLabel => '个人纪录';
 
   @override
   String get start => '开始';
@@ -320,17 +318,16 @@ class SZh extends S {
   String get themeAuto => '自动';
 
   @override
-  String get layoutLabel => 'Layout';
+  String get layoutLabel => '布局';
 
   @override
-  String get layoutMobile => 'Mobile';
+  String get layoutMobile => '移动';
 
   @override
-  String get layoutDesktop => 'Desktop';
+  String get layoutDesktop => '桌面';
 
   @override
-  String get layoutSubtitle =>
-      'Auto follows window size · applies on tablets and larger';
+  String get layoutSubtitle => '自动跟随窗口大小 · 适用于平板及更大屏幕';
 
   @override
   String get weightUnitLabel => '体重单位';
@@ -1854,6 +1851,54 @@ class SZhHans extends SZh {
   String get navSettings => '设置';
 
   @override
+  String get navGroupTrain => '训练';
+
+  @override
+  String get navGroupReview => '回顾';
+
+  @override
+  String get navGroupPlan => '计划';
+
+  @override
+  String get desktopSessionsLabel => '训练记录';
+
+  @override
+  String get desktopVolumeLabel => '训练量';
+
+  @override
+  String get desktopDurationLabel => '时长';
+
+  @override
+  String get desktopSetsLabel => '组数';
+
+  @override
+  String get desktopExercisesLabel => '动作';
+
+  @override
+  String get desktopPerSetVolume => '每组训练量';
+
+  @override
+  String get desktopExerciseBreakdown => '动作明细';
+
+  @override
+  String get desktopSelectSession => '选择一次训练以查看完整明细。';
+
+  @override
+  String get desktopSelectTemplate => '选择一个模板以查看其动作。';
+
+  @override
+  String get desktopTotalVolume => '总训练量';
+
+  @override
+  String get desktopWorkoutsLabel => '训练';
+
+  @override
+  String get desktopAvgSessionLabel => '平均训练';
+
+  @override
+  String get desktopPrsLabel => '个人纪录';
+
+  @override
   String get start => '开始';
 
   @override
@@ -2095,6 +2140,18 @@ class SZhHans extends SZh {
 
   @override
   String get themeAuto => '自动';
+
+  @override
+  String get layoutLabel => '布局';
+
+  @override
+  String get layoutMobile => '移动';
+
+  @override
+  String get layoutDesktop => '桌面';
+
+  @override
+  String get layoutSubtitle => '自动跟随窗口大小 · 适用于平板及更大屏幕';
 
   @override
   String get weightUnitLabel => '体重单位';

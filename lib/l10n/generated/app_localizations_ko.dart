@@ -27,54 +27,52 @@ class SKo extends S {
   String get navSettings => '설정';
 
   @override
-  String get navGroupTrain => 'Train';
+  String get navGroupTrain => '트레이닝';
 
   @override
-  String get navGroupReview => 'Review';
+  String get navGroupReview => '리뷰';
 
   @override
-  String get navGroupPlan => 'Plan';
+  String get navGroupPlan => '계획';
 
   @override
-  String get desktopSessionsLabel => 'Sessions';
+  String get desktopSessionsLabel => '세션';
 
   @override
-  String get desktopVolumeLabel => 'Volume';
+  String get desktopVolumeLabel => '볼륨';
 
   @override
-  String get desktopDurationLabel => 'Duration';
+  String get desktopDurationLabel => '시간';
 
   @override
-  String get desktopSetsLabel => 'Sets';
+  String get desktopSetsLabel => '세트';
 
   @override
-  String get desktopExercisesLabel => 'Exercises';
+  String get desktopExercisesLabel => '운동';
 
   @override
-  String get desktopPerSetVolume => 'Per-set volume';
+  String get desktopPerSetVolume => '세트별 볼륨';
 
   @override
-  String get desktopExerciseBreakdown => 'Exercise breakdown';
+  String get desktopExerciseBreakdown => '운동 분석';
 
   @override
-  String get desktopSelectSession =>
-      'Select a session to view its full breakdown.';
+  String get desktopSelectSession => '세션을 선택하면 전체 분석을 볼 수 있습니다.';
 
   @override
-  String get desktopSelectTemplate =>
-      'Select a template to view its exercises.';
+  String get desktopSelectTemplate => '템플릿을 선택하면 운동을 볼 수 있습니다.';
 
   @override
-  String get desktopTotalVolume => 'Total volume';
+  String get desktopTotalVolume => '총 볼륨';
 
   @override
-  String get desktopWorkoutsLabel => 'Workouts';
+  String get desktopWorkoutsLabel => '운동';
 
   @override
-  String get desktopAvgSessionLabel => 'Avg session';
+  String get desktopAvgSessionLabel => '평균 세션';
 
   @override
-  String get desktopPrsLabel => 'PRs';
+  String get desktopPrsLabel => '개인 기록';
 
   @override
   String get start => '시작';
@@ -320,17 +318,16 @@ class SKo extends S {
   String get themeAuto => '자동';
 
   @override
-  String get layoutLabel => 'Layout';
+  String get layoutLabel => '레이아웃';
 
   @override
-  String get layoutMobile => 'Mobile';
+  String get layoutMobile => '모바일';
 
   @override
-  String get layoutDesktop => 'Desktop';
+  String get layoutDesktop => '데스크톱';
 
   @override
-  String get layoutSubtitle =>
-      'Auto follows window size · applies on tablets and larger';
+  String get layoutSubtitle => '창 크기에 자동으로 맞춤 · 태블릿 이상에 적용';
 
   @override
   String get weightUnitLabel => '무게 단위';

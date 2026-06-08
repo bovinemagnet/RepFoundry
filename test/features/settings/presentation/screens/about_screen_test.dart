@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/core/widgets/rep_foundry_app_icon.dart';
 import 'package:rep_foundry/features/settings/presentation/screens/about_screen.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
@@ -62,6 +63,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('RepFoundry'), findsAtLeastNWidgets(1));
+      expect(find.byType(RepFoundryAppIcon), findsOneWidget);
       // Version is rendered via aboutVersion(versionDisplay) which interpolates
       // "1.2.3+42".
       expect(find.textContaining('1.2.3+42'), findsOneWidget);
