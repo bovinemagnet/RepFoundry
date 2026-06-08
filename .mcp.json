@@ -6,7 +6,11 @@
     },
         "mobile-mcp": {
       "command": "npx",
-      "args": ["-y", "@mobilenext/mobile-mcp@0.0.58"]
+      "args": ["-y", "@mobilenext/mobile-mcp@latest"]
+    },
+    "android-debug-bridge": {
+      "command": "npx",
+      "args": ["android-debug-bridge-mcp"]
     }
   }
 }

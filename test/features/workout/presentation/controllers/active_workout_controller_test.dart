@@ -1,17 +1,76 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:drift/native.dart';
+import 'package:rep_foundry/core/database/app_database.dart' show AppDatabase;
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
+import 'package:rep_foundry/features/sync/application/sync_orchestrator.dart';
+import 'package:rep_foundry/features/sync/domain/models/sync_result.dart';
+import 'package:rep_foundry/features/sync/domain/sync_service.dart';
 import 'package:rep_foundry/features/sync/presentation/providers/sync_settings_provider.dart';
 import 'package:rep_foundry/features/templates/data/workout_template_repository_impl.dart';
 import 'package:rep_foundry/features/templates/domain/models/workout_template.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import 'package:rep_foundry/features/workout/presentation/controllers/active_workout_controller.dart';
+
+class _FakeCloudSyncService implements CloudSyncService {
+  @override
+  Future<void> deleteCloudData({bool interactive = false}) async {}
+
+  @override
+  Future<String?> downloadSnapshot({bool interactive = false}) async => null;
+
+  @override
+  Future<bool> isAvailable() async => true;
+
+  @override
+  Future<void> uploadSnapshot(
+    String jsonData, {
+    bool interactive = false,
+  }) async {}
+}
+
+class _NoOpHealthSyncSettingsNotifier extends HealthSyncSettingsNotifier {
+  @override
+  HealthSyncSettings build() => const HealthSyncSettings();
+}
+
+class _RecordingSyncOrchestrator extends SyncOrchestrator {
+  _RecordingSyncOrchestrator._(this._database)
+      : super(
+          database: _database,
+          cloudService: _FakeCloudSyncService(),
+          deviceId: 'test-device',
+        );
+
+  factory _RecordingSyncOrchestrator() => _RecordingSyncOrchestrator._(
+        AppDatabase.forTesting(NativeDatabase.memory()),
+      );
+
+  final AppDatabase _database;
+  final Completer<void> _syncCalled = Completer<void>();
+  int syncCalls = 0;
+
+  Future<void> get syncCalled => _syncCalled.future;
+
+  @override
+  Future<SyncResult> sync({bool interactive = false}) async {
+    syncCalls += 1;
+    if (!_syncCalled.isCompleted) {
+      _syncCalled.complete();
+    }
+    return SyncResult.success(entitiesMerged: 0);
+  }
+
+  Future<void> dispose() => _database.close();
+}
 
 void main() {
   late InMemoryWorkoutRepository workoutRepo;
@@ -19,6 +78,23 @@ void main() {
   late InMemoryPersonalRecordRepository prRepo;
   late InMemoryWorkoutTemplateRepository templateRepo;
   late ProviderContainer container;
+  late _RecordingSyncOrchestrator syncOrchestrator;
+
+  ProviderContainer createContainer() {
+    return ProviderContainer(
+      overrides: [
+        workoutRepositoryProvider.overrideWithValue(workoutRepo),
+        exerciseRepositoryProvider.overrideWithValue(exerciseRepo),
+        personalRecordRepositoryProvider.overrideWithValue(prRepo),
+        workoutTemplateRepositoryProvider.overrideWithValue(templateRepo),
+        healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+        healthSyncSettingsProvider
+            .overrideWith(() => _NoOpHealthSyncSettingsNotifier()),
+        syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
+        syncOrchestratorProvider.overrideWithValue(syncOrchestrator),
+      ],
+    );
+  }
 
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -27,21 +103,14 @@ void main() {
     exerciseRepo = InMemoryExerciseRepository();
     prRepo = InMemoryPersonalRecordRepository();
     templateRepo = InMemoryWorkoutTemplateRepository();
-    container = ProviderContainer(
-      overrides: [
-        workoutRepositoryProvider.overrideWithValue(workoutRepo),
-        exerciseRepositoryProvider.overrideWithValue(exerciseRepo),
-        personalRecordRepositoryProvider.overrideWithValue(prRepo),
-        workoutTemplateRepositoryProvider.overrideWithValue(templateRepo),
-        healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
-        healthSyncSettingsProvider
-            .overrideWith(() => HealthSyncSettingsNotifier()),
-        syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
-      ],
-    );
+    syncOrchestrator = _RecordingSyncOrchestrator();
+    container = createContainer();
   });
 
-  tearDown(() => container.dispose());
+  tearDown(() async {
+    container.dispose();
+    await syncOrchestrator.dispose();
+  });
 
   ActiveWorkoutController readController() {
     return container.read(activeWorkoutControllerProvider.notifier);
@@ -219,6 +288,23 @@ void main() {
 
         await controller.finishWorkout();
         expect(readState().hasActiveWorkout, isFalse);
+      });
+
+      test('syncs to cloud when persisted sync is enabled', () async {
+        SharedPreferences.setMockInitialValues({'cloud_sync_enabled': true});
+        container.dispose();
+        await syncOrchestrator.dispose();
+        syncOrchestrator = _RecordingSyncOrchestrator();
+        container = createContainer();
+
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+
+        await controller.finishWorkout();
+        await syncOrchestrator.syncCalled;
+
+        expect(syncOrchestrator.syncCalls, 1);
       });
     });
 

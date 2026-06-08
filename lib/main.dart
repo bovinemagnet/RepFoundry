@@ -53,6 +53,8 @@ class _AppWithLifecycleState extends ConsumerState<_AppWithLifecycle>
 
   Future<void> _syncOnResume() async {
     try {
+      final syncSettingsNotifier = ref.read(syncSettingsProvider.notifier);
+      await syncSettingsNotifier.ensureLoaded();
       final syncSettings = ref.read(syncSettingsProvider);
       if (!syncSettings.enabled) return;
       final orchestrator = ref.read(syncOrchestratorProvider);

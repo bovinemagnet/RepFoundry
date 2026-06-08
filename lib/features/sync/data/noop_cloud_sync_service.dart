@@ -17,15 +17,18 @@ class NoopCloudSyncService implements CloudSyncService {
   Future<bool> isAvailable() async => false;
 
   @override
-  Future<void> uploadSnapshot(String jsonData) async {
+  Future<void> uploadSnapshot(
+    String jsonData, {
+    bool interactive = false,
+  }) async {
     // Discard.
   }
 
   @override
-  Future<String?> downloadSnapshot() async => null;
+  Future<String?> downloadSnapshot({bool interactive = false}) async => null;
 
   @override
-  Future<void> deleteCloudData() async {
+  Future<void> deleteCloudData({bool interactive = false}) async {
     // Nothing to delete.
   }
 }

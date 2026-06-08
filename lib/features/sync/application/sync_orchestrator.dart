@@ -36,7 +36,7 @@ class SyncOrchestrator {
 
   bool get isSyncing => _isSyncing;
 
-  Future<SyncResult> sync() async {
+  Future<SyncResult> sync({bool interactive = false}) async {
     if (_isSyncing) {
       return SyncResult.error('Sync already in progress');
     }
@@ -56,7 +56,9 @@ class SyncOrchestrator {
       );
 
       // 3. Download remote snapshot (null on first sync)
-      final remoteJson = await _cloudService.downloadSnapshot();
+      final remoteJson = await _cloudService.downloadSnapshot(
+        interactive: interactive,
+      );
 
       // 4. Merge local + remote.
       //
@@ -83,7 +85,10 @@ class SyncOrchestrator {
       // — left local ahead of cloud after a failed upload, which let the
       // next syncing device overwrite the unrelayed work.
       final mergedJson = _serialiser.toJson(merged);
-      await _cloudService.uploadSnapshot(mergedJson);
+      await _cloudService.uploadSnapshot(
+        mergedJson,
+        interactive: interactive,
+      );
 
       // 6. Apply merged result to local DB (only after upload succeeds).
       await _serialiser.applyToDatabase(_database, merged);
@@ -110,7 +115,7 @@ class SyncOrchestrator {
   }
 
   /// Delete all cloud data and reset sync state.
-  Future<void> deleteCloudData() async {
-    await _cloudService.deleteCloudData();
+  Future<void> deleteCloudData({bool interactive = false}) async {
+    await _cloudService.deleteCloudData(interactive: interactive);
   }
 }

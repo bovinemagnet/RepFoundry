@@ -16,6 +16,9 @@ class FakeCloudSyncService implements CloudSyncService {
   bool available = true;
   bool throwOnUpload = false;
   String uploadError = 'Cloud upload failed';
+  final List<bool> downloadInteractiveValues = [];
+  final List<bool> uploadInteractiveValues = [];
+  final List<bool> deleteInteractiveValues = [];
 
   /// Records the order in which orchestrator steps fire on the fakes.
   /// Used to assert "upload-first" ordering: the entry "upload" must
@@ -29,8 +32,12 @@ class FakeCloudSyncService implements CloudSyncService {
   Future<bool> isAvailable() async => available;
 
   @override
-  Future<void> uploadSnapshot(String jsonData) async {
+  Future<void> uploadSnapshot(
+    String jsonData, {
+    bool interactive = false,
+  }) async {
     callLog.add('upload');
+    uploadInteractiveValues.add(interactive);
     if (throwOnUpload) {
       throw Exception(uploadError);
     }
@@ -38,7 +45,8 @@ class FakeCloudSyncService implements CloudSyncService {
   }
 
   @override
-  Future<String?> downloadSnapshot() async {
+  Future<String?> downloadSnapshot({bool interactive = false}) async {
+    downloadInteractiveValues.add(interactive);
     if (downloadCompleter != null) {
       return downloadCompleter!.future;
     }
@@ -46,7 +54,8 @@ class FakeCloudSyncService implements CloudSyncService {
   }
 
   @override
-  Future<void> deleteCloudData() async {
+  Future<void> deleteCloudData({bool interactive = false}) async {
+    deleteInteractiveValues.add(interactive);
     storedJson = null;
   }
 }
@@ -217,6 +226,18 @@ void main() {
 
       expect(result.success, isTrue);
       expect(cloudService.callLog, equals(['upload', 'apply']));
+    });
+
+    test('passes interactive flag to cloud service calls', () async {
+      final result = await orchestrator.sync(interactive: true);
+
+      expect(result.success, isTrue);
+      expect(cloudService.downloadInteractiveValues, equals([true]));
+      expect(cloudService.uploadInteractiveValues, equals([true]));
+
+      await orchestrator.deleteCloudData(interactive: true);
+
+      expect(cloudService.deleteInteractiveValues, equals([true]));
     });
 
     test('schema-version-too-new from remote propagates as error', () async {
