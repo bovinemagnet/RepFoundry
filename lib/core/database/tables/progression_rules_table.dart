@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+@TableIndex(name: 'idx_progression_rules_programme', columns: {#programmeId})
 class ProgressionRules extends Table {
   TextColumn get id => text()();
   TextColumn get programmeId => text()();

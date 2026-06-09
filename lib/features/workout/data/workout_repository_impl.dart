@@ -92,6 +92,18 @@ class InMemoryWorkoutRepository implements WorkoutRepository {
   }
 
   @override
+  Future<Map<String, List<WorkoutSet>>> getSetsForWorkouts(
+    List<String> workoutIds,
+  ) async {
+    final byWorkout = <String, List<WorkoutSet>>{};
+    for (final id in workoutIds) {
+      final sets = await getSetsForWorkout(id);
+      if (sets.isNotEmpty) byWorkout[id] = sets;
+    }
+    return byWorkout;
+  }
+
+  @override
   Future<List<WorkoutSet>> getSetsForExercise(
     String exerciseId, {
     int limit = 50,

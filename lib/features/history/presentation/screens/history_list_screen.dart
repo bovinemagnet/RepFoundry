@@ -41,12 +41,12 @@ final _workoutHistoryProvider =
     FutureProvider.autoDispose<List<_WorkoutWithSets>>((ref) async {
   final repo = ref.watch(workoutRepositoryProvider);
   final workouts = await repo.getWorkoutHistory(limit: 50);
-  final result = <_WorkoutWithSets>[];
-  for (final w in workouts) {
-    final sets = await repo.getSetsForWorkout(w.id);
-    result.add(_WorkoutWithSets(workout: w, sets: sets));
-  }
-  return result;
+  final setsByWorkout =
+      await repo.getSetsForWorkouts([for (final w in workouts) w.id]);
+  return [
+    for (final w in workouts)
+      _WorkoutWithSets(workout: w, sets: setsByWorkout[w.id] ?? const []),
+  ];
 });
 
 // ── Public screen ─────────────────────────────────────────────────────

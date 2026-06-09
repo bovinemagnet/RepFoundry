@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 import 'workouts_table.dart';
 import 'exercises_table.dart';
 
+@TableIndex(name: 'idx_cardio_sessions_workout', columns: {#workoutId})
+@TableIndex(name: 'idx_cardio_sessions_exercise', columns: {#exerciseId})
 class CardioSessions extends Table {
   TextColumn get id => text()();
   TextColumn get workoutId => text().references(Workouts, #id)();

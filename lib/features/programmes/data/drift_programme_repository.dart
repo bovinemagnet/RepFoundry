@@ -45,11 +45,7 @@ class DriftProgrammeRepository implements ProgrammeRepository {
       ..where((t) => t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
     final rows = await q.get();
-    return Future.wait(rows.map((row) async {
-      final days = await _getDaysForProgrammeRow(row.id);
-      final rules = await _getRulesForProgrammeRow(row.id);
-      return _toDomain(row, days, rules);
-    }));
+    return _toDomainList(rows);
   }
 
   @override
@@ -117,13 +113,7 @@ class DriftProgrammeRepository implements ProgrammeRepository {
     final q = _db.select(_db.programmes)
       ..where((t) => t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
-    return q.watch().asyncMap((rows) async {
-      return Future.wait(rows.map((row) async {
-        final days = await _getDaysForProgrammeRow(row.id);
-        final rules = await _getRulesForProgrammeRow(row.id);
-        return _toDomain(row, days, rules);
-      }));
-    });
+    return q.watch().asyncMap(_toDomainList);
   }
 
   @override
@@ -191,6 +181,46 @@ class DriftProgrammeRepository implements ProgrammeRepository {
   // ---------------------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------------------
+
+  /// Maps programme rows to domain models, loading the days and rules for
+  /// all programmes in one query each rather than one pair per programme.
+  Future<List<Programme>> _toDomainList(List<db.Programme> rows) async {
+    if (rows.isEmpty) return [];
+    final ids = [for (final r in rows) r.id];
+
+    final dayRows = await (_db.select(_db.programmeDays)
+          ..where((t) => t.programmeId.isIn(ids) & t.deletedAt.isNull())
+          ..orderBy([
+            (t) => OrderingTerm.asc(t.weekNumber),
+            (t) => OrderingTerm.asc(t.dayOfWeek),
+          ]))
+        .get();
+    final daysByProgramme = <String, List<ProgrammeDay>>{};
+    for (final row in dayRows) {
+      daysByProgramme
+          .putIfAbsent(row.programmeId, () => [])
+          .add(_dayToDomain(row));
+    }
+
+    final ruleRows = await (_db.select(_db.progressionRules)
+          ..where((t) => t.programmeId.isIn(ids) & t.deletedAt.isNull()))
+        .get();
+    final rulesByProgramme = <String, List<ProgressionRule>>{};
+    for (final row in ruleRows) {
+      rulesByProgramme
+          .putIfAbsent(row.programmeId, () => [])
+          .add(_ruleToDomain(row));
+    }
+
+    return [
+      for (final row in rows)
+        _toDomain(
+          row,
+          daysByProgramme[row.id] ?? const [],
+          rulesByProgramme[row.id] ?? const [],
+        ),
+    ];
+  }
 
   Future<List<ProgrammeDay>> _getDaysForProgrammeRow(
     String programmeId,

@@ -22,8 +22,9 @@ final muscleGroupDistributionProvider =
 
   final volumeByGroup = <MuscleGroup, double>{};
 
-  for (final workout in workouts) {
-    final sets = await workoutRepo.getSetsForWorkout(workout.id);
+  final setsByWorkout =
+      await workoutRepo.getSetsForWorkouts([for (final w in workouts) w.id]);
+  for (final sets in setsByWorkout.values) {
     for (final set in sets) {
       final group = exerciseMap[set.exerciseId];
       if (group != null) {

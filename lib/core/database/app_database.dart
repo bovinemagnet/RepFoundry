@@ -38,7 +38,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// Static accessor for the schema version, usable from non-database code
   /// (e.g. the sync serialiser) without an `AppDatabase` instance.
-  static const int schemaVersionConst = 10;
+  static const int schemaVersionConst = 11;
 
   @override
   int get schemaVersion => schemaVersionConst;
@@ -252,6 +252,18 @@ class AppDatabase extends _$AppDatabase {
                 'WHERE updated_at = 0',
               );
             }
+          }
+          if (from < 11) {
+            // Indexes on columns the repositories filter and sort by.
+            // Declared as @TableIndex on the tables so fresh installs get
+            // them via createAll; created here for existing installs.
+            await m.createIndex(idxPersonalRecordsExerciseAchieved);
+            await m.createIndex(idxCardioSessionsWorkout);
+            await m.createIndex(idxCardioSessionsExercise);
+            await m.createIndex(idxBodyMetricsDate);
+            await m.createIndex(idxProgrammeDaysProgramme);
+            await m.createIndex(idxTemplateExercisesTemplate);
+            await m.createIndex(idxProgressionRulesProgramme);
           }
         },
       );

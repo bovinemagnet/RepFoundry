@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+@TableIndex(name: 'idx_programme_days_programme', columns: {#programmeId})
 class ProgrammeDays extends Table {
   TextColumn get id => text()();
   TextColumn get programmeId => text()();

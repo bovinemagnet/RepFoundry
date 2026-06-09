@@ -15,7 +15,8 @@ class SyncSettingsNotifier extends Notifier<SyncSettings> {
   // and `_loadedSettings` lets rebuilds keep returning the last loaded
   // state instead of temporarily falling back to `_initialSettings`.
   Future<void>? _loadFuture;
-  final SyncSettings _initialSettings = SyncSettings(deviceId: const Uuid().v4());
+  final SyncSettings _initialSettings =
+      SyncSettings(deviceId: const Uuid().v4());
   SyncSettings? _loadedSettings;
 
   @override

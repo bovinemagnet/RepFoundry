@@ -179,194 +179,183 @@ class SyncSnapshotSerialiser {
     db.AppDatabase database,
     SyncSnapshot snapshot,
   ) async {
-    await database.transaction(() async {
-      for (final e in snapshot.exercises) {
-        await database.into(database.exercises).insertOnConflictUpdate(
-              db.ExercisesCompanion.insert(
-                id: e.id,
-                name: e.name,
-                category: e.category.name,
-                muscleGroup: e.muscleGroup.name,
-                equipmentType: e.equipmentType.name,
-                isCustom: Value(e.isCustom),
-                imageAsset: Value(e.imageAsset),
-                updatedAt: Value(dateTimeToEpochMs(e.updatedAt)),
-                deletedAt: Value(nullableDateTimeToEpochMs(e.deletedAt)),
-              ),
-            );
-      }
+    // A single batch issues one multi-row statement per table instead of
+    // one round-trip per row, which matters when syncing large histories.
+    await database.batch((batch) {
+      batch.insertAllOnConflictUpdate(database.exercises, [
+        for (final e in snapshot.exercises)
+          db.ExercisesCompanion.insert(
+            id: e.id,
+            name: e.name,
+            category: e.category.name,
+            muscleGroup: e.muscleGroup.name,
+            equipmentType: e.equipmentType.name,
+            isCustom: Value(e.isCustom),
+            imageAsset: Value(e.imageAsset),
+            updatedAt: Value(dateTimeToEpochMs(e.updatedAt)),
+            deletedAt: Value(nullableDateTimeToEpochMs(e.deletedAt)),
+          ),
+      ]);
 
-      for (final w in snapshot.workouts) {
-        await database.into(database.workouts).insertOnConflictUpdate(
-              db.WorkoutsCompanion.insert(
-                id: w.id,
-                startedAt: dateTimeToEpochMs(w.startedAt),
-                completedAt: Value(nullableDateTimeToEpochMs(w.completedAt)),
-                templateId: Value(w.templateId),
-                notes: Value(w.notes),
-                updatedAt: Value(dateTimeToEpochMs(w.updatedAt)),
-                deletedAt: Value(nullableDateTimeToEpochMs(w.deletedAt)),
-              ),
-            );
-      }
+      batch.insertAllOnConflictUpdate(database.workouts, [
+        for (final w in snapshot.workouts)
+          db.WorkoutsCompanion.insert(
+            id: w.id,
+            startedAt: dateTimeToEpochMs(w.startedAt),
+            completedAt: Value(nullableDateTimeToEpochMs(w.completedAt)),
+            templateId: Value(w.templateId),
+            notes: Value(w.notes),
+            updatedAt: Value(dateTimeToEpochMs(w.updatedAt)),
+            deletedAt: Value(nullableDateTimeToEpochMs(w.deletedAt)),
+          ),
+      ]);
 
-      for (final s in snapshot.workoutSets) {
-        await database.into(database.workoutSets).insertOnConflictUpdate(
-              db.WorkoutSetsCompanion.insert(
-                id: s.id,
-                workoutId: s.workoutId,
-                exerciseId: s.exerciseId,
-                setOrder: s.setOrder,
-                weight: s.weight,
-                reps: s.reps,
-                rpe: Value(s.rpe),
-                timestamp: dateTimeToEpochMs(s.timestamp),
-                isWarmUp: Value(s.isWarmUp),
-                groupId: Value(s.groupId),
-                updatedAt: Value(dateTimeToEpochMs(s.updatedAt)),
-                deletedAt: Value(nullableDateTimeToEpochMs(s.deletedAt)),
-              ),
-            );
-      }
+      batch.insertAllOnConflictUpdate(database.workoutSets, [
+        for (final s in snapshot.workoutSets)
+          db.WorkoutSetsCompanion.insert(
+            id: s.id,
+            workoutId: s.workoutId,
+            exerciseId: s.exerciseId,
+            setOrder: s.setOrder,
+            weight: s.weight,
+            reps: s.reps,
+            rpe: Value(s.rpe),
+            timestamp: dateTimeToEpochMs(s.timestamp),
+            isWarmUp: Value(s.isWarmUp),
+            groupId: Value(s.groupId),
+            updatedAt: Value(dateTimeToEpochMs(s.updatedAt)),
+            deletedAt: Value(nullableDateTimeToEpochMs(s.deletedAt)),
+          ),
+      ]);
 
-      for (final c in snapshot.cardioSessions) {
-        await database.into(database.cardioSessions).insertOnConflictUpdate(
-              db.CardioSessionsCompanion.insert(
-                id: c.id,
-                workoutId: c.workoutId,
-                exerciseId: c.exerciseId,
-                durationSeconds: c.durationSeconds,
-                distanceMeters: Value(c.distanceMeters),
-                incline: Value(c.incline),
-                avgHeartRate: Value(c.avgHeartRate),
-                updatedAt: Value(dateTimeToEpochMs(c.updatedAt)),
-                deletedAt: Value(nullableDateTimeToEpochMs(c.deletedAt)),
-              ),
-            );
-      }
+      batch.insertAllOnConflictUpdate(database.cardioSessions, [
+        for (final c in snapshot.cardioSessions)
+          db.CardioSessionsCompanion.insert(
+            id: c.id,
+            workoutId: c.workoutId,
+            exerciseId: c.exerciseId,
+            durationSeconds: c.durationSeconds,
+            distanceMeters: Value(c.distanceMeters),
+            incline: Value(c.incline),
+            avgHeartRate: Value(c.avgHeartRate),
+            updatedAt: Value(dateTimeToEpochMs(c.updatedAt)),
+            deletedAt: Value(nullableDateTimeToEpochMs(c.deletedAt)),
+          ),
+      ]);
 
-      for (final pr in snapshot.personalRecords) {
-        await database.into(database.personalRecords).insertOnConflictUpdate(
-              db.PersonalRecordsCompanion.insert(
-                id: pr.id,
-                exerciseId: pr.exerciseId,
-                recordType: pr.recordType.name,
-                value: pr.value,
-                achievedAt: dateTimeToEpochMs(pr.achievedAt),
-                workoutSetId: Value(pr.workoutSetId),
-                updatedAt: Value(dateTimeToEpochMs(pr.updatedAt)),
-                deletedAt: Value(nullableDateTimeToEpochMs(pr.deletedAt)),
-              ),
-            );
-      }
+      batch.insertAllOnConflictUpdate(database.personalRecords, [
+        for (final pr in snapshot.personalRecords)
+          db.PersonalRecordsCompanion.insert(
+            id: pr.id,
+            exerciseId: pr.exerciseId,
+            recordType: pr.recordType.name,
+            value: pr.value,
+            achievedAt: dateTimeToEpochMs(pr.achievedAt),
+            workoutSetId: Value(pr.workoutSetId),
+            updatedAt: Value(dateTimeToEpochMs(pr.updatedAt)),
+            deletedAt: Value(nullableDateTimeToEpochMs(pr.deletedAt)),
+          ),
+      ]);
 
-      for (final t in snapshot.workoutTemplates) {
-        await database.into(database.workoutTemplates).insertOnConflictUpdate(
-              db.WorkoutTemplatesCompanion.insert(
-                id: t.id,
-                name: t.name,
-                createdAt: dateTimeToEpochMs(t.createdAt),
-                updatedAt: dateTimeToEpochMs(t.updatedAt),
-                deletedAt: Value(nullableDateTimeToEpochMs(t.deletedAt)),
-              ),
-            );
-      }
+      batch.insertAllOnConflictUpdate(database.workoutTemplates, [
+        for (final t in snapshot.workoutTemplates)
+          db.WorkoutTemplatesCompanion.insert(
+            id: t.id,
+            name: t.name,
+            createdAt: dateTimeToEpochMs(t.createdAt),
+            updatedAt: dateTimeToEpochMs(t.updatedAt),
+            deletedAt: Value(nullableDateTimeToEpochMs(t.deletedAt)),
+          ),
+      ]);
 
-      for (final te in snapshot.templateExercises) {
-        await database.into(database.templateExercises).insertOnConflictUpdate(
-              db.TemplateExercisesCompanion.insert(
-                id: te.id,
-                templateId: te.templateId,
-                exerciseId: te.exerciseId,
-                exerciseName: te.exerciseName,
-                targetSets: te.targetSets,
-                targetReps: te.targetReps,
-                orderIndex: te.orderIndex,
-                updatedAt: Value(dateTimeToEpochMs(te.updatedAt)),
-                deletedAt: Value(nullableDateTimeToEpochMs(te.deletedAt)),
-              ),
-            );
-      }
+      batch.insertAllOnConflictUpdate(database.templateExercises, [
+        for (final te in snapshot.templateExercises)
+          db.TemplateExercisesCompanion.insert(
+            id: te.id,
+            templateId: te.templateId,
+            exerciseId: te.exerciseId,
+            exerciseName: te.exerciseName,
+            targetSets: te.targetSets,
+            targetReps: te.targetReps,
+            orderIndex: te.orderIndex,
+            updatedAt: Value(dateTimeToEpochMs(te.updatedAt)),
+            deletedAt: Value(nullableDateTimeToEpochMs(te.deletedAt)),
+          ),
+      ]);
 
-      for (final bm in snapshot.bodyMetrics) {
-        await database.into(database.bodyMetrics).insertOnConflictUpdate(
-              db.BodyMetricsCompanion.insert(
-                id: bm.id,
-                date: dateTimeToEpochMs(bm.date),
-                weight: bm.weight,
-                bodyFatPercent: Value(bm.bodyFatPercent),
-                notes: Value(bm.notes),
-                updatedAt: Value(dateTimeToEpochMs(bm.updatedAt)),
-                deletedAt: Value(nullableDateTimeToEpochMs(bm.deletedAt)),
-              ),
-            );
-      }
+      batch.insertAllOnConflictUpdate(database.bodyMetrics, [
+        for (final bm in snapshot.bodyMetrics)
+          db.BodyMetricsCompanion.insert(
+            id: bm.id,
+            date: dateTimeToEpochMs(bm.date),
+            weight: bm.weight,
+            bodyFatPercent: Value(bm.bodyFatPercent),
+            notes: Value(bm.notes),
+            updatedAt: Value(dateTimeToEpochMs(bm.updatedAt)),
+            deletedAt: Value(nullableDateTimeToEpochMs(bm.deletedAt)),
+          ),
+      ]);
 
-      for (final p in snapshot.programmes) {
-        await database.into(database.programmes).insertOnConflictUpdate(
-              db.ProgrammesCompanion.insert(
-                id: p.id,
-                name: p.name,
-                durationWeeks: p.durationWeeks,
-                createdAt: dateTimeToEpochMs(p.createdAt),
-                updatedAt: dateTimeToEpochMs(p.updatedAt),
-                startedAt: Value(p.startedAt == null
-                    ? null
-                    : dateTimeToEpochMs(p.startedAt!)),
-                deletedAt: Value(nullableDateTimeToEpochMs(p.deletedAt)),
-              ),
-            );
-      }
+      batch.insertAllOnConflictUpdate(database.programmes, [
+        for (final p in snapshot.programmes)
+          db.ProgrammesCompanion.insert(
+            id: p.id,
+            name: p.name,
+            durationWeeks: p.durationWeeks,
+            createdAt: dateTimeToEpochMs(p.createdAt),
+            updatedAt: dateTimeToEpochMs(p.updatedAt),
+            startedAt: Value(
+                p.startedAt == null ? null : dateTimeToEpochMs(p.startedAt!)),
+            deletedAt: Value(nullableDateTimeToEpochMs(p.deletedAt)),
+          ),
+      ]);
 
-      for (final d in snapshot.programmeDays) {
-        await database.into(database.programmeDays).insertOnConflictUpdate(
-              db.ProgrammeDaysCompanion.insert(
-                id: d.id,
-                programmeId: d.programmeId,
-                weekNumber: d.weekNumber,
-                dayOfWeek: d.dayOfWeek,
-                templateId: d.templateId,
-                templateName: d.templateName,
-                updatedAt: Value(dateTimeToEpochMs(d.updatedAt)),
-                deletedAt: Value(nullableDateTimeToEpochMs(d.deletedAt)),
-              ),
-            );
-      }
+      batch.insertAllOnConflictUpdate(database.programmeDays, [
+        for (final d in snapshot.programmeDays)
+          db.ProgrammeDaysCompanion.insert(
+            id: d.id,
+            programmeId: d.programmeId,
+            weekNumber: d.weekNumber,
+            dayOfWeek: d.dayOfWeek,
+            templateId: d.templateId,
+            templateName: d.templateName,
+            updatedAt: Value(dateTimeToEpochMs(d.updatedAt)),
+            deletedAt: Value(nullableDateTimeToEpochMs(d.deletedAt)),
+          ),
+      ]);
 
-      for (final r in snapshot.progressionRules) {
-        await database.into(database.progressionRules).insertOnConflictUpdate(
-              db.ProgressionRulesCompanion.insert(
-                id: r.id,
-                programmeId: r.programmeId,
-                exerciseId: r.exerciseId,
-                type: r.type.name,
-                value: r.value,
-                frequencyWeeks: Value(r.frequencyWeeks),
-                updatedAt: Value(dateTimeToEpochMs(r.updatedAt)),
-                deletedAt: Value(nullableDateTimeToEpochMs(r.deletedAt)),
-              ),
-            );
-      }
+      batch.insertAllOnConflictUpdate(database.progressionRules, [
+        for (final r in snapshot.progressionRules)
+          db.ProgressionRulesCompanion.insert(
+            id: r.id,
+            programmeId: r.programmeId,
+            exerciseId: r.exerciseId,
+            type: r.type.name,
+            value: r.value,
+            frequencyWeeks: Value(r.frequencyWeeks),
+            updatedAt: Value(dateTimeToEpochMs(r.updatedAt)),
+            deletedAt: Value(nullableDateTimeToEpochMs(r.deletedAt)),
+          ),
+      ]);
 
-      for (final s in snapshot.stretchingSessions) {
-        await database.into(database.stretchingSessions).insertOnConflictUpdate(
-              db.StretchingSessionsCompanion.insert(
-                id: s.id,
-                workoutId: s.workoutId,
-                type: s.type,
-                customName: Value(s.customName),
-                bodyArea: Value(s.bodyArea?.name),
-                side: Value(s.side?.name),
-                durationSeconds: s.durationSeconds,
-                startedAt: Value(nullableDateTimeToEpochMs(s.startedAt)),
-                endedAt: Value(nullableDateTimeToEpochMs(s.endedAt)),
-                entryMethod: s.entryMethod.name,
-                notes: Value(s.notes),
-                updatedAt: Value(dateTimeToEpochMs(s.updatedAt)),
-                deletedAt: Value(nullableDateTimeToEpochMs(s.deletedAt)),
-              ),
-            );
-      }
+      batch.insertAllOnConflictUpdate(database.stretchingSessions, [
+        for (final s in snapshot.stretchingSessions)
+          db.StretchingSessionsCompanion.insert(
+            id: s.id,
+            workoutId: s.workoutId,
+            type: s.type,
+            customName: Value(s.customName),
+            bodyArea: Value(s.bodyArea?.name),
+            side: Value(s.side?.name),
+            durationSeconds: s.durationSeconds,
+            startedAt: Value(nullableDateTimeToEpochMs(s.startedAt)),
+            endedAt: Value(nullableDateTimeToEpochMs(s.endedAt)),
+            entryMethod: s.entryMethod.name,
+            notes: Value(s.notes),
+            updatedAt: Value(dateTimeToEpochMs(s.updatedAt)),
+            deletedAt: Value(nullableDateTimeToEpochMs(s.deletedAt)),
+          ),
+      ]);
     });
   }
 

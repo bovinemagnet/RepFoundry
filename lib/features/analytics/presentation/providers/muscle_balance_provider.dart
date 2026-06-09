@@ -20,9 +20,12 @@ final muscleBalanceProvider =
   final workouts = await workoutRepo.getWorkoutHistory(limit: 100);
   final volumeByGroup = <MuscleGroup, double>{};
 
-  for (final w in workouts) {
-    if (w.completedAt == null) continue;
-    final sets = await workoutRepo.getSetsForWorkout(w.id);
+  final completedIds = [
+    for (final w in workouts)
+      if (w.completedAt != null) w.id,
+  ];
+  final setsByWorkout = await workoutRepo.getSetsForWorkouts(completedIds);
+  for (final sets in setsByWorkout.values) {
     for (final s in sets) {
       if (s.isWarmUp) continue;
       final exercise = exerciseMap[s.exerciseId];

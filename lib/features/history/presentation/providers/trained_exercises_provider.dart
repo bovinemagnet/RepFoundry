@@ -19,8 +19,9 @@ final trainedExercisesProvider =
 
   final setCountByExercise = <String, int>{};
 
-  for (final workout in workouts) {
-    final sets = await workoutRepo.getSetsForWorkout(workout.id);
+  final setsByWorkout =
+      await workoutRepo.getSetsForWorkouts([for (final w in workouts) w.id]);
+  for (final sets in setsByWorkout.values) {
     for (final set in sets) {
       setCountByExercise[set.exerciseId] =
           (setCountByExercise[set.exerciseId] ?? 0) + 1;

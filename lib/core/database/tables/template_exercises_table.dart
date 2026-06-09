@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'workout_templates_table.dart';
 import 'exercises_table.dart';
 
+@TableIndex(name: 'idx_template_exercises_template', columns: {#templateId})
 class TemplateExercises extends Table {
   TextColumn get id => text()();
   TextColumn get templateId => text().references(WorkoutTemplates, #id)();

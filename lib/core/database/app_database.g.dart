@@ -5548,12 +5548,32 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $ProgressionRulesTable(this);
   late final $StretchingSessionsTable stretchingSessions =
       $StretchingSessionsTable(this);
+  late final Index idxBodyMetricsDate = Index('idx_body_metrics_date',
+      'CREATE INDEX idx_body_metrics_date ON body_metrics (date)');
   late final Index idxWorkoutSetsExerciseTimestamp = Index(
       'idx_workout_sets_exercise_timestamp',
       'CREATE INDEX idx_workout_sets_exercise_timestamp ON workout_sets (exercise_id, timestamp)');
   late final Index idxWorkoutSetsWorkoutOrder = Index(
       'idx_workout_sets_workout_order',
       'CREATE INDEX idx_workout_sets_workout_order ON workout_sets (workout_id, set_order)');
+  late final Index idxCardioSessionsWorkout = Index(
+      'idx_cardio_sessions_workout',
+      'CREATE INDEX idx_cardio_sessions_workout ON cardio_sessions (workout_id)');
+  late final Index idxCardioSessionsExercise = Index(
+      'idx_cardio_sessions_exercise',
+      'CREATE INDEX idx_cardio_sessions_exercise ON cardio_sessions (exercise_id)');
+  late final Index idxPersonalRecordsExerciseAchieved = Index(
+      'idx_personal_records_exercise_achieved',
+      'CREATE INDEX idx_personal_records_exercise_achieved ON personal_records (exercise_id, achieved_at)');
+  late final Index idxTemplateExercisesTemplate = Index(
+      'idx_template_exercises_template',
+      'CREATE INDEX idx_template_exercises_template ON template_exercises (template_id)');
+  late final Index idxProgrammeDaysProgramme = Index(
+      'idx_programme_days_programme',
+      'CREATE INDEX idx_programme_days_programme ON programme_days (programme_id)');
+  late final Index idxProgressionRulesProgramme = Index(
+      'idx_progression_rules_programme',
+      'CREATE INDEX idx_progression_rules_programme ON progression_rules (programme_id)');
   late final Index idxStretchingSessionsWorkout = Index(
       'idx_stretching_sessions_workout',
       'CREATE INDEX idx_stretching_sessions_workout ON stretching_sessions (workout_id)');
@@ -5577,8 +5597,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         programmeDays,
         progressionRules,
         stretchingSessions,
+        idxBodyMetricsDate,
         idxWorkoutSetsExerciseTimestamp,
         idxWorkoutSetsWorkoutOrder,
+        idxCardioSessionsWorkout,
+        idxCardioSessionsExercise,
+        idxPersonalRecordsExerciseAchieved,
+        idxTemplateExercisesTemplate,
+        idxProgrammeDaysProgramme,
+        idxProgressionRulesProgramme,
         idxStretchingSessionsWorkout,
         idxStretchingSessionsTypeUpdated
       ];

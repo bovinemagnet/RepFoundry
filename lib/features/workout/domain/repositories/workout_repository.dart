@@ -11,6 +11,12 @@ abstract class WorkoutRepository {
 
   Future<WorkoutSet> addSet(WorkoutSet set);
   Future<List<WorkoutSet>> getSetsForWorkout(String workoutId);
+
+  /// Returns sets for all [workoutIds] in a single query, grouped by
+  /// workout id. Workouts with no sets are omitted from the map.
+  Future<Map<String, List<WorkoutSet>>> getSetsForWorkouts(
+    List<String> workoutIds,
+  );
   Future<List<WorkoutSet>> getSetsForExercise(
     String exerciseId, {
     int limit = 50,

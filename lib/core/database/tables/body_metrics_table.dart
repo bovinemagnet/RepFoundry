@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+@TableIndex(name: 'idx_body_metrics_date', columns: {#date})
 class BodyMetrics extends Table {
   TextColumn get id => text()();
   IntColumn get date => integer()();

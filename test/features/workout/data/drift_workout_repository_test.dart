@@ -205,6 +205,45 @@ void main() {
       });
     });
 
+    group('getSetsForWorkouts', () {
+      test('returns sets grouped by workout id, ordered by setOrder', () async {
+        final w1 = newWorkout();
+        final w2 = newWorkout();
+        await repo.createWorkout(w1);
+        await repo.createWorkout(w2);
+
+        await repo.addSet(newSet(workoutId: w1.id, setOrder: 2));
+        await repo.addSet(newSet(workoutId: w1.id, setOrder: 1));
+        await repo.addSet(newSet(workoutId: w2.id, setOrder: 1));
+
+        final byWorkout = await repo.getSetsForWorkouts([w1.id, w2.id]);
+        expect(byWorkout, hasLength(2));
+        expect(byWorkout[w1.id], hasLength(2));
+        expect(byWorkout[w1.id]!.first.setOrder, 1);
+        expect(byWorkout[w1.id]!.last.setOrder, 2);
+        expect(byWorkout[w2.id], hasLength(1));
+      });
+
+      test('omits workouts with no sets and excludes deleted sets', () async {
+        final w1 = newWorkout();
+        final w2 = newWorkout();
+        await repo.createWorkout(w1);
+        await repo.createWorkout(w2);
+
+        final s1 = newSet(workoutId: w1.id, setOrder: 1);
+        await repo.addSet(s1);
+        await repo.deleteSet(s1.id);
+
+        final byWorkout = await repo.getSetsForWorkouts([w1.id, w2.id]);
+        expect(byWorkout, isEmpty);
+      });
+
+      test('returns empty map for empty input', () async {
+        final byWorkout = await repo.getSetsForWorkouts([]);
+        expect(byWorkout, isEmpty);
+      });
+    });
+
     group('getSetsForExercise', () {
       test('returns sets for an exercise newest first', () async {
         final workout = newWorkout();

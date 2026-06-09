@@ -42,17 +42,17 @@ final trainingLoadProvider =
     FutureProvider.autoDispose<List<WeeklyLoad>>((ref) async {
   final repo = ref.watch(workoutRepositoryProvider);
   final workouts = await repo.getWorkoutHistory(limit: 200);
-  final allSets = <SetData>[];
-
-  for (final w in workouts) {
-    if (w.completedAt == null) continue;
-    final sets = await repo.getSetsForWorkout(w.id);
-    for (final s in sets) {
-      if (!s.isWarmUp) {
-        allSets.add(SetData(date: s.timestamp, volume: s.volume, rpe: s.rpe));
-      }
-    }
-  }
+  final completedIds = [
+    for (final w in workouts)
+      if (w.completedAt != null) w.id,
+  ];
+  final setsByWorkout = await repo.getSetsForWorkouts(completedIds);
+  final allSets = <SetData>[
+    for (final sets in setsByWorkout.values)
+      for (final s in sets)
+        if (!s.isWarmUp)
+          SetData(date: s.timestamp, volume: s.volume, rpe: s.rpe),
+  ];
 
   return computeTrainingLoad(allSets);
 });

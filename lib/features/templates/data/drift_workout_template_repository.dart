@@ -56,10 +56,12 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
       ..where((t) => t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
     final rows = await q.get();
-    return Future.wait(rows.map((row) async {
-      final exercises = await _getExercisesForTemplate(row.id);
-      return _toDomain(row, exercises);
-    }));
+    final exercisesByTemplate =
+        await _getExercisesForTemplates([for (final r in rows) r.id]);
+    return [
+      for (final row in rows)
+        _toDomain(row, exercisesByTemplate[row.id] ?? const []),
+    ];
   }
 
   @override
@@ -135,11 +137,32 @@ class DriftWorkoutTemplateRepository implements WorkoutTemplateRepository {
       ..where((t) => t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
     return q.watch().asyncMap((rows) async {
-      return Future.wait(rows.map((row) async {
-        final exercises = await _getExercisesForTemplate(row.id);
-        return _toDomain(row, exercises);
-      }));
+      final exercisesByTemplate =
+          await _getExercisesForTemplates([for (final r in rows) r.id]);
+      return [
+        for (final row in rows)
+          _toDomain(row, exercisesByTemplate[row.id] ?? const []),
+      ];
     });
+  }
+
+  /// Loads exercises for all [templateIds] in one query, grouped by
+  /// template id and ordered by orderIndex within each group.
+  Future<Map<String, List<TemplateExercise>>> _getExercisesForTemplates(
+    List<String> templateIds,
+  ) async {
+    if (templateIds.isEmpty) return {};
+    final q = _db.select(_db.templateExercises)
+      ..where((t) => t.templateId.isIn(templateIds) & t.deletedAt.isNull())
+      ..orderBy([(t) => OrderingTerm.asc(t.orderIndex)]);
+    final rows = await q.get();
+    final byTemplate = <String, List<TemplateExercise>>{};
+    for (final row in rows) {
+      byTemplate
+          .putIfAbsent(row.templateId, () => [])
+          .add(_exerciseToDomain(row));
+    }
+    return byTemplate;
   }
 
   Future<List<TemplateExercise>> _getExercisesForTemplate(

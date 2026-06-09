@@ -124,6 +124,22 @@ class DriftWorkoutRepository implements WorkoutRepository {
   }
 
   @override
+  Future<Map<String, List<WorkoutSet>>> getSetsForWorkouts(
+    List<String> workoutIds,
+  ) async {
+    if (workoutIds.isEmpty) return {};
+    final q = _db.select(_db.workoutSets)
+      ..where((t) => t.workoutId.isIn(workoutIds) & t.deletedAt.isNull())
+      ..orderBy([(t) => OrderingTerm.asc(t.setOrder)]);
+    final rows = await q.get();
+    final byWorkout = <String, List<WorkoutSet>>{};
+    for (final row in rows) {
+      byWorkout.putIfAbsent(row.workoutId, () => []).add(_setToDomain(row));
+    }
+    return byWorkout;
+  }
+
+  @override
   Future<List<WorkoutSet>> getSetsForExercise(
     String exerciseId, {
     int limit = 50,
