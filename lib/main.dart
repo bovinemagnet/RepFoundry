@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app/app.dart';
 import 'core/database/app_database.dart';
 import 'core/database/database_provider.dart';
@@ -9,6 +10,9 @@ import 'features/sync/presentation/providers/sync_settings_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Fonts are bundled in assets/fonts/ — never fetch from fonts.gstatic.com.
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   final database = AppDatabase();
   await NotificationService().init();
