@@ -335,6 +335,14 @@
   "finishWorkoutContent": "This will save your workout and end the session.",
   "continueWorkout": "Continue Workout",
   "continueWorkoutBlocked": "Finish your current workout before continuing this one.",
+  "saveAsTemplate": "Save as Template",
+  "saveAsTemplateTitle": "Save as Template",
+  "saveAsTemplateHint": "Template name",
+  "saveAsTemplateSuccess": "Saved \"{name}\" as a template",
+  "@saveAsTemplateSuccess": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "saveAsTemplateEmpty": "Add some sets before saving as a template.",
   "tableHeaderHash": "#",
   "tableHeaderWeight": "Weight",
   "tableHeaderReps": "Reps",
