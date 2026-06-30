@@ -1254,6 +1254,18 @@ abstract class S {
   /// **'This will save your workout and end the session.'**
   String get finishWorkoutContent;
 
+  /// No description provided for @continueWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Workout'**
+  String get continueWorkout;
+
+  /// No description provided for @continueWorkoutBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish your current workout before continuing this one.'**
+  String get continueWorkoutBlocked;
+
   /// No description provided for @tableHeaderHash.
   ///
   /// In en, this message translates to:

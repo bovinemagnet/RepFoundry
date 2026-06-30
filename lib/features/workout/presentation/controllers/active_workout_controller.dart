@@ -359,6 +359,45 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     }
   }
 
+  /// Reopens a previously completed workout so the user can add more sets
+  /// (e.g. an accidental finish, or remembering to log stretching).
+  ///
+  /// Clears the workout's `completedAt` so it becomes the active workout again
+  /// and rehydrates it into state. Returns `false` without making any change
+  /// when another workout is already in progress (the app supports only one
+  /// active workout at a time) or when the id cannot be found.
+  Future<bool> reopenWorkout(String workoutId) async {
+    // Block if a different workout is already active — the data layer assumes
+    // a single in-progress workout (getActiveWorkout uses getSingleOrNull).
+    final existingActive = await _workoutRepository.getActiveWorkout();
+    if (existingActive != null && existingActive.id != workoutId) {
+      return false;
+    }
+
+    final workout = await _workoutRepository.getWorkout(workoutId);
+    if (workout == null) return false;
+
+    state = state.copyWith(isLoading: true);
+    try {
+      // copyWith cannot null an existing completedAt, so rebuild directly.
+      final reopened = Workout(
+        id: workout.id,
+        startedAt: workout.startedAt,
+        completedAt: null,
+        templateId: workout.templateId,
+        notes: workout.notes,
+        updatedAt: DateTime.now().toUtc(),
+        deletedAt: workout.deletedAt,
+      );
+      await _workoutRepository.updateWorkout(reopened);
+      await _loadSets(reopened);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
   Future<void> addExercise(Exercise exercise) async {
     if (state.activeWorkout == null) return;
 

@@ -333,6 +333,8 @@
   "addExercisesHint": "Add exercises using the button below",
   "finishWorkoutTitle": "Finish Workout?",
   "finishWorkoutContent": "This will save your workout and end the session.",
+  "continueWorkout": "Continue Workout",
+  "continueWorkoutBlocked": "Finish your current workout before continuing this one.",
   "tableHeaderHash": "#",
   "tableHeaderWeight": "Weight",
   "tableHeaderReps": "Reps",

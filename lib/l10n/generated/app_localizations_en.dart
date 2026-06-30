@@ -640,6 +640,13 @@ class SEn extends S {
       'This will save your workout and end the session.';
 
   @override
+  String get continueWorkout => 'Continue Workout';
+
+  @override
+  String get continueWorkoutBlocked =>
+      'Finish your current workout before continuing this one.';
+
+  @override
   String get tableHeaderHash => '#';
 
   @override

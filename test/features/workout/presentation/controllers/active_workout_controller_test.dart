@@ -18,6 +18,8 @@ import 'package:rep_foundry/features/sync/presentation/providers/sync_settings_p
 import 'package:rep_foundry/features/templates/data/workout_template_repository_impl.dart';
 import 'package:rep_foundry/features/templates/domain/models/workout_template.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
+import 'package:rep_foundry/features/workout/domain/models/workout.dart';
+import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
 import 'package:rep_foundry/features/workout/presentation/controllers/active_workout_controller.dart';
 
 class _FakeCloudSyncService implements CloudSyncService {
@@ -305,6 +307,82 @@ void main() {
         await syncOrchestrator.syncCalled;
 
         expect(syncOrchestrator.syncCalls, 1);
+      });
+    });
+
+    group('reopenWorkout', () {
+      test('reopens a completed workout and loads its sets into state',
+          () async {
+        await waitForInit();
+        final now = DateTime.now().toUtc();
+        final exercises = await exerciseRepo.getAllExercises();
+        final exercise = exercises.first;
+
+        await workoutRepo.createWorkout(
+          Workout(
+            id: 'w-done',
+            startedAt: now.subtract(const Duration(hours: 1)),
+            completedAt: now,
+            updatedAt: now,
+          ),
+        );
+        await workoutRepo.addSet(
+          WorkoutSet.create(
+            workoutId: 'w-done',
+            exerciseId: exercise.id,
+            setOrder: 0,
+            weight: 100,
+            reps: 5,
+          ),
+        );
+
+        final controller = readController();
+        final reopened = await controller.reopenWorkout('w-done');
+
+        expect(reopened, isTrue);
+        final state = readState();
+        expect(state.hasActiveWorkout, isTrue);
+        expect(state.activeWorkout!.id, 'w-done');
+        expect(state.activeWorkout!.completedAt, isNull);
+        expect(state.setsByExercise[exercise.id], hasLength(1));
+
+        // Persisted back as in-progress.
+        final active = await workoutRepo.getActiveWorkout();
+        expect(active!.id, 'w-done');
+      });
+
+      test('returns false when another workout is already active', () async {
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+        final activeId = readState().activeWorkout!.id;
+
+        final now = DateTime.now().toUtc();
+        await workoutRepo.createWorkout(
+          Workout(
+            id: 'w-old',
+            startedAt: now.subtract(const Duration(days: 1)),
+            completedAt: now.subtract(const Duration(days: 1)),
+            updatedAt: now,
+          ),
+        );
+
+        final reopened = await controller.reopenWorkout('w-old');
+
+        expect(reopened, isFalse);
+        // The currently active workout is untouched and 'w-old' stays completed.
+        expect(readState().activeWorkout!.id, activeId);
+        expect((await workoutRepo.getWorkout('w-old'))!.completedAt, isNotNull);
+      });
+
+      test('returns false for an unknown workout id', () async {
+        await waitForInit();
+        final controller = readController();
+
+        final reopened = await controller.reopenWorkout('does-not-exist');
+
+        expect(reopened, isFalse);
+        expect(readState().hasActiveWorkout, isFalse);
       });
     });
 
