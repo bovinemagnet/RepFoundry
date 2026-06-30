@@ -619,6 +619,13 @@ class SZh extends S {
   String get finishWorkoutContent => '这将保存训练并结束本次会话。';
 
   @override
+  String get continueWorkout => 'Continue Workout';
+
+  @override
+  String get continueWorkoutBlocked =>
+      'Finish your current workout before continuing this one.';
+
+  @override
   String get tableHeaderHash => '#';
 
   @override

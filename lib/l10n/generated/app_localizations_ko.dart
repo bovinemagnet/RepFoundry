@@ -620,6 +620,13 @@ class SKo extends S {
   String get finishWorkoutContent => '운동을 저장하고 세션을 종료합니다.';
 
   @override
+  String get continueWorkout => 'Continue Workout';
+
+  @override
+  String get continueWorkoutBlocked =>
+      'Finish your current workout before continuing this one.';
+
+  @override
   String get tableHeaderHash => '#';
 
   @override

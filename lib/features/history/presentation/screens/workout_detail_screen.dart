@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../workout/domain/models/workout.dart';
 import '../../../workout/domain/models/workout_set.dart';
+import '../../../workout/presentation/controllers/active_workout_controller.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../stretching/domain/models/stretching_session.dart';
 import '../../../stretching/presentation/widgets/stretch_preset_localiser.dart';
@@ -84,6 +85,13 @@ class WorkoutDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(s.workoutDetailTitle),
         leading: BackButton(onPressed: () => context.go('/history')),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.play_arrow),
+            tooltip: s.continueWorkout,
+            onPressed: () => _continueWorkout(context, ref, s),
+          ),
+        ],
       ),
       body: dataAsync.when(
         data: (data) {
@@ -96,6 +104,24 @@ class WorkoutDetailScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text(s.errorPrefix(e.toString()))),
       ),
     );
+  }
+
+  Future<void> _continueWorkout(
+    BuildContext context,
+    WidgetRef ref,
+    S s,
+  ) async {
+    final reopened = await ref
+        .read(activeWorkoutControllerProvider.notifier)
+        .reopenWorkout(workoutId);
+    if (!context.mounted) return;
+    if (reopened) {
+      context.go('/workout');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.continueWorkoutBlocked)),
+      );
+    }
   }
 }
 
