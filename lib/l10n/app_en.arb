@@ -354,6 +354,8 @@
   "addRpe": "Add RPE",
   "hideRpe": "Hide RPE",
   "logSet": "Log Set",
+  "addSet": "Add Set",
+  "collapse": "Collapse",
   "validationRequired": "Required",
   "validationInvalid": "Invalid",
   "validationMinZero": "\u2265 0",

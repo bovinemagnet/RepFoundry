@@ -674,6 +674,12 @@ class SZh extends S {
   String get logSet => '记录一组';
 
   @override
+  String get addSet => 'Add Set';
+
+  @override
+  String get collapse => 'Collapse';
+
+  @override
   String get validationRequired => '必填';
 
   @override

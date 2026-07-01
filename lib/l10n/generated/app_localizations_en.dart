@@ -695,6 +695,12 @@ class SEn extends S {
   String get logSet => 'Log Set';
 
   @override
+  String get addSet => 'Add Set';
+
+  @override
+  String get collapse => 'Collapse';
+
+  @override
   String get validationRequired => 'Required';
 
   @override

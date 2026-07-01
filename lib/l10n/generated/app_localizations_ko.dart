@@ -675,6 +675,12 @@ class SKo extends S {
   String get logSet => '세트 기록';
 
   @override
+  String get addSet => 'Add Set';
+
+  @override
+  String get collapse => 'Collapse';
+
+  @override
   String get validationRequired => '필수';
 
   @override
