@@ -125,18 +125,32 @@ class _RestTimerWidgetState extends ConsumerState<RestTimerWidget> {
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
-          const Spacer(),
-          for (final seconds in const [60, 90, 120, 180])
-            Padding(
-              padding: const EdgeInsets.only(left: 4),
-              child: ActionChip(
-                label: Text(
-                    '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}'),
-                onPressed: () => notifier.start(seconds),
-                padding: EdgeInsets.zero,
-                labelStyle: Theme.of(context).textTheme.labelSmall,
+          const SizedBox(width: 8),
+          // Right-aligned when there is room, but horizontally scrollable so the
+          // preset chips never overflow on narrow screens (issue #42).
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final seconds in const [60, 90, 120, 180])
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: ActionChip(
+                          label: Text(
+                              '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}'),
+                          onPressed: () => notifier.start(seconds),
+                          padding: EdgeInsets.zero,
+                          labelStyle: Theme.of(context).textTheme.labelSmall,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
+          ),
         ],
       ),
     );
