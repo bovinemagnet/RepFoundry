@@ -45,6 +45,13 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
   /// input target instead of leaving focus on the prior exercise.
   String? _lastAddedExerciseId;
 
+  /// ID of the exercise whose set-input card is currently expanded, or null
+  /// when none is expanded. Only one exercise shows its input at a time so the
+  /// screen is not crowded with multiple "Log Set" buttons. Adding an exercise
+  /// expands it (collapsing any previous); the collapse control on the
+  /// expanded card returns to the all-collapsed state.
+  String? _expandedExerciseId;
+
   /// Whether the soft keyboard is currently open. Drives hiding the
   /// "Add Exercise" FAB so it cannot overlap the Log Set CTA. Read from the
   /// raw [FlutterView] insets (not [MediaQuery]) because the enclosing
@@ -108,11 +115,26 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
     if (!mounted) return;
     setState(() {
       _lastAddedExerciseId = exercise.id;
+      _expandedExerciseId = exercise.id;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _scrollToExercise(exercise.id, alignment: 1.0);
     });
+  }
+
+  /// Expands [exerciseId]'s set-input card, collapsing any other. Called when
+  /// the user taps a collapsed exercise's "Add Set" affordance.
+  void _expandExercise(String exerciseId) {
+    if (_expandedExerciseId == exerciseId) return;
+    setState(() => _expandedExerciseId = exerciseId);
+  }
+
+  /// Collapses the currently expanded set-input card and dismisses the
+  /// keyboard — the "finish logging" action requested via the close button.
+  void _collapseExercise() {
+    FocusScope.of(context).unfocus();
+    setState(() => _expandedExerciseId = null);
   }
 
   @visibleForTesting
@@ -418,6 +440,9 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
                   exerciseKeys: _exerciseKeys,
                   onLogSet: handleLogSet,
                   autofocusExerciseId: _lastAddedExerciseId,
+                  expandedExerciseId: _expandedExerciseId,
+                  onExpand: _expandExercise,
+                  onCollapse: _collapseExercise,
                 );
               }
               return const SizedBox.shrink();
@@ -431,6 +456,9 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
                 ghostSets: state.remainingGhosts(exercise.id),
                 suggestion: state.nextGhostSet(exercise.id),
                 autofocusWeight: exercise.id == _lastAddedExerciseId,
+                expanded: exercise.id == _expandedExerciseId,
+                onExpand: () => _expandExercise(exercise.id),
+                onCollapse: _collapseExercise,
                 onLogSet: ({
                   required double weight,
                   required int reps,
@@ -1207,6 +1235,9 @@ class _ExerciseSection extends StatelessWidget {
     required this.onLogSet,
     required this.onDeleteSet,
     required this.onEditSet,
+    required this.expanded,
+    required this.onExpand,
+    required this.onCollapse,
     this.onLinkSuperset,
     this.autofocusWeight = false,
   });
@@ -1225,6 +1256,15 @@ class _ExerciseSection extends StatelessWidget {
   final void Function(WorkoutSet updatedSet) onEditSet;
   final VoidCallback? onLinkSuperset;
   final bool autofocusWeight;
+
+  /// Whether this exercise's set-input card is expanded.
+  final bool expanded;
+
+  /// Called when the collapsed "Add Set" affordance is tapped.
+  final VoidCallback onExpand;
+
+  /// Called when the expanded card's collapse control is tapped.
+  final VoidCallback onCollapse;
 
   @override
   Widget build(BuildContext context) {
@@ -1273,6 +1313,9 @@ class _ExerciseSection extends StatelessWidget {
             onDeleteSet: onDeleteSet,
             onEditSet: onEditSet,
             autofocusWeight: autofocusWeight,
+            expanded: expanded,
+            onExpand: onExpand,
+            onCollapse: onCollapse,
           ),
         ),
       ),
@@ -1289,6 +1332,9 @@ class _ExerciseSectionContent extends StatelessWidget {
     required this.onLogSet,
     required this.onDeleteSet,
     required this.onEditSet,
+    required this.expanded,
+    required this.onExpand,
+    required this.onCollapse,
     this.autofocusWeight = false,
   });
 
@@ -1305,6 +1351,9 @@ class _ExerciseSectionContent extends StatelessWidget {
   final void Function(String setId) onDeleteSet;
   final void Function(WorkoutSet updatedSet) onEditSet;
   final bool autofocusWeight;
+  final bool expanded;
+  final VoidCallback onExpand;
+  final VoidCallback onCollapse;
 
   @override
   Widget build(BuildContext context) {
@@ -1352,6 +1401,11 @@ class _ExerciseSectionContent extends StatelessWidget {
               exercise.muscleGroup.name,
               variant: KineticPillVariant.ghost,
             ),
+            // Collapse ("finish logging") control — only while expanded.
+            if (expanded) ...[
+              const SizedBox(width: 8),
+              _CollapseButton(onTap: onCollapse),
+            ],
           ],
         ),
         const SizedBox(height: 12),
@@ -1377,12 +1431,88 @@ class _ExerciseSectionContent extends StatelessWidget {
           ),
           const SizedBox(height: 12),
         ],
-        SetInputCard(
-          onLogSet: onLogSet,
-          suggestion: suggestion,
-          autofocusWeight: autofocusWeight,
-        ),
+        if (expanded)
+          SetInputCard(
+            onLogSet: onLogSet,
+            suggestion: suggestion,
+            autofocusWeight: autofocusWeight,
+          )
+        else
+          _AddSetButton(onTap: onExpand),
       ],
+    );
+  }
+}
+
+/// Compact accent-soft affordance shown in place of the full [SetInputCard]
+/// when an exercise is collapsed. Tapping it expands the exercise for logging.
+class _AddSetButton extends StatelessWidget {
+  const _AddSetButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context)!;
+    final cs = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 44,
+        decoration: BoxDecoration(
+          color: cs.primary.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(13),
+          border: Border.all(color: cs.primary.withValues(alpha: 0.30)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add, size: 18, color: cs.primary),
+            const SizedBox(width: 8),
+            Text(
+              s.addSet.toUpperCase(),
+              style: KineticText.mono(
+                size: 12.5,
+                letterSpacing: 0.8,
+                color: cs.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Small ghost close control on an expanded exercise card — collapses the
+/// set-input ("finish logging" for that exercise).
+class _CollapseButton extends StatelessWidget {
+  const _CollapseButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context)!;
+    final cs = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: s.collapse,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            Icons.keyboard_arrow_up,
+            size: 20,
+            color: cs.onSurfaceVariant,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1395,6 +1525,9 @@ class _SupersetGroup extends StatelessWidget {
     required this.onUnlink,
     required this.exerciseKeys,
     required this.onLogSet,
+    required this.expandedExerciseId,
+    required this.onExpand,
+    required this.onCollapse,
     this.autofocusExerciseId,
   });
 
@@ -1404,6 +1537,9 @@ class _SupersetGroup extends StatelessWidget {
   final void Function(String exerciseId) onUnlink;
   final Map<String, GlobalKey> exerciseKeys;
   final String? autofocusExerciseId;
+  final String? expandedExerciseId;
+  final void Function(String exerciseId) onExpand;
+  final VoidCallback onCollapse;
   final void Function({
     required String exerciseId,
     required double weight,
@@ -1466,6 +1602,9 @@ class _SupersetGroup extends StatelessWidget {
                     ghostSets: state.remainingGhosts(exercise.id),
                     suggestion: state.nextGhostSet(exercise.id),
                     autofocusWeight: exercise.id == autofocusExerciseId,
+                    expanded: exercise.id == expandedExerciseId,
+                    onExpand: () => onExpand(exercise.id),
+                    onCollapse: onCollapse,
                     onLogSet: ({
                       required double weight,
                       required int reps,

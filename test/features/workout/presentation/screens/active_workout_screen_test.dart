@@ -294,6 +294,85 @@ void main() {
     );
 
     testWidgets(
+      'newlyAddedExercise_isExpanded_previousCollapsesToAddSet',
+      (tester) async {
+        await tester.pumpWidget(buildScreen());
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Start Workout'));
+        await tester.pumpAndSettle();
+
+        final state = tester
+            .state<ActiveWorkoutScreenState>(find.byType(ActiveWorkoutScreen));
+
+        await state.handleAddExercise(makeExercise('ex-a', 'Exercise A'));
+        await tester.pumpAndSettle();
+        await state.handleAddExercise(makeExercise('ex-b', 'Exercise B'));
+        await tester.pumpAndSettle();
+
+        // Only the most-recently-added exercise shows the Log Set input.
+        expect(find.text('LOG SET'), findsOneWidget);
+        // The previous exercise collapses to a compact Add Set affordance.
+        expect(find.text('ADD SET'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'tappingAddSet_expandsThatExercise_andCollapsesOthers',
+      (tester) async {
+        await tester.pumpWidget(buildScreen());
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Start Workout'));
+        await tester.pumpAndSettle();
+
+        final state = tester
+            .state<ActiveWorkoutScreenState>(find.byType(ActiveWorkoutScreen));
+
+        await state.handleAddExercise(makeExercise('ex-a', 'Exercise A'));
+        await tester.pumpAndSettle();
+        await state.handleAddExercise(makeExercise('ex-b', 'Exercise B'));
+        await tester.pumpAndSettle();
+
+        // Exercise A is collapsed — tapping its Add Set expands it.
+        await tester.tap(find.text('ADD SET'));
+        await tester.pumpAndSettle();
+
+        // Still exactly one expanded input, and one collapsed affordance:
+        // expansion moved from B to A rather than stacking two inputs.
+        expect(find.text('LOG SET'), findsOneWidget);
+        expect(find.text('ADD SET'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'tappingCollapse_hidesSetInput_leavingAllExercisesCollapsed',
+      (tester) async {
+        await tester.pumpWidget(buildScreen());
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Start Workout'));
+        await tester.pumpAndSettle();
+
+        final state = tester
+            .state<ActiveWorkoutScreenState>(find.byType(ActiveWorkoutScreen));
+
+        await state.handleAddExercise(makeExercise('ex-a', 'Exercise A'));
+        await tester.pumpAndSettle();
+        await state.handleAddExercise(makeExercise('ex-b', 'Exercise B'));
+        await tester.pumpAndSettle();
+
+        // Collapse the expanded exercise via its close control.
+        await tester.tap(find.byTooltip('Collapse'));
+        await tester.pumpAndSettle();
+
+        // No input is shown; both exercises now offer Add Set.
+        expect(find.text('LOG SET'), findsNothing);
+        expect(find.text('ADD SET'), findsNWidgets(2));
+      },
+    );
+
+    testWidgets(
       'startFromTemplate_doesNotAutoScroll_evenWithManyExercises',
       (tester) async {
         await tester.pumpWidget(buildScreen());

@@ -1356,6 +1356,18 @@ abstract class S {
   /// **'Log Set'**
   String get logSet;
 
+  /// No description provided for @addSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Set'**
+  String get addSet;
+
+  /// No description provided for @collapse.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse'**
+  String get collapse;
+
   /// No description provided for @validationRequired.
   ///
   /// In en, this message translates to:

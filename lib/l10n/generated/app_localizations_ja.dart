@@ -677,6 +677,12 @@ class SJa extends S {
   String get logSet => 'セットを記録';
 
   @override
+  String get addSet => 'Add Set';
+
+  @override
+  String get collapse => 'Collapse';
+
+  @override
   String get validationRequired => '必須';
 
   @override
