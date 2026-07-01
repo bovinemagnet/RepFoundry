@@ -141,5 +141,20 @@ void main() {
       expect(find.text('Rest Timer'), findsOneWidget);
       expect(find.byIcon(Icons.stop), findsNothing);
     });
+
+    testWidgets('does not overflow horizontally on a narrow screen',
+        (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(buildHost());
+      await tester.pumpAndSettle();
+
+      // All four presets remain reachable and no RenderFlex overflows.
+      expect(find.byType(ActionChip), findsNWidgets(4));
+      expect(tester.takeException(), isNull);
+    });
   });
 }
