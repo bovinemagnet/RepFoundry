@@ -626,6 +626,24 @@ class SZh extends S {
       'Finish your current workout before continuing this one.';
 
   @override
+  String get saveAsTemplate => 'Save as Template';
+
+  @override
+  String get saveAsTemplateTitle => 'Save as Template';
+
+  @override
+  String get saveAsTemplateHint => 'Template name';
+
+  @override
+  String saveAsTemplateSuccess(String name) {
+    return 'Saved \"$name\" as a template';
+  }
+
+  @override
+  String get saveAsTemplateEmpty =>
+      'Add some sets before saving as a template.';
+
+  @override
   String get tableHeaderHash => '#';
 
   @override

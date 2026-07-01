@@ -24,6 +24,7 @@ import '../features/heart_rate/data/noop_analytics_reporter.dart';
 import '../features/heart_rate/domain/analytics_events.dart';
 import '../features/history/data/drift_personal_record_repository.dart';
 import '../features/history/domain/repositories/personal_record_repository.dart';
+import '../features/templates/application/convert_workout_to_template_use_case.dart';
 import '../features/templates/data/drift_workout_template_repository.dart';
 import '../features/templates/domain/repositories/workout_template_repository.dart';
 import '../features/programmes/data/drift_programme_repository.dart';
@@ -155,6 +156,15 @@ final calculateProgressUseCaseProvider =
     Provider<CalculateProgressUseCase>((ref) {
   return CalculateProgressUseCase(
     workoutRepository: ref.watch(workoutRepositoryProvider),
+  );
+});
+
+final convertWorkoutToTemplateUseCaseProvider =
+    Provider<ConvertWorkoutToTemplateUseCase>((ref) {
+  return ConvertWorkoutToTemplateUseCase(
+    workoutRepository: ref.watch(workoutRepositoryProvider),
+    exerciseRepository: ref.watch(exerciseRepositoryProvider),
+    templateRepository: ref.watch(workoutTemplateRepositoryProvider),
   );
 });
 

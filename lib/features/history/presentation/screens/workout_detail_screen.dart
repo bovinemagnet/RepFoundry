@@ -5,6 +5,7 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../workout/domain/models/workout.dart';
 import '../../../workout/domain/models/workout_set.dart';
 import '../../../workout/presentation/controllers/active_workout_controller.dart';
+import '../../../templates/application/convert_workout_to_template_use_case.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../stretching/domain/models/stretching_session.dart';
 import '../../../stretching/presentation/widgets/stretch_preset_localiser.dart';
@@ -87,6 +88,11 @@ class WorkoutDetailScreen extends ConsumerWidget {
         leading: BackButton(onPressed: () => context.go('/history')),
         actions: [
           IconButton(
+            icon: const Icon(Icons.bookmark_add_outlined),
+            tooltip: s.saveAsTemplate,
+            onPressed: () => _saveAsTemplate(context, ref, s),
+          ),
+          IconButton(
             icon: const Icon(Icons.play_arrow),
             tooltip: s.continueWorkout,
             onPressed: () => _continueWorkout(context, ref, s),
@@ -120,6 +126,58 @@ class WorkoutDetailScreen extends ConsumerWidget {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(s.continueWorkoutBlocked)),
+      );
+    }
+  }
+
+  Future<void> _saveAsTemplate(
+    BuildContext context,
+    WidgetRef ref,
+    S s,
+  ) async {
+    final data = ref.read(_workoutDetailProvider(workoutId)).asData?.value;
+    final defaultName = data?.workout.startedAt.toLocal().relativeLabel ?? '';
+    final controller = TextEditingController(text: defaultName);
+
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(s.saveAsTemplateTitle),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(hintText: s.saveAsTemplateHint),
+            onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(s.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+              child: Text(s.save),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (name == null || name.trim().isEmpty || !context.mounted) return;
+
+    try {
+      await ref
+          .read(convertWorkoutToTemplateUseCaseProvider)
+          .execute(workoutId: workoutId, name: name);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.saveAsTemplateSuccess(name.trim()))),
+      );
+    } on ConvertWorkoutToTemplateException {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.saveAsTemplateEmpty)),
       );
     }
   }

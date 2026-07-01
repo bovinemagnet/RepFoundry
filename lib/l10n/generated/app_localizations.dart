@@ -1266,6 +1266,36 @@ abstract class S {
   /// **'Finish your current workout before continuing this one.'**
   String get continueWorkoutBlocked;
 
+  /// No description provided for @saveAsTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as Template'**
+  String get saveAsTemplate;
+
+  /// No description provided for @saveAsTemplateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as Template'**
+  String get saveAsTemplateTitle;
+
+  /// No description provided for @saveAsTemplateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Template name'**
+  String get saveAsTemplateHint;
+
+  /// No description provided for @saveAsTemplateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved \"{name}\" as a template'**
+  String saveAsTemplateSuccess(String name);
+
+  /// No description provided for @saveAsTemplateEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Add some sets before saving as a template.'**
+  String get saveAsTemplateEmpty;
+
   /// No description provided for @tableHeaderHash.
   ///
   /// In en, this message translates to:
