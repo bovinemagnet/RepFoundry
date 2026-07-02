@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Adaptive launcher icon background. Matches the black field of the
+         RepFoundry icon artwork so the launcher no longer shows a white
+         squircle behind the icon. -->
+    <color name="ic_launcher_background">#000000</color>
+</resources>
