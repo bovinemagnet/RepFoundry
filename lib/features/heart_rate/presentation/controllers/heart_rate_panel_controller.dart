@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/providers.dart';
@@ -10,6 +11,18 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
   Timer? _timer;
   StreamSubscription<int>? _hrSub;
   StreamSubscription<HrConnectionState>? _hrConnectionSub;
+  // Elapsed time is derived from the wall clock rather than counted ticks,
+  // so time spent suspended by the OS is still accounted for after resume.
+  DateTime? _monitoringSince;
+  Duration _accumulated = Duration.zero;
+
+  int get _wallClockElapsedSeconds {
+    final monitoringSince = _monitoringSince;
+    final live = monitoringSince == null
+        ? Duration.zero
+        : clock.now().difference(monitoringSince);
+    return (_accumulated + live).inSeconds;
+  }
 
   HeartRateService get _heartRateService => ref.read(heartRateServiceProvider);
 
@@ -59,19 +72,32 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
     }
 
     state = state.copyWith(isMonitoring: true);
+    _monitoringSince = clock.now();
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
+      state = state.copyWith(elapsedSeconds: _wallClockElapsedSeconds);
     });
   }
 
   void stopMonitoring() {
     _timer?.cancel();
     _timer = null;
-    state = state.copyWith(isMonitoring: false);
+    final monitoringSince = _monitoringSince;
+    if (monitoringSince != null) {
+      _accumulated += clock.now().difference(monitoringSince);
+      _monitoringSince = null;
+    }
+    state = state.copyWith(
+      isMonitoring: false,
+      elapsedSeconds: _wallClockElapsedSeconds,
+    );
   }
 
   void resetReadings() {
+    _accumulated = Duration.zero;
+    // Restart the anchor if monitoring is still active so elapsed
+    // continues counting from zero, matching the previous behaviour.
+    _monitoringSince = _timer == null ? null : clock.now();
     state = state.copyWith(
       readings: const [],
       elapsedSeconds: 0,
@@ -80,6 +106,8 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
 
   Future<void> disconnectHeartRate() async {
     stopMonitoring();
+    _monitoringSince = null;
+    _accumulated = Duration.zero;
     _hrSub?.cancel();
     _hrSub = null;
     _hrConnectionSub?.cancel();
