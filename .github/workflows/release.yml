@@ -1,5 +1,15 @@
 name: Android APK Release
 
+# Versioning scheme: semver MAJOR.MINOR.PATCH, tags always v<semver>
+# (optionally with a -SNAPSHOT suffix for pre-releases, see the
+# "Determine release type" step below).
+#
+# The git tag is the source of truth for a released build's version — this
+# workflow injects it into the APK via --build-name/--build-number, so it
+# always overrides whatever `version:` currently sits in pubspec.yaml.
+# pubspec.yaml's version is kept roughly in step (bumped by hand ahead of
+# each release) purely so local/dev builds report a sensible number; it is
+# never read here.
 on:
   push:
     tags:
