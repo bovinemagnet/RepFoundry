@@ -1,9 +1,13 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart';
+import 'package:rep_foundry/features/workout/data/drift_workout_repository.dart';
+import 'package:rep_foundry/features/workout/domain/models/workout.dart'
+    as domain;
 import 'package:rep_foundry/features/sync/application/sync_orchestrator.dart';
 import 'package:rep_foundry/features/sync/data/sync_snapshot_serialiser.dart';
 import 'package:rep_foundry/features/sync/domain/models/sync_snapshot.dart';
@@ -28,6 +32,10 @@ class FakeCloudSyncService implements CloudSyncService {
   /// Completer to delay downloadSnapshot until we release it.
   Completer<String?>? downloadCompleter;
 
+  /// Runs during uploadSnapshot — lets a test simulate a user edit landing
+  /// while the sync is in flight (between snapshot and apply).
+  Future<void> Function()? onUpload;
+
   @override
   Future<bool> isAvailable() async => available;
 
@@ -41,6 +49,7 @@ class FakeCloudSyncService implements CloudSyncService {
     if (throwOnUpload) {
       throw Exception(uploadError);
     }
+    await onUpload?.call();
     storedJson = jsonData;
   }
 
@@ -257,6 +266,39 @@ void main() {
 
       expect(result.success, isFalse);
       expect(result.errorMessage, contains('newer version'));
+    });
+
+    test('an edit made while the sync is in flight is preserved', () async {
+      // Real serialiser + real DB: the snapshot is taken at the start of the
+      // sync, then the user edits a row while the upload is in progress. The
+      // apply step must not revert that fresh edit to the snapshotted value.
+      final workoutRepo = DriftWorkoutRepository(db);
+      final workout = domain.Workout.create(notes: 'original');
+      await workoutRepo.createWorkout(workout);
+
+      final midSyncEditTime = workout.updatedAt.add(const Duration(minutes: 1));
+      cloudService.onUpload = () async {
+        await (db.update(db.workouts)..where((t) => t.id.equals(workout.id)))
+            .write(WorkoutsCompanion(
+          notes: const Value('mid-sync edit'),
+          updatedAt: Value(midSyncEditTime.millisecondsSinceEpoch),
+        ));
+      };
+
+      final realOrchestrator = SyncOrchestrator(
+        database: db,
+        cloudService: cloudService,
+        deviceId: 'test-device',
+        connectivity: connectivity,
+      );
+
+      final result = await realOrchestrator.sync();
+
+      expect(result.success, isTrue);
+      final row = await (db.select(db.workouts)
+            ..where((t) => t.id.equals(workout.id)))
+          .getSingle();
+      expect(row.notes, 'mid-sync edit');
     });
 
     test('deleteCloudData delegates to cloud service', () async {

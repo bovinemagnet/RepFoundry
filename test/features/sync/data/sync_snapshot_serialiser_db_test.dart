@@ -44,6 +44,7 @@ void main() {
     DateTime? deletedAt,
     String? customName,
     String? notes,
+    DateTime? updatedAt,
   }) {
     final start = DateTime.utc(2026, 4, 30, 10, 0);
     return StretchingSession(
@@ -58,7 +59,7 @@ void main() {
       endedAt: start.add(Duration(seconds: durationSeconds)),
       entryMethod: entryMethod,
       notes: notes,
-      updatedAt: start,
+      updatedAt: updatedAt ?? start,
       deletedAt: deletedAt,
     );
   }
@@ -69,6 +70,28 @@ void main() {
       deviceId: 'remote-device',
       schemaVersion: db.AppDatabase.schemaVersionConst,
       stretchingSessions: sessions,
+    );
+  }
+
+  SyncSnapshot snapshotWithWorkouts(List<Workout> workouts) {
+    return SyncSnapshot(
+      snapshotAt: DateTime.utc(2026, 4, 30, 12, 0),
+      deviceId: 'remote-device',
+      schemaVersion: db.AppDatabase.schemaVersionConst,
+      workouts: workouts,
+    );
+  }
+
+  Workout buildWorkout({
+    String id = 'w-guard',
+    String? notes,
+    required DateTime updatedAt,
+  }) {
+    return Workout(
+      id: id,
+      startedAt: DateTime.utc(2026, 4, 30, 9, 0),
+      notes: notes,
+      updatedAt: updatedAt,
     );
   }
 
@@ -129,11 +152,13 @@ void main() {
       );
       await stretchingRepo.createSession(original);
 
-      // Apply a snapshot that carries the same id with new field values.
+      // Apply a snapshot that carries the same id with new field values and
+      // a newer updatedAt (older or equal timestamps must not overwrite).
       final updated = buildSession(
         workoutId: workout.id,
         notes: 'after',
         durationSeconds: 90,
+        updatedAt: DateTime.utc(2026, 4, 30, 10, 5),
       );
       await serialiser.applyToDatabase(database, snapshotWith([updated]));
 
@@ -205,6 +230,63 @@ void main() {
       expect(landed.entryMethod, StretchingEntryMethod.manual);
       expect(landed.bodyArea, StretchingBodyArea.hamstrings);
       expect(landed.notes, 'tight');
+    });
+  });
+
+  group('SyncSnapshotSerialiser.applyToDatabase – updatedAt guard', () {
+    final t1 = DateTime.utc(2026, 4, 30, 10, 0);
+    final t2 = DateTime.utc(2026, 4, 30, 11, 0);
+    final t3 = DateTime.utc(2026, 4, 30, 12, 0);
+
+    Future<String?> workoutNotes(String id) async {
+      final rows = await database.select(database.workouts).get();
+      return rows.singleWhere((r) => r.id == id).notes;
+    }
+
+    test('does not overwrite a local row with a newer updatedAt', () async {
+      // Local row edited at t2 (e.g. by the user while a sync was in
+      // flight); the incoming snapshot still carries the stale t1 value.
+      await serialiser.applyToDatabase(
+        database,
+        snapshotWithWorkouts(
+            [buildWorkout(notes: 'fresh edit', updatedAt: t2)]),
+      );
+
+      await serialiser.applyToDatabase(
+        database,
+        snapshotWithWorkouts([buildWorkout(notes: 'stale', updatedAt: t1)]),
+      );
+
+      expect(await workoutNotes('w-guard'), 'fresh edit');
+    });
+
+    test('a tie on updatedAt keeps the local row', () async {
+      await serialiser.applyToDatabase(
+        database,
+        snapshotWithWorkouts([buildWorkout(notes: 'local', updatedAt: t2)]),
+      );
+
+      await serialiser.applyToDatabase(
+        database,
+        snapshotWithWorkouts(
+            [buildWorkout(notes: 'remote tie', updatedAt: t2)]),
+      );
+
+      expect(await workoutNotes('w-guard'), 'local');
+    });
+
+    test('a strictly newer incoming row still overwrites', () async {
+      await serialiser.applyToDatabase(
+        database,
+        snapshotWithWorkouts([buildWorkout(notes: 'old', updatedAt: t1)]),
+      );
+
+      await serialiser.applyToDatabase(
+        database,
+        snapshotWithWorkouts([buildWorkout(notes: 'newer', updatedAt: t3)]),
+      );
+
+      expect(await workoutNotes('w-guard'), 'newer');
     });
   });
 }

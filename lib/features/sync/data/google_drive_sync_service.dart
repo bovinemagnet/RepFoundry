@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:http/http.dart' as http;
@@ -10,6 +11,16 @@ const _syncFileName = 'repfoundry_sync.json';
 const _driveScopes = [drive.DriveApi.driveAppdataScope];
 
 class GoogleDriveSyncService implements CloudSyncService {
+  GoogleDriveSyncService() : _injectedApi = null;
+
+  /// Bypasses Google sign-in and uses [api] directly, so the Drive file
+  /// handling can be tested without platform channels.
+  @visibleForTesting
+  GoogleDriveSyncService.withApiForTesting(drive.DriveApi api)
+      : _injectedApi = api;
+
+  final drive.DriveApi? _injectedApi;
+
   GoogleSignInAccount? _account;
   bool _initialised = false;
 
@@ -66,6 +77,9 @@ class GoogleDriveSyncService implements CloudSyncService {
     bool interactive,
     Future<T> Function(drive.DriveApi api) action,
   ) async {
+    final injectedApi = _injectedApi;
+    if (injectedApi != null) return action(injectedApi);
+
     final client = _AuthenticatedClient(
       http.Client(),
       () => _authorizationHeaders(interactive: interactive),
@@ -151,11 +165,45 @@ class GoogleDriveSyncService implements CloudSyncService {
     final fileList = await api.files.list(
       spaces: 'appDataFolder',
       q: "name = '$_syncFileName'",
-      $fields: 'files(id)',
+      $fields: 'files(id, createdTime)',
     );
     final files = fileList.files;
     if (files == null || files.isEmpty) return null;
-    return files.first.id;
+    if (files.length == 1) return files.first.id;
+
+    // Two devices racing their first sync can each create the file (Drive
+    // allows duplicate names in appDataFolder), after which each device may
+    // read and write a different copy — a permanent split-brain. Collapse
+    // duplicates to a deterministic winner and delete the rest. Deleting a
+    // duplicate only discards its uploaded merge; the device that wrote it
+    // still holds all of its data locally and re-merges into the winner on
+    // its next sync.
+    final sorted = [...files]..sort(_compareSyncFiles);
+    final winner = sorted.first;
+    for (final loser in sorted.skip(1)) {
+      final loserId = loser.id;
+      if (loserId == null) continue;
+      try {
+        await api.files.delete(loserId);
+      } catch (_) {
+        // Best-effort: a leftover duplicate is collapsed on a later sync,
+        // and reads/writes already target the winner.
+      }
+    }
+    return winner.id;
+  }
+
+  /// Orders duplicate sync files so every device picks the same winner:
+  /// earliest createdTime first, missing createdTime last, ties broken by id.
+  static int _compareSyncFiles(drive.File a, drive.File b) {
+    final aTime = a.createdTime;
+    final bTime = b.createdTime;
+    if (aTime != null && bTime != null && aTime != bTime) {
+      return aTime.compareTo(bTime);
+    }
+    if (aTime != null && bTime == null) return -1;
+    if (aTime == null && bTime != null) return 1;
+    return (a.id ?? '').compareTo(b.id ?? '');
   }
 }
 

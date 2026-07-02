@@ -174,15 +174,22 @@ class SyncSnapshotSerialiser {
     );
   }
 
-  /// Apply a merged snapshot to the database via upsert.
+  /// Apply a merged snapshot to the database via guarded upsert: on
+  /// conflict a row is only overwritten when the incoming `updatedAt` is
+  /// strictly newer than the stored one. The local snapshot is captured at
+  /// the start of the sync, so an edit made while the sync is in flight
+  /// (e.g. during a slow upload) carries a newer `updatedAt` than the
+  /// merged value — the guard keeps that edit instead of reverting it.
+  /// Ties keep the local row, matching the merge engine's ties-favour-local
+  /// rule.
   Future<void> applyToDatabase(
     db.AppDatabase database,
     SyncSnapshot snapshot,
   ) async {
-    // A single batch issues one multi-row statement per table instead of
-    // one round-trip per row, which matters when syncing large histories.
+    // A single batch keeps the apply to one transaction instead of one
+    // round-trip per row, which matters when syncing large histories.
     await database.batch((batch) {
-      batch.insertAllOnConflictUpdate(database.exercises, [
+      _guardedUpsertAll(batch, database.exercises, [
         for (final e in snapshot.exercises)
           db.ExercisesCompanion.insert(
             id: e.id,
@@ -197,7 +204,7 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
-      batch.insertAllOnConflictUpdate(database.workouts, [
+      _guardedUpsertAll(batch, database.workouts, [
         for (final w in snapshot.workouts)
           db.WorkoutsCompanion.insert(
             id: w.id,
@@ -210,7 +217,7 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
-      batch.insertAllOnConflictUpdate(database.workoutSets, [
+      _guardedUpsertAll(batch, database.workoutSets, [
         for (final s in snapshot.workoutSets)
           db.WorkoutSetsCompanion.insert(
             id: s.id,
@@ -228,7 +235,7 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
-      batch.insertAllOnConflictUpdate(database.cardioSessions, [
+      _guardedUpsertAll(batch, database.cardioSessions, [
         for (final c in snapshot.cardioSessions)
           db.CardioSessionsCompanion.insert(
             id: c.id,
@@ -243,7 +250,7 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
-      batch.insertAllOnConflictUpdate(database.personalRecords, [
+      _guardedUpsertAll(batch, database.personalRecords, [
         for (final pr in snapshot.personalRecords)
           db.PersonalRecordsCompanion.insert(
             id: pr.id,
@@ -257,7 +264,7 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
-      batch.insertAllOnConflictUpdate(database.workoutTemplates, [
+      _guardedUpsertAll(batch, database.workoutTemplates, [
         for (final t in snapshot.workoutTemplates)
           db.WorkoutTemplatesCompanion.insert(
             id: t.id,
@@ -268,7 +275,7 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
-      batch.insertAllOnConflictUpdate(database.templateExercises, [
+      _guardedUpsertAll(batch, database.templateExercises, [
         for (final te in snapshot.templateExercises)
           db.TemplateExercisesCompanion.insert(
             id: te.id,
@@ -283,7 +290,7 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
-      batch.insertAllOnConflictUpdate(database.bodyMetrics, [
+      _guardedUpsertAll(batch, database.bodyMetrics, [
         for (final bm in snapshot.bodyMetrics)
           db.BodyMetricsCompanion.insert(
             id: bm.id,
@@ -296,7 +303,7 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
-      batch.insertAllOnConflictUpdate(database.programmes, [
+      _guardedUpsertAll(batch, database.programmes, [
         for (final p in snapshot.programmes)
           db.ProgrammesCompanion.insert(
             id: p.id,
@@ -310,7 +317,7 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
-      batch.insertAllOnConflictUpdate(database.programmeDays, [
+      _guardedUpsertAll(batch, database.programmeDays, [
         for (final d in snapshot.programmeDays)
           db.ProgrammeDaysCompanion.insert(
             id: d.id,
@@ -324,7 +331,7 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
-      batch.insertAllOnConflictUpdate(database.progressionRules, [
+      _guardedUpsertAll(batch, database.progressionRules, [
         for (final r in snapshot.progressionRules)
           db.ProgressionRulesCompanion.insert(
             id: r.id,
@@ -338,7 +345,7 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
-      batch.insertAllOnConflictUpdate(database.stretchingSessions, [
+      _guardedUpsertAll(batch, database.stretchingSessions, [
         for (final s in snapshot.stretchingSessions)
           db.StretchingSessionsCompanion.insert(
             id: s.id,
@@ -360,6 +367,29 @@ class SyncSnapshotSerialiser {
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────
+
+  /// Upsert [rows] into [table], overwriting an existing row only when the
+  /// incoming `updated_at` is strictly newer. Every synced table stores
+  /// `updatedAt` in an `updated_at` column, so the guard is expressed once
+  /// as raw SQL against SQLite's `excluded` upsert alias.
+  void _guardedUpsertAll<T extends Table, D>(
+    Batch batch,
+    TableInfo<T, D> table,
+    List<Insertable<D>> rows,
+  ) {
+    for (final row in rows) {
+      batch.insert(
+        table,
+        row,
+        onConflict: DoUpdate(
+          (_) => row,
+          where: (_) => const CustomExpression<bool>(
+            'excluded.updated_at > updated_at',
+          ),
+        ),
+      );
+    }
+  }
 
   List<T> _mapList<T>(
     dynamic list,
