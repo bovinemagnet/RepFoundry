@@ -17,6 +17,8 @@ import '../../../stretching/presentation/widgets/stretching_section.dart';
 import '../../../templates/domain/models/workout_template.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/units/weight_unit.dart';
+import '../../../../core/units/weight_unit_provider.dart';
 import '../../../../core/widgets/kinetic.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/widgets/sparkline_widget.dart';
@@ -690,6 +692,7 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
         exerciseName: state.latestPRExerciseName ?? 'Exercise',
         value: state.latestPR!.value,
         recordType: state.latestPR!.recordType,
+        unit: ref.read(weightUnitProvider),
         onDismiss: () {
           entry.remove();
           ref.read(activeWorkoutControllerProvider.notifier).clearPR();
@@ -1067,7 +1070,7 @@ class _KineticWorkoutHeader extends StatelessWidget {
           const SizedBox(width: 10),
           // "Workout · time"
           Text(
-            '${s.workoutTitle}  ·  ${startedAt.timeOfDay}',
+            '${s.workoutTitle}  ·  ${startedAt.toLocal().timeOfDay}',
             style: KineticText.display(size: 16, color: cs.onSurface),
           ),
           const Spacer(),
@@ -1105,7 +1108,7 @@ class _KineticWorkoutHeader extends StatelessWidget {
 
 /// Volume hero: mono 72/800 readout + set/exercise meta row.
 /// Mirrors the volume hero block in `screenKinetic()`.
-class _KineticVolumeHero extends StatelessWidget {
+class _KineticVolumeHero extends ConsumerWidget {
   const _KineticVolumeHero({
     required this.volumeKg,
     required this.totalSets,
@@ -1117,11 +1120,14 @@ class _KineticVolumeHero extends StatelessWidget {
   final int exerciseCount;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
-    final volumeStr = volumeKg >= 1000
-        ? '${(volumeKg / 1000).toStringAsFixed(1)}k'
-        : volumeKg.toStringAsFixed(0);
+    final s = S.of(context)!;
+    final unit = ref.watch(weightUnitProvider);
+    final volume = unit.fromKg(volumeKg);
+    final volumeStr = volume >= 1000
+        ? '${(volume / 1000).toStringAsFixed(1)}k'
+        : volume.toStringAsFixed(0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1143,7 +1149,7 @@ class _KineticVolumeHero extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                'kg',
+                unit.label(s),
                 style: KineticText.mono(
                   size: 16,
                   color: cs.onSurfaceVariant,
@@ -1323,7 +1329,7 @@ class _ExerciseSection extends StatelessWidget {
   }
 }
 
-class _ExerciseSectionContent extends StatelessWidget {
+class _ExerciseSectionContent extends ConsumerWidget {
   const _ExerciseSectionContent({
     required this.exercise,
     required this.sets,
@@ -1356,9 +1362,11 @@ class _ExerciseSectionContent extends StatelessWidget {
   final VoidCallback onCollapse;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final hasTableContent = sets.isNotEmpty || ghostSets.isNotEmpty;
     final cs = Theme.of(context).colorScheme;
+    final s = S.of(context)!;
+    final unit = ref.watch(weightUnitProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1384,7 +1392,8 @@ class _ExerciseSectionContent extends StatelessWidget {
                               size: 12, color: cs.onSurfaceVariant),
                           const SizedBox(width: 4),
                           Text(
-                            'Last: ${sets.last.weight}kg × ${sets.last.reps}',
+                            'Last: ${unit.formatFromKg(sets.last.weight)}'
+                            '${unit.label(s)} × ${sets.last.reps}',
                             style: KineticText.mono(
                               size: 11,
                               color: cs.onSurfaceVariant,
@@ -1436,6 +1445,7 @@ class _ExerciseSectionContent extends StatelessWidget {
             onLogSet: onLogSet,
             suggestion: suggestion,
             autofocusWeight: autofocusWeight,
+            unit: unit,
           )
         else
           _AddSetButton(onTap: onExpand),
@@ -1633,7 +1643,7 @@ class _SupersetGroup extends StatelessWidget {
 }
 
 /// Logged set chip — Kinetic style (surfaceContainerLow card, mono text).
-class _SetCard extends StatelessWidget {
+class _SetCard extends ConsumerWidget {
   const _SetCard({
     required this.index,
     required this.set,
@@ -1647,12 +1657,14 @@ class _SetCard extends StatelessWidget {
   final void Function(WorkoutSet updatedSet) onEdit;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
+    final s = S.of(context)!;
+    final unit = ref.watch(weightUnitProvider);
 
     return GestureDetector(
       onTap: () async {
-        final updated = await showEditSetDialog(context, set);
+        final updated = await showEditSetDialog(context, set, unit: unit);
         if (updated != null) onEdit(updated);
       },
       onLongPress: onDelete,
@@ -1675,7 +1687,7 @@ class _SetCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              '${set.weight}kg',
+              '${unit.formatFromKg(set.weight)}${unit.label(s)}',
               style: KineticText.mono(
                 size: 14,
                 weight: FontWeight.w700,
@@ -1698,7 +1710,7 @@ class _SetCard extends StatelessWidget {
 }
 
 /// Ghost (previous-session) set chip — dimmed, mono, italic.
-class _GhostSetCard extends StatelessWidget {
+class _GhostSetCard extends ConsumerWidget {
   const _GhostSetCard({
     required this.index,
     required this.ghost,
@@ -1708,8 +1720,10 @@ class _GhostSetCard extends StatelessWidget {
   final GhostSet ghost;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
+    final s = S.of(context)!;
+    final unit = ref.watch(weightUnitProvider);
 
     return Opacity(
       opacity: 0.4,
@@ -1732,7 +1746,7 @@ class _GhostSetCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              '${ghost.weight}kg',
+              '${unit.formatFromKg(ghost.weight)}${unit.label(s)}',
               style: KineticText.mono(
                 size: 14,
                 weight: FontWeight.w700,

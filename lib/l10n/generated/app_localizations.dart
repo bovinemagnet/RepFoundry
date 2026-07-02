@@ -1320,11 +1320,17 @@ abstract class S {
   /// **'e1RM'**
   String get tableHeaderE1rm;
 
-  /// No description provided for @weightKgLabel.
+  /// No description provided for @weightFieldLabel.
   ///
   /// In en, this message translates to:
-  /// **'Weight (kg)'**
-  String get weightKgLabel;
+  /// **'Weight ({unit})'**
+  String weightFieldLabel(String unit);
+
+  /// No description provided for @percentSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'%'**
+  String get percentSuffix;
 
   /// No description provided for @repsLabel.
   ///
@@ -1385,6 +1391,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'≥ 0'**
   String get validationMinZero;
+
+  /// No description provided for @validationMinOne.
+  ///
+  /// In en, this message translates to:
+  /// **'≥ 1'**
+  String get validationMinOne;
 
   /// No description provided for @validationRpeRange.
   ///
@@ -2019,8 +2031,8 @@ abstract class S {
   /// No description provided for @prValueWeight.
   ///
   /// In en, this message translates to:
-  /// **'{value} kg'**
-  String prValueWeight(String value);
+  /// **'{value} {unit}'**
+  String prValueWeight(String value, String unit);
 
   /// No description provided for @prValueReps.
   ///
@@ -2031,14 +2043,14 @@ abstract class S {
   /// No description provided for @prValueVolume.
   ///
   /// In en, this message translates to:
-  /// **'{value} kg volume'**
-  String prValueVolume(String value);
+  /// **'{value} {unit} volume'**
+  String prValueVolume(String value, String unit);
 
   /// No description provided for @prValueE1rm.
   ///
   /// In en, this message translates to:
-  /// **'{value} kg e1RM'**
-  String prValueE1rm(String value);
+  /// **'{value} {unit} e1RM'**
+  String prValueE1rm(String value, String unit);
 
   /// No description provided for @historyTab.
   ///
@@ -2764,7 +2776,7 @@ abstract class S {
   ///
   /// In en, this message translates to:
   /// **'Target: {weight} kg'**
-  String targetWeight(String weight);
+  String targetWeight(String weight, Object unit);
 
   /// No description provided for @programmeSaved.
   ///
@@ -2913,8 +2925,8 @@ abstract class S {
   /// No description provided for @importWeightPrompt.
   ///
   /// In en, this message translates to:
-  /// **'Import {weight} kg from Health?'**
-  String importWeightPrompt(String weight);
+  /// **'Import {weight} {unit} from Health?'**
+  String importWeightPrompt(String weight, String unit);
 
   /// No description provided for @importWeightAction.
   ///
@@ -3069,8 +3081,8 @@ abstract class S {
   /// No description provided for @totalVolumeKg.
   ///
   /// In en, this message translates to:
-  /// **'{value} kg'**
-  String totalVolumeKg(String value);
+  /// **'{value} {unit}'**
+  String totalVolumeKg(String value, String unit);
 
   /// No description provided for @workoutFallbackName.
   ///

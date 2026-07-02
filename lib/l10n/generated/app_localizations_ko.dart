@@ -657,7 +657,12 @@ class SKo extends S {
   String get tableHeaderE1rm => 'e1RM';
 
   @override
-  String get weightKgLabel => '무게 (kg)';
+  String weightFieldLabel(String unit) {
+    return '무게 ($unit)';
+  }
+
+  @override
+  String get percentSuffix => '%';
 
   @override
   String get repsLabel => '횟수';
@@ -688,6 +693,9 @@ class SKo extends S {
 
   @override
   String get validationMinZero => '≥ 0';
+
+  @override
+  String get validationMinOne => '≥ 1';
 
   @override
   String get validationRpeRange => '1–10';
@@ -1032,8 +1040,8 @@ class SKo extends S {
   }
 
   @override
-  String prValueWeight(String value) {
-    return '$value kg';
+  String prValueWeight(String value, String unit) {
+    return '$value $unit';
   }
 
   @override
@@ -1042,13 +1050,13 @@ class SKo extends S {
   }
 
   @override
-  String prValueVolume(String value) {
-    return '$value kg 볼륨';
+  String prValueVolume(String value, String unit) {
+    return '$value $unit 볼륨';
   }
 
   @override
-  String prValueE1rm(String value) {
-    return '$value kg e1RM';
+  String prValueE1rm(String value, String unit) {
+    return '$value $unit e1RM';
   }
 
   @override
@@ -1461,8 +1469,8 @@ class SKo extends S {
   String get startFromProgramme => '프로그램에서 시작';
 
   @override
-  String targetWeight(String weight) {
-    return '목표: $weight kg';
+  String targetWeight(String weight, Object unit) {
+    return '목표: $weight $unit';
   }
 
   @override
@@ -1562,8 +1570,8 @@ class SKo extends S {
   String get healthSyncSuccess => '건강에 동기화되었습니다';
 
   @override
-  String importWeightPrompt(String weight) {
-    return '건강에서 $weight kg을 가져오시겠습니까?';
+  String importWeightPrompt(String weight, String unit) {
+    return '건강에서 $weight $unit을 가져오시겠습니까?';
   }
 
   @override
@@ -1648,8 +1656,8 @@ class SKo extends S {
   String get volumeProgress => '볼륨 진행';
 
   @override
-  String totalVolumeKg(String value) {
-    return '$value kg';
+  String totalVolumeKg(String value, String unit) {
+    return '$value $unit';
   }
 
   @override

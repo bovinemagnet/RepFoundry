@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/core/units/weight_unit.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
 import 'package:rep_foundry/features/workout/presentation/widgets/edit_set_dialog.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
@@ -26,6 +27,7 @@ void main() {
   Widget buildHost(
     WorkoutSet existing, {
     void Function(WorkoutSet?)? onResult,
+    WeightUnit unit = WeightUnit.kg,
   }) {
     return MaterialApp(
       localizationsDelegates: S.localizationsDelegates,
@@ -34,7 +36,8 @@ void main() {
         body: Builder(
           builder: (context) => ElevatedButton(
             onPressed: () async {
-              final result = await showEditSetDialog(context, existing);
+              final result =
+                  await showEditSetDialog(context, existing, unit: unit);
               if (onResult != null) onResult(result);
             },
             child: const Text('Open'),
@@ -129,6 +132,50 @@ void main() {
       expect(resolved, isFalse);
       expect(result, isNull);
       expect(find.byType(AlertDialog), findsOneWidget);
+    });
+
+    testWidgets('lbs unit: unchanged weight is not drifted by conversion',
+        (tester) async {
+      WorkoutSet? result;
+      await tester.pumpWidget(buildHost(
+        sampleSet(weight: 100),
+        unit: WeightUnit.lbs,
+        onResult: (r) => result = r,
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      // Prefilled in lbs.
+      final weightField =
+          tester.widget<TextFormField>(find.byType(TextFormField).at(0));
+      expect(weightField.controller?.text, '220.5');
+
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(result, isNotNull);
+      expect(result!.weight, 100.0);
+    });
+
+    testWidgets('lbs unit: edited weight is parsed as lbs and stored as kg',
+        (tester) async {
+      WorkoutSet? result;
+      await tester.pumpWidget(buildHost(
+        sampleSet(weight: 100),
+        unit: WeightUnit.lbs,
+        onResult: (r) => result = r,
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextFormField).at(0), '225');
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(result, isNotNull);
+      expect(result!.weight, closeTo(102.06, 0.05));
     });
 
     testWidgets('reps validation rejects empty input', (tester) async {

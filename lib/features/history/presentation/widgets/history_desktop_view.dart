@@ -6,6 +6,8 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/units/weight_unit.dart';
+import '../../../../core/units/weight_unit_provider.dart';
 import '../../../../core/widgets/bar_sparkline_widget.dart';
 import '../../../../core/widgets/desktop_top_bar.dart';
 import '../../../../core/widgets/kinetic.dart';
@@ -133,7 +135,7 @@ class _SessionList extends StatelessWidget {
   }
 }
 
-class _SessionRow extends StatelessWidget {
+class _SessionRow extends ConsumerWidget {
   const _SessionRow({
     required this.item,
     required this.selected,
@@ -145,14 +147,16 @@ class _SessionRow extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
     final cs = Theme.of(context).colorScheme;
+    final unit = ref.watch(weightUnitProvider);
 
     final duration = item.durationMinutes;
+    final volume = _formatKg(unit.fromKg(item.totalVolume));
     final meta = duration != null
-        ? '${duration}m · ${_formatKg(item.totalVolume)} kg'
-        : '${_formatKg(item.totalVolume)} kg';
+        ? '${duration}m · $volume ${unit.label(s)}'
+        : '$volume ${unit.label(s)}';
 
     return Material(
       color: selected
@@ -260,8 +264,9 @@ class _DetailPane extends ConsumerWidget {
           tiles: [
             KineticStatTile(
               label: s.desktopVolumeLabel,
-              value: _formatKg(item.totalVolume),
-              unit: 'kg',
+              value: _formatKg(
+                  ref.watch(weightUnitProvider).fromKg(item.totalVolume)),
+              unit: ref.watch(weightUnitProvider).label(s),
               valueSize: 26,
             ),
             KineticStatTile(
@@ -325,15 +330,16 @@ class _DetailPane extends ConsumerWidget {
   }
 }
 
-class _ExerciseBreakdownCard extends StatelessWidget {
+class _ExerciseBreakdownCard extends ConsumerWidget {
   const _ExerciseBreakdownCard({required this.name, required this.sets});
 
   final String name;
   final List<WorkoutSet> sets;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
+    final unit = ref.watch(weightUnitProvider);
     final bestE1rm = sets.fold<double>(
       0,
       (best, set) =>
@@ -363,7 +369,7 @@ class _ExerciseBreakdownCard extends StatelessWidget {
                 ),
               ),
               KineticPill(
-                'e1RM ${bestE1rm.toStringAsFixed(0)}',
+                'e1RM ${unit.fromKg(bestE1rm).toStringAsFixed(0)}',
                 variant: KineticPillVariant.volt,
               ),
             ],
@@ -383,18 +389,20 @@ class _ExerciseBreakdownCard extends StatelessWidget {
   }
 }
 
-class _SetChip extends StatelessWidget {
+class _SetChip extends ConsumerWidget {
   const _SetChip({required this.index, required this.set});
 
   final int index;
   final WorkoutSet set;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
     final cs = Theme.of(context).colorScheme;
+    final unit = ref.watch(weightUnitProvider);
     final warm = set.isWarmUp;
     final reps = set.reps;
-    final weight = set.weight;
+    final weight = unit.fromKg(set.weight);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
@@ -403,7 +411,7 @@ class _SetChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        '${warm ? 'W' : index} · ${_trimWeight(weight)}kg · ×$reps'
+        '${warm ? 'W' : index} · ${_trimWeight(weight)}${unit.label(s)} · ×$reps'
         '${set.rpe != null ? ' · @${set.rpe!.toStringAsFixed(0)}' : ''}',
         style: KineticText.mono(
           size: 12,

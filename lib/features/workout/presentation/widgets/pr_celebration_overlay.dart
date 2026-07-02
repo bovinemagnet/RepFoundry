@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:rep_foundry/core/units/weight_unit.dart';
+import 'package:rep_foundry/core/units/weight_unit_provider.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../history/domain/models/personal_record.dart';
 
@@ -12,12 +14,14 @@ class PRCelebrationOverlay extends StatefulWidget {
     required this.value,
     required this.recordType,
     required this.onDismiss,
+    this.unit = WeightUnit.kg,
   });
 
   final String exerciseName;
   final double value;
   final RecordType recordType;
   final VoidCallback onDismiss;
+  final WeightUnit unit;
 
   @override
   State<PRCelebrationOverlay> createState() => _PRCelebrationOverlayState();
@@ -86,16 +90,17 @@ class _PRCelebrationOverlayState extends State<PRCelebrationOverlay>
   }
 
   String _formattedValue(S s, RecordType type, double value) {
-    final formatted = value.toStringAsFixed(1);
+    final unit = widget.unit;
+    final formatted = unit.fromKg(value).toStringAsFixed(1);
     switch (type) {
       case RecordType.maxWeight:
-        return s.prValueWeight(formatted);
+        return s.prValueWeight(formatted, unit.label(s));
       case RecordType.maxReps:
         return s.prValueReps(value.round().toString());
       case RecordType.maxVolume:
-        return s.prValueVolume(formatted);
+        return s.prValueVolume(formatted, unit.label(s));
       case RecordType.estimatedOneRepMax:
-        return s.prValueE1rm(formatted);
+        return s.prValueE1rm(formatted, unit.label(s));
     }
   }
 

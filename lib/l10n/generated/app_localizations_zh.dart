@@ -656,7 +656,12 @@ class SZh extends S {
   String get tableHeaderE1rm => '估算1RM';
 
   @override
-  String get weightKgLabel => '重量（kg）';
+  String weightFieldLabel(String unit) {
+    return '重量（$unit）';
+  }
+
+  @override
+  String get percentSuffix => '%';
 
   @override
   String get repsLabel => '次数';
@@ -687,6 +692,9 @@ class SZh extends S {
 
   @override
   String get validationMinZero => '≥ 0';
+
+  @override
+  String get validationMinOne => '≥ 1';
 
   @override
   String get validationRpeRange => '1–10';
@@ -1029,8 +1037,8 @@ class SZh extends S {
   }
 
   @override
-  String prValueWeight(String value) {
-    return '$value kg';
+  String prValueWeight(String value, String unit) {
+    return '$value $unit';
   }
 
   @override
@@ -1039,13 +1047,13 @@ class SZh extends S {
   }
 
   @override
-  String prValueVolume(String value) {
-    return '$value kg 容量';
+  String prValueVolume(String value, String unit) {
+    return '$value $unit 容量';
   }
 
   @override
-  String prValueE1rm(String value) {
-    return '$value kg e1RM';
+  String prValueE1rm(String value, String unit) {
+    return '$value $unit e1RM';
   }
 
   @override
@@ -1456,8 +1464,8 @@ class SZh extends S {
   String get startFromProgramme => '从计划开始';
 
   @override
-  String targetWeight(String weight) {
-    return '目标：$weight kg';
+  String targetWeight(String weight, Object unit) {
+    return '目标：$weight $unit';
   }
 
   @override
@@ -1557,8 +1565,8 @@ class SZh extends S {
   String get healthSyncSuccess => '已同步到健康';
 
   @override
-  String importWeightPrompt(String weight) {
-    return '从健康导入 $weight kg？';
+  String importWeightPrompt(String weight, String unit) {
+    return '从健康导入 $weight $unit？';
   }
 
   @override
@@ -1642,8 +1650,8 @@ class SZh extends S {
   String get volumeProgress => '训练量进展';
 
   @override
-  String totalVolumeKg(String value) {
-    return '$value kg';
+  String totalVolumeKg(String value, String unit) {
+    return '$value $unit';
   }
 
   @override
@@ -2489,7 +2497,12 @@ class SZhHans extends SZh {
   String get tableHeaderE1rm => '估算1RM';
 
   @override
-  String get weightKgLabel => '重量（kg）';
+  String weightFieldLabel(String unit) {
+    return '重量（$unit）';
+  }
+
+  @override
+  String get percentSuffix => '%';
 
   @override
   String get repsLabel => '次数';
@@ -2514,6 +2527,9 @@ class SZhHans extends SZh {
 
   @override
   String get validationMinZero => '≥ 0';
+
+  @override
+  String get validationMinOne => '≥ 1';
 
   @override
   String get validationRpeRange => '1–10';
@@ -2856,8 +2872,8 @@ class SZhHans extends SZh {
   }
 
   @override
-  String prValueWeight(String value) {
-    return '$value kg';
+  String prValueWeight(String value, String unit) {
+    return '$value $unit';
   }
 
   @override
@@ -2866,13 +2882,13 @@ class SZhHans extends SZh {
   }
 
   @override
-  String prValueVolume(String value) {
-    return '$value kg 容量';
+  String prValueVolume(String value, String unit) {
+    return '$value $unit 容量';
   }
 
   @override
-  String prValueE1rm(String value) {
-    return '$value kg e1RM';
+  String prValueE1rm(String value, String unit) {
+    return '$value $unit e1RM';
   }
 
   @override
@@ -3283,8 +3299,8 @@ class SZhHans extends SZh {
   String get startFromProgramme => '从计划开始';
 
   @override
-  String targetWeight(String weight) {
-    return '目标：$weight kg';
+  String targetWeight(String weight, Object unit) {
+    return '目标：$weight $unit';
   }
 
   @override
@@ -3384,8 +3400,8 @@ class SZhHans extends SZh {
   String get healthSyncSuccess => '已同步到健康';
 
   @override
-  String importWeightPrompt(String weight) {
-    return '从健康导入 $weight kg？';
+  String importWeightPrompt(String weight, String unit) {
+    return '从健康导入 $weight $unit？';
   }
 
   @override
@@ -3469,8 +3485,8 @@ class SZhHans extends SZh {
   String get volumeProgress => '训练量进展';
 
   @override
-  String totalVolumeKg(String value) {
-    return '$value kg';
+  String totalVolumeKg(String value, String unit) {
+    return '$value $unit';
   }
 
   @override

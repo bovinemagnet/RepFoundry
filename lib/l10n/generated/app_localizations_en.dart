@@ -677,7 +677,12 @@ class SEn extends S {
   String get tableHeaderE1rm => 'e1RM';
 
   @override
-  String get weightKgLabel => 'Weight (kg)';
+  String weightFieldLabel(String unit) {
+    return 'Weight ($unit)';
+  }
+
+  @override
+  String get percentSuffix => '%';
 
   @override
   String get repsLabel => 'Reps';
@@ -708,6 +713,9 @@ class SEn extends S {
 
   @override
   String get validationMinZero => '≥ 0';
+
+  @override
+  String get validationMinOne => '≥ 1';
 
   @override
   String get validationRpeRange => '1–10';
@@ -1060,8 +1068,8 @@ class SEn extends S {
   }
 
   @override
-  String prValueWeight(String value) {
-    return '$value kg';
+  String prValueWeight(String value, String unit) {
+    return '$value $unit';
   }
 
   @override
@@ -1070,13 +1078,13 @@ class SEn extends S {
   }
 
   @override
-  String prValueVolume(String value) {
-    return '$value kg volume';
+  String prValueVolume(String value, String unit) {
+    return '$value $unit volume';
   }
 
   @override
-  String prValueE1rm(String value) {
-    return '$value kg e1RM';
+  String prValueE1rm(String value, String unit) {
+    return '$value $unit e1RM';
   }
 
   @override
@@ -1499,7 +1507,7 @@ class SEn extends S {
   String get startFromProgramme => 'Start from Programme';
 
   @override
-  String targetWeight(String weight) {
+  String targetWeight(String weight, Object unit) {
     return 'Target: $weight kg';
   }
 
@@ -1604,8 +1612,8 @@ class SEn extends S {
   String get healthSyncSuccess => 'Synced to Health';
 
   @override
-  String importWeightPrompt(String weight) {
-    return 'Import $weight kg from Health?';
+  String importWeightPrompt(String weight, String unit) {
+    return 'Import $weight $unit from Health?';
   }
 
   @override
@@ -1691,8 +1699,8 @@ class SEn extends S {
   String get volumeProgress => 'Volume Progress';
 
   @override
-  String totalVolumeKg(String value) {
-    return '$value kg';
+  String totalVolumeKg(String value, String unit) {
+    return '$value $unit';
   }
 
   @override

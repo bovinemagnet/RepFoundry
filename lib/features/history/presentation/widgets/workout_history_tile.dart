@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../domain/models/personal_record.dart';
 import '../../../workout/domain/models/workout.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
+import '../../../../core/units/weight_unit.dart';
+import '../../../../core/units/weight_unit_provider.dart';
 import '../../../../core/widgets/bar_sparkline_widget.dart';
 
-class WorkoutHistoryTile extends StatelessWidget {
+class WorkoutHistoryTile extends ConsumerWidget {
   const WorkoutHistoryTile({
     super.key,
     required this.workout,
@@ -26,10 +29,11 @@ class WorkoutHistoryTile extends StatelessWidget {
   final List<double>? sparklineData;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final unit = ref.watch(weightUnitProvider);
     final duration = workout.completedAt != null
         ? workout.startedAt.durationUntil(workout.completedAt!)
         : null;
@@ -91,7 +95,9 @@ class WorkoutHistoryTile extends StatelessWidget {
                         _MetricChip(
                           icon: Icons.fitness_center,
                           label: totalVolume != null
-                              ? s.totalVolumeKg(totalVolume!.toStringAsFixed(0))
+                              ? s.totalVolumeKg(
+                                  unit.fromKg(totalVolume!).toStringAsFixed(0),
+                                  unit.label(s))
                               : s.setsCount(setCount),
                         ),
                         if (personalRecord != null) ...[

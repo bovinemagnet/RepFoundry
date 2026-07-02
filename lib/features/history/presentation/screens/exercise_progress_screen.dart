@@ -4,6 +4,8 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../history/application/calculate_progress_use_case.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/units/weight_unit.dart';
+import '../../../../core/units/weight_unit_provider.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/widgets/progress_chart_widget.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
@@ -53,7 +55,7 @@ class ExerciseProgressScreen extends ConsumerWidget {
   }
 }
 
-class _ProgressBody extends StatelessWidget {
+class _ProgressBody extends ConsumerWidget {
   const _ProgressBody({
     required this.progress,
     this.exerciseName,
@@ -63,8 +65,9 @@ class _ProgressBody extends StatelessWidget {
   final String? exerciseName;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
+    final unit = ref.watch(weightUnitProvider);
     if (progress.sets.isEmpty) {
       return Center(
         child: Column(
@@ -97,7 +100,7 @@ class _ProgressBody extends StatelessWidget {
               child: _StatCard(
                 label: s.bestE1rm,
                 value:
-                    '${progress.maxEstimated1RM?.toStringAsFixed(1) ?? '—'} kg',
+                    '${progress.maxEstimated1RM != null ? unit.fromKg(progress.maxEstimated1RM!).toStringAsFixed(1) : '—'} ${unit.label(s)}',
                 icon: Icons.emoji_events,
               ),
             ),
@@ -105,7 +108,8 @@ class _ProgressBody extends StatelessWidget {
             Expanded(
               child: _StatCard(
                 label: s.totalVolume,
-                value: '${progress.totalVolume?.toStringAsFixed(0) ?? '—'} kg',
+                value:
+                    '${progress.totalVolume != null ? unit.fromKg(progress.totalVolume!).toStringAsFixed(0) : '—'} ${unit.label(s)}',
                 icon: Icons.bar_chart,
               ),
             ),
@@ -126,7 +130,7 @@ class _ProgressBody extends StatelessWidget {
               .map(
                 (s) => ProgressDataPoint(
                   date: s.timestamp,
-                  value: s.estimatedOneRepMax,
+                  value: unit.fromKg(s.estimatedOneRepMax),
                 ),
               )
               .toList(),
@@ -194,7 +198,7 @@ class _ProgressBody extends StatelessWidget {
                       ),
                       Expanded(
                         child: Text(
-                          '${set.weight} kg',
+                          '${unit.formatFromKg(set.weight)} ${unit.label(s)}',
                           style: Theme.of(context).textTheme.bodySmall,
                           textAlign: TextAlign.center,
                         ),
@@ -208,7 +212,9 @@ class _ProgressBody extends StatelessWidget {
                       ),
                       Expanded(
                         child: Text(
-                          set.estimatedOneRepMax.toStringAsFixed(1),
+                          unit
+                              .fromKg(set.estimatedOneRepMax)
+                              .toStringAsFixed(1),
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall

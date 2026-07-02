@@ -13,11 +13,14 @@ import '../../../heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_bands_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../../heart_rate/presentation/widgets/health_profile_onboarding.dart';
+import '../../../../core/database/database_provider.dart';
 import '../../../../core/providers.dart'
     show
         healthSyncServiceProvider,
         importDataUseCaseProvider,
         syncOrchestratorProvider;
+import '../../../../core/units/weight_unit.dart';
+import '../../../../core/units/weight_unit_provider.dart';
 import '../../../sync/domain/models/sync_state.dart';
 import '../../../sync/presentation/providers/sync_settings_provider.dart';
 import '../../../sync/presentation/widgets/sync_consent_dialog.dart';
@@ -33,29 +36,6 @@ import '../../../notifications/presentation/providers/reminder_settings_provider
 import '../../../notifications/domain/models/reminder_settings.dart';
 import '../../../../core/widgets/kinetic.dart';
 
-final _weightUnitProvider = NotifierProvider<_WeightUnitNotifier, String>(
-  _WeightUnitNotifier.new,
-);
-
-class _WeightUnitNotifier extends Notifier<String> {
-  @override
-  String build() {
-    _load();
-    return 'kg';
-  }
-
-  Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getString('weight_unit') ?? 'kg';
-  }
-
-  Future<void> set(String unit) async {
-    state = unit;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('weight_unit', unit);
-  }
-}
-
 // ─── Public screen ────────────────────────────────────────────────────────────
 
 class SettingsScreen extends ConsumerWidget {
@@ -65,7 +45,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final layoutMode = ref.watch(layoutModeProvider);
-    final weightUnit = ref.watch(_weightUnitProvider);
+    final weightUnit = ref.watch(weightUnitProvider);
     final userAge = ref.watch(userAgeProvider);
     final profile = ref.watch(healthProfileProvider);
     final zoneConfig = ref.watch(zoneConfigurationProvider);
@@ -361,14 +341,14 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.scale_outlined,
                 title: s.weightUnitLabel,
                 subtitle: null,
-                trailing: _CompactSegmented<String>(
+                trailing: _CompactSegmented<WeightUnit>(
                   selected: weightUnit,
                   options: [
-                    _SegOption(value: 'kg', label: s.kgUnit),
-                    _SegOption(value: 'lbs', label: s.lbsUnit),
+                    _SegOption(value: WeightUnit.kg, label: s.kgUnit),
+                    _SegOption(value: WeightUnit.lbs, label: s.lbsUnit),
                   ],
                   onSelected: (v) =>
-                      ref.read(_weightUnitProvider.notifier).set(v),
+                      ref.read(weightUnitProvider.notifier).set(v),
                 ),
               ),
             ]),
@@ -1261,12 +1241,16 @@ class _DataCard extends ConsumerWidget {
         title: s.clearAllData,
         subtitle: s.clearAllDataSubtitle,
         danger: true,
-        onTap: () => _confirmClearData(context, s),
+        onTap: () => _confirmClearData(context, ref, s),
       ),
     ]);
   }
 
-  Future<void> _confirmClearData(BuildContext context, S s) async {
+  Future<void> _confirmClearData(
+    BuildContext context,
+    WidgetRef ref,
+    S s,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1289,6 +1273,7 @@ class _DataCard extends ConsumerWidget {
     );
 
     if (confirmed == true && context.mounted) {
+      await ref.read(databaseProvider).clearAllData();
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
       if (context.mounted) {

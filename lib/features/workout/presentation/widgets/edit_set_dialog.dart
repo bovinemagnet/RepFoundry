@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:rep_foundry/core/units/weight_unit.dart';
+import 'package:rep_foundry/core/units/weight_unit_provider.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../domain/models/workout_set.dart';
 
 /// Shows a dialog to edit an existing [WorkoutSet].
-/// Returns the updated set, or `null` if cancelled.
+/// Returns the updated set (weight always in kg), or `null` if cancelled.
 Future<WorkoutSet?> showEditSetDialog(
   BuildContext context,
-  WorkoutSet existingSet,
-) {
+  WorkoutSet existingSet, {
+  WeightUnit unit = WeightUnit.kg,
+}) {
   return showDialog<WorkoutSet>(
     context: context,
-    builder: (ctx) => _EditSetDialog(existingSet: existingSet),
+    builder: (ctx) => _EditSetDialog(existingSet: existingSet, unit: unit),
   );
 }
 
 class _EditSetDialog extends StatefulWidget {
-  const _EditSetDialog({required this.existingSet});
+  const _EditSetDialog({required this.existingSet, required this.unit});
 
   final WorkoutSet existingSet;
+  final WeightUnit unit;
 
   @override
   State<_EditSetDialog> createState() => _EditSetDialogState();
@@ -28,12 +32,13 @@ class _EditSetDialogState extends State<_EditSetDialog> {
   late final TextEditingController _weightController;
   late final TextEditingController _repsController;
   late final TextEditingController _rpeController;
+  late final String _initialWeightText;
 
   @override
   void initState() {
     super.initState();
-    _weightController =
-        TextEditingController(text: _formatNum(widget.existingSet.weight));
+    _initialWeightText = widget.unit.formatFromKg(widget.existingSet.weight);
+    _weightController = TextEditingController(text: _initialWeightText);
     _repsController = TextEditingController(text: '${widget.existingSet.reps}');
     _rpeController = TextEditingController(
       text: widget.existingSet.rpe != null
@@ -59,7 +64,12 @@ class _EditSetDialogState extends State<_EditSetDialog> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
-    final weight = double.tryParse(_weightController.text) ?? 0;
+    // Keep the stored kg weight untouched when the field was not edited, so
+    // repeated open/save cycles in lbs cannot drift the value via rounding.
+    final weightText = _weightController.text;
+    final weight = weightText == _initialWeightText
+        ? widget.existingSet.weight
+        : widget.unit.toKg(double.tryParse(weightText) ?? 0);
     final reps = int.tryParse(_repsController.text) ?? 0;
     final rpeText = _rpeController.text.trim();
     final rpe = rpeText.isEmpty ? null : double.tryParse(rpeText);
@@ -68,6 +78,7 @@ class _EditSetDialogState extends State<_EditSetDialog> {
       weight: weight,
       reps: reps,
       rpe: rpe,
+      updatedAt: DateTime.now().toUtc(),
     );
     Navigator.of(context).pop(updated);
   }
@@ -86,7 +97,7 @@ class _EditSetDialogState extends State<_EditSetDialog> {
             TextFormField(
               controller: _weightController,
               decoration: InputDecoration(
-                labelText: s.weightKgLabel,
+                labelText: s.weightFieldLabel(widget.unit.label(s)),
                 border: const OutlineInputBorder(),
               ),
               keyboardType:

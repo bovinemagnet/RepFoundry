@@ -13,6 +13,8 @@ import '../../../workout/domain/models/workout.dart';
 import '../../../workout/domain/models/workout_set.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
+import '../../../../core/units/weight_unit.dart';
+import '../../../../core/units/weight_unit_provider.dart';
 import '../../../../core/widgets/kinetic.dart';
 import '../../../../core/widgets/sparkline_widget.dart';
 import '../../../../core/widgets/bar_sparkline_widget.dart';
@@ -283,6 +285,7 @@ class _WeeklyVolumeCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
     final cs = Theme.of(context).colorScheme;
+    final unit = ref.watch(weightUnitProvider);
     final volumeAsync = ref.watch(volumeSparklineProvider);
 
     return volumeAsync.when(
@@ -336,7 +339,7 @@ class _WeeklyVolumeCard extends ConsumerWidget {
                         textBaseline: TextBaseline.alphabetic,
                         children: [
                           Text(
-                            _formatKg(totalKg),
+                            _formatKg(unit.fromKg(totalKg)),
                             style: KineticText.mono(
                               size: 26,
                               weight: FontWeight.w700,
@@ -346,7 +349,7 @@ class _WeeklyVolumeCard extends ConsumerWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'kg',
+                            unit.label(s),
                             style: GoogleFonts.manrope(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -533,7 +536,7 @@ class _KineticSearchBar extends StatelessWidget {
 /// Bottom section alternates between:
 ///  - BarSparklineWidget + "+N% vs prev" accent mono, or
 ///  - an intensity-meter (segmented bar row) + "HIGH / STABLE" label.
-class _SessionCard extends StatelessWidget {
+class _SessionCard extends ConsumerWidget {
   const _SessionCard({
     required this.item,
     this.onTap,
@@ -543,18 +546,19 @@ class _SessionCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
     final cs = Theme.of(context).colorScheme;
+    final unit = ref.watch(weightUnitProvider);
     final workout = item.workout;
 
     final durationMins = item.durationMinutes;
-    final totalKg = item.totalVolume;
+    final totalVolume = unit.fromKg(item.totalVolume);
 
     // Schedule meta string: "64m · 12,450 kg" (or just volume if no duration).
     final metaString = durationMins != null
-        ? '${durationMins}m · ${_formatKg(totalKg)} kg'
-        : '${_formatKg(totalKg)} kg';
+        ? '${durationMins}m · ${_formatKg(totalVolume)} ${unit.label(s)}'
+        : '${_formatKg(totalVolume)} ${unit.label(s)}';
 
     // Date label for the ghost pill: "Tue · 14 Oct" style.
     final localDate = workout.startedAt.toLocal();

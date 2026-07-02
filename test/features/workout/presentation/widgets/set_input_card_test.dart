@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/core/units/weight_unit.dart';
 import 'package:rep_foundry/features/workout/presentation/models/ghost_set.dart';
 import 'package:rep_foundry/features/workout/presentation/widgets/set_input_card.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
@@ -155,6 +156,47 @@ void main() {
 
       weightField = tester.widget<TextFormField>(fields.at(0));
       expect(weightField.controller?.text, '0');
+    });
+
+    testWidgets(
+        'lbs unit: ghost suggestion shown in lbs, logged weight stored as kg',
+        (tester) async {
+      const suggestion = GhostSet(weight: 100, reps: 5, setOrder: 1);
+      double? loggedWeight;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(
+            body: SetInputCard(
+              unit: WeightUnit.lbs,
+              onLogSet: ({
+                required double weight,
+                required int reps,
+                double? rpe,
+                bool isWarmUp = false,
+              }) {
+                loggedWeight = weight;
+              },
+              suggestion: suggestion,
+            ),
+          ),
+        ),
+      );
+
+      // Ghost prefill converted for display: 100 kg -> 220.5 lbs.
+      final fields = find.byType(TextFormField);
+      expect(
+        tester.widget<TextFormField>(fields.at(0)).controller?.text,
+        '220.5',
+      );
+
+      // Log without editing: parses 220.5 lbs -> ~100.02 kg.
+      await tester.tap(find.text('LOG SET'));
+      await tester.pump();
+      expect(loggedWeight, isNotNull);
+      expect(loggedWeight, closeTo(100.0, 0.05));
     });
   });
 }

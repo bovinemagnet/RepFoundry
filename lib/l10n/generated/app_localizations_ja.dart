@@ -659,7 +659,12 @@ class SJa extends S {
   String get tableHeaderE1rm => 'e1RM';
 
   @override
-  String get weightKgLabel => '重量（kg）';
+  String weightFieldLabel(String unit) {
+    return '重量（$unit）';
+  }
+
+  @override
+  String get percentSuffix => '%';
 
   @override
   String get repsLabel => 'レップ数';
@@ -690,6 +695,9 @@ class SJa extends S {
 
   @override
   String get validationMinZero => '≥ 0';
+
+  @override
+  String get validationMinOne => '≥ 1';
 
   @override
   String get validationRpeRange => '1–10';
@@ -1032,8 +1040,8 @@ class SJa extends S {
   }
 
   @override
-  String prValueWeight(String value) {
-    return '$value kg';
+  String prValueWeight(String value, String unit) {
+    return '$value $unit';
   }
 
   @override
@@ -1042,13 +1050,13 @@ class SJa extends S {
   }
 
   @override
-  String prValueVolume(String value) {
-    return '$value kg ボリューム';
+  String prValueVolume(String value, String unit) {
+    return '$value $unit ボリューム';
   }
 
   @override
-  String prValueE1rm(String value) {
-    return '$value kg e1RM';
+  String prValueE1rm(String value, String unit) {
+    return '$value $unit e1RM';
   }
 
   @override
@@ -1462,8 +1470,8 @@ class SJa extends S {
   String get startFromProgramme => 'プログラムから開始';
 
   @override
-  String targetWeight(String weight) {
-    return '目標：$weight kg';
+  String targetWeight(String weight, Object unit) {
+    return '目標：$weight $unit';
   }
 
   @override
@@ -1563,8 +1571,8 @@ class SJa extends S {
   String get healthSyncSuccess => 'ヘルスに同期しました';
 
   @override
-  String importWeightPrompt(String weight) {
-    return 'ヘルスから $weight kg をインポートしますか？';
+  String importWeightPrompt(String weight, String unit) {
+    return 'ヘルスから $weight $unit をインポートしますか？';
   }
 
   @override
@@ -1649,8 +1657,8 @@ class SJa extends S {
   String get volumeProgress => 'ボリューム進捗';
 
   @override
-  String totalVolumeKg(String value) {
-    return '$value kg';
+  String totalVolumeKg(String value, String unit) {
+    return '$value $unit';
   }
 
   @override

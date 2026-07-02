@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/units/weight_unit.dart';
+import '../../../../core/units/weight_unit_provider.dart';
 import '../../../../core/widgets/progress_chart_widget.dart';
+import '../../../health_sync/data/health_sync_service.dart';
 import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../../../health_sync/presentation/providers/health_weight_import_provider.dart';
 import '../../domain/models/body_metric.dart';
@@ -16,18 +19,23 @@ class BodyMetricsScreen extends ConsumerWidget {
     final s = S.of(context)!;
     final metricsAsync = ref.watch(bodyMetricsStreamProvider);
 
-    ref.listen<AsyncValue<double?>>(healthWeightCheckProvider,
+    ref.listen<AsyncValue<WeightSample?>>(healthWeightCheckProvider,
         (previous, next) {
-      if (previous is AsyncLoading && next is AsyncData<double?>) {
-        final weight = next.value;
-        if (weight != null) {
+      if (previous is AsyncLoading && next is AsyncData<WeightSample?>) {
+        final sample = next.value;
+        if (sample != null) {
+          final unit = ref.read(weightUnitProvider);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(s.importWeightPrompt(weight.toStringAsFixed(1))),
+              content: Text(s.importWeightPrompt(
+                  unit.formatFromKg(sample.weightKg), unit.label(s))),
               action: SnackBarAction(
                 label: s.importWeightAction,
                 onPressed: () async {
-                  final metric = BodyMetric.create(weight: weight);
+                  final metric = BodyMetric.create(
+                    weight: sample.weightKg,
+                    date: sample.date,
+                  );
                   await ref.read(bodyMetricRepositoryProvider).create(metric);
                 },
               ),
@@ -135,14 +143,15 @@ class BodyMetricsScreen extends ConsumerWidget {
 /// are disposed only after the dialog route is removed — disposing them inline
 /// after `showDialog` returns triggers a "used after disposed" error when the
 /// dialog rebuilds during its exit transition.
-class _AddBodyMetricDialog extends StatefulWidget {
+class _AddBodyMetricDialog extends ConsumerStatefulWidget {
   const _AddBodyMetricDialog();
 
   @override
-  State<_AddBodyMetricDialog> createState() => _AddBodyMetricDialogState();
+  ConsumerState<_AddBodyMetricDialog> createState() =>
+      _AddBodyMetricDialogState();
 }
 
-class _AddBodyMetricDialogState extends State<_AddBodyMetricDialog> {
+class _AddBodyMetricDialogState extends ConsumerState<_AddBodyMetricDialog> {
   final _weightController = TextEditingController();
   final _bfController = TextEditingController();
   final _notesController = TextEditingController();
@@ -159,6 +168,7 @@ class _AddBodyMetricDialogState extends State<_AddBodyMetricDialog> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
+    final unit = ref.watch(weightUnitProvider);
     return AlertDialog(
       title: Text(s.addBodyMetric),
       content: Form(
@@ -171,7 +181,7 @@ class _AddBodyMetricDialogState extends State<_AddBodyMetricDialog> {
               decoration: InputDecoration(
                 labelText: s.bodyWeightLabel,
                 border: const OutlineInputBorder(),
-                suffixText: 'kg',
+                suffixText: unit.label(s),
               ),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
@@ -188,7 +198,7 @@ class _AddBodyMetricDialogState extends State<_AddBodyMetricDialog> {
               decoration: InputDecoration(
                 labelText: s.bodyFatPercentLabel,
                 border: const OutlineInputBorder(),
-                suffixText: '%',
+                suffixText: s.percentSuffix,
               ),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
@@ -213,7 +223,9 @@ class _AddBodyMetricDialogState extends State<_AddBodyMetricDialog> {
         FilledButton(
           onPressed: () {
             if (!_formKey.currentState!.validate()) return;
-            final weight = double.parse(_weightController.text);
+            final weight = ref
+                .read(weightUnitProvider)
+                .toKg(double.parse(_weightController.text));
             final bf = _bfController.text.isNotEmpty
                 ? double.tryParse(_bfController.text)
                 : null;
@@ -235,32 +247,35 @@ class _AddBodyMetricDialogState extends State<_AddBodyMetricDialog> {
   }
 }
 
-class _WeightChart extends StatelessWidget {
+class _WeightChart extends ConsumerWidget {
   const _WeightChart({required this.metrics});
 
   final List<BodyMetric> metrics;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
+    final unit = ref.watch(weightUnitProvider);
     // Metrics arrive newest-first; reverse for chronological order.
     final points = metrics.reversed
-        .map((m) => ProgressDataPoint(date: m.date, value: m.weight))
+        .map((m) =>
+            ProgressDataPoint(date: m.date, value: unit.fromKg(m.weight)))
         .toList();
     return ProgressChartWidget(
         label: s.bodyWeightTrendTitle, dataPoints: points);
   }
 }
 
-class _LatestCard extends StatelessWidget {
+class _LatestCard extends ConsumerWidget {
   const _LatestCard({required this.metric});
 
   final BodyMetric metric;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
     final theme = Theme.of(context);
+    final unit = ref.watch(weightUnitProvider);
 
     return Card(
       child: Padding(
@@ -284,7 +299,7 @@ class _LatestCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${metric.weight} kg',
+                    '${unit.formatFromKg(metric.weight)} ${unit.label(s)}',
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -319,6 +334,8 @@ class _MetricTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
+    final unit = ref.watch(weightUnitProvider);
     final dateStr = DateFormat.yMMMd().format(metric.date.toLocal());
 
     return Dismissible(
@@ -334,7 +351,7 @@ class _MetricTile extends ConsumerWidget {
         ref.read(bodyMetricRepositoryProvider).delete(metric.id);
       },
       child: ListTile(
-        title: Text('${metric.weight} kg'),
+        title: Text('${unit.formatFromKg(metric.weight)} ${unit.label(s)}'),
         subtitle: Text(
           [
             dateStr,

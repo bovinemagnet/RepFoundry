@@ -238,7 +238,8 @@
   "tableHeaderReps": "次数",
   "tableHeaderE1rm": "估算1RM",
 
-  "weightKgLabel": "重量（kg）",
+  "weightFieldLabel": "重量（{unit}）",
+  "percentSuffix": "%",
   "repsLabel": "次数",
   "rpeLabel": "RPE",
   "addRpe": "添加 RPE",
@@ -247,6 +248,7 @@
   "validationRequired": "必填",
   "validationInvalid": "无效",
   "validationMinZero": "≥ 0",
+  "validationMinOne": "≥ 1",
   "validationRpeRange": "1–10",
 
   "restTimer": "休息计时器",
@@ -392,7 +394,7 @@
   "@prAchievedOn": {
     "placeholders": { "date": { "type": "String" } }
   },
-  "prValueWeight": "{value} kg",
+  "prValueWeight": "{value} {unit}",
   "@prValueWeight": {
     "placeholders": { "value": { "type": "String" } }
   },
@@ -400,11 +402,11 @@
   "@prValueReps": {
     "placeholders": { "value": { "type": "String" } }
   },
-  "prValueVolume": "{value} kg 容量",
+  "prValueVolume": "{value} {unit} 容量",
   "@prValueVolume": {
     "placeholders": { "value": { "type": "String" } }
   },
-  "prValueE1rm": "{value} kg e1RM",
+  "prValueE1rm": "{value} {unit} e1RM",
   "@prValueE1rm": {
     "placeholders": { "value": { "type": "String" } }
   },
@@ -608,7 +610,7 @@
     "placeholders": { "count": { "type": "int" } }
   },
   "startFromProgramme": "从计划开始",
-  "targetWeight": "目标：{weight} kg",
+  "targetWeight": "目标：{weight} {unit}",
   "@targetWeight": {
     "placeholders": { "weight": { "type": "String" } }
   },
@@ -659,7 +661,7 @@
   "readWeightSubtitle": "从健康商店导入体重测量",
   "healthSyncPermissionDenied": "未授予健康权限",
   "healthSyncSuccess": "已同步到健康",
-  "importWeightPrompt": "从健康导入 {weight} kg？",
+  "importWeightPrompt": "从健康导入 {weight} {unit}？",
   "@importWeightPrompt": {
     "placeholders": { "weight": { "type": "String" } }
   },
@@ -711,7 +713,7 @@
   "thisWeek": "本周",
   "lastWeek": "上周",
   "volumeProgress": "训练量进展",
-  "totalVolumeKg": "{value} kg",
+  "totalVolumeKg": "{value} {unit}",
   "@totalVolumeKg": {
     "placeholders": { "value": { "type": "String" } }
   },

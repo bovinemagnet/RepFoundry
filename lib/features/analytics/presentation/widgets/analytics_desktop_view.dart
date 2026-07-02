@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
+import '../../../../core/units/weight_unit.dart';
+import '../../../../core/units/weight_unit_provider.dart';
 import '../../../../core/widgets/desktop_top_bar.dart';
 import '../../../../core/widgets/kinetic.dart';
 import '../../../../core/widgets/kpi_strip.dart';
@@ -107,7 +109,7 @@ class AnalyticsDesktopView extends ConsumerWidget {
 
 // ── KPI strip ─────────────────────────────────────────────────────────────
 
-class _KpiRow extends StatelessWidget {
+class _KpiRow extends ConsumerWidget {
   const _KpiRow({
     required this.volume,
     required this.prCount,
@@ -119,9 +121,11 @@ class _KpiRow extends StatelessWidget {
   final int workoutCount;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
-    final totalVolume = volume.fold<double>(0, (sum, w) => sum + w.totalVolume);
+    final unit = ref.watch(weightUnitProvider);
+    final totalVolume =
+        unit.fromKg(volume.fold<double>(0, (sum, w) => sum + w.totalVolume));
     final avgSession = workoutCount > 0 ? totalVolume / workoutCount : 0.0;
 
     return KpiStrip(
@@ -129,7 +133,7 @@ class _KpiRow extends StatelessWidget {
         KineticStatTile(
           label: s.desktopTotalVolume,
           value: _formatKg(totalVolume),
-          unit: 'kg',
+          unit: unit.label(s),
           valueSize: 26,
         ),
         KineticStatTile(
@@ -140,7 +144,7 @@ class _KpiRow extends StatelessWidget {
         KineticStatTile(
           label: s.desktopAvgSessionLabel,
           value: _formatKg(avgSession),
-          unit: 'kg',
+          unit: unit.label(s),
           valueSize: 26,
         ),
         KineticStatTile(

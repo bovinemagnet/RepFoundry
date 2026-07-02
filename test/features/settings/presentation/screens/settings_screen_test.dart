@@ -7,6 +7,8 @@ import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/sync/application/sync_orchestrator.dart';
 import 'package:rep_foundry/features/sync/data/noop_cloud_sync_service.dart';
 import 'package:rep_foundry/features/sync/domain/models/sync_result.dart';
+import 'package:rep_foundry/core/units/weight_unit.dart';
+import 'package:rep_foundry/core/units/weight_unit_provider.dart';
 import 'package:rep_foundry/features/settings/presentation/screens/settings_screen.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -82,6 +84,35 @@ void main() {
     await tester.tapAt(Offset(850, labelCenter.dy));
     await tester.pumpAndSettle();
   }
+
+  group('SettingsScreen weight unit toggle', () {
+    testWidgets('selecting lbs updates the shared provider and persists',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      orchestrator = _RecordingSyncOrchestrator(
+        result: SyncResult(
+          success: true,
+          entitiesMerged: 0,
+          syncedAt: DateTime.utc(2026, 6, 8, 12),
+        ),
+      );
+
+      await tester.pumpWidget(buildScreen(orchestrator));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('lbs'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('lbs'));
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(SettingsScreen)),
+      );
+      expect(container.read(weightUnitProvider), WeightUnit.lbs);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('weight_unit'), 'lbs');
+    });
+  });
 
   group('SettingsScreen cloud sync setup', () {
     testWidgets('enables sync only after interactive first sync succeeds',

@@ -348,7 +348,11 @@
   "tableHeaderReps": "Reps",
   "tableHeaderE1rm": "e1RM",
 
-  "weightKgLabel": "Weight (kg)",
+  "weightFieldLabel": "Weight ({unit})",
+  "@weightFieldLabel": {
+    "placeholders": { "unit": { "type": "String" } }
+  },
+  "percentSuffix": "%",
   "repsLabel": "Reps",
   "rpeLabel": "RPE",
   "addRpe": "Add RPE",
@@ -359,6 +363,7 @@
   "validationRequired": "Required",
   "validationInvalid": "Invalid",
   "validationMinZero": "\u2265 0",
+  "validationMinOne": "\u2265 1",
   "validationRpeRange": "1\u201310",
 
   "restTimer": "Rest Timer",
@@ -513,21 +518,21 @@
   "@prAchievedOn": {
     "placeholders": { "date": { "type": "String" } }
   },
-  "prValueWeight": "{value} kg",
+  "prValueWeight": "{value} {unit}",
   "@prValueWeight": {
-    "placeholders": { "value": { "type": "String" } }
+    "placeholders": { "value": { "type": "String" }, "unit": { "type": "String" } }
   },
   "prValueReps": "{value} reps",
   "@prValueReps": {
     "placeholders": { "value": { "type": "String" } }
   },
-  "prValueVolume": "{value} kg volume",
+  "prValueVolume": "{value} {unit} volume",
   "@prValueVolume": {
-    "placeholders": { "value": { "type": "String" } }
+    "placeholders": { "value": { "type": "String" }, "unit": { "type": "String" } }
   },
-  "prValueE1rm": "{value} kg e1RM",
+  "prValueE1rm": "{value} {unit} e1RM",
   "@prValueE1rm": {
-    "placeholders": { "value": { "type": "String" } }
+    "placeholders": { "value": { "type": "String" }, "unit": { "type": "String" } }
   },
 
   "historyTab": "History",
@@ -771,9 +776,9 @@
   "readWeightSubtitle": "Import weight measurements from the health store",
   "healthSyncPermissionDenied": "Health permissions were not granted",
   "healthSyncSuccess": "Synced to Health",
-  "importWeightPrompt": "Import {weight} kg from Health?",
+  "importWeightPrompt": "Import {weight} {unit} from Health?",
   "@importWeightPrompt": {
-    "placeholders": { "weight": { "type": "String" } }
+    "placeholders": { "weight": { "type": "String" }, "unit": { "type": "String" } }
   },
   "importWeightAction": "Import",
   "healthSyncNoNewData": "No new data from Health",
@@ -808,9 +813,9 @@
   "thisWeek": "This Week",
   "lastWeek": "Last Week",
   "volumeProgress": "Volume Progress",
-  "totalVolumeKg": "{value} kg",
+  "totalVolumeKg": "{value} {unit}",
   "@totalVolumeKg": {
-    "placeholders": { "value": { "type": "String" } }
+    "placeholders": { "value": { "type": "String" }, "unit": { "type": "String" } }
   },
   "workoutFallbackName": "Workout",
 

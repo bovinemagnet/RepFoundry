@@ -5,15 +5,45 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/body_metrics/domain/models/body_metric.dart';
+import 'package:rep_foundry/features/body_metrics/domain/repositories/body_metric_repository.dart';
 import 'package:rep_foundry/features/body_metrics/presentation/screens/body_metrics_screen.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
+/// Records created metrics so tests can assert on the persisted values.
+class _RecordingBodyMetricRepository implements BodyMetricRepository {
+  final List<BodyMetric> created = [];
+
+  @override
+  Future<BodyMetric> create(BodyMetric metric) async {
+    created.add(metric);
+    return metric;
+  }
+
+  @override
+  Future<BodyMetric> update(BodyMetric metric) async => metric;
+
+  @override
+  Future<void> delete(String id) async {}
+
+  @override
+  Future<List<BodyMetric>> getAll({int limit = 100}) async => created;
+
+  @override
+  Future<BodyMetric?> getLatest() async =>
+      created.isEmpty ? null : created.last;
+
+  @override
+  Stream<List<BodyMetric>> watchAll() => Stream.value(created);
+}
+
 void main() {
   // HealthSyncSettingsNotifier loads from SharedPreferences on first build.
   // Provide an empty store so it does not try to access a real device store.
+  // weight_unit is pinned to kg because the flutter tester reports an en_US
+  // device locale, which would otherwise default the display unit to lbs.
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'weight_unit': 'kg'});
   });
 
   // ---------------------------------------------------------------------------
@@ -24,7 +54,10 @@ void main() {
   // so that `enabled` defaults to false — this prevents healthWeightCheckProvider
   // from attempting a real platform health-store read.
   // ---------------------------------------------------------------------------
-  Widget buildScreen({List<BodyMetric> metrics = const []}) {
+  Widget buildScreen({
+    List<BodyMetric> metrics = const [],
+    BodyMetricRepository? repository,
+  }) {
     return ProviderScope(
       overrides: [
         bodyMetricsStreamProvider.overrideWith(
@@ -33,6 +66,8 @@ void main() {
         healthSyncSettingsProvider.overrideWith(
           HealthSyncSettingsNotifier.new,
         ),
+        if (repository != null)
+          bodyMetricRepositoryProvider.overrideWithValue(repository),
       ],
       child: const MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -176,6 +211,32 @@ void main() {
     // without pumping any frames after the Cancel tap.  The dialog route is
     // present before the tap and absent immediately after it returns.
     // -------------------------------------------------------------------------
+    testWidgets('addDialog_storesLbsEntryConvertedToKg_whenUnitIsLbs',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({'weight_unit': 'lbs'});
+      final repository = _RecordingBodyMetricRepository();
+
+      await tester.pumpWidget(buildScreen(repository: repository));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Add Measurement'));
+      await tester.pumpAndSettle();
+
+      // The weight field suffix reflects the selected unit.
+      expect(find.text('lbs'), findsOneWidget);
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Body Weight'),
+        '165',
+      );
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      // 165 lbs -> ~74.84 kg stored.
+      expect(repository.created, hasLength(1));
+      expect(repository.created.single.weight, closeTo(74.84, 0.05));
+    });
+
     testWidgets('addDialog_dismisses_whenCancelIsTapped', (tester) async {
       await tester.pumpWidget(buildScreen());
       await tester.pumpAndSettle();

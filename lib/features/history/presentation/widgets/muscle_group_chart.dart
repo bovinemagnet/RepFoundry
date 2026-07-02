@@ -2,6 +2,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
+import '../../../../core/units/weight_unit.dart';
+import '../../../../core/units/weight_unit_provider.dart';
 import '../../../exercises/presentation/helpers/exercise_labels.dart';
 import '../providers/muscle_group_distribution_provider.dart';
 
@@ -24,20 +26,22 @@ class MuscleGroupChart extends ConsumerWidget {
   }
 }
 
-class _Chart extends StatelessWidget {
+class _Chart extends ConsumerWidget {
   const _Chart({required this.data, required this.title});
 
   final List<MuscleGroupVolume> data;
   final String title;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
     final textColor = theme.colorScheme.onSurfaceVariant;
+    final unit = ref.watch(weightUnitProvider);
 
-    final maxVolume =
-        data.fold<double>(0, (m, d) => d.volume > m ? d.volume : m);
+    final maxVolume = unit
+        .fromKg(data.fold<double>(0, (m, d) => d.volume > m ? d.volume : m));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,7 +64,7 @@ class _Chart extends StatelessWidget {
                   getTooltipItem: (group, groupIndex, rod, rodIndex) {
                     final item = data[groupIndex];
                     return BarTooltipItem(
-                      '${labelForMuscleGroup(item.group)}\n${item.volume.toStringAsFixed(0)} kg',
+                      '${labelForMuscleGroup(item.group)}\n${unit.fromKg(item.volume).toStringAsFixed(0)} ${unit.label(s)}',
                       TextStyle(
                         color: primaryColor,
                         fontWeight: FontWeight.bold,
@@ -119,7 +123,7 @@ class _Chart extends StatelessWidget {
                     x: i,
                     barRods: [
                       BarChartRodData(
-                        toY: data[i].volume,
+                        toY: unit.fromKg(data[i].volume),
                         color: primaryColor,
                         width: 14,
                         borderRadius: const BorderRadius.vertical(

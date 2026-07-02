@@ -5,6 +5,8 @@ import '../../domain/models/personal_record.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
+import '../../../../core/units/weight_unit.dart';
+import '../../../../core/units/weight_unit_provider.dart';
 
 class _PrsByExercise {
   final String exerciseName;
@@ -96,7 +98,7 @@ class PrHistoryScreen extends ConsumerWidget {
   }
 }
 
-class _ExercisePrCard extends StatelessWidget {
+class _ExercisePrCard extends ConsumerWidget {
   const _ExercisePrCard({
     required this.exerciseName,
     required this.records,
@@ -118,23 +120,24 @@ class _ExercisePrCard extends StatelessWidget {
     }
   }
 
-  String _formattedValue(S s, RecordType type, double value) {
-    final formatted = value.toStringAsFixed(1);
+  String _formattedValue(S s, WeightUnit unit, RecordType type, double value) {
+    final formatted = unit.fromKg(value).toStringAsFixed(1);
     switch (type) {
       case RecordType.maxWeight:
-        return s.prValueWeight(formatted);
+        return s.prValueWeight(formatted, unit.label(s));
       case RecordType.maxReps:
         return s.prValueReps(value.round().toString());
       case RecordType.maxVolume:
-        return s.prValueVolume(formatted);
+        return s.prValueVolume(formatted, unit.label(s));
       case RecordType.estimatedOneRepMax:
-        return s.prValueE1rm(formatted);
+        return s.prValueE1rm(formatted, unit.label(s));
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
+    final unit = ref.watch(weightUnitProvider);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -174,7 +177,7 @@ class _ExercisePrCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      _formattedValue(s, record.recordType, record.value),
+                      _formattedValue(s, unit, record.recordType, record.value),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Theme.of(context).colorScheme.primary,
                             fontWeight: FontWeight.bold,

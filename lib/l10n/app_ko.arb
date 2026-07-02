@@ -255,7 +255,8 @@
   "tableHeaderReps": "횟수",
   "tableHeaderE1rm": "e1RM",
 
-  "weightKgLabel": "무게 (kg)",
+  "weightFieldLabel": "무게 ({unit})",
+  "percentSuffix": "%",
   "repsLabel": "횟수",
   "rpeLabel": "RPE",
   "addRpe": "RPE 추가",
@@ -264,6 +265,7 @@
   "validationRequired": "필수",
   "validationInvalid": "유효하지 않음",
   "validationMinZero": "≥ 0",
+  "validationMinOne": "≥ 1",
   "validationRpeRange": "1–10",
 
   "restTimer": "휴식 타이머",
@@ -418,7 +420,7 @@
   "@prAchievedOn": {
     "placeholders": { "date": { "type": "String" } }
   },
-  "prValueWeight": "{value} kg",
+  "prValueWeight": "{value} {unit}",
   "@prValueWeight": {
     "placeholders": { "value": { "type": "String" } }
   },
@@ -426,11 +428,11 @@
   "@prValueReps": {
     "placeholders": { "value": { "type": "String" } }
   },
-  "prValueVolume": "{value} kg 볼륨",
+  "prValueVolume": "{value} {unit} 볼륨",
   "@prValueVolume": {
     "placeholders": { "value": { "type": "String" } }
   },
-  "prValueE1rm": "{value} kg e1RM",
+  "prValueE1rm": "{value} {unit} e1RM",
   "@prValueE1rm": {
     "placeholders": { "value": { "type": "String" } }
   },
@@ -625,7 +627,7 @@
     "placeholders": { "count": { "type": "int" } }
   },
   "startFromProgramme": "프로그램에서 시작",
-  "targetWeight": "목표: {weight} kg",
+  "targetWeight": "목표: {weight} {unit}",
   "@targetWeight": {
     "placeholders": { "weight": { "type": "String" } }
   },
@@ -676,7 +678,7 @@
   "readWeightSubtitle": "건강 스토어에서 체중 측정값 가져오기",
   "healthSyncPermissionDenied": "건강 권한이 부여되지 않았습니다",
   "healthSyncSuccess": "건강에 동기화되었습니다",
-  "importWeightPrompt": "건강에서 {weight} kg을 가져오시겠습니까?",
+  "importWeightPrompt": "건강에서 {weight} {unit}을 가져오시겠습니까?",
   "@importWeightPrompt": {
     "placeholders": { "weight": { "type": "String" } }
   },
@@ -713,7 +715,7 @@
   "thisWeek": "이번 주",
   "lastWeek": "지난 주",
   "volumeProgress": "볼륨 진행",
-  "totalVolumeKg": "{value} kg",
+  "totalVolumeKg": "{value} {unit}",
   "@totalVolumeKg": {
     "placeholders": { "value": { "type": "String" } }
   },

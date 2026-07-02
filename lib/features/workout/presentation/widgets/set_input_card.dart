@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:rep_foundry/core/units/weight_unit.dart';
+import 'package:rep_foundry/core/units/weight_unit_provider.dart';
 import 'package:rep_foundry/core/widgets/kinetic.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../models/ghost_set.dart';
@@ -13,6 +15,7 @@ class SetInputCard extends StatefulWidget {
     required this.onLogSet,
     this.suggestion,
     this.autofocusWeight = false,
+    this.unit = WeightUnit.kg,
   });
 
   final void Function({
@@ -28,6 +31,10 @@ class SetInputCard extends StatefulWidget {
   /// Used so a freshly added exercise becomes the active input target
   /// instead of leaving focus on the previously edited exercise.
   final bool autofocusWeight;
+
+  /// Display unit for the Weight field. The value passed to [onLogSet]
+  /// is always kg, whatever the display unit.
+  final WeightUnit unit;
 
   @override
   State<SetInputCard> createState() => _SetInputCardState();
@@ -54,7 +61,7 @@ class _SetInputCardState extends State<SetInputCard> {
     super.initState();
     final s = widget.suggestion;
     _weightController = TextEditingController(
-      text: s != null ? _formatWeight(s.weight) : '0',
+      text: s != null ? widget.unit.formatFromKg(s.weight) : '0',
     );
     _repsController = TextEditingController(
       text: s != null ? '${s.reps}' : '0',
@@ -102,7 +109,8 @@ class _SetInputCardState extends State<SetInputCard> {
     super.didUpdateWidget(oldWidget);
     if (widget.suggestion != oldWidget.suggestion) {
       final s = widget.suggestion;
-      _weightController.text = s != null ? _formatWeight(s.weight) : '0';
+      _weightController.text =
+          s != null ? widget.unit.formatFromKg(s.weight) : '0';
       _repsController.text = s != null ? '${s.reps}' : '0';
       if (s?.rpe != null) {
         _rpeController.text = _formatWeight(s!.rpe!);
@@ -131,7 +139,8 @@ class _SetInputCardState extends State<SetInputCard> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
-    final weight = double.tryParse(_weightController.text) ?? 0;
+    final weight =
+        widget.unit.toKg(double.tryParse(_weightController.text) ?? 0);
     final reps = int.tryParse(_repsController.text) ?? 0;
     final rpe = _showRpe ? double.tryParse(_rpeController.text) : null;
 
@@ -162,7 +171,7 @@ class _SetInputCardState extends State<SetInputCard> {
                 child: _KineticField(
                   controller: _weightController,
                   focusNode: _weightFocusNode,
-                  label: s.weightKgLabel,
+                  label: s.weightFieldLabel(widget.unit.label(s)),
                   isDouble: true,
                   isFocused: _weightFocused,
                 ),
@@ -175,6 +184,17 @@ class _SetInputCardState extends State<SetInputCard> {
                   label: s.repsLabel,
                   isDouble: false,
                   isFocused: _repsFocused,
+                  // Domain rule: reps > 0. Surface it inline instead of
+                  // letting LogSetUseCase reject the set via a snackbar.
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return s.validationRequired;
+                    }
+                    final n = int.tryParse(value);
+                    if (n == null) return s.validationInvalid;
+                    if (n < 1) return s.validationMinOne;
+                    return null;
+                  },
                 ),
               ),
               if (_showRpe) ...[

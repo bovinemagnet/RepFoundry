@@ -10,6 +10,8 @@ import '../../../exercises/domain/models/exercise.dart';
 import '../../../stretching/domain/models/stretching_session.dart';
 import '../../../stretching/presentation/widgets/stretch_preset_localiser.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/units/weight_unit.dart';
+import '../../../../core/units/weight_unit_provider.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 
@@ -183,14 +185,15 @@ class WorkoutDetailScreen extends ConsumerWidget {
   }
 }
 
-class _WorkoutDetailBody extends StatelessWidget {
+class _WorkoutDetailBody extends ConsumerWidget {
   const _WorkoutDetailBody({required this.data});
 
   final _WorkoutDetailData data;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
+    final unit = ref.watch(weightUnitProvider);
     final workout = data.workout;
     final duration = workout.completedAt != null
         ? workout.startedAt.durationUntil(workout.completedAt!)
@@ -236,7 +239,8 @@ class _WorkoutDetailBody extends StatelessWidget {
                     ),
                     _StatBox(
                       label: s.volumeLabel,
-                      value: '${totalVolume.toStringAsFixed(0)} kg',
+                      value: '${unit.fromKg(totalVolume).toStringAsFixed(0)} '
+                          '${unit.label(s)}',
                     ),
                   ],
                 ),
@@ -373,7 +377,7 @@ class _StatBox extends StatelessWidget {
   }
 }
 
-class _ExerciseSetsCard extends StatelessWidget {
+class _ExerciseSetsCard extends ConsumerWidget {
   const _ExerciseSetsCard({
     required this.exercise,
     required this.exerciseId,
@@ -387,8 +391,9 @@ class _ExerciseSetsCard extends StatelessWidget {
   final Set<String> prSetIds;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
+    final unit = ref.watch(weightUnitProvider);
     final name = exercise?.name ?? exerciseId;
     final volume = sets.fold<double>(0, (sum, s) => sum + s.volume);
     final hasPr = sets.any((s) => prSetIds.contains(s.id));
@@ -423,7 +428,8 @@ class _ExerciseSetsCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Vol: ${volume.toStringAsFixed(0)} kg',
+                  'Vol: ${unit.fromKg(volume).toStringAsFixed(0)} '
+                  '${unit.label(s)}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -451,11 +457,14 @@ class _ExerciseSetsCard extends StatelessWidget {
                   TableRow(
                     children: [
                       _tableCell(context, '${i + 1}', isHeader: true),
-                      _tableCell(context, '${sets[i].weight} kg'),
+                      _tableCell(context,
+                          '${unit.formatFromKg(sets[i].weight)} ${unit.label(s)}'),
                       _tableCell(context, '${sets[i].reps}'),
                       _tableCell(
                         context,
-                        sets[i].estimatedOneRepMax.toStringAsFixed(1),
+                        unit
+                            .fromKg(sets[i].estimatedOneRepMax)
+                            .toStringAsFixed(1),
                         color: Theme.of(context).colorScheme.primary,
                       ),
                     ],

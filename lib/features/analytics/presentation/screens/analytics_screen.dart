@@ -9,7 +9,10 @@ import '../providers/muscle_balance_provider.dart';
 import '../providers/pr_timeline_provider.dart';
 import '../providers/training_load_provider.dart';
 import '../widgets/analytics_desktop_view.dart';
+import '../../../history/domain/models/personal_record.dart';
 import '../../../../core/responsive/breakpoints.dart';
+import '../../../../core/units/weight_unit.dart';
+import '../../../../core/units/weight_unit_provider.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -162,20 +165,21 @@ class AnalyticsScreen extends ConsumerWidget {
 
 // --- Weekly Volume Line Chart ---
 
-class WeeklyVolumeChart extends StatelessWidget {
+class WeeklyVolumeChart extends ConsumerWidget {
   const WeeklyVolumeChart({super.key, required this.data});
 
   final List<WeeklyVolume> data;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
     final textColor = theme.colorScheme.onSurfaceVariant;
+    final unit = ref.watch(weightUnitProvider);
 
-    final maxVolume = data.fold<double>(
-        0, (max, w) => w.totalVolume > max ? w.totalVolume : max);
+    final maxVolume = unit.fromKg(data.fold<double>(
+        0, (max, w) => w.totalVolume > max ? w.totalVolume : max));
 
     return SizedBox(
       height: 200,
@@ -187,7 +191,7 @@ class WeeklyVolumeChart extends StatelessWidget {
             LineChartBarData(
               spots: [
                 for (var i = 0; i < data.length; i++)
-                  FlSpot(i.toDouble(), data[i].totalVolume),
+                  FlSpot(i.toDouble(), unit.fromKg(data[i].totalVolume)),
               ],
               isCurved: true,
               color: primaryColor,
@@ -209,7 +213,7 @@ class WeeklyVolumeChart extends StatelessWidget {
                       ? '\n${s.weeklyVolumeChange(week.percentChange!.toStringAsFixed(1))}'
                       : '';
                   return LineTooltipItem(
-                    '$dateLabel\n${week.totalVolume.toStringAsFixed(0)} kg$changeText',
+                    '$dateLabel\n${unit.fromKg(week.totalVolume).toStringAsFixed(0)} ${unit.label(s)}$changeText',
                     TextStyle(
                       color: primaryColor,
                       fontWeight: FontWeight.bold,
@@ -358,7 +362,7 @@ class MuscleBalanceChart extends StatelessWidget {
 
 // --- PR Timeline ---
 
-class PrTimeline extends StatelessWidget {
+class PrTimeline extends ConsumerWidget {
   const PrTimeline({super.key, required this.entries});
 
   final List<PrTimelineEntry> entries;
@@ -379,8 +383,9 @@ class PrTimeline extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final unit = ref.watch(weightUnitProvider);
 
     return SizedBox(
       height: 120,
@@ -416,7 +421,10 @@ class PrTimeline extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      entry.record.value.toStringAsFixed(1),
+                      // Reps records are counts, not weights — no conversion.
+                      entry.record.recordType == RecordType.maxReps
+                          ? entry.record.value.toStringAsFixed(1)
+                          : unit.fromKg(entry.record.value).toStringAsFixed(1),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
