@@ -18,7 +18,9 @@ class WeeklyLoad {
 List<WeeklyLoad> computeTrainingLoad(List<SetData> sets) {
   final byWeek = <DateTime, List<SetData>>{};
   for (final s in sets) {
-    final weekStart = s.date.subtract(Duration(days: s.date.weekday - 1));
+    // Bucket by the user's local week, not the UTC week stored in the DB.
+    final local = s.date.toLocal();
+    final weekStart = local.subtract(Duration(days: local.weekday - 1));
     final key = DateTime(weekStart.year, weekStart.month, weekStart.day);
     byWeek.putIfAbsent(key, () => []).add(s);
   }

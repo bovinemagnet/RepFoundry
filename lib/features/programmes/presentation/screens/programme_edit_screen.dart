@@ -102,6 +102,10 @@ class _ProgrammeEditScreenState extends ConsumerState<ProgrammeEditScreen> {
     return null;
   }
 
+  /// Sentinel returned by the template picker when "Rest day" is chosen,
+  /// so it can be distinguished from dismissing the sheet (null).
+  static const _restDay = Object();
+
   Future<void> _pickTemplate(int week, int dayOfWeek) async {
     final s = S.of(context)!;
     final repo = ref.read(workoutTemplateRepositoryProvider);
@@ -109,7 +113,7 @@ class _ProgrammeEditScreenState extends ConsumerState<ProgrammeEditScreen> {
 
     if (!mounted) return;
 
-    final result = await showModalBottomSheet<WorkoutTemplate?>(
+    final result = await showModalBottomSheet<Object>(
       context: context,
       builder: (ctx) {
         return SafeArea(
@@ -138,7 +142,7 @@ class _ProgrammeEditScreenState extends ConsumerState<ProgrammeEditScreen> {
               ListTile(
                 leading: const Icon(Icons.clear),
                 title: Text(s.noTemplateAssigned),
-                onTap: () => Navigator.of(ctx).pop(null),
+                onTap: () => Navigator.of(ctx).pop(_restDay),
               ),
             ],
           ),
@@ -146,15 +150,13 @@ class _ProgrammeEditScreenState extends ConsumerState<ProgrammeEditScreen> {
       },
     );
 
-    // If the bottom sheet was dismissed (tapped outside), do nothing
-    // The result is null both when "Rest day" is tapped and when dismissed,
-    // so we use a sentinel approach: dismissed returns nothing (we check mounted)
-    if (!mounted) return;
+    // Dismissing the sheet (tapping outside) returns null — no change.
+    if (result == null || !mounted) return;
 
     final programmeRepo = ref.read(programmeRepositoryProvider);
     final existing = _dayFor(week, dayOfWeek);
 
-    if (result != null) {
+    if (result is WorkoutTemplate) {
       // Assign or replace template
       if (existing != null) {
         await programmeRepo.removeDay(existing.id);

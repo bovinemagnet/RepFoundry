@@ -48,6 +48,7 @@ class _EditExerciseScreenState extends ConsumerState<EditExerciseScreen> {
       category: _category,
       muscleGroup: _muscleGroup,
       equipmentType: _equipmentType,
+      updatedAt: DateTime.now().toUtc(),
     );
 
     await ref.read(exerciseRepositoryProvider).updateExercise(updated);

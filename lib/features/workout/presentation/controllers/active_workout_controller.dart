@@ -304,7 +304,8 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
 
     state = state.copyWith(isLoading: true);
     try {
-      final completed = workout.copyWith(completedAt: DateTime.now().toUtc());
+      final now = DateTime.now().toUtc();
+      final completed = workout.copyWith(completedAt: now, updatedAt: now);
       await _workoutRepository.updateWorkout(completed);
 
       // Sync to health store if enabled
@@ -474,7 +475,11 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
         LogSetInput(
           workoutId: workout.id,
           exerciseId: exerciseId,
-          setOrder: existingSets.length + 1,
+          // Max + 1 rather than length + 1: deleting a mid-workout set must
+          // not make the next logged set duplicate a surviving setOrder.
+          setOrder: existingSets.fold<int>(
+                  0, (max, s) => s.setOrder > max ? s.setOrder : max) +
+              1,
           weight: weight,
           reps: reps,
           rpe: rpe,
@@ -540,9 +545,10 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     final updated =
         linkSupersetSets(state.setsByExercise, exerciseId1, exerciseId2);
     state = state.copyWith(setsByExercise: updated);
+    final now = DateTime.now().toUtc();
     for (final eid in [exerciseId1, exerciseId2]) {
-      for (final s in updated[eid] ?? []) {
-        await _workoutRepository.updateSet(s);
+      for (final WorkoutSet s in updated[eid] ?? []) {
+        await _workoutRepository.updateSet(s.copyWith(updatedAt: now));
       }
     }
   }
@@ -556,12 +562,13 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
 
     final updated = unlinkSupersetSets(oldSets, exerciseId);
     state = state.copyWith(setsByExercise: updated);
+    final now = DateTime.now().toUtc();
     for (final entry in updated.entries) {
       for (final s in entry.value) {
         if (oldSets[entry.key]?.any(
                 (old) => old.id == s.id && old.groupId == targetGroupId) ==
             true) {
-          await _workoutRepository.updateSet(s);
+          await _workoutRepository.updateSet(s.copyWith(updatedAt: now));
         }
       }
     }

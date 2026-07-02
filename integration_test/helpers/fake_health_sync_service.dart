@@ -48,7 +48,7 @@ class FakeHealthSyncService extends HealthSyncService {
   }
 
   @override
-  Future<double?> readLatestWeight() async {
+  Future<WeightSample?> readLatestWeight() async {
     return null;
   }
 }

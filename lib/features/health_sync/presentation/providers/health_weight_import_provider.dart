@@ -1,17 +1,25 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers.dart';
+import '../../data/health_sync_service.dart';
 import 'health_sync_settings_provider.dart';
 
-/// Checks the health store for a newer body weight reading.
-/// Returns the weight in kg if found, null otherwise.
+/// Checks the health store for a body weight reading newer than anything
+/// already recorded. Returns the sample if found, null otherwise — so an
+/// imported value doesn't re-prompt on every visit.
 final healthWeightCheckProvider =
-    FutureProvider.autoDispose<double?>((ref) async {
+    FutureProvider.autoDispose<WeightSample?>((ref) async {
   final settings = ref.watch(healthSyncSettingsProvider);
   if (!settings.enabled || !settings.readWeight) return null;
 
   final healthService = ref.watch(healthSyncServiceProvider);
   try {
-    return await healthService.readLatestWeight();
+    final sample = await healthService.readLatestWeight();
+    if (sample == null) return null;
+
+    final latest = await ref.watch(bodyMetricRepositoryProvider).getLatest();
+    if (latest != null && !sample.date.isAfter(latest.date)) return null;
+
+    return sample;
   } catch (_) {
     return null;
   }

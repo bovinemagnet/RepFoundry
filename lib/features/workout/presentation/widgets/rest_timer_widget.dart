@@ -16,6 +16,11 @@ final restTimerProvider = NotifierProvider<RestTimerNotifier, int?>(
 
 class RestTimerNotifier extends Notifier<int?> {
   Timer? _timer;
+  bool _completedNaturally = false;
+
+  /// True when the most recent transition to null was the timer running out
+  /// rather than a manual stop — only then should the alert fire.
+  bool get completedNaturally => _completedNaturally;
 
   @override
   int? build() {
@@ -29,6 +34,7 @@ class RestTimerNotifier extends Notifier<int?> {
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (state == null || state! <= 0) {
         t.cancel();
+        _completedNaturally = true;
         state = null;
       } else {
         state = state! - 1;
@@ -38,6 +44,7 @@ class RestTimerNotifier extends Notifier<int?> {
 
   void stop() {
     _timer?.cancel();
+    _completedNaturally = false;
     state = null;
   }
 }
@@ -78,7 +85,9 @@ class _RestTimerWidgetState extends ConsumerState<RestTimerWidget> {
   @override
   Widget build(BuildContext context) {
     ref.listen<int?>(restTimerProvider, (previous, next) {
-      if (previous != null && next == null) {
+      if (previous != null &&
+          next == null &&
+          ref.read(restTimerProvider.notifier).completedNaturally) {
         _onTimerComplete();
       }
     });

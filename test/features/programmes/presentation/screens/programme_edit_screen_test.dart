@@ -67,8 +67,15 @@ class _FakeProgrammeRepository implements ProgrammeRepository {
     _days.putIfAbsent(day.programmeId, () => []).add(day);
   }
 
+  final List<String> removedDayIds = [];
+
   @override
-  Future<void> removeDay(String dayId) async {}
+  Future<void> removeDay(String dayId) async {
+    removedDayIds.add(dayId);
+    for (final days in _days.values) {
+      days.removeWhere((d) => d.id == dayId);
+    }
+  }
 
   @override
   Future<void> addRule(ProgressionRule rule) async {
@@ -313,6 +320,87 @@ void main() {
       expect(find.text('Bench Press'), findsOneWidget);
       // Rule subtitle includes the type label.
       expect(find.textContaining('Fixed increment'), findsOneWidget);
+    });
+
+    testWidgets('dismissing the template picker keeps an existing assignment',
+        (tester) async {
+      const programmeId = 'p-5';
+      final programme = Programme(
+        id: programmeId,
+        name: 'PPL',
+        durationWeeks: 1,
+        createdAt: DateTime.utc(2026, 1, 1),
+        updatedAt: DateTime.utc(2026, 1, 1),
+      );
+      final mondayDay = ProgrammeDay.create(
+        programmeId: programmeId,
+        weekNumber: 1,
+        dayOfWeek: DateTime.monday,
+        templateId: 'tpl-push',
+        templateName: 'Push Day',
+      );
+      final repo = _FakeProgrammeRepository(
+        programmes: {programmeId: programme},
+        days: {
+          programmeId: [mondayDay],
+        },
+      );
+      await pumpEditScreen(
+        tester,
+        programmeRepo: repo,
+        templateRepo: _FakeWorkoutTemplateRepository([]),
+        programmeId: programmeId,
+      );
+
+      await tester.tap(find.text('Push Day'));
+      await tester.pumpAndSettle();
+      expect(find.text('Assign Template'), findsOneWidget);
+
+      // Dismiss by tapping the modal barrier above the sheet.
+      await tester.tapAt(const Offset(400, 10));
+      await tester.pumpAndSettle();
+
+      expect(repo.removedDayIds, isEmpty);
+      expect(find.text('Push Day'), findsOneWidget);
+    });
+
+    testWidgets('choosing "Rest day" removes an existing assignment',
+        (tester) async {
+      const programmeId = 'p-6';
+      final programme = Programme(
+        id: programmeId,
+        name: 'PPL',
+        durationWeeks: 1,
+        createdAt: DateTime.utc(2026, 1, 1),
+        updatedAt: DateTime.utc(2026, 1, 1),
+      );
+      final mondayDay = ProgrammeDay.create(
+        programmeId: programmeId,
+        weekNumber: 1,
+        dayOfWeek: DateTime.monday,
+        templateId: 'tpl-push',
+        templateName: 'Push Day',
+      );
+      final repo = _FakeProgrammeRepository(
+        programmes: {programmeId: programme},
+        days: {
+          programmeId: [mondayDay],
+        },
+      );
+      await pumpEditScreen(
+        tester,
+        programmeRepo: repo,
+        templateRepo: _FakeWorkoutTemplateRepository([]),
+        programmeId: programmeId,
+      );
+
+      await tester.tap(find.text('Push Day'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.clear));
+      await tester.pumpAndSettle();
+
+      expect(repo.removedDayIds, [mondayDay.id]);
+      expect(find.text('Push Day'), findsNothing);
     });
 
     testWidgets('save action persists name and duration changes',

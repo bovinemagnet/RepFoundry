@@ -256,6 +256,9 @@ class ImportDataUseCase {
   }
 
   T _parseEnum<T extends Enum>(List<T> values, String name) {
-    return values.firstWhere((v) => v.name == name);
+    return values.firstWhere(
+      (v) => v.name == name,
+      orElse: () => throw FormatException('Unrecognised value "$name"'),
+    );
   }
 }

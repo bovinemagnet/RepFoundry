@@ -23,6 +23,7 @@ class FlutterBlueHeartRateService implements HeartRateService {
   String? _connectedDeviceId;
   bool _connected = false;
   bool _intentionalDisconnect = false;
+  bool _reconnecting = false;
 
   @override
   Stream<int> get heartRateStream => _heartRateController.stream;
@@ -39,7 +40,12 @@ class FlutterBlueHeartRateService implements HeartRateService {
     try {
       if (await FlutterBluePlus.isSupported == false) return false;
 
-      final adapterState = await FlutterBluePlus.adapterState.first;
+      // The adapter state can report `unknown` briefly on startup; wait for
+      // a definitive state rather than treating `unknown` as off.
+      final adapterState = await FlutterBluePlus.adapterState
+          .where((state) => state != BluetoothAdapterState.unknown)
+          .first
+          .timeout(const Duration(seconds: 5));
       return adapterState == BluetoothAdapterState.on;
     } catch (_) {
       return false;
@@ -53,26 +59,42 @@ class FlutterBlueHeartRateService implements HeartRateService {
     final devices = <DiscoveredHrDevice>[];
     final seen = <String>{};
 
-    await FlutterBluePlus.startScan(
-      withServices: [_hrServiceUuid],
-      timeout: timeout,
-    );
-
-    await for (final results in FlutterBluePlus.scanResults) {
+    // Collect results via a listener; scanResults only emits when a new
+    // advertisement arrives, so awaiting it directly can hang forever once
+    // the scan stops.
+    final subscription = FlutterBluePlus.onScanResults.listen((results) {
       for (final r in results) {
-        if (!seen.contains(r.device.remoteId.str)) {
-          seen.add(r.device.remoteId.str);
-          final name = r.device.platformName.isNotEmpty
-              ? r.device.platformName
-              : 'Unknown HR Device';
+        if (seen.add(r.device.remoteId.str)) {
+          var name = r.device.platformName;
+          if (name.isEmpty) name = r.advertisementData.advName;
+          if (name.isEmpty) name = 'Unknown HR Device';
           devices.add(DiscoveredHrDevice(
             id: r.device.remoteId.str,
             name: name,
           ));
         }
       }
-      // Stop after scan completes (timeout triggers scan stop).
-      if (!FlutterBluePlus.isScanningNow) break;
+    });
+
+    try {
+      await FlutterBluePlus.startScan(
+        withServices: [_hrServiceUuid],
+        timeout: timeout,
+      );
+      // The timeout stops the scan; wait for that rather than for a
+      // (possibly never-arriving) final scanResults emission.
+      try {
+        await FlutterBluePlus.isScanning
+            .where((scanning) => !scanning)
+            .first
+            .timeout(timeout + const Duration(seconds: 5));
+      } on TimeoutException {
+        // Safety net: the platform never reported the scan stopping.
+        // Stop it ourselves and return whatever was found.
+        await FlutterBluePlus.stopScan();
+      }
+    } finally {
+      await subscription.cancel();
     }
 
     return devices;
@@ -80,18 +102,69 @@ class FlutterBlueHeartRateService implements HeartRateService {
 
   @override
   Future<void> connectToDevice(String deviceId) async {
+    // Tear down any existing connection so we never hold two devices or
+    // duplicate characteristic listeners.
+    if (_connectedDevice != null || _connected) {
+      await disconnect();
+    }
     _intentionalDisconnect = false;
     _connectedDeviceId = deviceId;
-    await _connectAndSubscribe(deviceId);
+    try {
+      await _connectAndSubscribe(deviceId);
+    } catch (_) {
+      // Initial connection failed — surface the error to the caller and
+      // don't leave a device id behind that would trigger reconnects.
+      _connectedDeviceId = null;
+      rethrow;
+    }
   }
 
   Future<void> _connectAndSubscribe(String deviceId) async {
     final device = BluetoothDevice.fromId(deviceId);
 
     await device.connect(license: License.nonprofit, autoConnect: false);
+
+    BluetoothCharacteristic? hrChar;
+    try {
+      final services = await device.discoverServices();
+
+      for (final service in services) {
+        if (service.uuid == _hrServiceUuid) {
+          for (final char in service.characteristics) {
+            if (char.uuid == _hrMeasurementUuid) {
+              hrChar = char;
+              break;
+            }
+          }
+          break;
+        }
+      }
+
+      if (hrChar == null) {
+        throw Exception('Heart rate characteristic not found on device');
+      }
+
+      await hrChar.setNotifyValue(true);
+    } catch (_) {
+      // Disconnect before the state listener below is attached so a setup
+      // failure cannot trigger a reconnect loop.
+      await device.disconnect();
+      rethrow;
+    }
+
     _connectedDevice = device;
 
-    // Listen for disconnection events.
+    await _characteristicSub?.cancel();
+    _characteristicSub = hrChar.lastValueStream.listen((value) {
+      if (value.isEmpty) return;
+      final bpm = _parseHeartRate(value);
+      if (bpm != null) {
+        _heartRateController.add(bpm);
+      }
+    });
+
+    // Listen for disconnection events. Attached only after setup succeeds.
+    await _connectionStateSub?.cancel();
     _connectionStateSub = device.connectionState.listen((state) {
       if (state == BluetoothConnectionState.disconnected) {
         _connected = false;
@@ -105,74 +178,61 @@ class FlutterBlueHeartRateService implements HeartRateService {
       }
     });
 
-    final services = await device.discoverServices();
-
-    BluetoothCharacteristic? hrChar;
-    for (final service in services) {
-      if (service.uuid == _hrServiceUuid) {
-        for (final char in service.characteristics) {
-          if (char.uuid == _hrMeasurementUuid) {
-            hrChar = char;
-            break;
-          }
-        }
-        break;
-      }
-    }
-
-    if (hrChar == null) {
-      await device.disconnect();
-      throw Exception('Heart rate characteristic not found on device');
-    }
-
-    await hrChar.setNotifyValue(true);
-    _characteristicSub = hrChar.lastValueStream.listen((value) {
-      if (value.isEmpty) return;
-      final bpm = _parseHeartRate(value);
-      if (bpm != null) {
-        _heartRateController.add(bpm);
-      }
-    });
-
     _connected = true;
     _connectionStateController.add(HrConnectionState.connected);
   }
 
   Future<void> _attemptReconnect(String deviceId) async {
-    _connectionStateController.add(HrConnectionState.reconnecting);
+    if (_reconnecting) return;
+    _reconnecting = true;
+    try {
+      _connectionStateController.add(HrConnectionState.reconnecting);
 
-    for (var attempt = 0; attempt < _maxReconnectAttempts; attempt++) {
-      if (_intentionalDisconnect) return;
+      for (var attempt = 0; attempt < _maxReconnectAttempts; attempt++) {
+        if (_intentionalDisconnect) return;
 
-      await Future<void>.delayed(_reconnectDelay);
+        await Future<void>.delayed(_reconnectDelay);
 
-      if (_intentionalDisconnect) return;
+        if (_intentionalDisconnect) return;
 
-      try {
-        await _connectAndSubscribe(deviceId);
-        return; // Reconnection succeeded.
-      } catch (_) {
-        // Will retry or fall through.
+        try {
+          await _connectAndSubscribe(deviceId);
+          if (_intentionalDisconnect) {
+            // Disconnect was requested while the reconnect was in flight.
+            await disconnect();
+          }
+          return; // Reconnection succeeded.
+        } catch (_) {
+          // Will retry or fall through.
+        }
       }
-    }
 
-    // All retries exhausted.
-    _connectedDeviceId = null;
-    _connectionStateController.add(HrConnectionState.disconnected);
+      // All retries exhausted.
+      _connectedDeviceId = null;
+      _connectionStateController.add(HrConnectionState.disconnected);
+    } finally {
+      _reconnecting = false;
+    }
   }
 
   @override
   Future<void> disconnect() async {
     _intentionalDisconnect = true;
-    _characteristicSub?.cancel();
+    await _characteristicSub?.cancel();
     _characteristicSub = null;
-    _connectionStateSub?.cancel();
+    await _connectionStateSub?.cancel();
     _connectionStateSub = null;
 
+    final wasConnected = _connected;
     await _connectedDevice?.disconnect();
     _connectedDevice = null;
     _connectedDeviceId = null;
     _connected = false;
+
+    if (wasConnected) {
+      // Tell every listener (cardio and the HR panel share this service).
+      _connectionStateController.add(HrConnectionState.disconnected);
+    }
   }
 
   /// Parses the BLE Heart Rate Measurement value.

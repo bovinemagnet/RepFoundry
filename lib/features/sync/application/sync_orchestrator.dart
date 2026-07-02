@@ -18,7 +18,9 @@ class SyncOrchestrator {
   final Connectivity _connectivity;
   final String _deviceId;
 
-  bool _isSyncing = false;
+  // Static so the guard survives provider rebuilds (the orchestrator is
+  // recreated whenever sync settings change).
+  static bool _isSyncing = false;
 
   SyncOrchestrator({
     required AppDatabase database,
@@ -107,7 +109,9 @@ class SyncOrchestrator {
           merged.stretchingSessions.length;
 
       return SyncResult.success(entitiesMerged: totalEntities);
-    } on Exception catch (e) {
+      // Catch Errors too (e.g. StateError from parsing a snapshot written by
+      // a newer app version) — sync must fail cleanly, never crash the app.
+    } catch (e) {
       return SyncResult.error(e.toString());
     } finally {
       _isSyncing = false;

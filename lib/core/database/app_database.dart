@@ -268,6 +268,21 @@ class AppDatabase extends _$AppDatabase {
         },
       );
 
+  /// Permanently deletes every row from every table, then re-seeds the
+  /// default exercises. Used by the "Clear All Data" setting.
+  Future<void> clearAllData() async {
+    await transaction(() async {
+      // Tables are declared parents-first in @DriftDatabase, so deleting in
+      // reverse order satisfies foreign key constraints.
+      for (final table in allTables.toList().reversed) {
+        await delete(table).go();
+      }
+      await batch((b) {
+        b.insertAll(exercises, _defaultExercises);
+      });
+    });
+  }
+
   static QueryExecutor _openConnection() {
     return driftDatabase(
       name: 'rep_foundry',

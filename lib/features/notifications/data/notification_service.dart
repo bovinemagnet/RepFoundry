@@ -194,18 +194,26 @@ class NotificationService {
       nextInstanceOfTime(hour, minute);
 }
 
+// Note: days are advanced by reconstructing the TZDateTime from components
+// rather than `add(Duration(days: 1))` — adding an absolute duration across a
+// DST transition shifts the wall-clock hour, permanently moving the reminder.
+
 @visibleForTesting
 tz.TZDateTime nextInstanceOfDayAndTime(int day, int hour, int minute) {
   final now = tz.TZDateTime.now(tz.local);
   var scheduledDate =
       tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
 
+  var daysAhead = 0;
   while (scheduledDate.weekday != day) {
-    scheduledDate = scheduledDate.add(const Duration(days: 1));
+    daysAhead++;
+    scheduledDate = tz.TZDateTime(
+        tz.local, now.year, now.month, now.day + daysAhead, hour, minute);
   }
 
   if (scheduledDate.isBefore(now)) {
-    scheduledDate = scheduledDate.add(const Duration(days: 7));
+    scheduledDate = tz.TZDateTime(tz.local, scheduledDate.year,
+        scheduledDate.month, scheduledDate.day + 7, hour, minute);
   }
 
   return scheduledDate;
@@ -218,7 +226,8 @@ tz.TZDateTime nextInstanceOfTime(int hour, int minute) {
       tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
 
   if (scheduledDate.isBefore(now)) {
-    scheduledDate = scheduledDate.add(const Duration(days: 1));
+    scheduledDate =
+        tz.TZDateTime(tz.local, now.year, now.month, now.day + 1, hour, minute);
   }
 
   return scheduledDate;

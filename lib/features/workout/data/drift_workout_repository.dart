@@ -38,10 +38,14 @@ class DriftWorkoutRepository implements WorkoutRepository {
 
   @override
   Future<Workout?> getActiveWorkout() async {
+    // Cloud sync can introduce a second in-progress workout from another
+    // device; take the most recently started rather than throwing.
     final q = _db.select(_db.workouts)
       ..where(
         (t) => t.completedAt.isNull() & t.deletedAt.isNull(),
-      );
+      )
+      ..orderBy([(t) => OrderingTerm.desc(t.startedAt)])
+      ..limit(1);
     final row = await q.getSingleOrNull();
     return row == null ? null : _workoutToDomain(row);
   }

@@ -17,9 +17,8 @@
     <uses-permission android:name="android.permission.health.WRITE_HEART_RATE" />
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
     <uses-permission android:name="android.permission.health.READ_EXERCISE" />
-    <!-- Notification permissions -->
+    <!-- Notification permissions (scheduling uses inexact alarms only) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
         android:label="@string/app_name"
@@ -54,7 +53,7 @@
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
-        <!-- Health Connect permissions activity -->
+        <!-- Health Connect permissions activity (Android 13 and below) -->
         <activity
             android:name="androidx.health.connect.client.permission.HealthPermissionRequestActivity"
             android:exported="true">
@@ -62,6 +61,17 @@
                 <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
             </intent-filter>
         </activity>
+        <!-- Health Connect privacy policy / rationale link (Android 14+) -->
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:targetActivity="androidx.health.connect.client.permission.HealthPermissionRequestActivity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
     </application>
     <queries>
         <intent>

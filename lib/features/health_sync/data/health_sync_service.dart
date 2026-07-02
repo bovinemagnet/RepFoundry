@@ -1,5 +1,8 @@
 import 'package:health/health.dart';
 
+/// A body-weight reading from the platform health store.
+typedef WeightSample = ({double weightKg, DateTime date});
+
 class HealthSyncService {
   final Health _health = Health();
   bool _isAuthorised = false;
@@ -104,7 +107,7 @@ class HealthSyncService {
   }
 
   /// Read latest body weight from health store (last 30 days).
-  Future<double?> readLatestWeight() async {
+  Future<WeightSample?> readLatestWeight() async {
     final now = DateTime.now();
     final thirtyDaysAgo = now.subtract(const Duration(days: 30));
 
@@ -119,7 +122,10 @@ class HealthSyncService {
     data.sort((a, b) => b.dateFrom.compareTo(a.dateFrom));
     final latest = data.first;
     if (latest.value is NumericHealthValue) {
-      return (latest.value as NumericHealthValue).numericValue.toDouble();
+      return (
+        weightKg: (latest.value as NumericHealthValue).numericValue.toDouble(),
+        date: latest.dateFrom.toUtc(),
+      );
     }
     return null;
   }

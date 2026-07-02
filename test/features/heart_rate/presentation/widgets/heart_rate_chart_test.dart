@@ -95,6 +95,21 @@ void main() {
     });
 
     testWidgets(
+        'renders without crashing when all readings exceed the zone maxHr',
+        (tester) async {
+      // A clinician-capped user (maxHr 180 here) whose readings all sit
+      // above the cap must still get a chart, not an ArgumentError.
+      await tester.pumpWidget(host(HeartRateChart(
+        readings: _readings(5, startBpm: 205, stepBpm: 2),
+        zoneConfig: _config(),
+      )));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(LineChart), findsOneWidget);
+    });
+
+    testWidgets(
         'omits range annotations when showZoneBands is false but keeps lines',
         (tester) async {
       await tester.pumpWidget(host(HeartRateChart(

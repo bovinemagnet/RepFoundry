@@ -65,9 +65,12 @@ class HeartRateChart extends StatelessWidget {
         ? zoneConfig!.maxHr
         : null;
     final chartMinY = (minBpm - yPadding).clamp(0, double.infinity).toDouble();
-    final chartMaxY = chartMaxHr != null
-        ? (maxBpm + yPadding).clamp(0, chartMaxHr.toDouble()).toDouble()
-        : (maxBpm + yPadding);
+    // Cap the padded top at the zone maxHr, but never below the data itself —
+    // readings can exceed the configured max (e.g. a clinician cap).
+    final paddedMaxY = (maxBpm + yPadding).toDouble();
+    final chartMaxY = chartMaxHr != null && chartMaxHr > maxBpm
+        ? paddedMaxY.clamp(0, chartMaxHr.toDouble()).toDouble()
+        : paddedMaxY;
 
     final totalSeconds = displayReadings.last.elapsed.inSeconds;
     final double? minX = windowSeconds != null && readings.length > 1
