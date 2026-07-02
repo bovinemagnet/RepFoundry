@@ -16,6 +16,7 @@ import '../features/settings/application/import_data_use_case.dart';
 import '../features/cardio/data/drift_cardio_session_repository.dart';
 import '../features/cardio/data/flutter_blue_heart_rate_service.dart';
 import '../features/cardio/data/heart_rate_service.dart';
+import '../features/cardio/data/foreground_session_service.dart';
 import '../features/cardio/data/location_service.dart';
 import '../features/cardio/domain/repositories/cardio_session_repository.dart';
 import '../features/cardio/application/save_cardio_session_use_case.dart';
@@ -106,6 +107,11 @@ final locationServiceProvider = Provider<LocationService>((ref) {
 
 final heartRateServiceProvider = Provider<HeartRateService>((ref) {
   return FlutterBlueHeartRateService();
+});
+
+final foregroundSessionServiceProvider =
+    Provider<ForegroundSessionService>((ref) {
+  return FlutterForegroundSessionService();
 });
 
 final healthSyncServiceProvider = Provider<HealthSyncService>((ref) {

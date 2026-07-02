@@ -8,6 +8,7 @@ import '../../../../core/providers.dart';
 import '../../../health_sync/data/health_sync_service.dart';
 import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../../application/save_cardio_session_use_case.dart';
+import '../../data/foreground_session_service.dart';
 import '../../data/heart_rate_service.dart';
 import '../../data/location_service.dart';
 import '../../domain/repositories/cardio_session_repository.dart';
@@ -30,6 +31,8 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
   SaveCardioSessionUseCase get _saveUseCase =>
       ref.read(saveCardioSessionUseCaseProvider);
   LocationService get _locationService => ref.read(locationServiceProvider);
+  ForegroundSessionService get _foregroundService =>
+      ref.read(foregroundSessionServiceProvider);
   HeartRateService get _heartRateService => ref.read(heartRateServiceProvider);
   HealthSyncService get _healthSyncService =>
       ref.read(healthSyncServiceProvider);
@@ -65,6 +68,17 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
     if (state.gpsEnabled) {
       _startGpsTracking();
     }
+    _syncForegroundService();
+  }
+
+  /// Best-effort reconciliation of the Android foreground service that
+  /// keeps GPS/HR streams alive while the phone is locked.
+  void _syncForegroundService() {
+    unawaited(_foregroundService.update(
+      sessionRunning: state.isRunning,
+      gpsEnabled: state.gpsEnabled,
+      hrConnected: state.hrConnected,
+    ));
   }
 
   int get _wallClockElapsedSeconds {
@@ -87,6 +101,7 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       isRunning: false,
       elapsedSeconds: _wallClockElapsedSeconds,
     );
+    _syncForegroundService();
   }
 
   void reset() {
@@ -102,6 +117,7 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       hrConnected: state.hrConnected,
       hrDeviceName: state.hrDeviceName,
     );
+    _syncForegroundService();
   }
 
   Future<void> toggleGps() async {
@@ -112,6 +128,7 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
         gpsDistanceMeters: 0,
         gpsAcquiring: false,
       );
+      _syncForegroundService();
       return;
     }
 
@@ -128,6 +145,7 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
     if (state.isRunning) {
       _startGpsTracking();
     }
+    _syncForegroundService();
   }
 
   void _startGpsTracking() {
@@ -219,6 +237,7 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
         hrConnecting: false,
         hrDeviceName: deviceName,
       );
+      _syncForegroundService();
     } on Exception catch (e) {
       state = state.copyWith(
         hrConnecting: false,
@@ -241,6 +260,7 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       clearHrDeviceName: true,
       heartRateReadings: const [],
     );
+    _syncForegroundService();
   }
 
   Future<void> selectExercise(String id, String name) async {
@@ -323,6 +343,7 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       _hrConnectionSub?.cancel();
       _hrConnectionSub = null;
       state = const CardioTrackingState(savedSuccessfully: true);
+      _syncForegroundService();
     } on SaveCardioSessionException catch (e) {
       state = state.copyWith(isSaving: false, error: e.message);
     }
