@@ -4,6 +4,7 @@ import 'package:rep_foundry/features/workout/application/log_set_use_case.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
 import 'package:rep_foundry/features/workout/domain/repositories/workout_repository.dart';
+import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
 import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
 
 class _FakeWorkoutRepository implements WorkoutRepository {
@@ -20,7 +21,11 @@ class _FakeWorkoutRepository implements WorkoutRepository {
     String exerciseId, {
     int limit = 50,
   }) async {
-    return _sets.where((s) => s.exerciseId == exerciseId).take(limit).toList();
+    // Most recent first, matching the Drift implementation's
+    // ORDER BY timestamp DESC LIMIT.
+    final matching =
+        _sets.where((s) => s.exerciseId == exerciseId).toList().reversed;
+    return matching.take(limit).toList();
   }
 
   // Unused stubs
@@ -67,10 +72,15 @@ class _FakeWorkoutRepository implements WorkoutRepository {
 void main() {
   late LogSetUseCase useCase;
   late _FakeWorkoutRepository repository;
+  late InMemoryPersonalRecordRepository personalRecordRepository;
 
   setUp(() {
     repository = _FakeWorkoutRepository();
-    useCase = LogSetUseCase(workoutRepository: repository);
+    personalRecordRepository = InMemoryPersonalRecordRepository();
+    useCase = LogSetUseCase(
+      workoutRepository: repository,
+      personalRecordRepository: personalRecordRepository,
+    );
   });
 
   const validInput = LogSetInput(
@@ -248,6 +258,133 @@ void main() {
         reps: 5,
       ),
     );
+    expect(result.newPersonalRecords, isEmpty);
+  });
+
+  test('execute() does not report a PR when the stored all-time best is higher',
+      () async {
+    // Bests live in the PR repository but not in the recent sets window.
+    for (final seeded in [
+      (RecordType.estimatedOneRepMax, 300.0),
+      (RecordType.maxWeight, 250.0),
+      (RecordType.maxReps, 30.0),
+      (RecordType.maxVolume, 3000.0),
+    ]) {
+      await personalRecordRepository.createRecord(PersonalRecord.create(
+        exerciseId: 'e8',
+        recordType: seeded.$1,
+        value: seeded.$2,
+      ));
+    }
+
+    final result = await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e8',
+        setOrder: 1,
+        weight: 150,
+        reps: 5,
+      ),
+    );
+    expect(result.newPersonalRecords, isEmpty);
+  });
+
+  test(
+      'execute() does not report a PR when the all-time best is older than '
+      'the last 100 sets', () async {
+    // All-time best, logged first so it falls outside the recent window.
+    await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e9',
+        setOrder: 1,
+        weight: 200,
+        reps: 10,
+      ),
+    );
+    // 100 light sets push the best out of any 100-set window.
+    for (var i = 0; i < 100; i++) {
+      await useCase.execute(
+        LogSetInput(
+          workoutId: 'w1',
+          exerciseId: 'e9',
+          setOrder: i + 2,
+          weight: 50,
+          reps: 5,
+        ),
+      );
+    }
+    // Beats everything in the window but not the all-time best.
+    final result = await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e9',
+        setOrder: 102,
+        weight: 100,
+        reps: 5,
+      ),
+    );
+    expect(result.newPersonalRecords, isEmpty);
+  });
+
+  test('execute() reports and persists a PR that beats the stored best',
+      () async {
+    for (final seeded in [
+      (RecordType.estimatedOneRepMax, 200.0),
+      (RecordType.maxWeight, 100.0),
+      (RecordType.maxReps, 10.0),
+      (RecordType.maxVolume, 1500.0),
+    ]) {
+      await personalRecordRepository.createRecord(PersonalRecord.create(
+        exerciseId: 'e10',
+        recordType: seeded.$1,
+        value: seeded.$2,
+      ));
+    }
+
+    // 120kg x 1: beats only the 100kg maxWeight best
+    // (e1RM 124, reps 1, volume 120).
+    final result = await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e10',
+        setOrder: 1,
+        weight: 120,
+        reps: 1,
+      ),
+    );
+    expect(result.newPersonalRecords.length, 1);
+    expect(result.newPersonalRecords.single.recordType, RecordType.maxWeight);
+    expect(result.newPersonalRecords.single.value, 120.0);
+
+    final storedBest = await personalRecordRepository.getBestRecord(
+      'e10',
+      RecordType.maxWeight,
+    );
+    expect(storedBest!.value, 120.0);
+  });
+
+  test('execute() persists the first-ever set as the initial PRs', () async {
+    await useCase.execute(
+      const LogSetInput(
+        workoutId: 'w1',
+        exerciseId: 'e11',
+        setOrder: 1,
+        weight: 100,
+        reps: 5,
+      ),
+    );
+    for (final type in RecordType.values) {
+      final best = await personalRecordRepository.getBestRecord('e11', type);
+      expect(best, isNotNull, reason: 'expected initial PR for $type');
+    }
+  });
+
+  test(
+      'execute() skips PR detection when no PersonalRecordRepository '
+      'is provided', () async {
+    final noRepoUseCase = LogSetUseCase(workoutRepository: repository);
+    final result = await noRepoUseCase.execute(validInput);
     expect(result.newPersonalRecords, isEmpty);
   });
 

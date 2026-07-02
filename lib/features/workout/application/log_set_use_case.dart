@@ -88,68 +88,29 @@ class LogSetUseCase {
   }
 
   Future<List<PersonalRecord>> _checkForPersonalRecords(WorkoutSet set) async {
-    final previousSets = await _workoutRepository.getSetsForExercise(
-      set.exerciseId,
-      limit: 100,
-    );
+    final repository = _personalRecordRepository;
+    // Without a record store there is no authoritative all-time best to
+    // compare against, so PR detection is skipped.
+    if (repository == null) return const [];
 
-    final others = previousSets.where((s) => s.id != set.id && !s.isWarmUp);
+    final candidates = <(RecordType, double)>[
+      (RecordType.estimatedOneRepMax, set.estimatedOneRepMax),
+      (RecordType.maxWeight, set.weight),
+      (RecordType.maxReps, set.reps.toDouble()),
+      (RecordType.maxVolume, set.volume),
+    ];
+
     final records = <PersonalRecord>[];
-
-    // e1RM PR
-    final bestE1rm = others.fold<double>(
-      0,
-      (max, s) => s.estimatedOneRepMax > max ? s.estimatedOneRepMax : max,
-    );
-    if (set.estimatedOneRepMax > bestE1rm) {
-      records.add(PersonalRecord.create(
-        exerciseId: set.exerciseId,
-        recordType: RecordType.estimatedOneRepMax,
-        value: set.estimatedOneRepMax,
-        workoutSetId: set.id,
-      ));
-    }
-
-    // Max weight PR
-    final bestWeight = others.fold<double>(
-      0,
-      (max, s) => s.weight > max ? s.weight : max,
-    );
-    if (set.weight > bestWeight) {
-      records.add(PersonalRecord.create(
-        exerciseId: set.exerciseId,
-        recordType: RecordType.maxWeight,
-        value: set.weight,
-        workoutSetId: set.id,
-      ));
-    }
-
-    // Max reps PR
-    final bestReps = others.fold<int>(
-      0,
-      (max, s) => s.reps > max ? s.reps : max,
-    );
-    if (set.reps > bestReps) {
-      records.add(PersonalRecord.create(
-        exerciseId: set.exerciseId,
-        recordType: RecordType.maxReps,
-        value: set.reps.toDouble(),
-        workoutSetId: set.id,
-      ));
-    }
-
-    // Max volume PR
-    final bestVolume = others.fold<double>(
-      0,
-      (max, s) => s.volume > max ? s.volume : max,
-    );
-    if (set.volume > bestVolume) {
-      records.add(PersonalRecord.create(
-        exerciseId: set.exerciseId,
-        recordType: RecordType.maxVolume,
-        value: set.volume,
-        workoutSetId: set.id,
-      ));
+    for (final (recordType, value) in candidates) {
+      final best = await repository.getBestRecord(set.exerciseId, recordType);
+      if (best == null || value > best.value) {
+        records.add(PersonalRecord.create(
+          exerciseId: set.exerciseId,
+          recordType: recordType,
+          value: value,
+          workoutSetId: set.id,
+        ));
+      }
     }
 
     return records;
