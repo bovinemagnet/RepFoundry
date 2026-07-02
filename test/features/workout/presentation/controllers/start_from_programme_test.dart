@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
+import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
@@ -11,6 +12,8 @@ import 'package:rep_foundry/features/sync/presentation/providers/sync_settings_p
 import 'package:rep_foundry/features/templates/data/workout_template_repository_impl.dart';
 import 'package:rep_foundry/features/templates/domain/models/workout_template.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
+import 'package:rep_foundry/features/workout/domain/models/workout.dart';
+import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
 import 'package:rep_foundry/features/workout/presentation/controllers/active_workout_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -222,6 +225,134 @@ void main() {
 
       expect(started, isFalse);
       expect(programmeRepo.markedProgrammeId, isNull);
+    });
+  });
+
+  group('ActiveWorkoutController.startFromProgramme progression gating', () {
+    late Exercise exercise;
+    late WorkoutTemplate template;
+
+    /// Seeds an exercise with a completed prior session at 100 kg so ghost
+    /// sets exist, plus a template containing that exercise.
+    Future<void> seedHistoryAndTemplate() async {
+      exercise = Exercise.create(
+        name: 'Bench Press',
+        category: ExerciseCategory.strength,
+        muscleGroup: MuscleGroup.chest,
+        equipmentType: EquipmentType.barbell,
+      );
+      await exerciseRepo.createExercise(exercise);
+
+      final twoDaysAgo = DateTime.now().toUtc().subtract(
+            const Duration(days: 2),
+          );
+      final pastWorkout = Workout.create().copyWith(
+        startedAt: twoDaysAgo,
+        completedAt: twoDaysAgo,
+      );
+      await workoutRepo.createWorkout(pastWorkout);
+      await workoutRepo.addSet(WorkoutSet.create(
+        workoutId: pastWorkout.id,
+        exerciseId: exercise.id,
+        setOrder: 0,
+        weight: 100.0,
+        reps: 5,
+      ));
+
+      template = WorkoutTemplate.create(name: 'Bench Day');
+      template = template.copyWith(exercises: [
+        TemplateExercise(
+          id: 'te1',
+          templateId: template.id,
+          exerciseId: exercise.id,
+          exerciseName: exercise.name,
+          targetSets: 3,
+          targetReps: 5,
+          orderIndex: 0,
+          updatedAt: DateTime.now().toUtc(),
+        ),
+      ]);
+      await templateRepo.createTemplate(template);
+    }
+
+    Programme buildProgrammeWithRule({
+      required DateTime startedAt,
+      required int frequencyWeeks,
+      int durationWeeks = 3,
+    }) {
+      final today = DateTime.now().weekday;
+      final programme =
+          Programme.create(name: 'Prog', durationWeeks: durationWeeks).copyWith(
+        startedAt: startedAt,
+        days: [
+          for (var week = 1; week <= durationWeeks; week++)
+            ProgrammeDay.create(
+              programmeId: 'p',
+              weekNumber: week,
+              dayOfWeek: today,
+              templateId: template.id,
+              templateName: template.name,
+            ),
+        ],
+      );
+      return programme.copyWith(rules: [
+        ProgressionRule.create(
+          programmeId: programme.id,
+          exerciseId: exercise.id,
+          type: ProgressionType.fixedIncrement,
+          value: 2.5,
+          frequencyWeeks: frequencyWeeks,
+        ),
+      ]);
+    }
+
+    double ghostWeight() {
+      final state = container.read(activeWorkoutControllerProvider);
+      return state.ghostSetsByExercise[exercise.id]!.first.weight;
+    }
+
+    test('week 1 uses unprogressed ghost weights', () async {
+      await waitForInit();
+      await seedHistoryAndTemplate();
+      final programme = buildProgrammeWithRule(
+        startedAt: DateTime.now().toUtc(),
+        frequencyWeeks: 2,
+      );
+
+      final started = await readController().startFromProgramme(programme);
+
+      expect(started, isTrue);
+      expect(ghostWeight(), 100.0);
+    });
+
+    test('off week (week 2 of a fortnightly rule) uses unprogressed weights',
+        () async {
+      await waitForInit();
+      await seedHistoryAndTemplate();
+      final programme = buildProgrammeWithRule(
+        startedAt: DateTime.now().toUtc().subtract(const Duration(days: 8)),
+        frequencyWeeks: 2,
+      );
+
+      final started = await readController().startFromProgramme(programme);
+
+      expect(started, isTrue);
+      expect(ghostWeight(), 100.0);
+    });
+
+    test('on week (week 3 of a fortnightly rule) progresses ghost weights',
+        () async {
+      await waitForInit();
+      await seedHistoryAndTemplate();
+      final programme = buildProgrammeWithRule(
+        startedAt: DateTime.now().toUtc().subtract(const Duration(days: 15)),
+        frequencyWeeks: 2,
+      );
+
+      final started = await readController().startFromProgramme(programme);
+
+      expect(started, isTrue);
+      expect(ghostWeight(), 102.5);
     });
   });
 }

@@ -113,5 +113,76 @@ void main() {
       );
       expect(r.applyProgression(100.0), 90.0);
     });
+
+    test('applyProgression with deload over 100% leaves weight unchanged', () {
+      final r = ProgressionRule.create(
+        programmeId: 'p1',
+        exerciseId: 'e1',
+        type: ProgressionType.deload,
+        value: 150.0,
+      );
+      expect(r.applyProgression(100.0), 100.0);
+    });
+
+    test('applyProgression with deload of exactly 100% leaves weight unchanged',
+        () {
+      final r = ProgressionRule.create(
+        programmeId: 'p1',
+        exerciseId: 'e1',
+        type: ProgressionType.deload,
+        value: 100.0,
+      );
+      expect(r.applyProgression(100.0), 100.0);
+    });
+
+    test('applyProgression never returns a negative weight for zero base', () {
+      final r = ProgressionRule.create(
+        programmeId: 'p1',
+        exerciseId: 'e1',
+        type: ProgressionType.deload,
+        value: 50.0,
+      );
+      expect(r.applyProgression(0.0), 0.0);
+    });
+
+    group('appliesInWeek', () {
+      ProgressionRule ruleEvery(int frequencyWeeks) => ProgressionRule.create(
+            programmeId: 'p1',
+            exerciseId: 'e1',
+            type: ProgressionType.fixedIncrement,
+            value: 2.5,
+            frequencyWeeks: frequencyWeeks,
+          );
+
+      test('never applies in week 1 — ghosts are the pre-programme baseline',
+          () {
+        expect(ruleEvery(1).appliesInWeek(1), isFalse);
+        expect(ruleEvery(2).appliesInWeek(1), isFalse);
+      });
+
+      test('weekly rule applies every week after the first', () {
+        final r = ruleEvery(1);
+        expect(r.appliesInWeek(2), isTrue);
+        expect(r.appliesInWeek(3), isTrue);
+        expect(r.appliesInWeek(4), isTrue);
+      });
+
+      test('fortnightly rule applies in weeks 3 and 5 but not 2 and 4', () {
+        final r = ruleEvery(2);
+        expect(r.appliesInWeek(2), isFalse);
+        expect(r.appliesInWeek(3), isTrue);
+        expect(r.appliesInWeek(4), isFalse);
+        expect(r.appliesInWeek(5), isTrue);
+      });
+
+      test('three-weekly rule applies in weeks 4 and 7', () {
+        final r = ruleEvery(3);
+        expect(r.appliesInWeek(2), isFalse);
+        expect(r.appliesInWeek(3), isFalse);
+        expect(r.appliesInWeek(4), isTrue);
+        expect(r.appliesInWeek(5), isFalse);
+        expect(r.appliesInWeek(7), isTrue);
+      });
+    });
   });
 }

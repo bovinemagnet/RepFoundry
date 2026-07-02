@@ -273,11 +273,13 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
 
     await startFromTemplate(template);
 
-    // Apply progression rules to ghost set weights.
+    // Apply progression rules to ghost set weights, but only in weeks where
+    // the rule's frequencyWeeks says a progression step is due.
     if (programme.rules.isNotEmpty) {
       final updatedGhosts =
           Map<String, List<GhostSet>>.from(state.ghostSetsByExercise);
       for (final rule in programme.rules) {
+        if (!rule.appliesInWeek(currentWeek)) continue;
         final ghosts = updatedGhosts[rule.exerciseId];
         if (ghosts != null && ghosts.isNotEmpty) {
           updatedGhosts[rule.exerciseId] = ghosts

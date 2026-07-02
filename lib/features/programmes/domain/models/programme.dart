@@ -204,12 +204,29 @@ class ProgressionRule {
     );
   }
 
+  /// Whether this rule should progress ghost weights in [currentWeek].
+  ///
+  /// Week 1 never progresses — its ghost sets are the pre-programme
+  /// baseline. After that, a single step applies at the start of each
+  /// [frequencyWeeks]-long period (weeks 3, 5, 7… for frequencyWeeks 2).
+  /// One step per period is cumulative in practice because ghosts are
+  /// sourced from the last completed session, which already carries any
+  /// previously applied progression.
+  bool appliesInWeek(int currentWeek) {
+    if (currentWeek <= 1) return false;
+    return (currentWeek - 1) % frequencyWeeks == 0;
+  }
+
+  /// Result is clamped: a rule whose raw result would be zero or negative
+  /// (e.g. a deload of 100% or more) is treated as a no-op and returns
+  /// [baseWeight] unchanged, so a weight can never be driven to or below 0.
   double applyProgression(double baseWeight) {
-    return switch (type) {
+    final result = switch (type) {
       ProgressionType.fixedIncrement => baseWeight + value,
       ProgressionType.percentage => baseWeight * (1 + value / 100),
       ProgressionType.deload => baseWeight * (1 - value / 100),
     };
+    return result > 0 ? result : baseWeight;
   }
 
   @override
