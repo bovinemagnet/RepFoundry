@@ -1,3 +1,4 @@
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
@@ -87,6 +88,69 @@ void main() {
         controller.start();
         controller.start();
         expect(controller.state.isRunning, isTrue);
+      });
+
+      test('elapsed time follows the wall clock, not tick count', () {
+        fakeAsync((async) {
+          controller.start();
+          async.elapse(const Duration(seconds: 5));
+          expect(controller.state.elapsedSeconds, 5);
+
+          // Simulate OS suspension: wall time passes but no ticks fire.
+          async.elapseBlocking(const Duration(minutes: 10));
+          // The next tick after resume corrects the display.
+          async.elapse(const Duration(seconds: 1));
+          expect(controller.state.elapsedSeconds, 5 + 600 + 1);
+          controller.reset();
+        });
+      });
+
+      test('pause() freezes elapsed and resume accumulates correctly', () {
+        fakeAsync((async) {
+          controller.start();
+          async.elapse(const Duration(seconds: 10));
+          controller.pause();
+          // Time passing while paused must not count.
+          async.elapse(const Duration(minutes: 5));
+          expect(controller.state.elapsedSeconds, 10);
+
+          controller.start();
+          async.elapse(const Duration(seconds: 20));
+          expect(controller.state.elapsedSeconds, 30);
+          controller.reset();
+        });
+      });
+
+      test('reset() zeroes the wall-clock accumulator', () {
+        fakeAsync((async) {
+          controller.start();
+          async.elapse(const Duration(seconds: 30));
+          controller.reset();
+          controller.start();
+          async.elapse(const Duration(seconds: 3));
+          expect(controller.state.elapsedSeconds, 3);
+          controller.reset();
+        });
+      });
+
+      test('save() persists wall-clock duration even without a recent tick',
+          () {
+        fakeAsync((async) {
+          controller.selectExercise('e1', 'Treadmill');
+          async.flushMicrotasks();
+
+          controller.start();
+          async.elapse(const Duration(seconds: 5));
+          // Suspension right before save: no tick fires for 10 minutes.
+          async.elapseBlocking(const Duration(minutes: 10));
+          controller.save(distanceMeters: 1000);
+          async.flushMicrotasks();
+
+          late List<CardioSession> sessions;
+          cardioRepo.getSessionsForExercise('e1').then((s) => sessions = s);
+          async.flushMicrotasks();
+          expect(sessions.single.durationSeconds, 605);
+        });
       });
     });
 

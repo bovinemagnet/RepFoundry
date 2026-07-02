@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -18,6 +19,11 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
   Position? _lastPosition;
   StreamSubscription<int>? _hrSub;
   StreamSubscription<HrConnectionState>? _hrConnectionSub;
+  // Elapsed time is derived from the wall clock rather than counted ticks,
+  // so time spent suspended by the OS (phone locked, app backgrounded) is
+  // still accounted for after resume.
+  DateTime? _runningSince;
+  Duration _accumulated = Duration.zero;
 
   CardioSessionRepository get _cardioRepository =>
       ref.read(cardioSessionRepositoryProvider);
@@ -52,22 +58,41 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       savedSuccessfully: false,
       heartRateReadings: isFreshSession ? const [] : state.heartRateReadings,
     );
+    _runningSince = clock.now();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
+      state = state.copyWith(elapsedSeconds: _wallClockElapsedSeconds);
     });
     if (state.gpsEnabled) {
       _startGpsTracking();
     }
   }
 
+  int get _wallClockElapsedSeconds {
+    final runningSince = _runningSince;
+    final live = runningSince == null
+        ? Duration.zero
+        : clock.now().difference(runningSince);
+    return (_accumulated + live).inSeconds;
+  }
+
   void pause() {
     _timer?.cancel();
     _positionSub?.pause();
-    state = state.copyWith(isRunning: false);
+    final runningSince = _runningSince;
+    if (runningSince != null) {
+      _accumulated += clock.now().difference(runningSince);
+      _runningSince = null;
+    }
+    state = state.copyWith(
+      isRunning: false,
+      elapsedSeconds: _wallClockElapsedSeconds,
+    );
   }
 
   void reset() {
     _timer?.cancel();
+    _runningSince = null;
+    _accumulated = Duration.zero;
     _stopGpsTracking();
     state = CardioTrackingState(
       selectedExerciseId: state.selectedExerciseId,
@@ -234,6 +259,11 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
     double? incline,
     int? avgHeartRate,
   }) async {
+    // Refresh elapsed from the wall clock so a suspension immediately
+    // before saving cannot truncate the recorded duration.
+    if (_runningSince != null || _accumulated > Duration.zero) {
+      state = state.copyWith(elapsedSeconds: _wallClockElapsedSeconds);
+    }
     if (state.selectedExerciseId == null || state.elapsedSeconds <= 0) return;
 
     // Use GPS distance if GPS is enabled and has data.
@@ -280,6 +310,8 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       }
 
       _timer?.cancel();
+      _runningSince = null;
+      _accumulated = Duration.zero;
       _stopGpsTracking();
       // Cancel only this controller's subscriptions; never disconnect the
       // shared HeartRateService singleton, since the dedicated HR panel
