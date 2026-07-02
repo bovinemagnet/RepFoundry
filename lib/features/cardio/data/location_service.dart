@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:geolocator/geolocator.dart';
 
@@ -30,12 +31,26 @@ class GeolocatorLocationService implements LocationService {
 
   @override
   Stream<Position> getPositionStream() {
-    return Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
+    // iOS keeps delivering updates while the phone is locked (requires the
+    // UIBackgroundModes location entry and shows the system location
+    // indicator); Android relies on the cardio foreground service to keep
+    // the process alive instead.
+    final LocationSettings settings;
+    if (Platform.isIOS) {
+      settings = AppleSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 5,
-      ),
-    );
+        allowBackgroundLocationUpdates: true,
+        showBackgroundLocationIndicator: true,
+        pauseLocationUpdatesAutomatically: false,
+      );
+    } else {
+      settings = const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 5,
+      );
+    }
+    return Geolocator.getPositionStream(locationSettings: settings);
   }
 
   @override

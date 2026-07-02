@@ -1,3 +1,4 @@
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
@@ -11,6 +12,7 @@ import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 
+import '../../data/fake_foreground_session_service.dart';
 import '../../data/fake_heart_rate_service.dart';
 import '../../data/fake_location_service.dart';
 
@@ -20,6 +22,7 @@ void main() {
   late SaveCardioSessionUseCase useCase;
   late FakeLocationService locationService;
   late FakeHeartRateService heartRateService;
+  late FakeForegroundSessionService foregroundService;
   late ProviderContainer container;
   late CardioTrackingController controller;
 
@@ -34,12 +37,14 @@ void main() {
     );
     locationService = FakeLocationService();
     heartRateService = FakeHeartRateService();
+    foregroundService = FakeForegroundSessionService();
     container = ProviderContainer(
       overrides: [
         cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
         saveCardioSessionUseCaseProvider.overrideWithValue(useCase),
         locationServiceProvider.overrideWithValue(locationService),
         heartRateServiceProvider.overrideWithValue(heartRateService),
+        foregroundSessionServiceProvider.overrideWithValue(foregroundService),
         healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
         healthSyncSettingsProvider
             .overrideWith(() => HealthSyncSettingsNotifier()),
@@ -87,6 +92,69 @@ void main() {
         controller.start();
         controller.start();
         expect(controller.state.isRunning, isTrue);
+      });
+
+      test('elapsed time follows the wall clock, not tick count', () {
+        fakeAsync((async) {
+          controller.start();
+          async.elapse(const Duration(seconds: 5));
+          expect(controller.state.elapsedSeconds, 5);
+
+          // Simulate OS suspension: wall time passes but no ticks fire.
+          async.elapseBlocking(const Duration(minutes: 10));
+          // The next tick after resume corrects the display.
+          async.elapse(const Duration(seconds: 1));
+          expect(controller.state.elapsedSeconds, 5 + 600 + 1);
+          controller.reset();
+        });
+      });
+
+      test('pause() freezes elapsed and resume accumulates correctly', () {
+        fakeAsync((async) {
+          controller.start();
+          async.elapse(const Duration(seconds: 10));
+          controller.pause();
+          // Time passing while paused must not count.
+          async.elapse(const Duration(minutes: 5));
+          expect(controller.state.elapsedSeconds, 10);
+
+          controller.start();
+          async.elapse(const Duration(seconds: 20));
+          expect(controller.state.elapsedSeconds, 30);
+          controller.reset();
+        });
+      });
+
+      test('reset() zeroes the wall-clock accumulator', () {
+        fakeAsync((async) {
+          controller.start();
+          async.elapse(const Duration(seconds: 30));
+          controller.reset();
+          controller.start();
+          async.elapse(const Duration(seconds: 3));
+          expect(controller.state.elapsedSeconds, 3);
+          controller.reset();
+        });
+      });
+
+      test('save() persists wall-clock duration even without a recent tick',
+          () {
+        fakeAsync((async) {
+          controller.selectExercise('e1', 'Treadmill');
+          async.flushMicrotasks();
+
+          controller.start();
+          async.elapse(const Duration(seconds: 5));
+          // Suspension right before save: no tick fires for 10 minutes.
+          async.elapseBlocking(const Duration(minutes: 10));
+          controller.save(distanceMeters: 1000);
+          async.flushMicrotasks();
+
+          late List<CardioSession> sessions;
+          cardioRepo.getSessionsForExercise('e1').then((s) => sessions = s);
+          async.flushMicrotasks();
+          expect(sessions.single.durationSeconds, 605);
+        });
       });
     });
 
@@ -494,6 +562,64 @@ void main() {
         expect(controller.state.hrReconnecting, isFalse);
         expect(controller.state.currentHeartRate, isNull);
         expect(controller.state.error, isNotNull);
+      });
+    });
+
+    group('foreground session service', () {
+      test('start() activates the service with current capabilities', () {
+        controller.start();
+        expect(
+          foregroundService.last,
+          (sessionRunning: true, gpsEnabled: false, hrConnected: false),
+        );
+        controller.reset();
+      });
+
+      test('pause() deactivates the service', () {
+        controller.start();
+        controller.pause();
+        expect(foregroundService.last?.sessionRunning, isFalse);
+      });
+
+      test('reset() deactivates the service', () {
+        controller.start();
+        controller.reset();
+        expect(foregroundService.last?.sessionRunning, isFalse);
+      });
+
+      test('toggleGps() while running updates the service capabilities',
+          () async {
+        controller.start();
+        await controller.toggleGps();
+        expect(
+          foregroundService.last,
+          (sessionRunning: true, gpsEnabled: true, hrConnected: false),
+        );
+        controller.reset();
+      });
+
+      test('connectHeartRate() while running updates the capabilities',
+          () async {
+        controller.start();
+        await controller.connectHeartRate('dev1', 'Polar H10');
+        expect(
+          foregroundService.last,
+          (sessionRunning: true, gpsEnabled: false, hrConnected: true),
+        );
+        controller.reset();
+      });
+
+      test('save() deactivates the service', () async {
+        await controller.selectExercise('e1', 'Treadmill');
+        controller.start();
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        await controller.save(distanceMeters: 500);
+        expect(controller.state.savedSuccessfully, isTrue);
+        expect(foregroundService.last?.sessionRunning, isFalse);
+        // Let the lazily mounted health-sync settings finish loading
+        // before tearDown disposes the container.
+        await Future<void>.delayed(const Duration(milliseconds: 50));
       });
     });
   });

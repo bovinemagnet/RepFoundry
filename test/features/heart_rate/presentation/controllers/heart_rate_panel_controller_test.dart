@@ -1,3 +1,4 @@
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
@@ -69,6 +70,48 @@ void main() {
 
       expect(controller.state.currentHeartRate, 145);
       expect(controller.state.readings, hasLength(2));
+    });
+
+    test('elapsed time follows the wall clock across suspension', () {
+      fakeAsync((async) {
+        controller.startMonitoring();
+        async.elapse(const Duration(seconds: 5));
+        expect(controller.state.elapsedSeconds, 5);
+
+        // Simulate OS suspension: wall time passes but no ticks fire.
+        async.elapseBlocking(const Duration(minutes: 10));
+        async.elapse(const Duration(seconds: 1));
+        expect(controller.state.elapsedSeconds, 5 + 600 + 1);
+        controller.stopMonitoring();
+      });
+    });
+
+    test('stopMonitoring freezes elapsed; restart accumulates', () {
+      fakeAsync((async) {
+        controller.startMonitoring();
+        async.elapse(const Duration(seconds: 10));
+        controller.stopMonitoring();
+        async.elapse(const Duration(minutes: 2));
+        expect(controller.state.elapsedSeconds, 10);
+
+        controller.startMonitoring();
+        async.elapse(const Duration(seconds: 5));
+        expect(controller.state.elapsedSeconds, 15);
+        controller.stopMonitoring();
+      });
+    });
+
+    test('resetReadings zeroes the wall-clock accumulator', () {
+      fakeAsync((async) {
+        controller.startMonitoring();
+        async.elapse(const Duration(seconds: 30));
+        controller.stopMonitoring();
+        controller.resetReadings();
+        controller.startMonitoring();
+        async.elapse(const Duration(seconds: 3));
+        expect(controller.state.elapsedSeconds, 3);
+        controller.stopMonitoring();
+      });
     });
 
     test('startMonitoring is idempotent', () async {
