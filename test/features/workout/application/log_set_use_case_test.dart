@@ -99,6 +99,27 @@ void main() {
     expect(result.set.reps, 5);
   });
 
+  test('execute() stores heart rate summary fields when provided', () async {
+    const input = LogSetInput(
+      workoutId: 'w1',
+      exerciseId: 'e1',
+      setOrder: 1,
+      weight: 100.0,
+      reps: 5,
+      avgHeartRate: 138,
+      peakHeartRate: 171,
+    );
+    final result = await useCase.execute(input);
+    expect(result.set.avgHeartRate, 138);
+    expect(result.set.peakHeartRate, 171);
+  });
+
+  test('execute() leaves heart rate fields null when not provided', () async {
+    final result = await useCase.execute(validInput);
+    expect(result.set.avgHeartRate, isNull);
+    expect(result.set.peakHeartRate, isNull);
+  });
+
   test('execute() detects all PR types on first set', () async {
     final result = await useCase.execute(validInput);
     expect(result.newPersonalRecords, isNotEmpty);

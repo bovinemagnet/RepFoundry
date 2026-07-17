@@ -656,6 +656,9 @@ class SZh extends S {
   String get tableHeaderE1rm => '估算1RM';
 
   @override
+  String get tableHeaderHr => '心率';
+
+  @override
   String weightFieldLabel(String unit) {
     return '重量（$unit）';
   }
@@ -2514,6 +2517,9 @@ class SZhHans extends SZh {
 
   @override
   String get tableHeaderE1rm => '估算1RM';
+
+  @override
+  String get tableHeaderHr => '心率';
 
   @override
   String weightFieldLabel(String unit) {

@@ -437,40 +437,53 @@ class _ExerciseSetsCard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Table(
-              columnWidths: const {
-                0: FixedColumnWidth(32),
-                1: FlexColumnWidth(),
-                2: FlexColumnWidth(),
-                3: FlexColumnWidth(),
-              },
-              children: [
-                TableRow(
-                  children: [
-                    _tableHeader(context, s.tableHeaderHash),
-                    _tableHeader(context, s.tableHeaderWeight),
-                    _tableHeader(context, s.tableHeaderReps),
-                    _tableHeader(context, s.tableHeaderE1rm),
-                  ],
-                ),
-                for (int i = 0; i < sets.length; i++)
+            Builder(builder: (context) {
+              // Only show the HR column when at least one set captured a
+              // heart rate summary.
+              final hasHr = sets.any((set) => set.avgHeartRate != null);
+              return Table(
+                columnWidths: {
+                  0: const FixedColumnWidth(32),
+                  for (var c = 1; c < (hasHr ? 5 : 4); c++)
+                    c: const FlexColumnWidth(),
+                },
+                children: [
                   TableRow(
                     children: [
-                      _tableCell(context, '${i + 1}', isHeader: true),
-                      _tableCell(context,
-                          '${unit.formatFromKg(sets[i].weight)} ${unit.label(s)}'),
-                      _tableCell(context, '${sets[i].reps}'),
-                      _tableCell(
-                        context,
-                        unit
-                            .fromKg(sets[i].estimatedOneRepMax)
-                            .toStringAsFixed(1),
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                      _tableHeader(context, s.tableHeaderHash),
+                      _tableHeader(context, s.tableHeaderWeight),
+                      _tableHeader(context, s.tableHeaderReps),
+                      _tableHeader(context, s.tableHeaderE1rm),
+                      if (hasHr) _tableHeader(context, s.tableHeaderHr),
                     ],
                   ),
-              ],
-            ),
+                  for (int i = 0; i < sets.length; i++)
+                    TableRow(
+                      children: [
+                        _tableCell(context, '${i + 1}', isHeader: true),
+                        _tableCell(context,
+                            '${unit.formatFromKg(sets[i].weight)} ${unit.label(s)}'),
+                        _tableCell(context, '${sets[i].reps}'),
+                        _tableCell(
+                          context,
+                          unit
+                              .fromKg(sets[i].estimatedOneRepMax)
+                              .toStringAsFixed(1),
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        if (hasHr)
+                          _tableCell(
+                            context,
+                            sets[i].avgHeartRate == null
+                                ? '—'
+                                : '${sets[i].avgHeartRate}'
+                                    '${sets[i].peakHeartRate != null ? '/${sets[i].peakHeartRate}' : ''}',
+                          ),
+                      ],
+                    ),
+                ],
+              );
+            }),
           ],
         ),
       ),

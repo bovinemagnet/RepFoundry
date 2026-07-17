@@ -38,7 +38,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// Static accessor for the schema version, usable from non-database code
   /// (e.g. the sync serialiser) without an `AppDatabase` instance.
-  static const int schemaVersionConst = 11;
+  static const int schemaVersionConst = 12;
 
   @override
   int get schemaVersion => schemaVersionConst;
@@ -264,6 +264,16 @@ class AppDatabase extends _$AppDatabase {
             await m.createIndex(idxProgrammeDaysProgramme);
             await m.createIndex(idxTemplateExercisesTemplate);
             await m.createIndex(idxProgressionRulesProgramme);
+          }
+          if (from < 12) {
+            // Per-set heart rate summary captured while a monitor is
+            // connected during a strength workout (issue #70).
+            await customStatement(
+              'ALTER TABLE workout_sets ADD COLUMN avg_heart_rate INTEGER',
+            );
+            await customStatement(
+              'ALTER TABLE workout_sets ADD COLUMN peak_heart_rate INTEGER',
+            );
           }
         },
       );

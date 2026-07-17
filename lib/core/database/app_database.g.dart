@@ -1333,6 +1333,18 @@ class $WorkoutSetsTable extends WorkoutSets
   late final GeneratedColumn<String> groupId = GeneratedColumn<String>(
       'group_id', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _avgHeartRateMeta =
+      const VerificationMeta('avgHeartRate');
+  @override
+  late final GeneratedColumn<int> avgHeartRate = GeneratedColumn<int>(
+      'avg_heart_rate', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _peakHeartRateMeta =
+      const VerificationMeta('peakHeartRate');
+  @override
+  late final GeneratedColumn<int> peakHeartRate = GeneratedColumn<int>(
+      'peak_heart_rate', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _updatedAtMeta =
       const VerificationMeta('updatedAt');
   @override
@@ -1359,6 +1371,8 @@ class $WorkoutSetsTable extends WorkoutSets
         timestamp,
         isWarmUp,
         groupId,
+        avgHeartRate,
+        peakHeartRate,
         updatedAt,
         deletedAt
       ];
@@ -1427,6 +1441,18 @@ class $WorkoutSetsTable extends WorkoutSets
       context.handle(_groupIdMeta,
           groupId.isAcceptableOrUnknown(data['group_id']!, _groupIdMeta));
     }
+    if (data.containsKey('avg_heart_rate')) {
+      context.handle(
+          _avgHeartRateMeta,
+          avgHeartRate.isAcceptableOrUnknown(
+              data['avg_heart_rate']!, _avgHeartRateMeta));
+    }
+    if (data.containsKey('peak_heart_rate')) {
+      context.handle(
+          _peakHeartRateMeta,
+          peakHeartRate.isAcceptableOrUnknown(
+              data['peak_heart_rate']!, _peakHeartRateMeta));
+    }
     if (data.containsKey('updated_at')) {
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
@@ -1464,6 +1490,10 @@ class $WorkoutSetsTable extends WorkoutSets
           .read(DriftSqlType.bool, data['${effectivePrefix}is_warm_up'])!,
       groupId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}group_id']),
+      avgHeartRate: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}avg_heart_rate']),
+      peakHeartRate: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}peak_heart_rate']),
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}updated_at'])!,
       deletedAt: attachedDatabase.typeMapping
@@ -1488,6 +1518,8 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
   final int timestamp;
   final bool isWarmUp;
   final String? groupId;
+  final int? avgHeartRate;
+  final int? peakHeartRate;
   final int updatedAt;
   final int? deletedAt;
   const WorkoutSet(
@@ -1501,6 +1533,8 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
       required this.timestamp,
       required this.isWarmUp,
       this.groupId,
+      this.avgHeartRate,
+      this.peakHeartRate,
       required this.updatedAt,
       this.deletedAt});
   @override
@@ -1519,6 +1553,12 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
     map['is_warm_up'] = Variable<bool>(isWarmUp);
     if (!nullToAbsent || groupId != null) {
       map['group_id'] = Variable<String>(groupId);
+    }
+    if (!nullToAbsent || avgHeartRate != null) {
+      map['avg_heart_rate'] = Variable<int>(avgHeartRate);
+    }
+    if (!nullToAbsent || peakHeartRate != null) {
+      map['peak_heart_rate'] = Variable<int>(peakHeartRate);
     }
     map['updated_at'] = Variable<int>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
@@ -1541,6 +1581,12 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
       groupId: groupId == null && nullToAbsent
           ? const Value.absent()
           : Value(groupId),
+      avgHeartRate: avgHeartRate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(avgHeartRate),
+      peakHeartRate: peakHeartRate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(peakHeartRate),
       updatedAt: Value(updatedAt),
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
@@ -1562,6 +1608,8 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
       timestamp: serializer.fromJson<int>(json['timestamp']),
       isWarmUp: serializer.fromJson<bool>(json['isWarmUp']),
       groupId: serializer.fromJson<String?>(json['groupId']),
+      avgHeartRate: serializer.fromJson<int?>(json['avgHeartRate']),
+      peakHeartRate: serializer.fromJson<int?>(json['peakHeartRate']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
       deletedAt: serializer.fromJson<int?>(json['deletedAt']),
     );
@@ -1580,6 +1628,8 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
       'timestamp': serializer.toJson<int>(timestamp),
       'isWarmUp': serializer.toJson<bool>(isWarmUp),
       'groupId': serializer.toJson<String?>(groupId),
+      'avgHeartRate': serializer.toJson<int?>(avgHeartRate),
+      'peakHeartRate': serializer.toJson<int?>(peakHeartRate),
       'updatedAt': serializer.toJson<int>(updatedAt),
       'deletedAt': serializer.toJson<int?>(deletedAt),
     };
@@ -1596,6 +1646,8 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
           int? timestamp,
           bool? isWarmUp,
           Value<String?> groupId = const Value.absent(),
+          Value<int?> avgHeartRate = const Value.absent(),
+          Value<int?> peakHeartRate = const Value.absent(),
           int? updatedAt,
           Value<int?> deletedAt = const Value.absent()}) =>
       WorkoutSet(
@@ -1609,6 +1661,10 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
         timestamp: timestamp ?? this.timestamp,
         isWarmUp: isWarmUp ?? this.isWarmUp,
         groupId: groupId.present ? groupId.value : this.groupId,
+        avgHeartRate:
+            avgHeartRate.present ? avgHeartRate.value : this.avgHeartRate,
+        peakHeartRate:
+            peakHeartRate.present ? peakHeartRate.value : this.peakHeartRate,
         updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
@@ -1625,6 +1681,12 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
       timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
       isWarmUp: data.isWarmUp.present ? data.isWarmUp.value : this.isWarmUp,
       groupId: data.groupId.present ? data.groupId.value : this.groupId,
+      avgHeartRate: data.avgHeartRate.present
+          ? data.avgHeartRate.value
+          : this.avgHeartRate,
+      peakHeartRate: data.peakHeartRate.present
+          ? data.peakHeartRate.value
+          : this.peakHeartRate,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
@@ -1643,6 +1705,8 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
           ..write('timestamp: $timestamp, ')
           ..write('isWarmUp: $isWarmUp, ')
           ..write('groupId: $groupId, ')
+          ..write('avgHeartRate: $avgHeartRate, ')
+          ..write('peakHeartRate: $peakHeartRate, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
@@ -1650,8 +1714,21 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
   }
 
   @override
-  int get hashCode => Object.hash(id, workoutId, exerciseId, setOrder, weight,
-      reps, rpe, timestamp, isWarmUp, groupId, updatedAt, deletedAt);
+  int get hashCode => Object.hash(
+      id,
+      workoutId,
+      exerciseId,
+      setOrder,
+      weight,
+      reps,
+      rpe,
+      timestamp,
+      isWarmUp,
+      groupId,
+      avgHeartRate,
+      peakHeartRate,
+      updatedAt,
+      deletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1666,6 +1743,8 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
           other.timestamp == this.timestamp &&
           other.isWarmUp == this.isWarmUp &&
           other.groupId == this.groupId &&
+          other.avgHeartRate == this.avgHeartRate &&
+          other.peakHeartRate == this.peakHeartRate &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt);
 }
@@ -1681,6 +1760,8 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
   final Value<int> timestamp;
   final Value<bool> isWarmUp;
   final Value<String?> groupId;
+  final Value<int?> avgHeartRate;
+  final Value<int?> peakHeartRate;
   final Value<int> updatedAt;
   final Value<int?> deletedAt;
   final Value<int> rowid;
@@ -1695,6 +1776,8 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
     this.timestamp = const Value.absent(),
     this.isWarmUp = const Value.absent(),
     this.groupId = const Value.absent(),
+    this.avgHeartRate = const Value.absent(),
+    this.peakHeartRate = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1710,6 +1793,8 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
     required int timestamp,
     this.isWarmUp = const Value.absent(),
     this.groupId = const Value.absent(),
+    this.avgHeartRate = const Value.absent(),
+    this.peakHeartRate = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1731,6 +1816,8 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
     Expression<int>? timestamp,
     Expression<bool>? isWarmUp,
     Expression<String>? groupId,
+    Expression<int>? avgHeartRate,
+    Expression<int>? peakHeartRate,
     Expression<int>? updatedAt,
     Expression<int>? deletedAt,
     Expression<int>? rowid,
@@ -1746,6 +1833,8 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
       if (timestamp != null) 'timestamp': timestamp,
       if (isWarmUp != null) 'is_warm_up': isWarmUp,
       if (groupId != null) 'group_id': groupId,
+      if (avgHeartRate != null) 'avg_heart_rate': avgHeartRate,
+      if (peakHeartRate != null) 'peak_heart_rate': peakHeartRate,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
@@ -1763,6 +1852,8 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
       Value<int>? timestamp,
       Value<bool>? isWarmUp,
       Value<String?>? groupId,
+      Value<int?>? avgHeartRate,
+      Value<int?>? peakHeartRate,
       Value<int>? updatedAt,
       Value<int?>? deletedAt,
       Value<int>? rowid}) {
@@ -1777,6 +1868,8 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
       timestamp: timestamp ?? this.timestamp,
       isWarmUp: isWarmUp ?? this.isWarmUp,
       groupId: groupId ?? this.groupId,
+      avgHeartRate: avgHeartRate ?? this.avgHeartRate,
+      peakHeartRate: peakHeartRate ?? this.peakHeartRate,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
       rowid: rowid ?? this.rowid,
@@ -1816,6 +1909,12 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
     if (groupId.present) {
       map['group_id'] = Variable<String>(groupId.value);
     }
+    if (avgHeartRate.present) {
+      map['avg_heart_rate'] = Variable<int>(avgHeartRate.value);
+    }
+    if (peakHeartRate.present) {
+      map['peak_heart_rate'] = Variable<int>(peakHeartRate.value);
+    }
     if (updatedAt.present) {
       map['updated_at'] = Variable<int>(updatedAt.value);
     }
@@ -1841,6 +1940,8 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
           ..write('timestamp: $timestamp, ')
           ..write('isWarmUp: $isWarmUp, ')
           ..write('groupId: $groupId, ')
+          ..write('avgHeartRate: $avgHeartRate, ')
+          ..write('peakHeartRate: $peakHeartRate, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
@@ -5840,10 +5941,9 @@ final class $$ExercisesTableReferences
   $$ExercisesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static MultiTypedResultKey<$WorkoutSetsTable, List<WorkoutSet>>
-      _workoutSetsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-          db.workoutSets,
-          aliasName:
-              $_aliasNameGenerator(db.exercises.id, db.workoutSets.exerciseId));
+      _workoutSetsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.workoutSets,
+              aliasName: 'exercises__id__workout_sets__exercise_id');
 
   $$WorkoutSetsTableProcessedTableManager get workoutSetsRefs {
     final manager = $$WorkoutSetsTableTableManager($_db, $_db.workoutSets)
@@ -5857,8 +5957,7 @@ final class $$ExercisesTableReferences
   static MultiTypedResultKey<$CardioSessionsTable, List<CardioSession>>
       _cardioSessionsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.cardioSessions,
-              aliasName: $_aliasNameGenerator(
-                  db.exercises.id, db.cardioSessions.exerciseId));
+              aliasName: 'exercises__id__cardio_sessions__exercise_id');
 
   $$CardioSessionsTableProcessedTableManager get cardioSessionsRefs {
     final manager = $$CardioSessionsTableTableManager($_db, $_db.cardioSessions)
@@ -5872,8 +5971,7 @@ final class $$ExercisesTableReferences
   static MultiTypedResultKey<$PersonalRecordsTable, List<PersonalRecord>>
       _personalRecordsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.personalRecords,
-              aliasName: $_aliasNameGenerator(
-                  db.exercises.id, db.personalRecords.exerciseId));
+              aliasName: 'exercises__id__personal_records__exercise_id');
 
   $$PersonalRecordsTableProcessedTableManager get personalRecordsRefs {
     final manager = $$PersonalRecordsTableTableManager(
@@ -5889,8 +5987,7 @@ final class $$ExercisesTableReferences
   static MultiTypedResultKey<$TemplateExercisesTable, List<TemplateExercise>>
       _templateExercisesRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.templateExercises,
-              aliasName: $_aliasNameGenerator(
-                  db.exercises.id, db.templateExercises.exerciseId));
+              aliasName: 'exercises__id__template_exercises__exercise_id');
 
   $$TemplateExercisesTableProcessedTableManager get templateExercisesRefs {
     final manager = $$TemplateExercisesTableTableManager(
@@ -6382,10 +6479,9 @@ final class $$WorkoutsTableReferences
   $$WorkoutsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static MultiTypedResultKey<$WorkoutSetsTable, List<WorkoutSet>>
-      _workoutSetsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-          db.workoutSets,
-          aliasName:
-              $_aliasNameGenerator(db.workouts.id, db.workoutSets.workoutId));
+      _workoutSetsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.workoutSets,
+              aliasName: 'workouts__id__workout_sets__workout_id');
 
   $$WorkoutSetsTableProcessedTableManager get workoutSetsRefs {
     final manager = $$WorkoutSetsTableTableManager($_db, $_db.workoutSets)
@@ -6399,8 +6495,7 @@ final class $$WorkoutsTableReferences
   static MultiTypedResultKey<$CardioSessionsTable, List<CardioSession>>
       _cardioSessionsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.cardioSessions,
-              aliasName: $_aliasNameGenerator(
-                  db.workouts.id, db.cardioSessions.workoutId));
+              aliasName: 'workouts__id__cardio_sessions__workout_id');
 
   $$CardioSessionsTableProcessedTableManager get cardioSessionsRefs {
     final manager = $$CardioSessionsTableTableManager($_db, $_db.cardioSessions)
@@ -6414,8 +6509,7 @@ final class $$WorkoutsTableReferences
   static MultiTypedResultKey<$StretchingSessionsTable, List<StretchingSession>>
       _stretchingSessionsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.stretchingSessions,
-              aliasName: $_aliasNameGenerator(
-                  db.workouts.id, db.stretchingSessions.workoutId));
+              aliasName: 'workouts__id__stretching_sessions__workout_id');
 
   $$StretchingSessionsTableProcessedTableManager get stretchingSessionsRefs {
     final manager = $$StretchingSessionsTableTableManager(
@@ -6805,6 +6899,8 @@ typedef $$WorkoutSetsTableCreateCompanionBuilder = WorkoutSetsCompanion
   required int timestamp,
   Value<bool> isWarmUp,
   Value<String?> groupId,
+  Value<int?> avgHeartRate,
+  Value<int?> peakHeartRate,
   Value<int> updatedAt,
   Value<int?> deletedAt,
   Value<int> rowid,
@@ -6821,6 +6917,8 @@ typedef $$WorkoutSetsTableUpdateCompanionBuilder = WorkoutSetsCompanion
   Value<int> timestamp,
   Value<bool> isWarmUp,
   Value<String?> groupId,
+  Value<int?> avgHeartRate,
+  Value<int?> peakHeartRate,
   Value<int> updatedAt,
   Value<int?> deletedAt,
   Value<int> rowid,
@@ -6831,8 +6929,7 @@ final class $$WorkoutSetsTableReferences
   $$WorkoutSetsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $WorkoutsTable _workoutIdTable(_$AppDatabase db) =>
-      db.workouts.createAlias(
-          $_aliasNameGenerator(db.workoutSets.workoutId, db.workouts.id));
+      db.workouts.createAlias('workout_sets__workout_id__workouts__id');
 
   $$WorkoutsTableProcessedTableManager get workoutId {
     final $_column = $_itemColumn<String>('workout_id')!;
@@ -6846,8 +6943,7 @@ final class $$WorkoutSetsTableReferences
   }
 
   static $ExercisesTable _exerciseIdTable(_$AppDatabase db) =>
-      db.exercises.createAlias(
-          $_aliasNameGenerator(db.workoutSets.exerciseId, db.exercises.id));
+      db.exercises.createAlias('workout_sets__exercise_id__exercises__id');
 
   $$ExercisesTableProcessedTableManager get exerciseId {
     final $_column = $_itemColumn<String>('exercise_id')!;
@@ -6863,8 +6959,7 @@ final class $$WorkoutSetsTableReferences
   static MultiTypedResultKey<$PersonalRecordsTable, List<PersonalRecord>>
       _personalRecordsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.personalRecords,
-              aliasName: $_aliasNameGenerator(
-                  db.workoutSets.id, db.personalRecords.workoutSetId));
+              aliasName: 'workout_sets__id__personal_records__workout_set_id');
 
   $$PersonalRecordsTableProcessedTableManager get personalRecordsRefs {
     final manager =
@@ -6910,6 +7005,12 @@ class $$WorkoutSetsTableFilterComposer
 
   ColumnFilters<String> get groupId => $composableBuilder(
       column: $table.groupId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get avgHeartRate => $composableBuilder(
+      column: $table.avgHeartRate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get peakHeartRate => $composableBuilder(
+      column: $table.peakHeartRate, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<int> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
@@ -7012,6 +7113,14 @@ class $$WorkoutSetsTableOrderingComposer
   ColumnOrderings<String> get groupId => $composableBuilder(
       column: $table.groupId, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get avgHeartRate => $composableBuilder(
+      column: $table.avgHeartRate,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get peakHeartRate => $composableBuilder(
+      column: $table.peakHeartRate,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<int> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
 
@@ -7091,6 +7200,12 @@ class $$WorkoutSetsTableAnnotationComposer
 
   GeneratedColumn<String> get groupId =>
       $composableBuilder(column: $table.groupId, builder: (column) => column);
+
+  GeneratedColumn<int> get avgHeartRate => $composableBuilder(
+      column: $table.avgHeartRate, builder: (column) => column);
+
+  GeneratedColumn<int> get peakHeartRate => $composableBuilder(
+      column: $table.peakHeartRate, builder: (column) => column);
 
   GeneratedColumn<int> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
@@ -7194,6 +7309,8 @@ class $$WorkoutSetsTableTableManager extends RootTableManager<
             Value<int> timestamp = const Value.absent(),
             Value<bool> isWarmUp = const Value.absent(),
             Value<String?> groupId = const Value.absent(),
+            Value<int?> avgHeartRate = const Value.absent(),
+            Value<int?> peakHeartRate = const Value.absent(),
             Value<int> updatedAt = const Value.absent(),
             Value<int?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -7209,6 +7326,8 @@ class $$WorkoutSetsTableTableManager extends RootTableManager<
             timestamp: timestamp,
             isWarmUp: isWarmUp,
             groupId: groupId,
+            avgHeartRate: avgHeartRate,
+            peakHeartRate: peakHeartRate,
             updatedAt: updatedAt,
             deletedAt: deletedAt,
             rowid: rowid,
@@ -7224,6 +7343,8 @@ class $$WorkoutSetsTableTableManager extends RootTableManager<
             required int timestamp,
             Value<bool> isWarmUp = const Value.absent(),
             Value<String?> groupId = const Value.absent(),
+            Value<int?> avgHeartRate = const Value.absent(),
+            Value<int?> peakHeartRate = const Value.absent(),
             Value<int> updatedAt = const Value.absent(),
             Value<int?> deletedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -7239,6 +7360,8 @@ class $$WorkoutSetsTableTableManager extends RootTableManager<
             timestamp: timestamp,
             isWarmUp: isWarmUp,
             groupId: groupId,
+            avgHeartRate: avgHeartRate,
+            peakHeartRate: peakHeartRate,
             updatedAt: updatedAt,
             deletedAt: deletedAt,
             rowid: rowid,
@@ -7362,8 +7485,7 @@ final class $$CardioSessionsTableReferences
       super.$_db, super.$_table, super.$_typedResult);
 
   static $WorkoutsTable _workoutIdTable(_$AppDatabase db) =>
-      db.workouts.createAlias(
-          $_aliasNameGenerator(db.cardioSessions.workoutId, db.workouts.id));
+      db.workouts.createAlias('cardio_sessions__workout_id__workouts__id');
 
   $$WorkoutsTableProcessedTableManager get workoutId {
     final $_column = $_itemColumn<String>('workout_id')!;
@@ -7377,8 +7499,7 @@ final class $$CardioSessionsTableReferences
   }
 
   static $ExercisesTable _exerciseIdTable(_$AppDatabase db) =>
-      db.exercises.createAlias(
-          $_aliasNameGenerator(db.cardioSessions.exerciseId, db.exercises.id));
+      db.exercises.createAlias('cardio_sessions__exercise_id__exercises__id');
 
   $$ExercisesTableProcessedTableManager get exerciseId {
     final $_column = $_itemColumn<String>('exercise_id')!;
@@ -7778,8 +7899,7 @@ final class $$PersonalRecordsTableReferences extends BaseReferences<
       super.$_db, super.$_table, super.$_typedResult);
 
   static $ExercisesTable _exerciseIdTable(_$AppDatabase db) =>
-      db.exercises.createAlias(
-          $_aliasNameGenerator(db.personalRecords.exerciseId, db.exercises.id));
+      db.exercises.createAlias('personal_records__exercise_id__exercises__id');
 
   $$ExercisesTableProcessedTableManager get exerciseId {
     final $_column = $_itemColumn<String>('exercise_id')!;
@@ -7793,8 +7913,8 @@ final class $$PersonalRecordsTableReferences extends BaseReferences<
   }
 
   static $WorkoutSetsTable _workoutSetIdTable(_$AppDatabase db) =>
-      db.workoutSets.createAlias($_aliasNameGenerator(
-          db.personalRecords.workoutSetId, db.workoutSets.id));
+      db.workoutSets
+          .createAlias('personal_records__workout_set_id__workout_sets__id');
 
   $$WorkoutSetsTableProcessedTableManager? get workoutSetId {
     final $_column = $_itemColumn<String>('workout_set_id');
@@ -8174,8 +8294,8 @@ final class $$WorkoutTemplatesTableReferences extends BaseReferences<
   static MultiTypedResultKey<$TemplateExercisesTable, List<TemplateExercise>>
       _templateExercisesRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.templateExercises,
-              aliasName: $_aliasNameGenerator(
-                  db.workoutTemplates.id, db.templateExercises.templateId));
+              aliasName:
+                  'workout_templates__id__template_exercises__template_id');
 
   $$TemplateExercisesTableProcessedTableManager get templateExercisesRefs {
     final manager = $$TemplateExercisesTableTableManager(
@@ -8441,9 +8561,9 @@ final class $$TemplateExercisesTableReferences extends BaseReferences<
   $$TemplateExercisesTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
 
-  static $WorkoutTemplatesTable _templateIdTable(_$AppDatabase db) =>
-      db.workoutTemplates.createAlias($_aliasNameGenerator(
-          db.templateExercises.templateId, db.workoutTemplates.id));
+  static $WorkoutTemplatesTable _templateIdTable(_$AppDatabase db) => db
+      .workoutTemplates
+      .createAlias('template_exercises__template_id__workout_templates__id');
 
   $$WorkoutTemplatesTableProcessedTableManager get templateId {
     final $_column = $_itemColumn<String>('template_id')!;
@@ -8457,9 +8577,8 @@ final class $$TemplateExercisesTableReferences extends BaseReferences<
         manager.$state.copyWith(prefetchedData: [item]));
   }
 
-  static $ExercisesTable _exerciseIdTable(_$AppDatabase db) =>
-      db.exercises.createAlias($_aliasNameGenerator(
-          db.templateExercises.exerciseId, db.exercises.id));
+  static $ExercisesTable _exerciseIdTable(_$AppDatabase db) => db.exercises
+      .createAlias('template_exercises__exercise_id__exercises__id');
 
   $$ExercisesTableProcessedTableManager get exerciseId {
     final $_column = $_itemColumn<String>('exercise_id')!;
@@ -9504,8 +9623,7 @@ final class $$StretchingSessionsTableReferences extends BaseReferences<
       super.$_db, super.$_table, super.$_typedResult);
 
   static $WorkoutsTable _workoutIdTable(_$AppDatabase db) =>
-      db.workouts.createAlias($_aliasNameGenerator(
-          db.stretchingSessions.workoutId, db.workouts.id));
+      db.workouts.createAlias('stretching_sessions__workout_id__workouts__id');
 
   $$WorkoutsTableProcessedTableManager get workoutId {
     final $_column = $_itemColumn<String>('workout_id')!;

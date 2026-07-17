@@ -1707,6 +1707,17 @@ class _SetCard extends ConsumerWidget {
                 color: cs.onSurfaceVariant,
               ),
             ),
+            if (set.avgHeartRate != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                '♥ ${set.avgHeartRate}'
+                '${set.peakHeartRate != null ? '/${set.peakHeartRate}' : ''}',
+                style: KineticText.mono(
+                  size: 9,
+                  color: cs.error,
+                ),
+              ),
+            ],
           ],
         ),
       ),

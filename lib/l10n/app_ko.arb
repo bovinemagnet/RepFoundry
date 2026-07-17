@@ -254,6 +254,7 @@
   "tableHeaderWeight": "무게",
   "tableHeaderReps": "횟수",
   "tableHeaderE1rm": "e1RM",
+  "tableHeaderHr": "심박수",
 
   "weightFieldLabel": "무게 ({unit})",
   "percentSuffix": "%",

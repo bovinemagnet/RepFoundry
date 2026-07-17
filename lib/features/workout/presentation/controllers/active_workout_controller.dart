@@ -12,6 +12,7 @@ import '../../../history/domain/models/personal_record.dart';
 import '../../../programmes/domain/models/programme.dart';
 import '../../../templates/domain/models/workout_template.dart';
 import '../models/ghost_set.dart';
+import '../../../../core/heart_rate/hr_session_recorder.dart';
 import '../../../../core/providers.dart';
 import '../../../sync/presentation/providers/sync_settings_provider.dart';
 
@@ -472,6 +473,7 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
 
     try {
       final existingSets = state.setsByExercise[exerciseId] ?? [];
+      final hrSummary = _heartRateSummaryForNewSet(workout);
       final useCase = ref.read(logSetUseCaseProvider);
       final result = await useCase.execute(
         LogSetInput(
@@ -486,6 +488,8 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
           reps: reps,
           rpe: rpe,
           isWarmUp: isWarmUp,
+          avgHeartRate: hrSummary?.avgBpm,
+          peakHeartRate: hrSummary?.peakBpm,
         ),
       );
 
@@ -514,6 +518,29 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
       state = state.copyWith(
         error: e is LogSetException ? e.message : e.toString(),
       );
+    }
+  }
+
+  /// Best-effort heart-rate summary for a set being logged now: the window
+  /// runs from the previously logged set (or the workout start), capped at
+  /// five minutes, up to this moment. Null when no monitor readings exist.
+  HrWindowSummary? _heartRateSummaryForNewSet(Workout workout) {
+    try {
+      final now = DateTime.now().toUtc();
+      var from = workout.startedAt;
+      for (final sets in state.setsByExercise.values) {
+        for (final set in sets) {
+          if (set.timestamp.isAfter(from)) from = set.timestamp;
+        }
+      }
+      final cap = now.subtract(const Duration(minutes: 5));
+      if (cap.isAfter(from)) from = cap;
+      return ref
+          .read(hrSessionRecorderProvider.notifier)
+          .summarise(from: from, to: now);
+    } catch (_) {
+      // HR capture must never block set logging.
+      return null;
     }
   }
 

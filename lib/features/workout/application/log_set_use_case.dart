@@ -18,6 +18,8 @@ class LogSetInput {
   final int reps;
   final double? rpe;
   final bool isWarmUp;
+  final int? avgHeartRate;
+  final int? peakHeartRate;
 
   const LogSetInput({
     required this.workoutId,
@@ -27,6 +29,8 @@ class LogSetInput {
     required this.reps,
     this.rpe,
     this.isWarmUp = false,
+    this.avgHeartRate,
+    this.peakHeartRate,
   });
 }
 
@@ -59,6 +63,8 @@ class LogSetUseCase {
       reps: input.reps,
       rpe: input.rpe,
       isWarmUp: input.isWarmUp,
+      avgHeartRate: input.avgHeartRate,
+      peakHeartRate: input.peakHeartRate,
     );
 
     final savedSet = await _workoutRepository.addSet(set);

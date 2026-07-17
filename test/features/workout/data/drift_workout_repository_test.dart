@@ -203,6 +203,30 @@ void main() {
         expect(sets.first.setOrder, 1);
         expect(sets.last.setOrder, 2);
       });
+
+      test('round-trips heart rate summary fields', () async {
+        final workout = newWorkout();
+        await repo.createWorkout(workout);
+
+        final withHr = WorkoutSet.create(
+          workoutId: workout.id,
+          exerciseId: '1',
+          setOrder: 1,
+          weight: 80.0,
+          reps: 8,
+          avgHeartRate: 142,
+          peakHeartRate: 168,
+        );
+        final withoutHr = newSet(workoutId: workout.id, setOrder: 2);
+        await repo.addSet(withHr);
+        await repo.addSet(withoutHr);
+
+        final sets = await repo.getSetsForWorkout(workout.id);
+        expect(sets.first.avgHeartRate, 142);
+        expect(sets.first.peakHeartRate, 168);
+        expect(sets.last.avgHeartRate, isNull);
+        expect(sets.last.peakHeartRate, isNull);
+      });
     });
 
     group('getSetsForWorkouts', () {

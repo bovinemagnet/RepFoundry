@@ -659,6 +659,9 @@ class SJa extends S {
   String get tableHeaderE1rm => 'e1RM';
 
   @override
+  String get tableHeaderHr => '心拍数';
+
+  @override
   String weightFieldLabel(String unit) {
     return '重量（$unit）';
   }

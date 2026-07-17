@@ -25,7 +25,7 @@ New `HrSessionRecorder` (Riverpod `Notifier`, non-autoDispose) in `lib/core/`, a
 - Subscribe to `heartRateService.heartRateStream` while connected; buffer `HrSample(bpm, DateTime timestampUtc)` — absolute UTC timestamps.
 - Expose the sample list, current BPM, connection state, session start, and `HrWindowSummary? summarise(DateTime from, DateTime to)` returning average and peak BPM for the window (null when no samples fall inside it).
 
-`HeartRatePanelController` and `CardioTrackingController` are refactored to consume the recorder instead of their private buffers (the panel converts absolute timestamps to the `elapsed` durations the `hr_zones` package expects). This removes buffer duplication and keeps all screens consistent.
+**Scope decision (made during implementation):** the panel and cardio controllers keep their existing private buffers. Their buffers carry session-scoped semantics the recorder deliberately does not have — the panel's readings use elapsed-time offsets that pause during reconnects, and cardio's readings reset on fresh sessions — and both behaviours are pinned by existing tests. Rewiring them through the recorder would rewrite tested behaviour without user-facing benefit. Because every screen already shares the single `heartRateServiceProvider`, the recorder still captures samples no matter which screen connected the strap, which is all issue 70 needs. Consolidating the three buffers remains a possible future refactor.
 
 ### Schema and sync
 
