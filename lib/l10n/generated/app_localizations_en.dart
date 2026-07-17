@@ -967,13 +967,32 @@ class SEn extends S {
 
   @override
   String get noDevicesFound =>
-      'No heart rate monitors found. Ensure your device is broadcasting — for Apple Watch, start a workout with Broadcast Heart Rate enabled.';
+      'No heart rate monitors found. Ensure your device is broadcasting — for Apple Watch, start a workout with Broadcast Heart Rate enabled. Chest straps only broadcast while worn.';
 
   @override
   String get scanAgain => 'Scan Again';
 
   @override
   String get setupHelp => 'Setup Help';
+
+  @override
+  String get hrScanPermissionDenied =>
+      'Location permission is needed to scan for Bluetooth devices — an Android requirement. Allow it in App Settings.';
+
+  @override
+  String get hrScanLocationOff =>
+      'Turn on Location services to scan for Bluetooth devices — an Android requirement.';
+
+  @override
+  String get hrScanBluetoothOff =>
+      'Bluetooth is turned off. Turn it on and scan again.';
+
+  @override
+  String get hrScanFailed =>
+      'Couldn\'t scan for heart rate monitors. Try again.';
+
+  @override
+  String get openSettings => 'Open Settings';
 
   @override
   String get templatesTitle => 'Templates';

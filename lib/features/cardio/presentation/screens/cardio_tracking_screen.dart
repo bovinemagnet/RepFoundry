@@ -379,7 +379,11 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
     final heartRateService = ref.read(heartRateServiceProvider);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    final permissionOk = await heartRateService.checkAndRequestPermission();
+    var permissionOk = await heartRateService.checkAndRequestPermission();
+    if (!permissionOk) {
+      // Offer the system enable-Bluetooth dialog before giving up.
+      permissionOk = await heartRateService.turnOnBluetooth();
+    }
     if (!permissionOk) {
       scaffoldMessenger.showSnackBar(
         SnackBar(

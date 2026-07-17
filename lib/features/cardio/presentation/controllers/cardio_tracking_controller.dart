@@ -193,6 +193,9 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       _hrSub?.cancel();
       _hrSub = _heartRateService.heartRateStream.listen(
         (bpm) {
+          // Straps report 0 BPM while they have no skin contact; recording
+          // it would poison the session minimum and average.
+          if (bpm <= 0) return;
           state = state.isRunning
               ? state.copyWith(
                   currentHeartRate: bpm,

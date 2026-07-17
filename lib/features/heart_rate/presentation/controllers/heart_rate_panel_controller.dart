@@ -136,6 +136,9 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
     _hrSub?.cancel();
     _hrSub = _heartRateService.heartRateStream.listen(
       (bpm) {
+        // Straps report 0 BPM while they have no skin contact; recording it
+        // would poison the session minimum and average.
+        if (bpm <= 0) return;
         final reading = HrReading(
           bpm: bpm,
           elapsed: Duration(seconds: state.elapsedSeconds),
@@ -160,13 +163,16 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
         _heartRateService.connectionStateStream.listen((connState) {
       switch (connState) {
         case HrConnectionState.reconnecting:
+          _pauseClock();
           state = state.copyWith(hrReconnecting: true);
         case HrConnectionState.connected:
+          _resumeClock();
           state = state.copyWith(
             hrConnected: true,
             hrReconnecting: false,
           );
         case HrConnectionState.disconnected:
+          _pauseClock();
           state = state.copyWith(
             hrConnected: false,
             hrReconnecting: false,
@@ -175,6 +181,22 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
           );
       }
     });
+  }
+
+  /// Freezes elapsed-time accumulation while no data can arrive, so gaps
+  /// spent disconnected don't inflate the session duration.
+  void _pauseClock() {
+    final monitoringSince = _monitoringSince;
+    if (monitoringSince != null) {
+      _accumulated += clock.now().difference(monitoringSince);
+      _monitoringSince = null;
+    }
+  }
+
+  void _resumeClock() {
+    if (state.isMonitoring && _monitoringSince == null) {
+      _monitoringSince = clock.now();
+    }
   }
 }
 

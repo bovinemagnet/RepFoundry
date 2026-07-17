@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 import 'heart_rate_service.dart';
+import 'reconnect_strategy.dart';
 
 /// BLE Heart Rate Service UUID (0x180D).
 final _hrServiceUuid = Guid('180D');
@@ -11,8 +12,11 @@ final _hrServiceUuid = Guid('180D');
 final _hrMeasurementUuid = Guid('2A37');
 
 class FlutterBlueHeartRateService implements HeartRateService {
-  static const _maxReconnectAttempts = 2;
-  static const _reconnectDelay = Duration(seconds: 2);
+  final ReconnectStrategy _reconnectStrategy;
+
+  FlutterBlueHeartRateService({
+    ReconnectStrategy reconnectStrategy = const ReconnectStrategy(),
+  }) : _reconnectStrategy = reconnectStrategy;
 
   final _heartRateController = StreamController<int>.broadcast();
   final _connectionStateController =
@@ -46,6 +50,22 @@ class FlutterBlueHeartRateService implements HeartRateService {
           .where((state) => state != BluetoothAdapterState.unknown)
           .first
           .timeout(const Duration(seconds: 5));
+      return adapterState == BluetoothAdapterState.on;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> turnOnBluetooth() async {
+    try {
+      // Android shows the system "turn on Bluetooth?" dialog; iOS users
+      // must use Settings, where turnOn simply throws and we return false.
+      await FlutterBluePlus.turnOn();
+      final adapterState = await FlutterBluePlus.adapterState
+          .where((state) => state != BluetoothAdapterState.unknown)
+          .first
+          .timeout(const Duration(seconds: 30));
       return adapterState == BluetoothAdapterState.on;
     } catch (_) {
       return false;
@@ -110,7 +130,9 @@ class FlutterBlueHeartRateService implements HeartRateService {
     _intentionalDisconnect = false;
     _connectedDeviceId = deviceId;
     try {
-      await _connectAndSubscribe(deviceId);
+      // First attempts commonly fail with the transient GATT error 133
+      // (ANDROID_SPECIFIC_ERROR) right after a strap powers on.
+      await retryOnceOnFailure(() => _connectAndSubscribe(deviceId));
     } catch (_) {
       // Initial connection failed — surface the error to the caller and
       // don't leave a device id behind that would trigger reconnects.
@@ -188,26 +210,22 @@ class FlutterBlueHeartRateService implements HeartRateService {
     try {
       _connectionStateController.add(HrConnectionState.reconnecting);
 
-      for (var attempt = 0; attempt < _maxReconnectAttempts; attempt++) {
-        if (_intentionalDisconnect) return;
+      final reconnected = await _reconnectStrategy.run(
+        attempt: () => _connectAndSubscribe(deviceId),
+        isCancelled: () => _intentionalDisconnect,
+      );
 
-        await Future<void>.delayed(_reconnectDelay);
-
-        if (_intentionalDisconnect) return;
-
-        try {
-          await _connectAndSubscribe(deviceId);
-          if (_intentionalDisconnect) {
-            // Disconnect was requested while the reconnect was in flight.
-            await disconnect();
-          }
-          return; // Reconnection succeeded.
-        } catch (_) {
-          // Will retry or fall through.
+      if (reconnected) {
+        if (_intentionalDisconnect) {
+          // Disconnect was requested while the reconnect was in flight.
+          await disconnect();
         }
+        return;
       }
 
-      // All retries exhausted.
+      if (_intentionalDisconnect) return;
+
+      // The whole backoff schedule is exhausted.
       _connectedDeviceId = null;
       _connectionStateController.add(HrConnectionState.disconnected);
     } finally {

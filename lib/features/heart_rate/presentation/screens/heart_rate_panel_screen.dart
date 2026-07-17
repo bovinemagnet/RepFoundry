@@ -334,7 +334,11 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     final heartRateService = ref.read(heartRateServiceProvider);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    final permissionOk = await heartRateService.checkAndRequestPermission();
+    var permissionOk = await heartRateService.checkAndRequestPermission();
+    if (!permissionOk) {
+      // Offer the system enable-Bluetooth dialog before giving up.
+      permissionOk = await heartRateService.turnOnBluetooth();
+    }
     if (!permissionOk) {
       if (!mounted) return;
       final s = S.of(context)!;

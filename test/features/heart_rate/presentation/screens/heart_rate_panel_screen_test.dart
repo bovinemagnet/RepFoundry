@@ -132,6 +132,50 @@ void main() {
       expect(find.byIcon(Icons.bluetooth_disabled), findsNothing);
     });
 
+    // The health profile loads from SharedPreferences asynchronously, so the
+    // onboarding sheet can appear before the seeded age is read. Dismiss it
+    // so taps reach the screen underneath.
+    Future<void> dismissOnboardingIfPresent(WidgetTester tester) async {
+      if (find.byType(BottomSheet).evaluate().isNotEmpty) {
+        await tester.tapAt(const Offset(400, 50));
+        await tester.pumpAndSettle();
+      }
+    }
+
+    testWidgets('offers to enable Bluetooth and continues to the picker',
+        (tester) async {
+      heartRateService.permissionGranted = false;
+      heartRateService.turnOnBluetoothResult = true;
+
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+      await dismissOnboardingIfPresent(tester);
+      await tester.tap(find.text('Connect HR Monitor'));
+      await tester.pumpAndSettle();
+
+      expect(heartRateService.turnOnBluetoothCalled, isTrue);
+      expect(find.text('Heart Rate Monitors'), findsOneWidget);
+    });
+
+    testWidgets('falls back to a snackbar when Bluetooth stays off',
+        (tester) async {
+      heartRateService.permissionGranted = false;
+      heartRateService.turnOnBluetoothResult = false;
+
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+      await dismissOnboardingIfPresent(tester);
+      await tester.tap(find.text('Connect HR Monitor'));
+      await tester.pumpAndSettle();
+
+      expect(heartRateService.turnOnBluetoothCalled, isTrue);
+      expect(find.text('Heart Rate Monitors'), findsNothing);
+      expect(
+        find.textContaining('Bluetooth is not available'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets(
         'shows the placeholder chart and zone-config card when no profile age',
         (tester) async {

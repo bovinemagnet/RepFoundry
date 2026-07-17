@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
 import 'package:rep_foundry/features/cardio/presentation/widgets/hr_device_picker_dialog.dart';
@@ -68,6 +69,40 @@ void main() {
       expect(find.text('Wahoo TICKR'), findsOneWidget);
       expect(find.text('00:11:22:33:44:55'), findsOneWidget);
       expect(find.byIcon(Icons.bluetooth), findsNWidgets(2));
+    });
+
+    testWidgets(
+        'permission scan failure shows a friendly message with Open Settings',
+        (tester) async {
+      service = FakeHeartRateService(
+        scanError: PlatformException(
+          code: 'startScan',
+          message:
+              'Permission android.permission.ACCESS_FINE_LOCATION required '
+              'to scan devices',
+        ),
+      );
+      await tester.pumpWidget(buildHost(service));
+      await tester.tap(find.text('Open picker'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Location permission'), findsOneWidget);
+      expect(find.text('Open Settings'), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
+      expect(find.textContaining('PlatformException'), findsNothing);
+    });
+
+    testWidgets('unknown scan failure shows a generic retry message',
+        (tester) async {
+      service = FakeHeartRateService(scanError: Exception('boom'));
+      await tester.pumpWidget(buildHost(service));
+      await tester.tap(find.text('Open picker'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining("Couldn't scan"), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
+      expect(find.text('Open Settings'), findsNothing);
+      expect(find.textContaining('Exception'), findsNothing);
     });
 
     testWidgets('tapping a device returns it as the dialog result',

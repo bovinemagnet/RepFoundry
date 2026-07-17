@@ -128,6 +128,21 @@ void main() {
       expect(find.text('Save Session'), findsNothing);
     });
 
+    testWidgets('Connect offers to enable Bluetooth before giving up',
+        (tester) async {
+      heartRateService.permissionGranted = false;
+      heartRateService.turnOnBluetoothResult = true;
+
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Connect'));
+      await tester.tap(find.text('Connect'));
+      await tester.pumpAndSettle();
+
+      expect(heartRateService.turnOnBluetoothCalled, isTrue);
+      expect(find.text('Heart Rate Monitors'), findsOneWidget);
+    });
+
     testWidgets('lists cardio exercises returned by the repository',
         (tester) async {
       await tester.pumpWidget(buildScreen(cardioExercises: [

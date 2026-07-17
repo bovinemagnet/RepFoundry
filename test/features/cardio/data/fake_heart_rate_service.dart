@@ -11,20 +11,34 @@ class FakeHeartRateService implements HeartRateService {
       StreamController<HrConnectionState>.broadcast();
   List<DiscoveredHrDevice> devicesToReturn;
   bool shouldThrowOnConnect;
+  Object? scanError;
 
   FakeHeartRateService({
     this.permissionGranted = true,
     this.devicesToReturn = const [],
     this.shouldThrowOnConnect = false,
+    this.scanError,
   });
+
+  bool turnOnBluetoothResult = false;
+  bool turnOnBluetoothCalled = false;
 
   @override
   Future<bool> checkAndRequestPermission() async => permissionGranted;
 
   @override
+  Future<bool> turnOnBluetooth() async {
+    turnOnBluetoothCalled = true;
+    if (turnOnBluetoothResult) permissionGranted = true;
+    return turnOnBluetoothResult;
+  }
+
+  @override
   Future<List<DiscoveredHrDevice>> scanForDevices({
     Duration timeout = const Duration(seconds: 10),
   }) async {
+    final scanError = this.scanError;
+    if (scanError != null) throw scanError;
     return devicesToReturn;
   }
 
