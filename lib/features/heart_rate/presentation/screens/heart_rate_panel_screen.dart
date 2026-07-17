@@ -2,11 +2,13 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/widgets/horizontal_swipe_navigator.dart';
 import '../../../../core/widgets/kinetic.dart';
 import '../../../../core/widgets/sparkline_widget.dart';
 import '../../../cardio/presentation/controllers/cardio_tracking_controller.dart';
@@ -160,113 +162,117 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(22, 8, 22, 96),
-        children: [
-          // Kinetic app header.
-          const KineticAppHeader(),
+      // Swipe right to jump back to the active workout (issue #71).
+      body: HorizontalSwipeNavigator(
+        onSwipeRight: () => context.go('/workout'),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(22, 8, 22, 96),
+          children: [
+            // Kinetic app header.
+            const KineticAppHeader(),
 
-          // Caution badge.
-          if (profile.isCautionMode) ...[
-            CautionBadge(profile: profile),
-            const SizedBox(height: 12),
-          ],
+            // Caution badge.
+            if (profile.isCautionMode) ...[
+              CautionBadge(profile: profile),
+              const SizedBox(height: 12),
+            ],
 
-          // ── Hero BPM section ──────────────────────────────────────
-          _HeroBpmSection(
-            panelState: panelState,
-            activeZone: activeZone,
-            peakZoneColor: peakZoneColor,
-          ),
-          const SizedBox(height: 16),
-
-          // Controls.
-          _buildControls(context, panelState, controller),
-          const SizedBox(height: 24),
-
-          // ── EKG trace sparkline ───────────────────────────────────
-          if (panelState.readings.isNotEmpty) ...[
-            _EkgTrace(
-              readings: panelState.readings,
+            // ── Hero BPM section ──────────────────────────────────────
+            _HeroBpmSection(
+              panelState: panelState,
+              activeZone: activeZone,
               peakZoneColor: peakZoneColor,
             ),
-            const SizedBox(height: 20),
-          ],
+            const SizedBox(height: 16),
 
-          // ── Vitals bento grid ─────────────────────────────────────
-          if (panelState.readings.isNotEmpty) ...[
-            _MetricBentoGrid(
-              avgBpm: bpmStats.avg,
-              maxBpm: bpmStats.max,
-              minBpm: bpmStats.min,
-              readingCount: panelState.readings.length,
-              profile: profile,
-            ),
+            // Controls.
+            _buildControls(context, panelState, controller),
             const SizedBox(height: 24),
-          ],
 
-          // ── Workout Intensity Zones ───────────────────────────────
-          if (zoneConfig != null && panelState.readings.isNotEmpty) ...[
-            _ZonesSection(
-              panelState: panelState,
-              zoneConfig: zoneConfig,
-            ),
-            const SizedBox(height: 24),
-          ],
-
-          // ── HR Trend card with SparklineWidget ────────────────────
-          if (panelState.readings.isNotEmpty) ...[
-            _TrendChartSection(
-              panelState: panelState,
-              zoneConfig: zoneConfig,
-              chartWindow: chartWindow,
-              showZoneBands: showZoneBands,
-              peakZoneColor: peakZoneColor,
-              onWindowChanged: (v) =>
-                  ref.read(chartWindowProvider.notifier).setWindow(v),
-            ),
-            const SizedBox(height: 16),
-          ] else ...[
-            HeartRateChart(
-              readings: panelState.readings,
-              zoneConfig: zoneConfig,
-              showZoneBands: showZoneBands,
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // Symptom report button during active monitoring.
-          if (panelState.isMonitoring) ...[
-            SymptomReportButton(
-              onStopRequested: controller.stopMonitoring,
-              analytics: ref.read(hrAnalyticsReporterProvider),
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // ── Full Weekly Heart Report row (.srow style) ────────────
-          if (panelState.readings.isNotEmpty) ...[
-            _WeeklyReportRow(peakZoneColor: peakZoneColor),
-            const SizedBox(height: 16),
-          ],
-
-          // Zone legend / no-profile prompt.
-          if (zoneConfig != null) ...[
-            HeartRateZoneLegend(
-              config: zoneConfig,
-              currentBpm: panelState.currentHeartRate,
-            ),
-          ] else ...[
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.info_outline),
-                title: Text(s.setAgeInSettings),
-                subtitle: Text(s.setAgeInSettingsSubtitle),
-                onTap: () => showHealthProfileOnboarding(context),
+            // ── EKG trace sparkline ───────────────────────────────────
+            if (panelState.readings.isNotEmpty) ...[
+              _EkgTrace(
+                readings: panelState.readings,
+                peakZoneColor: peakZoneColor,
               ),
-            ),
+              const SizedBox(height: 20),
+            ],
+
+            // ── Vitals bento grid ─────────────────────────────────────
+            if (panelState.readings.isNotEmpty) ...[
+              _MetricBentoGrid(
+                avgBpm: bpmStats.avg,
+                maxBpm: bpmStats.max,
+                minBpm: bpmStats.min,
+                readingCount: panelState.readings.length,
+                profile: profile,
+              ),
+              const SizedBox(height: 24),
+            ],
+
+            // ── Workout Intensity Zones ───────────────────────────────
+            if (zoneConfig != null && panelState.readings.isNotEmpty) ...[
+              _ZonesSection(
+                panelState: panelState,
+                zoneConfig: zoneConfig,
+              ),
+              const SizedBox(height: 24),
+            ],
+
+            // ── HR Trend card with SparklineWidget ────────────────────
+            if (panelState.readings.isNotEmpty) ...[
+              _TrendChartSection(
+                panelState: panelState,
+                zoneConfig: zoneConfig,
+                chartWindow: chartWindow,
+                showZoneBands: showZoneBands,
+                peakZoneColor: peakZoneColor,
+                onWindowChanged: (v) =>
+                    ref.read(chartWindowProvider.notifier).setWindow(v),
+              ),
+              const SizedBox(height: 16),
+            ] else ...[
+              HeartRateChart(
+                readings: panelState.readings,
+                zoneConfig: zoneConfig,
+                showZoneBands: showZoneBands,
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // Symptom report button during active monitoring.
+            if (panelState.isMonitoring) ...[
+              SymptomReportButton(
+                onStopRequested: controller.stopMonitoring,
+                analytics: ref.read(hrAnalyticsReporterProvider),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // ── Full Weekly Heart Report row (.srow style) ────────────
+            if (panelState.readings.isNotEmpty) ...[
+              _WeeklyReportRow(peakZoneColor: peakZoneColor),
+              const SizedBox(height: 16),
+            ],
+
+            // Zone legend / no-profile prompt.
+            if (zoneConfig != null) ...[
+              HeartRateZoneLegend(
+                config: zoneConfig,
+                currentBpm: panelState.currentHeartRate,
+              ),
+            ] else ...[
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.info_outline),
+                  title: Text(s.setAgeInSettings),
+                  subtitle: Text(s.setAgeInSettingsSubtitle),
+                  onTap: () => showHealthProfileOnboarding(context),
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

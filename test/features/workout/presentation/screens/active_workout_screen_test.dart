@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:rep_foundry/core/providers.dart';
@@ -421,5 +422,79 @@ void main() {
         expect(state.scrollController.offset, 0.0);
       },
     );
+  });
+
+  group('swipe navigation', () {
+    Widget buildRouterScreen() {
+      final router = GoRouter(
+        initialLocation: '/workout',
+        routes: [
+          GoRoute(
+            path: '/workout',
+            builder: (context, state) => const ActiveWorkoutScreen(),
+          ),
+          GoRoute(
+            path: '/heart-rate',
+            builder: (context, state) =>
+                const Scaffold(body: Text('heart-rate destination')),
+          ),
+        ],
+      );
+      return ProviderScope(
+        overrides: [
+          workoutRepositoryProvider
+              .overrideWithValue(InMemoryWorkoutRepository()),
+          exerciseRepositoryProvider.overrideWithValue(
+            InMemoryExerciseRepository(),
+          ),
+          personalRecordRepositoryProvider.overrideWithValue(
+            InMemoryPersonalRecordRepository(),
+          ),
+          workoutTemplateRepositoryProvider.overrideWithValue(
+            InMemoryWorkoutTemplateRepository(),
+          ),
+          healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+          healthSyncSettingsProvider.overrideWith(
+            () => HealthSyncSettingsNotifier(),
+          ),
+          syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          routerConfig: router,
+        ),
+      );
+    }
+
+    testWidgets('leftward fling navigates to the heart rate panel',
+        (tester) async {
+      await tester.pumpWidget(buildRouterScreen());
+      await tester.pumpAndSettle();
+
+      await tester.fling(
+        find.byType(ActiveWorkoutScreen),
+        const Offset(-300, 0),
+        1200,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('heart-rate destination'), findsOneWidget);
+    });
+
+    testWidgets('rightward fling stays on the workout screen', (tester) async {
+      await tester.pumpWidget(buildRouterScreen());
+      await tester.pumpAndSettle();
+
+      await tester.fling(
+        find.byType(ActiveWorkoutScreen),
+        const Offset(300, 0),
+        1200,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('heart-rate destination'), findsNothing);
+      expect(find.byType(ActiveWorkoutScreen), findsOneWidget);
+    });
   });
 }
