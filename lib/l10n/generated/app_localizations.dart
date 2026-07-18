@@ -1320,6 +1320,12 @@ abstract class S {
   /// **'e1RM'**
   String get tableHeaderE1rm;
 
+  /// No description provided for @tableHeaderHr.
+  ///
+  /// In en, this message translates to:
+  /// **'HR'**
+  String get tableHeaderHr;
+
   /// No description provided for @weightFieldLabel.
   ///
   /// In en, this message translates to:

@@ -18,6 +18,8 @@ class WorkoutSets extends Table {
   IntColumn get timestamp => integer()();
   BoolColumn get isWarmUp => boolean().withDefault(const Constant(false))();
   TextColumn get groupId => text().nullable()();
+  IntColumn get avgHeartRate => integer().nullable()();
+  IntColumn get peakHeartRate => integer().nullable()();
   IntColumn get updatedAt => integer().withDefault(const Constant(0))();
   IntColumn get deletedAt => integer().nullable()();
 

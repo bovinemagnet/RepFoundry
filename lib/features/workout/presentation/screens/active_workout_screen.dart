@@ -19,6 +19,7 @@ import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/units/weight_unit.dart';
 import '../../../../core/units/weight_unit_provider.dart';
+import '../../../../core/widgets/horizontal_swipe_navigator.dart';
 import '../../../../core/widgets/kinetic.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/widgets/sparkline_widget.dart';
@@ -200,11 +201,15 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
-        child: state.isLoading
-            ? LoadingWidget(message: s.loadingWorkout)
-            : state.hasActiveWorkout
-                ? _buildActiveWorkout(context, ref, state, controller)
-                : _buildNoWorkout(context, ref, controller),
+        // Swipe left to jump to the heart rate panel (issue #71).
+        child: HorizontalSwipeNavigator(
+          onSwipeLeft: () => context.go('/heart-rate'),
+          child: state.isLoading
+              ? LoadingWidget(message: s.loadingWorkout)
+              : state.hasActiveWorkout
+                  ? _buildActiveWorkout(context, ref, state, controller)
+                  : _buildNoWorkout(context, ref, controller),
+        ),
       ),
       floatingActionButton: state.hasActiveWorkout && !_keyboardVisible
           ? FloatingActionButton.extended(
@@ -1702,6 +1707,17 @@ class _SetCard extends ConsumerWidget {
                 color: cs.onSurfaceVariant,
               ),
             ),
+            if (set.avgHeartRate != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                '♥ ${set.avgHeartRate}'
+                '${set.peakHeartRate != null ? '/${set.peakHeartRate}' : ''}',
+                style: KineticText.mono(
+                  size: 9,
+                  color: cs.error,
+                ),
+              ),
+            ],
           ],
         ),
       ),

@@ -187,6 +187,46 @@ void main() {
       expect(round.stretchingSessions.single.deletedAt, equals(tombstone));
     });
 
+    test('workout set heart rate summary survives a JSON round-trip', () {
+      final ts = DateTime.utc(2025, 6, 1, 12);
+      final snapshot = SyncSnapshot(
+        snapshotAt: ts,
+        deviceId: 'device-a',
+        schemaVersion: AppDatabase.schemaVersionConst,
+        workoutSets: [
+          WorkoutSet(
+            id: 'set-hr',
+            workoutId: 'wo-1',
+            exerciseId: 'ex-1',
+            setOrder: 1,
+            weight: 80,
+            reps: 8,
+            timestamp: ts,
+            avgHeartRate: 142,
+            peakHeartRate: 168,
+            updatedAt: ts,
+          ),
+          WorkoutSet(
+            id: 'set-no-hr',
+            workoutId: 'wo-1',
+            exerciseId: 'ex-1',
+            setOrder: 2,
+            weight: 80,
+            reps: 8,
+            timestamp: ts,
+            updatedAt: ts,
+          ),
+        ],
+      );
+
+      final restored = serialiser.fromJson(serialiser.toJson(snapshot));
+
+      expect(restored.workoutSets.first.avgHeartRate, 142);
+      expect(restored.workoutSets.first.peakHeartRate, 168);
+      expect(restored.workoutSets.last.avgHeartRate, isNull);
+      expect(restored.workoutSets.last.peakHeartRate, isNull);
+    });
+
     test('stretching sessions survive a full JSON round-trip', () {
       final original = makeFullSnapshot();
 

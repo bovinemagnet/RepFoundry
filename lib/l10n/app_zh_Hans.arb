@@ -237,6 +237,7 @@
   "tableHeaderWeight": "重量",
   "tableHeaderReps": "次数",
   "tableHeaderE1rm": "估算1RM",
+  "tableHeaderHr": "心率",
 
   "weightFieldLabel": "重量（{unit}）",
   "percentSuffix": "%",

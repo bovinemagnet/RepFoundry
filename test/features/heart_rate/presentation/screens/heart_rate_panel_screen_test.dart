@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/cardio/application/save_cardio_session_use_case.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
+import 'package:hr_zones/hr_zones.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/controllers/heart_rate_panel_controller.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/controllers/heart_rate_panel_state.dart';
+import 'package:rep_foundry/features/heart_rate/presentation/providers/health_profile_provider.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/screens/heart_rate_panel_screen.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
@@ -16,6 +19,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../cardio/data/fake_heart_rate_service.dart';
 import '../../../cardio/data/fake_location_service.dart';
+
+/// Health profile override with a synchronously seeded age, so the
+/// first-visit onboarding sheet never opens during a test.
+class _SeededHealthProfileNotifier extends HealthProfileNotifier {
+  @override
+  HealthProfile build() => const HealthProfile(age: 35);
+}
 
 /// Notifier override that seeds the panel with a specific initial state so
 /// tests can render branches that normally depend on live BLE readings.
@@ -473,6 +483,84 @@ void main() {
       // controller's disconnectHeartRate() flow itself is unit-tested in
       // heart_rate_panel_controller_test.dart.
       expect(find.byTooltip('Disconnect'), findsOneWidget);
+    });
+  });
+
+  group('swipe navigation', () {
+    Widget buildRouterScreen() {
+      // The real notifier loads the profile from SharedPreferences
+      // asynchronously, which races the first-visit onboarding check; a
+      // seeded profile keeps the onboarding sheet (and its modal barrier,
+      // which would swallow the fling) out of this test.
+      final seededProfile = healthProfileProvider.overrideWith(
+        _SeededHealthProfileNotifier.new,
+      );
+      final router = GoRouter(
+        initialLocation: '/heart-rate',
+        routes: [
+          GoRoute(
+            path: '/heart-rate',
+            builder: (context, state) => const HeartRatePanelScreen(),
+          ),
+          GoRoute(
+            path: '/workout',
+            builder: (context, state) =>
+                const Scaffold(body: Text('workout destination')),
+          ),
+        ],
+      );
+      return ProviderScope(
+        overrides: [
+          cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
+          saveCardioSessionUseCaseProvider.overrideWithValue(
+            SaveCardioSessionUseCase(
+              cardioRepository: cardioRepo,
+              workoutRepository: workoutRepo,
+            ),
+          ),
+          locationServiceProvider.overrideWithValue(locationService),
+          heartRateServiceProvider.overrideWithValue(heartRateService),
+          healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+          healthSyncSettingsProvider
+              .overrideWith(() => HealthSyncSettingsNotifier()),
+          seededProfile,
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          routerConfig: router,
+        ),
+      );
+    }
+
+    testWidgets('rightward fling navigates to the active workout screen',
+        (tester) async {
+      await tester.pumpWidget(buildRouterScreen());
+      await tester.pumpAndSettle();
+
+      await tester.fling(
+        find.byType(HeartRatePanelScreen),
+        const Offset(300, 0),
+        1200,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('workout destination'), findsOneWidget);
+    });
+
+    testWidgets('leftward fling stays on the heart rate panel', (tester) async {
+      await tester.pumpWidget(buildRouterScreen());
+      await tester.pumpAndSettle();
+
+      await tester.fling(
+        find.byType(HeartRatePanelScreen),
+        const Offset(-300, 0),
+        1200,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('workout destination'), findsNothing);
+      expect(find.byType(HeartRatePanelScreen), findsOneWidget);
     });
   });
 }

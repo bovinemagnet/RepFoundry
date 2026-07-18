@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:rep_foundry/core/heart_rate/hr_session_recorder.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
@@ -17,6 +19,8 @@ import 'package:rep_foundry/features/workout/presentation/controllers/active_wor
 import 'package:rep_foundry/core/widgets/loading_widget.dart';
 import 'package:rep_foundry/features/workout/presentation/screens/active_workout_screen.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
+
+import '../../../cardio/data/fake_heart_rate_service.dart';
 
 void main() {
   setUp(() {
@@ -421,5 +425,155 @@ void main() {
         expect(state.scrollController.offset, 0.0);
       },
     );
+  });
+
+  group('heart rate chip', () {
+    testWidgets('logged set shows avg/peak BPM captured from the monitor',
+        (tester) async {
+      final hrService = FakeHeartRateService();
+      addTearDown(hrService.dispose);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            workoutRepositoryProvider
+                .overrideWithValue(InMemoryWorkoutRepository()),
+            exerciseRepositoryProvider.overrideWithValue(
+              InMemoryExerciseRepository(),
+            ),
+            personalRecordRepositoryProvider.overrideWithValue(
+              InMemoryPersonalRecordRepository(),
+            ),
+            workoutTemplateRepositoryProvider.overrideWithValue(
+              InMemoryWorkoutTemplateRepository(),
+            ),
+            healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+            healthSyncSettingsProvider.overrideWith(
+              () => HealthSyncSettingsNotifier(),
+            ),
+            syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
+            heartRateServiceProvider.overrideWithValue(hrService),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
+            home: ActiveWorkoutScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final element = tester.element(find.byType(ActiveWorkoutScreen));
+      final container = ProviderScope.containerOf(element);
+      // Start the recorder buffering before readings arrive.
+      container.read(hrSessionRecorderProvider.notifier);
+      final notifier = container.read(activeWorkoutControllerProvider.notifier);
+
+      await notifier.startWorkout();
+      await notifier.addExercise(makeExercise('ex-1', 'Bench Press'));
+      await tester.pumpAndSettle();
+
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+        hrService.emitHeartRate(130);
+        hrService.emitHeartRate(150);
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+        await notifier.logSet(exerciseId: 'ex-1', weight: 100, reps: 5);
+      });
+      await tester.pumpAndSettle();
+
+      expect(find.text('♥ 140/150'), findsOneWidget);
+    });
+
+    testWidgets('logged set without HR data shows no heart chip',
+        (tester) async {
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+
+      final element = tester.element(find.byType(ActiveWorkoutScreen));
+      final container = ProviderScope.containerOf(element);
+      final notifier = container.read(activeWorkoutControllerProvider.notifier);
+
+      await notifier.startWorkout();
+      await notifier.addExercise(makeExercise('ex-1', 'Bench Press'));
+      await notifier.logSet(exerciseId: 'ex-1', weight: 100, reps: 5);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('♥'), findsNothing);
+    });
+  });
+
+  group('swipe navigation', () {
+    Widget buildRouterScreen() {
+      final router = GoRouter(
+        initialLocation: '/workout',
+        routes: [
+          GoRoute(
+            path: '/workout',
+            builder: (context, state) => const ActiveWorkoutScreen(),
+          ),
+          GoRoute(
+            path: '/heart-rate',
+            builder: (context, state) =>
+                const Scaffold(body: Text('heart-rate destination')),
+          ),
+        ],
+      );
+      return ProviderScope(
+        overrides: [
+          workoutRepositoryProvider
+              .overrideWithValue(InMemoryWorkoutRepository()),
+          exerciseRepositoryProvider.overrideWithValue(
+            InMemoryExerciseRepository(),
+          ),
+          personalRecordRepositoryProvider.overrideWithValue(
+            InMemoryPersonalRecordRepository(),
+          ),
+          workoutTemplateRepositoryProvider.overrideWithValue(
+            InMemoryWorkoutTemplateRepository(),
+          ),
+          healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+          healthSyncSettingsProvider.overrideWith(
+            () => HealthSyncSettingsNotifier(),
+          ),
+          syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          routerConfig: router,
+        ),
+      );
+    }
+
+    testWidgets('leftward fling navigates to the heart rate panel',
+        (tester) async {
+      await tester.pumpWidget(buildRouterScreen());
+      await tester.pumpAndSettle();
+
+      await tester.fling(
+        find.byType(ActiveWorkoutScreen),
+        const Offset(-300, 0),
+        1200,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('heart-rate destination'), findsOneWidget);
+    });
+
+    testWidgets('rightward fling stays on the workout screen', (tester) async {
+      await tester.pumpWidget(buildRouterScreen());
+      await tester.pumpAndSettle();
+
+      await tester.fling(
+        find.byType(ActiveWorkoutScreen),
+        const Offset(300, 0),
+        1200,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('heart-rate destination'), findsNothing);
+      expect(find.byType(ActiveWorkoutScreen), findsOneWidget);
+    });
   });
 }

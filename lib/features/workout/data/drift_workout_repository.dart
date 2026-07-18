@@ -112,6 +112,8 @@ class DriftWorkoutRepository implements WorkoutRepository {
             timestamp: dateTimeToEpochMs(set.timestamp),
             isWarmUp: Value(set.isWarmUp),
             groupId: Value(set.groupId),
+            avgHeartRate: Value(set.avgHeartRate),
+            peakHeartRate: Value(set.peakHeartRate),
             updatedAt: Value(dateTimeToEpochMs(set.updatedAt)),
           ),
         );
@@ -180,6 +182,8 @@ class DriftWorkoutRepository implements WorkoutRepository {
         timestamp: Value(dateTimeToEpochMs(set.timestamp)),
         isWarmUp: Value(set.isWarmUp),
         groupId: Value(set.groupId),
+        avgHeartRate: Value(set.avgHeartRate),
+        peakHeartRate: Value(set.peakHeartRate),
         updatedAt: Value(dateTimeToEpochMs(set.updatedAt)),
         deletedAt: Value(nullableDateTimeToEpochMs(set.deletedAt)),
       ),
@@ -274,6 +278,8 @@ class DriftWorkoutRepository implements WorkoutRepository {
       timestamp: dateTimeFromEpochMs(row.timestamp),
       isWarmUp: row.isWarmUp,
       groupId: row.groupId,
+      avgHeartRate: row.avgHeartRate,
+      peakHeartRate: row.peakHeartRate,
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
       deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );

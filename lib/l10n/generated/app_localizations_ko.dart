@@ -657,6 +657,9 @@ class SKo extends S {
   String get tableHeaderE1rm => 'e1RM';
 
   @override
+  String get tableHeaderHr => '심박수';
+
+  @override
   String weightFieldLabel(String unit) {
     return '무게 ($unit)';
   }

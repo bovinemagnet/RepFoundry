@@ -230,6 +230,8 @@ class SyncSnapshotSerialiser {
             timestamp: dateTimeToEpochMs(s.timestamp),
             isWarmUp: Value(s.isWarmUp),
             groupId: Value(s.groupId),
+            avgHeartRate: Value(s.avgHeartRate),
+            peakHeartRate: Value(s.peakHeartRate),
             updatedAt: Value(dateTimeToEpochMs(s.updatedAt)),
             deletedAt: Value(nullableDateTimeToEpochMs(s.deletedAt)),
           ),
@@ -436,6 +438,8 @@ class SyncSnapshotSerialiser {
         timestamp: dateTimeFromEpochMs(row.timestamp),
         isWarmUp: row.isWarmUp,
         groupId: row.groupId,
+        avgHeartRate: row.avgHeartRate,
+        peakHeartRate: row.peakHeartRate,
         updatedAt: dateTimeFromEpochMs(row.updatedAt),
         deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       );
@@ -564,6 +568,8 @@ class SyncSnapshotSerialiser {
         'timestamp': s.timestamp.toIso8601String(),
         'isWarmUp': s.isWarmUp,
         'groupId': s.groupId,
+        'avgHeartRate': s.avgHeartRate,
+        'peakHeartRate': s.peakHeartRate,
         'updatedAt': s.updatedAt.toIso8601String(),
         'deletedAt': s.deletedAt?.toIso8601String(),
       };
@@ -711,6 +717,8 @@ class SyncSnapshotSerialiser {
         timestamp: DateTime.parse(m['timestamp'] as String),
         isWarmUp: m['isWarmUp'] as bool? ?? false,
         groupId: m['groupId'] as String?,
+        avgHeartRate: m['avgHeartRate'] as int?,
+        peakHeartRate: m['peakHeartRate'] as int?,
         updatedAt: DateTime.parse(m['updatedAt'] as String),
         deletedAt: _parseNullableDate(m['deletedAt']),
       );
