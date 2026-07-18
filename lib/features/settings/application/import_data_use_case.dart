@@ -1,5 +1,10 @@
 import 'dart:convert';
 
+import 'package:csv/csv.dart';
+
+import '../../../core/units/weight_unit.dart';
+import 'import/csv_format_adapter.dart';
+import 'import/csv_import_engine.dart';
 import '../../cardio/domain/models/cardio_session.dart';
 import '../../cardio/domain/repositories/cardio_session_repository.dart';
 import '../../exercises/domain/models/exercise.dart';
@@ -21,6 +26,18 @@ class ImportResult {
   final int stretchingSessionsImported;
   final int stretchingSessionsSkipped;
 
+  /// Custom exercises created for CSV rows whose exercise name matched
+  /// nothing in the library.
+  final int exercisesCreated;
+
+  /// Rows the parser could not import (cardio-shaped, zero reps,
+  /// unparseable).
+  final int rowsSkipped;
+
+  /// Entities skipped because an identical import already exists
+  /// (re-importing the same file).
+  final int duplicatesSkipped;
+
   const ImportResult({
     this.exercisesImported = 0,
     this.workoutsImported = 0,
@@ -29,6 +46,22 @@ class ImportResult {
     this.personalRecordsImported = 0,
     this.stretchingSessionsImported = 0,
     this.stretchingSessionsSkipped = 0,
+    this.exercisesCreated = 0,
+    this.rowsSkipped = 0,
+    this.duplicatesSkipped = 0,
+  });
+}
+
+/// What a CSV file was detected as, shown before the user confirms.
+class CsvImportPreview {
+  final String formatName;
+
+  /// True when the file declares no weight unit and the user must choose.
+  final bool needsUnitChoice;
+
+  const CsvImportPreview({
+    required this.formatName,
+    required this.needsUnitChoice,
   });
 }
 
@@ -46,6 +79,50 @@ class ImportDataUseCase {
     required this.personalRecordRepository,
     required this.stretchingSessionRepository,
   });
+
+  /// Detects the CSV format of [content] for the confirmation dialog.
+  /// Null when the content matches no supported CSV layout.
+  CsvImportPreview? previewCsv(String content) {
+    final rows = _decodeCsv(content);
+    if (rows == null) return null;
+    final adapter = detectCsvAdapter(rows);
+    if (adapter == null) return null;
+    return CsvImportPreview(
+      formatName: adapter.formatName,
+      needsUnitChoice: adapter.requiresUnitChoice(rows.first),
+    );
+  }
+
+  /// Imports workout history from CSV [content] (RepFoundry, Strong, or
+  /// Hevy layout). [fallbackUnit] applies only where the file declares no
+  /// weight unit. Throws [FormatException] for unrecognised content.
+  Future<ImportResult> importFromCsv(
+    String content, {
+    WeightUnit fallbackUnit = WeightUnit.kg,
+  }) async {
+    final rows = _decodeCsv(content);
+    final adapter = rows == null ? null : detectCsvAdapter(rows);
+    if (rows == null || adapter == null) {
+      throw const FormatException('Unrecognised CSV format');
+    }
+
+    final history = adapter.parse(rows, fallbackUnit: fallbackUnit);
+    final engine = CsvImportEngine(
+      workoutRepository: workoutRepository,
+      exerciseRepository: exerciseRepository,
+      personalRecordRepository: personalRecordRepository,
+    );
+    return engine.import(history);
+  }
+
+  List<List<dynamic>>? _decodeCsv(String content) {
+    try {
+      final rows = Csv().decode(content);
+      return rows.isEmpty ? null : rows;
+    } on Exception {
+      return null;
+    }
+  }
 
   Future<ImportResult> importFromJson(String jsonString) async {
     final data = jsonDecode(jsonString) as Map<String, dynamic>;

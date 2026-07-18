@@ -1220,6 +1220,36 @@ class SJa extends S {
   String get bodyMetricsHistory => '履歴';
 
   @override
+  String get importFromFile => 'ファイルからインポート';
+
+  @override
+  String get importFromFileSubtitle =>
+      'CSV/JSONファイルから履歴を移行（RepFoundry・Strong・Hevy）';
+
+  @override
+  String importDetectedFormat(String format) {
+    return '検出された形式: $format。このファイルをインポートしますか？';
+  }
+
+  @override
+  String get importUnitQuestion => 'このファイルには重量単位がありません。どの単位でエクスポートされましたか？';
+
+  @override
+  String get importAsKg => 'kgとしてインポート';
+
+  @override
+  String get importAsLbs => 'lbsとしてインポート';
+
+  @override
+  String get importUnsupportedFormat =>
+      '未対応のファイル形式です。対応形式: RepFoundry JSON/CSV、Strong CSV、Hevy CSV。';
+
+  @override
+  String importCsvComplete(int workouts, int sets, int created, int skipped) {
+    return '$workouts件のワークアウトと$sets件のセットをインポートしました（新規エクササイズ$created件、スキップ$skipped行）';
+  }
+
+  @override
   String get importFromJson => 'JSON からインポート';
 
   @override

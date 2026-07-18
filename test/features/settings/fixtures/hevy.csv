@@ -1,0 +1,5 @@
+title,start_time,end_time,description,exercise_title,superset_id,exercise_notes,set_index,set_type,weight_kg,reps,distance_km,duration_seconds,rpe
+Push Session,"15 Mar 2024, 09:10","15 Mar 2024, 10:05",,Bench Press (Barbell),,,0,warmup,40,10,,,
+Push Session,"15 Mar 2024, 09:10","15 Mar 2024, 10:05",,Bench Press (Barbell),,,1,normal,80,5,,,8
+Push Session,"15 Mar 2024, 09:10","15 Mar 2024, 10:05",,Bench Press (Barbell),,,2,failure,80,4,,,9.5
+Pull Session,2024-03-17T10:00:00Z,2024-03-17T10:45:00Z,,Deadlift (Barbell),,,0,normal,140,3,,,

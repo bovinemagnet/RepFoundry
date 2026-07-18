@@ -1220,6 +1220,36 @@ class SKo extends S {
   String get bodyMetricsHistory => '기록';
 
   @override
+  String get importFromFile => '파일에서 가져오기';
+
+  @override
+  String get importFromFileSubtitle =>
+      'CSV/JSON 파일에서 기록 이전 (RepFoundry, Strong, Hevy)';
+
+  @override
+  String importDetectedFormat(String format) {
+    return '감지된 형식: $format. 이 파일을 가져오시겠습니까?';
+  }
+
+  @override
+  String get importUnitQuestion => '이 파일에는 무게 단위가 없습니다. 어떤 단위로 내보냈습니까?';
+
+  @override
+  String get importAsKg => 'kg로 가져오기';
+
+  @override
+  String get importAsLbs => 'lbs로 가져오기';
+
+  @override
+  String get importUnsupportedFormat =>
+      '지원되지 않는 파일 형식입니다. 지원: RepFoundry JSON/CSV, Strong CSV, Hevy CSV.';
+
+  @override
+  String importCsvComplete(int workouts, int sets, int created, int skipped) {
+    return '워크아웃 $workouts개, 세트 $sets개 가져옴 (새 운동 $created개, $skipped행 건너뜀)';
+  }
+
+  @override
   String get importFromJson => 'JSON에서 가져오기';
 
   @override
