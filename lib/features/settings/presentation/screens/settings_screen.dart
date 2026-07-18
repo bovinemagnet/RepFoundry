@@ -26,6 +26,7 @@ import '../../../sync/presentation/providers/sync_settings_provider.dart';
 import '../../../sync/presentation/widgets/sync_consent_dialog.dart';
 import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../providers/export_provider.dart';
+import '../providers/import_file_picker_provider.dart';
 import '../providers/rest_timer_settings_provider.dart';
 import '../providers/layout_mode_provider.dart';
 import '../providers/show_exercise_images_provider.dart';
@@ -1239,6 +1240,7 @@ class _DataCard extends ConsumerWidget {
             : () => ref.read(exportProvider.notifier).exportCsv(),
       ),
       _ImportRow(s: s),
+      _ImportFileRow(s: s),
       // Danger row — no trailing control, error colour
       _Set2Row(
         icon: Icons.delete_forever_outlined,
@@ -1398,6 +1400,137 @@ class _ImportRowState extends ConsumerState<_ImportRow> {
       icon: Icons.file_upload_outlined,
       title: s.importFromJson,
       subtitle: s.importFromJsonSubtitle,
+      trailing: _importing
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : _ChevronTrailing(),
+      onTap: _importing ? null : _import,
+    );
+  }
+}
+
+// ─── Import-from-file row (CSV: RepFoundry/Strong/Hevy, plus JSON) ────────────
+
+class _ImportFileRow extends ConsumerStatefulWidget {
+  const _ImportFileRow({required this.s});
+
+  final S s;
+
+  @override
+  ConsumerState<_ImportFileRow> createState() => _ImportFileRowState();
+}
+
+/// The user's answer to the import confirmation dialog.
+enum _ImportChoice { asKg, asLbs, confirmed }
+
+class _ImportFileRowState extends ConsumerState<_ImportFileRow> {
+  bool _importing = false;
+
+  Future<void> _import() async {
+    final s = widget.s;
+    final content = await ref.read(importFileContentPickerProvider)();
+    if (content == null || !mounted) return;
+
+    final useCase = ref.read(importDataUseCaseProvider);
+    final trimmed = content.trimLeft();
+    final isJson = trimmed.startsWith('{');
+    final preview = isJson ? null : useCase.previewCsv(content);
+
+    if (!isJson && preview == null) {
+      _showSnack(s.importUnsupportedFormat);
+      return;
+    }
+
+    final choice = await _confirm(
+      formatName: isJson ? 'JSON' : preview!.formatName,
+      needsUnitChoice: !isJson && preview!.needsUnitChoice,
+    );
+    if (choice == null || !mounted) return;
+
+    setState(() => _importing = true);
+    try {
+      if (isJson) {
+        final result = await useCase.importFromJson(content);
+        _showSnack(s.importComplete(
+          result.workoutsImported,
+          result.setsImported,
+          result.cardioSessionsImported,
+        ));
+      } else {
+        final result = await useCase.importFromCsv(
+          content,
+          fallbackUnit:
+              choice == _ImportChoice.asLbs ? WeightUnit.lbs : WeightUnit.kg,
+        );
+        _showSnack(s.importCsvComplete(
+          result.workoutsImported,
+          result.setsImported,
+          result.exercisesCreated,
+          result.rowsSkipped + result.duplicatesSkipped,
+        ));
+      }
+    } catch (e) {
+      _showSnack(widget.s.importFailed(e.toString()));
+    } finally {
+      if (mounted) setState(() => _importing = false);
+    }
+  }
+
+  Future<_ImportChoice?> _confirm({
+    required String formatName,
+    required bool needsUnitChoice,
+  }) {
+    final s = widget.s;
+    return showDialog<_ImportChoice>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.importDataTitle),
+        content: Text(
+          needsUnitChoice
+              ? '${s.importDetectedFormat(formatName)}\n\n${s.importUnitQuestion}'
+              : s.importDetectedFormat(formatName),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(s.cancel),
+          ),
+          if (needsUnitChoice) ...[
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, _ImportChoice.asLbs),
+              child: Text(s.importAsLbs),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, _ImportChoice.asKg),
+              child: Text(s.importAsKg),
+            ),
+          ] else
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, _ImportChoice.confirmed),
+              child: Text(s.importDataButton),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.s;
+    return _Set2Row(
+      icon: Icons.folder_open_outlined,
+      title: s.importFromFile,
+      subtitle: s.importFromFileSubtitle,
       trailing: _importing
           ? const SizedBox(
               width: 20,

@@ -1217,6 +1217,36 @@ class SZh extends S {
   String get bodyMetricsHistory => '历史';
 
   @override
+  String get importFromFile => '从文件导入';
+
+  @override
+  String get importFromFileSubtitle =>
+      '从CSV或JSON文件迁移历史记录（RepFoundry、Strong、Hevy）';
+
+  @override
+  String importDetectedFormat(String format) {
+    return '检测到格式：$format。要导入此文件吗？';
+  }
+
+  @override
+  String get importUnitQuestion => '此文件未声明重量单位。导出时使用的是哪个单位？';
+
+  @override
+  String get importAsKg => '按kg导入';
+
+  @override
+  String get importAsLbs => '按lbs导入';
+
+  @override
+  String get importUnsupportedFormat =>
+      '不支持的文件格式。支持：RepFoundry JSON/CSV、Strong CSV、Hevy CSV。';
+
+  @override
+  String importCsvComplete(int workouts, int sets, int created, int skipped) {
+    return '已导入$workouts次训练和$sets组（新增动作$created个，跳过$skipped行）';
+  }
+
+  @override
   String get importFromJson => '从 JSON 导入';
 
   @override
@@ -3053,6 +3083,36 @@ class SZhHans extends SZh {
 
   @override
   String get bodyMetricsHistory => '历史';
+
+  @override
+  String get importFromFile => '从文件导入';
+
+  @override
+  String get importFromFileSubtitle =>
+      '从CSV或JSON文件迁移历史记录（RepFoundry、Strong、Hevy）';
+
+  @override
+  String importDetectedFormat(String format) {
+    return '检测到格式：$format。要导入此文件吗？';
+  }
+
+  @override
+  String get importUnitQuestion => '此文件未声明重量单位。导出时使用的是哪个单位？';
+
+  @override
+  String get importAsKg => '按kg导入';
+
+  @override
+  String get importAsLbs => '按lbs导入';
+
+  @override
+  String get importUnsupportedFormat =>
+      '不支持的文件格式。支持：RepFoundry JSON/CSV、Strong CSV、Hevy CSV。';
+
+  @override
+  String importCsvComplete(int workouts, int sets, int created, int skipped) {
+    return '已导入$workouts次训练和$sets组（新增动作$created个，跳过$skipped行）';
+  }
 
   @override
   String get importFromJson => '从 JSON 导入';

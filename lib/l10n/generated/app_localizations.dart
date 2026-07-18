@@ -2322,6 +2322,54 @@ abstract class S {
   /// **'History'**
   String get bodyMetricsHistory;
 
+  /// No description provided for @importFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from File'**
+  String get importFromFile;
+
+  /// No description provided for @importFromFileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Migrate history from a CSV or JSON file (RepFoundry, Strong, Hevy)'**
+  String get importFromFileSubtitle;
+
+  /// No description provided for @importDetectedFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Detected format: {format}. Import this file into your history?'**
+  String importDetectedFormat(String format);
+
+  /// No description provided for @importUnitQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'This file does not declare a weight unit. Which unit was it exported in?'**
+  String get importUnitQuestion;
+
+  /// No description provided for @importAsKg.
+  ///
+  /// In en, this message translates to:
+  /// **'Import as kg'**
+  String get importAsKg;
+
+  /// No description provided for @importAsLbs.
+  ///
+  /// In en, this message translates to:
+  /// **'Import as lbs'**
+  String get importAsLbs;
+
+  /// No description provided for @importUnsupportedFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported file format. Supported: RepFoundry JSON⁄CSV, Strong CSV, Hevy CSV.'**
+  String get importUnsupportedFormat;
+
+  /// No description provided for @importCsvComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {workouts} workouts and {sets} sets ({created} new exercises, {skipped} rows skipped)'**
+  String importCsvComplete(int workouts, int sets, int created, int skipped);
+
   /// No description provided for @importFromJson.
   ///
   /// In en, this message translates to:

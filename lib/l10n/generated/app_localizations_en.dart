@@ -1250,6 +1250,37 @@ class SEn extends S {
   String get bodyMetricsHistory => 'History';
 
   @override
+  String get importFromFile => 'Import from File';
+
+  @override
+  String get importFromFileSubtitle =>
+      'Migrate history from a CSV or JSON file (RepFoundry, Strong, Hevy)';
+
+  @override
+  String importDetectedFormat(String format) {
+    return 'Detected format: $format. Import this file into your history?';
+  }
+
+  @override
+  String get importUnitQuestion =>
+      'This file does not declare a weight unit. Which unit was it exported in?';
+
+  @override
+  String get importAsKg => 'Import as kg';
+
+  @override
+  String get importAsLbs => 'Import as lbs';
+
+  @override
+  String get importUnsupportedFormat =>
+      'Unsupported file format. Supported: RepFoundry JSON⁄CSV, Strong CSV, Hevy CSV.';
+
+  @override
+  String importCsvComplete(int workouts, int sets, int created, int skipped) {
+    return 'Imported $workouts workouts and $sets sets ($created new exercises, $skipped rows skipped)';
+  }
+
+  @override
   String get importFromJson => 'Import from JSON';
 
   @override

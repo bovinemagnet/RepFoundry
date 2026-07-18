@@ -602,6 +602,25 @@
   "latestWeight": "Latest Weight",
   "bodyMetricsHistory": "History",
 
+  "importFromFile": "Import from File",
+  "importFromFileSubtitle": "Migrate history from a CSV or JSON file (RepFoundry, Strong, Hevy)",
+  "importDetectedFormat": "Detected format: {format}. Import this file into your history?",
+  "@importDetectedFormat": {
+    "placeholders": { "format": { "type": "String" } }
+  },
+  "importUnitQuestion": "This file does not declare a weight unit. Which unit was it exported in?",
+  "importAsKg": "Import as kg",
+  "importAsLbs": "Import as lbs",
+  "importUnsupportedFormat": "Unsupported file format. Supported: RepFoundry JSON\u2044CSV, Strong CSV, Hevy CSV.",
+  "importCsvComplete": "Imported {workouts} workouts and {sets} sets ({created} new exercises, {skipped} rows skipped)",
+  "@importCsvComplete": {
+    "placeholders": {
+      "workouts": { "type": "int" },
+      "sets": { "type": "int" },
+      "created": { "type": "int" },
+      "skipped": { "type": "int" }
+    }
+  },
   "importFromJson": "Import from JSON",
   "importFromJsonSubtitle": "Restore data from a previous export",
   "importDataTitle": "Import Data",
