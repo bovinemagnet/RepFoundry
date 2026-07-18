@@ -1,7 +1,9 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../data/heart_rate_service.dart';
+import '../../data/scan_error.dart';
 import 'hr_setup_guide_dialog.dart';
 
 class HrDevicePickerDialog extends StatefulWidget {
@@ -19,7 +21,7 @@ class HrDevicePickerDialog extends StatefulWidget {
 class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
   List<DiscoveredHrDevice>? _devices;
   bool _scanning = true;
-  String? _error;
+  ScanErrorKind? _errorKind;
 
   @override
   void initState() {
@@ -30,7 +32,7 @@ class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
   Future<void> _startScan() async {
     setState(() {
       _scanning = true;
-      _error = null;
+      _errorKind = null;
       _devices = null;
     });
 
@@ -45,9 +47,22 @@ class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
     } on Exception catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _errorKind = classifyScanError(e);
         _scanning = false;
       });
+    }
+  }
+
+  String _errorMessage(S s, ScanErrorKind kind) {
+    switch (kind) {
+      case ScanErrorKind.permissionDenied:
+        return s.hrScanPermissionDenied;
+      case ScanErrorKind.locationServicesOff:
+        return s.hrScanLocationOff;
+      case ScanErrorKind.bluetoothOff:
+        return s.hrScanBluetoothOff;
+      case ScanErrorKind.unknown:
+        return s.hrScanFailed;
     }
   }
 
@@ -91,44 +106,60 @@ class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
-              ] else if (_error != null) ...[
+              ] else if (_errorKind != null) ...[
                 Text(
-                  _error!,
+                  _errorMessage(s, _errorKind!),
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.error,
                   ),
                 ),
                 const SizedBox(height: 8),
-                TextButton(
-                  onPressed: _startScan,
-                  child: Text(s.retry),
-                ),
-              ] else if (_devices != null && _devices!.isEmpty) ...[
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      s.noDevicesFound,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+                Row(
+                  children: [
+                    if (_errorKind == ScanErrorKind.permissionDenied) ...[
                       TextButton(
-                        onPressed: _startScan,
-                        child: Text(s.scanAgain),
+                        onPressed: () => AppSettings.openAppSettings(),
+                        child: Text(s.openSettings),
                       ),
                       const SizedBox(width: 8),
-                      TextButton(
-                        onPressed: () => showHrSetupGuide(context),
-                        child: Text(s.setupHelp),
-                      ),
                     ],
+                    TextButton(
+                      onPressed: _startScan,
+                      child: Text(s.retry),
+                    ),
+                  ],
+                ),
+              ] else if (_devices != null && _devices!.isEmpty) ...[
+                Flexible(
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            s.noDevicesFound,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextButton(
+                              onPressed: _startScan,
+                              child: Text(s.scanAgain),
+                            ),
+                            const SizedBox(width: 8),
+                            TextButton(
+                              onPressed: () => showHrSetupGuide(context),
+                              child: Text(s.setupHelp),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ] else ...[

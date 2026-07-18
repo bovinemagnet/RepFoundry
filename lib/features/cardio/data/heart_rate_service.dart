@@ -4,6 +4,10 @@ enum HrConnectionState { connected, reconnecting, disconnected }
 /// Abstraction over BLE heart rate monitors for testability.
 abstract class HeartRateService {
   Future<bool> checkAndRequestPermission();
+
+  /// Asks the OS to enable the Bluetooth adapter (system dialog on
+  /// Android). Returns true once the adapter reports on.
+  Future<bool> turnOnBluetooth();
   Future<List<DiscoveredHrDevice>> scanForDevices({Duration timeout});
   Future<void> connectToDevice(String deviceId);
   Future<void> disconnect();

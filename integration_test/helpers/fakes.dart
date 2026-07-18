@@ -24,6 +24,9 @@ class FakeHeartRateService implements HeartRateService {
   Future<bool> checkAndRequestPermission() async => permissionGranted;
 
   @override
+  Future<bool> turnOnBluetooth() async => permissionGranted;
+
+  @override
   Future<List<DiscoveredHrDevice>> scanForDevices({
     Duration timeout = const Duration(seconds: 10),
   }) async {

@@ -951,6 +951,25 @@ class SJa extends S {
   String get setupHelp => 'セットアップヘルプ';
 
   @override
+  String get hrScanPermissionDenied =>
+      'Location permission is needed to scan for Bluetooth devices — an Android requirement. Allow it in App Settings.';
+
+  @override
+  String get hrScanLocationOff =>
+      'Turn on Location services to scan for Bluetooth devices — an Android requirement.';
+
+  @override
+  String get hrScanBluetoothOff =>
+      'Bluetooth is turned off. Turn it on and scan again.';
+
+  @override
+  String get hrScanFailed =>
+      'Couldn\'t scan for heart rate monitors. Try again.';
+
+  @override
+  String get openSettings => 'Open Settings';
+
+  @override
   String get templatesTitle => 'テンプレート';
 
   @override

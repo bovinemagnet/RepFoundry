@@ -378,6 +378,24 @@ void main() {
         expect(controller.state.heartRateReadings, [140, 145]);
       });
 
+      test('ignores zero BPM readings from sensors without skin contact',
+          () async {
+        await controller.connectHeartRate('dev1', 'Polar H10');
+        controller.start();
+
+        heartRateService.emitHeartRate(0);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+
+        expect(controller.state.currentHeartRate, isNull);
+        expect(controller.state.heartRateReadings, isEmpty);
+
+        heartRateService.emitHeartRate(120);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+
+        expect(controller.state.currentHeartRate, 120);
+        expect(controller.state.heartRateReadings, [120]);
+      });
+
       test('start() clears stale heart rate readings from a previous session',
           () async {
         await controller.connectHeartRate('dev1', 'Polar H10');

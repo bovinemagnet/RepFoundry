@@ -1851,7 +1851,7 @@ abstract class S {
   /// No description provided for @noDevicesFound.
   ///
   /// In en, this message translates to:
-  /// **'No heart rate monitors found. Ensure your device is broadcasting — for Apple Watch, start a workout with Broadcast Heart Rate enabled.'**
+  /// **'No heart rate monitors found. Ensure your device is broadcasting — for Apple Watch, start a workout with Broadcast Heart Rate enabled. Chest straps only broadcast while worn.'**
   String get noDevicesFound;
 
   /// No description provided for @scanAgain.
@@ -1865,6 +1865,36 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Setup Help'**
   String get setupHelp;
+
+  /// No description provided for @hrScanPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission is needed to scan for Bluetooth devices — an Android requirement. Allow it in App Settings.'**
+  String get hrScanPermissionDenied;
+
+  /// No description provided for @hrScanLocationOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on Location services to scan for Bluetooth devices — an Android requirement.'**
+  String get hrScanLocationOff;
+
+  /// No description provided for @hrScanBluetoothOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth is turned off. Turn it on and scan again.'**
+  String get hrScanBluetoothOff;
+
+  /// No description provided for @hrScanFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t scan for heart rate monitors. Try again.'**
+  String get hrScanFailed;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get openSettings;
 
   /// No description provided for @templatesTitle.
   ///

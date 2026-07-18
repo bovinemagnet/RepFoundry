@@ -192,6 +192,58 @@ void main() {
       expect(controller.state.error, isNotNull);
     });
 
+    test('ignores zero BPM readings from sensors without skin contact',
+        () async {
+      await controller.connectAndStart('dev1', 'Polar H10');
+
+      heartRateService.emitHeartRate(0);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(controller.state.readings, isEmpty);
+      expect(controller.state.currentHeartRate, isNull);
+
+      heartRateService.emitHeartRate(95);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(controller.state.readings, hasLength(1));
+      expect(controller.state.currentHeartRate, 95);
+    });
+
+    test('pauses elapsed time while reconnecting and resumes on reconnect', () {
+      fakeAsync((async) {
+        controller.connectAndStart('dev1', 'Polar H10');
+        async.flushMicrotasks();
+        async.elapse(const Duration(seconds: 5));
+        expect(controller.state.elapsedSeconds, 5);
+
+        heartRateService.emitConnectionState(HrConnectionState.reconnecting);
+        async.flushMicrotasks();
+        async.elapse(const Duration(minutes: 1));
+        expect(controller.state.elapsedSeconds, 5);
+
+        heartRateService.emitConnectionState(HrConnectionState.connected);
+        async.flushMicrotasks();
+        async.elapse(const Duration(seconds: 10));
+        expect(controller.state.elapsedSeconds, 15);
+        controller.stopMonitoring();
+      });
+    });
+
+    test('pauses elapsed time when the monitor disconnects for good', () {
+      fakeAsync((async) {
+        controller.connectAndStart('dev1', 'Polar H10');
+        async.flushMicrotasks();
+        async.elapse(const Duration(seconds: 8));
+
+        heartRateService.emitConnectionState(HrConnectionState.disconnected);
+        async.flushMicrotasks();
+        async.elapse(const Duration(minutes: 5));
+
+        expect(controller.state.elapsedSeconds, 8);
+        controller.stopMonitoring();
+      });
+    });
+
     test('elapsed seconds increment while monitoring', () async {
       await controller.connectAndStart('dev1', 'Polar H10');
       expect(controller.state.isMonitoring, isTrue);

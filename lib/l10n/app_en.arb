@@ -473,9 +473,14 @@
 
   "hrDevicePickerTitle": "Heart Rate Monitors",
   "scanning": "Scanning for devices...",
-  "noDevicesFound": "No heart rate monitors found. Ensure your device is broadcasting \u2014 for Apple Watch, start a workout with Broadcast Heart Rate enabled.",
+  "noDevicesFound": "No heart rate monitors found. Ensure your device is broadcasting \u2014 for Apple Watch, start a workout with Broadcast Heart Rate enabled. Chest straps only broadcast while worn.",
   "scanAgain": "Scan Again",
   "setupHelp": "Setup Help",
+  "hrScanPermissionDenied": "Location permission is needed to scan for Bluetooth devices \u2014 an Android requirement. Allow it in App Settings.",
+  "hrScanLocationOff": "Turn on Location services to scan for Bluetooth devices \u2014 an Android requirement.",
+  "hrScanBluetoothOff": "Bluetooth is turned off. Turn it on and scan again.",
+  "hrScanFailed": "Couldn't scan for heart rate monitors. Try again.",
+  "openSettings": "Open Settings",
 
   "templatesTitle": "Templates",
   "templatesSubtitle": "Manage workout templates for quick session setup",
