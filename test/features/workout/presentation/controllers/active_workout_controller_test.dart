@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:drift/native.dart';
 import 'package:rep_foundry/core/database/app_database.dart' show AppDatabase;
+import 'package:rep_foundry/core/heart_rate/hr_session_recorder.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
@@ -21,6 +22,8 @@ import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
 import 'package:rep_foundry/features/workout/presentation/controllers/active_workout_controller.dart';
+
+import '../../../cardio/data/fake_heart_rate_service.dart';
 
 class _FakeCloudSyncService implements CloudSyncService {
   @override
@@ -199,6 +202,75 @@ void main() {
         expect(sets, hasLength(1));
         expect(sets.first.weight, 100);
         expect(sets.first.reps, 5);
+      });
+
+      test('stamps the set with avg/peak heart rate from the recorder',
+          () async {
+        final hrService = FakeHeartRateService();
+        addTearDown(hrService.dispose);
+        container.dispose();
+        container = ProviderContainer(
+          overrides: [
+            workoutRepositoryProvider.overrideWithValue(workoutRepo),
+            exerciseRepositoryProvider.overrideWithValue(exerciseRepo),
+            personalRecordRepositoryProvider.overrideWithValue(prRepo),
+            workoutTemplateRepositoryProvider.overrideWithValue(templateRepo),
+            healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+            healthSyncSettingsProvider
+                .overrideWith(() => _NoOpHealthSyncSettingsNotifier()),
+            syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
+            syncOrchestratorProvider.overrideWithValue(syncOrchestrator),
+            heartRateServiceProvider.overrideWithValue(hrService),
+          ],
+        );
+        // Start the recorder buffering before any readings arrive.
+        container.read(hrSessionRecorderProvider.notifier);
+
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+        final exercises = await exerciseRepo.getAllExercises();
+        final exercise = exercises.first;
+        await controller.addExercise(exercise);
+
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+        hrService.emitHeartRate(130);
+        hrService.emitHeartRate(150);
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+
+        await controller.logSet(exerciseId: exercise.id, weight: 100, reps: 5);
+
+        final firstSet = readState().setsByExercise[exercise.id]!.single;
+        expect(firstSet.avgHeartRate, 140);
+        expect(firstSet.peakHeartRate, 150);
+
+        // The second set's window starts at the first set's timestamp, so it
+        // must only see the readings emitted after it.
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+        hrService.emitHeartRate(170);
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+
+        await controller.logSet(exerciseId: exercise.id, weight: 100, reps: 5);
+
+        final secondSet = readState().setsByExercise[exercise.id]!.last;
+        expect(secondSet.avgHeartRate, 170);
+        expect(secondSet.peakHeartRate, 170);
+      });
+
+      test('leaves heart rate fields null when no monitor readings exist',
+          () async {
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+        final exercises = await exerciseRepo.getAllExercises();
+        final exercise = exercises.first;
+        await controller.addExercise(exercise);
+
+        await controller.logSet(exerciseId: exercise.id, weight: 100, reps: 5);
+
+        final set = readState().setsByExercise[exercise.id]!.single;
+        expect(set.avgHeartRate, isNull);
+        expect(set.peakHeartRate, isNull);
       });
 
       test(

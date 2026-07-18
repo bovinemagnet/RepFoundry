@@ -117,4 +117,66 @@ void main() {
     expect(templates.single.name, 'My Template');
     expect(templates.single.exercises.single.exerciseName, 'Bench Press');
   });
+
+  testWidgets('shows a heart rate column when sets carry HR summaries',
+      (tester) async {
+    final repo = InMemoryWorkoutRepository();
+    final now = DateTime.utc(2026, 6, 1, 9);
+    await repo.createWorkout(
+      Workout(
+        id: 'w1',
+        startedAt: now,
+        completedAt: now.add(const Duration(minutes: 45)),
+        updatedAt: now,
+      ),
+    );
+    await repo.addSet(WorkoutSet.create(
+      workoutId: 'w1',
+      exerciseId: '1',
+      setOrder: 1,
+      weight: 60,
+      reps: 5,
+      avgHeartRate: 142,
+      peakHeartRate: 168,
+    ));
+    await repo.addSet(WorkoutSet.create(
+      workoutId: 'w1',
+      exerciseId: '1',
+      setOrder: 2,
+      weight: 60,
+      reps: 5,
+    ));
+
+    await tester.pumpWidget(buildScreen(repo, 'w1'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('HR'), findsOneWidget);
+    expect(find.text('142/168'), findsOneWidget);
+  });
+
+  testWidgets('hides the heart rate column when no set carries HR data',
+      (tester) async {
+    final repo = InMemoryWorkoutRepository();
+    final now = DateTime.utc(2026, 6, 1, 9);
+    await repo.createWorkout(
+      Workout(
+        id: 'w1',
+        startedAt: now,
+        completedAt: now.add(const Duration(minutes: 45)),
+        updatedAt: now,
+      ),
+    );
+    await repo.addSet(WorkoutSet.create(
+      workoutId: 'w1',
+      exerciseId: '1',
+      setOrder: 1,
+      weight: 60,
+      reps: 5,
+    ));
+
+    await tester.pumpWidget(buildScreen(repo, 'w1'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('HR'), findsNothing);
+  });
 }

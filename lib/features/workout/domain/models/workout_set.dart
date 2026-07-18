@@ -11,6 +11,13 @@ class WorkoutSet {
   final DateTime timestamp;
   final bool isWarmUp;
   final String? groupId;
+
+  /// Average BPM over the effort-and-rest window leading up to this set,
+  /// captured automatically when a heart-rate monitor was connected.
+  final int? avgHeartRate;
+
+  /// Peak BPM over the same window.
+  final int? peakHeartRate;
   final DateTime updatedAt;
   final DateTime? deletedAt;
 
@@ -25,6 +32,8 @@ class WorkoutSet {
     required this.timestamp,
     this.isWarmUp = false,
     this.groupId,
+    this.avgHeartRate,
+    this.peakHeartRate,
     required this.updatedAt,
     this.deletedAt,
   });
@@ -51,6 +60,8 @@ class WorkoutSet {
     bool? isWarmUp,
     String? groupId,
     bool clearGroupId = false,
+    int? avgHeartRate,
+    int? peakHeartRate,
     DateTime? updatedAt,
     DateTime? deletedAt,
   }) {
@@ -65,6 +76,8 @@ class WorkoutSet {
       timestamp: timestamp ?? this.timestamp,
       isWarmUp: isWarmUp ?? this.isWarmUp,
       groupId: clearGroupId ? null : (groupId ?? this.groupId),
+      avgHeartRate: avgHeartRate ?? this.avgHeartRate,
+      peakHeartRate: peakHeartRate ?? this.peakHeartRate,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
     );
@@ -79,6 +92,8 @@ class WorkoutSet {
     double? rpe,
     bool isWarmUp = false,
     String? groupId,
+    int? avgHeartRate,
+    int? peakHeartRate,
   }) {
     final now = DateTime.now().toUtc();
     return WorkoutSet(
@@ -92,6 +107,8 @@ class WorkoutSet {
       timestamp: now,
       isWarmUp: isWarmUp,
       groupId: groupId,
+      avgHeartRate: avgHeartRate,
+      peakHeartRate: peakHeartRate,
       updatedAt: now,
     );
   }

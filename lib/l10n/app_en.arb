@@ -347,6 +347,7 @@
   "tableHeaderWeight": "Weight",
   "tableHeaderReps": "Reps",
   "tableHeaderE1rm": "e1RM",
+  "tableHeaderHr": "HR",
 
   "weightFieldLabel": "Weight ({unit})",
   "@weightFieldLabel": {

@@ -677,6 +677,9 @@ class SEn extends S {
   String get tableHeaderE1rm => 'e1RM';
 
   @override
+  String get tableHeaderHr => 'HR';
+
+  @override
   String weightFieldLabel(String unit) {
     return 'Weight ($unit)';
   }
