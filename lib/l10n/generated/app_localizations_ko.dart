@@ -674,6 +674,17 @@ class SKo extends S {
   String get rpeLabel => 'RPE';
 
   @override
+  String get addWarmup => '워밍업 추가';
+
+  @override
+  String get warmupRampTitle => '워밍업 램프';
+
+  @override
+  String addWarmupSets(int count) {
+    return '워밍업 세트 $count개 추가';
+  }
+
+  @override
   String get addRpe => 'RPE 추가';
 
   @override

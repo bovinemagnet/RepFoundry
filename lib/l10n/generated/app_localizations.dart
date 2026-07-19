@@ -1350,6 +1350,24 @@ abstract class S {
   /// **'RPE'**
   String get rpeLabel;
 
+  /// No description provided for @addWarmup.
+  ///
+  /// In en, this message translates to:
+  /// **'Add warm-up'**
+  String get addWarmup;
+
+  /// No description provided for @warmupRampTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm-up ramp'**
+  String get warmupRampTitle;
+
+  /// No description provided for @addWarmupSets.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {count} warm-up sets'**
+  String addWarmupSets(int count);
+
   /// No description provided for @addRpe.
   ///
   /// In en, this message translates to:
