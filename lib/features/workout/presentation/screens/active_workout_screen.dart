@@ -17,6 +17,7 @@ import '../../../stretching/presentation/widgets/stretching_section.dart';
 import '../../../templates/domain/models/workout_template.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/units/warmup_ramp.dart';
 import '../../../../core/units/weight_unit.dart';
 import '../../../../core/units/weight_unit_provider.dart';
 import '../../../../core/widgets/horizontal_swipe_navigator.dart';
@@ -164,6 +165,85 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
         _scrollToExercise(exerciseId, alignment: 1.0);
       });
     });
+  }
+
+  /// Shows the warm-up ramp preview for [exercise] at [workingKg]; on
+  /// confirmation, inserts each step as a warm-up set (sequential awaits keep
+  /// setOrder correct). No-op if the ramp is empty.
+  Future<void> _showWarmupRamp(
+    BuildContext context,
+    Exercise exercise,
+    double workingKg,
+  ) async {
+    final unit = ref.read(weightUnitProvider);
+    final ramp = warmupRamp(
+      workingKg: workingKg,
+      equipment: exercise.equipmentType,
+      unit: unit,
+    );
+    if (ramp.isEmpty) return;
+
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      builder: (ctx) {
+        final s = S.of(ctx)!;
+        final cs = Theme.of(ctx).colorScheme;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(22, 20, 22, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  s.warmupRampTitle,
+                  style: KineticText.display(size: 18, color: cs.onSurface),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  exercise.name,
+                  style: KineticText.mono(
+                    size: 12,
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                for (final step in ramp)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Text(
+                      '${unit.formatFromKg(step.weightKg)}${unit.label(s)}'
+                      ' × ${step.reps}',
+                      style: KineticText.mono(size: 15, color: cs.onSurface),
+                    ),
+                  ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: KineticCta(
+                    label: s.addWarmupSets(ramp.length),
+                    icon: Icons.add,
+                    onPressed: () => Navigator.pop(ctx, true),
+                    height: 46,
+                    borderRadius: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+    for (final step in ramp) {
+      await ref.read(activeWorkoutControllerProvider.notifier).logSet(
+            exerciseId: exercise.id,
+            weight: step.weightKg,
+            reps: step.reps,
+            isWarmUp: true,
+          );
+    }
   }
 
   @override
@@ -446,6 +526,8 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
                       controller.unlinkSuperset(exerciseId),
                   exerciseKeys: _exerciseKeys,
                   onLogSet: handleLogSet,
+                  onAddWarmup: (exercise, workingKg) =>
+                      _showWarmupRamp(context, exercise, workingKg),
                   autofocusExerciseId: _lastAddedExerciseId,
                   expandedExerciseId: _expandedExerciseId,
                   onExpand: _expandExercise,
@@ -483,6 +565,8 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
                 onDeleteSet: (setId) =>
                     controller.deleteSet(setId, exercise.id),
                 onEditSet: (updatedSet) => controller.updateSet(updatedSet),
+                onAddWarmup: (workingKg) =>
+                    _showWarmupRamp(context, exercise, workingKg),
                 onLinkSuperset: () =>
                     _showSupersetPicker(context, ref, exercise, state),
               ),
@@ -1246,6 +1330,7 @@ class _ExerciseSection extends StatelessWidget {
     required this.onLogSet,
     required this.onDeleteSet,
     required this.onEditSet,
+    required this.onAddWarmup,
     required this.expanded,
     required this.onExpand,
     required this.onCollapse,
@@ -1265,6 +1350,7 @@ class _ExerciseSection extends StatelessWidget {
   }) onLogSet;
   final void Function(String setId) onDeleteSet;
   final void Function(WorkoutSet updatedSet) onEditSet;
+  final void Function(double workingKg) onAddWarmup;
   final VoidCallback? onLinkSuperset;
   final bool autofocusWeight;
 
@@ -1323,6 +1409,7 @@ class _ExerciseSection extends StatelessWidget {
             onLogSet: onLogSet,
             onDeleteSet: onDeleteSet,
             onEditSet: onEditSet,
+            onAddWarmup: onAddWarmup,
             autofocusWeight: autofocusWeight,
             expanded: expanded,
             onExpand: onExpand,
@@ -1343,6 +1430,7 @@ class _ExerciseSectionContent extends ConsumerWidget {
     required this.onLogSet,
     required this.onDeleteSet,
     required this.onEditSet,
+    required this.onAddWarmup,
     required this.expanded,
     required this.onExpand,
     required this.onCollapse,
@@ -1361,6 +1449,7 @@ class _ExerciseSectionContent extends ConsumerWidget {
   }) onLogSet;
   final void Function(String setId) onDeleteSet;
   final void Function(WorkoutSet updatedSet) onEditSet;
+  final void Function(double workingKg) onAddWarmup;
   final bool autofocusWeight;
   final bool expanded;
   final VoidCallback onExpand;
@@ -1451,6 +1540,10 @@ class _ExerciseSectionContent extends ConsumerWidget {
             suggestion: suggestion,
             autofocusWeight: autofocusWeight,
             unit: unit,
+            fallbackWorkingKg: suggestion?.weight ??
+                (sets.isNotEmpty ? sets.last.weight : null),
+            onAddWarmup:
+                isWarmupRampable(exercise.equipmentType) ? onAddWarmup : null,
           )
         else
           _AddSetButton(onTap: onExpand),
@@ -1540,6 +1633,7 @@ class _SupersetGroup extends StatelessWidget {
     required this.onUnlink,
     required this.exerciseKeys,
     required this.onLogSet,
+    required this.onAddWarmup,
     required this.expandedExerciseId,
     required this.onExpand,
     required this.onCollapse,
@@ -1562,6 +1656,7 @@ class _SupersetGroup extends StatelessWidget {
     double? rpe,
     bool isWarmUp,
   }) onLogSet;
+  final void Function(Exercise exercise, double workingKg) onAddWarmup;
 
   @override
   Widget build(BuildContext context) {
@@ -1637,6 +1732,8 @@ class _SupersetGroup extends StatelessWidget {
                     onDeleteSet: (setId) =>
                         controller.deleteSet(setId, exercise.id),
                     onEditSet: (updatedSet) => controller.updateSet(updatedSet),
+                    onAddWarmup: (workingKg) =>
+                        onAddWarmup(exercise, workingKg),
                   ),
                 ),
               ),

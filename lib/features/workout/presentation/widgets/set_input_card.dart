@@ -16,6 +16,8 @@ class SetInputCard extends StatefulWidget {
     this.suggestion,
     this.autofocusWeight = false,
     this.unit = WeightUnit.kg,
+    this.fallbackWorkingKg,
+    this.onAddWarmup,
   });
 
   final void Function({
@@ -26,6 +28,14 @@ class SetInputCard extends StatefulWidget {
   }) onLogSet;
 
   final GhostSet? suggestion;
+
+  /// Working weight (kg) used for the warm-up ramp when the weight field is
+  /// empty or zero — typically the ghost suggestion or last logged set.
+  final double? fallbackWorkingKg;
+
+  /// When set, an "Add warm-up" affordance is shown; tapping it resolves the
+  /// working weight (typed value, else [fallbackWorkingKg]) and calls back.
+  final void Function(double workingKg)? onAddWarmup;
 
   /// When true, the Weight field grabs keyboard focus on first build.
   /// Used so a freshly added exercise becomes the active input target
@@ -151,6 +161,13 @@ class _SetInputCardState extends State<SetInputCard> {
     if (_isWarmUp) setState(() => _isWarmUp = false);
   }
 
+  void _addWarmup() {
+    final typed =
+        widget.unit.toKg(double.tryParse(_weightController.text) ?? 0);
+    final workingKg = typed > 0 ? typed : (widget.fallbackWorkingKg ?? 0);
+    if (workingKg > 0) widget.onAddWarmup!(workingKg);
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
@@ -263,6 +280,28 @@ class _SetInputCardState extends State<SetInputCard> {
                       : KineticPillVariant.ghost,
                 ),
               ),
+              // "Add warm-up" ramp affordance — only for loadable equipment.
+              if (widget.onAddWarmup != null) ...[
+                const SizedBox(width: 10),
+                GestureDetector(
+                  onTap: _addWarmup,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.whatshot, size: 16, color: cs.primary),
+                      const SizedBox(width: 5),
+                      Text(
+                        s.addWarmup.toUpperCase(),
+                        style: KineticText.mono(
+                          size: 12,
+                          letterSpacing: 0.5,
+                          color: cs.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const Spacer(),
               // "+ Log Set" CTA — auto width, 46px height
               KineticCta(

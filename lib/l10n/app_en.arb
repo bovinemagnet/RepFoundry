@@ -356,6 +356,12 @@
   "percentSuffix": "%",
   "repsLabel": "Reps",
   "rpeLabel": "RPE",
+  "addWarmup": "Add warm-up",
+  "warmupRampTitle": "Warm-up ramp",
+  "addWarmupSets": "Add {count} warm-up sets",
+  "@addWarmupSets": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "addRpe": "Add RPE",
   "hideRpe": "Hide RPE",
   "logSet": "Log Set",

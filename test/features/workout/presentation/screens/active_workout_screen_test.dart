@@ -63,12 +63,17 @@ void main() {
     );
   }
 
-  Exercise makeExercise(String id, String name) => Exercise(
+  Exercise makeExercise(
+    String id,
+    String name, {
+    EquipmentType equipmentType = EquipmentType.barbell,
+  }) =>
+      Exercise(
         id: id,
         name: name,
         category: ExerciseCategory.strength,
         muscleGroup: MuscleGroup.chest,
-        equipmentType: EquipmentType.barbell,
+        equipmentType: equipmentType,
         updatedAt: DateTime(2025, 1, 1),
       );
 
@@ -574,6 +579,71 @@ void main() {
 
       expect(find.text('heart-rate destination'), findsNothing);
       expect(find.byType(ActiveWorkoutScreen), findsOneWidget);
+    });
+  });
+
+  group('warm-up ramp', () {
+    Future<void> startWithExercise(
+      WidgetTester tester,
+      Exercise exercise,
+    ) async {
+      // Pin kg so ramp weights are deterministic regardless of test locale.
+      SharedPreferences.setMockInitialValues({'weight_unit': 'kg'});
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Start Workout'));
+      await tester.pumpAndSettle();
+
+      final state = tester.state<ActiveWorkoutScreenState>(
+        find.byType(ActiveWorkoutScreen),
+      );
+      await state.handleAddExercise(exercise);
+      await tester.pumpAndSettle();
+      // Let the input card's 350 ms autofocus timer fire so it isn't left
+      // pending when the test disposes.
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+
+    testWidgets('action is hidden for bodyweight exercises', (tester) async {
+      await startWithExercise(
+        tester,
+        makeExercise('bw', 'Pull-up', equipmentType: EquipmentType.bodyweight),
+      );
+
+      expect(find.text('ADD WARM-UP'), findsNothing);
+    });
+
+    testWidgets('barbell exercise previews and inserts a ramp', (tester) async {
+      await startWithExercise(
+        tester,
+        makeExercise('bb', 'Bench Press'),
+      );
+
+      // Enter a working weight so the ramp has a basis.
+      await tester.enterText(find.byType(TextFormField).first, '100');
+      await tester.pumpAndSettle();
+
+      expect(find.text('ADD WARM-UP'), findsOneWidget);
+      await tester.tap(find.text('ADD WARM-UP'));
+      await tester.pumpAndSettle();
+
+      // Preview sheet lists the computed ramp steps.
+      expect(find.textContaining('× 10'), findsOneWidget); // bar × 10
+      expect(find.text('ADD 4 WARM-UP SETS'), findsOneWidget);
+
+      await tester.tap(find.text('ADD 4 WARM-UP SETS'));
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(ActiveWorkoutScreen)),
+      );
+      final sets =
+          container.read(activeWorkoutControllerProvider).setsByExercise['bb']!;
+      expect(sets, hasLength(4));
+      expect(sets.every((s) => s.isWarmUp), isTrue);
+      expect(sets.map((s) => s.setOrder), orderedEquals([1, 2, 3, 4]));
+      expect(sets.first.weight, 20.0); // empty bar
+      expect(sets.last.weight, 80.0); // 80% of 100
     });
   });
 }

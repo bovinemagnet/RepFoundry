@@ -676,6 +676,17 @@ class SJa extends S {
   String get rpeLabel => 'RPE';
 
   @override
+  String get addWarmup => 'ウォームアップ追加';
+
+  @override
+  String get warmupRampTitle => 'ウォームアップランプ';
+
+  @override
+  String addWarmupSets(int count) {
+    return '$count件のウォームアップセットを追加';
+  }
+
+  @override
   String get addRpe => 'RPE を追加';
 
   @override

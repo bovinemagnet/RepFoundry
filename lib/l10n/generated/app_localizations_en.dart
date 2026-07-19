@@ -694,6 +694,17 @@ class SEn extends S {
   String get rpeLabel => 'RPE';
 
   @override
+  String get addWarmup => 'Add warm-up';
+
+  @override
+  String get warmupRampTitle => 'Warm-up ramp';
+
+  @override
+  String addWarmupSets(int count) {
+    return 'Add $count warm-up sets';
+  }
+
+  @override
   String get addRpe => 'Add RPE';
 
   @override

@@ -673,6 +673,17 @@ class SZh extends S {
   String get rpeLabel => 'RPE';
 
   @override
+  String get addWarmup => '添加热身';
+
+  @override
+  String get warmupRampTitle => '热身梯度';
+
+  @override
+  String addWarmupSets(int count) {
+    return '添加$count组热身';
+  }
+
+  @override
   String get addRpe => '添加 RPE';
 
   @override
@@ -2564,6 +2575,17 @@ class SZhHans extends SZh {
 
   @override
   String get rpeLabel => 'RPE';
+
+  @override
+  String get addWarmup => '添加热身';
+
+  @override
+  String get warmupRampTitle => '热身梯度';
+
+  @override
+  String addWarmupSets(int count) {
+    return '添加$count组热身';
+  }
 
   @override
   String get addRpe => '添加 RPE';
