@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
@@ -45,6 +46,18 @@ class ScaffoldWithNavBar extends StatelessWidget {
     '/programmes',
   ];
 
+  /// Ctrl+1 … Ctrl+8 jump to the rail destinations in rail order.
+  static const _railShortcutKeys = [
+    LogicalKeyboardKey.digit1,
+    LogicalKeyboardKey.digit2,
+    LogicalKeyboardKey.digit3,
+    LogicalKeyboardKey.digit4,
+    LogicalKeyboardKey.digit5,
+    LogicalKeyboardKey.digit6,
+    LogicalKeyboardKey.digit7,
+    LogicalKeyboardKey.digit8,
+  ];
+
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
@@ -71,17 +84,27 @@ class ScaffoldWithNavBar extends StatelessWidget {
             ),
           );
 
-    return Scaffold(
-      body: SafeArea(
-        child: Row(
-          children: [
-            DesktopNavRail(
-              selectedIndex: _railIndexForLocation(location),
-              onDestinationSelected: (index) =>
-                  _onRailDestinationSelected(index, context),
+    return CallbackShortcuts(
+      bindings: {
+        for (var i = 0; i < _railShortcutKeys.length; i++)
+          SingleActivator(_railShortcutKeys[i], control: true): () =>
+              _onRailDestinationSelected(i, context),
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          body: SafeArea(
+            child: Row(
+              children: [
+                DesktopNavRail(
+                  selectedIndex: _railIndexForLocation(location),
+                  onDestinationSelected: (index) =>
+                      _onRailDestinationSelected(index, context),
+                ),
+                Expanded(child: content),
+              ],
             ),
-            Expanded(child: content),
-          ],
+          ),
         ),
       ),
     );
