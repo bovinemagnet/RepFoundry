@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/responsive/layout_mode.dart';
+import '../core/widgets/app_scroll_behavior.dart';
 import '../features/settings/presentation/providers/layout_mode_provider.dart';
 import '../features/settings/presentation/providers/theme_mode_provider.dart';
 import '../l10n/generated/app_localizations.dart';
@@ -17,6 +18,7 @@ class RepFoundryApp extends ConsumerWidget {
     final layoutMode = ref.watch(layoutModeProvider);
     return MaterialApp.router(
       title: 'RepFoundry',
+      scrollBehavior: const AppScrollBehavior(),
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
