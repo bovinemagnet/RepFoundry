@@ -350,7 +350,7 @@ class _ProgrammeEditScreenState extends ConsumerState<ProgrammeEditScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(s.programmeSaved)),
       );
-      context.pop();
+      if (context.canPop()) context.pop();
     }
   }
 
