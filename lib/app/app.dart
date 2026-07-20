@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/responsive/layout_mode.dart';
 import '../core/widgets/app_scroll_behavior.dart';
+import '../core/widgets/desktop_text_selection.dart';
 import '../features/settings/presentation/providers/layout_mode_provider.dart';
 import '../features/settings/presentation/providers/theme_mode_provider.dart';
 import '../l10n/generated/app_localizations.dart';
@@ -30,7 +31,7 @@ class RepFoundryApp extends ConsumerWidget {
       // helpers throughout the routed tree.
       builder: (context, child) => LayoutModeScope(
         mode: layoutMode,
-        child: child ?? const SizedBox.shrink(),
+        child: DesktopTextSelection(child: child ?? const SizedBox.shrink()),
       ),
     );
   }
