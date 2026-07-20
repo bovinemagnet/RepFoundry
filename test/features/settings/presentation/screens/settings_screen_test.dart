@@ -1,6 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart';
 import 'package:rep_foundry/core/providers.dart';
@@ -47,17 +48,37 @@ class _RecordingSyncOrchestrator extends SyncOrchestrator {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  const packageInfoChannel =
+      MethodChannel('dev.fluttercommunity.plus/package_info');
   late _RecordingSyncOrchestrator orchestrator;
 
   setUp(() {
     final binding = TestWidgetsFlutterBinding.ensureInitialized();
     binding.platformDispatcher.views.first.physicalSize = const Size(900, 2600);
     binding.platformDispatcher.views.first.devicePixelRatio = 1.0;
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      packageInfoChannel,
+      (call) async {
+        if (call.method != 'getAll') return null;
+        return <String, dynamic>{
+          'appName': 'RepFoundry',
+          'packageName': 'com.repfoundry.app',
+          'version': '0.1.0-SNAPSHOT',
+          'buildNumber': '23',
+          'buildSignature': '',
+          'installerStore': null,
+        };
+      },
+    );
   });
 
   tearDown(() async {
     await orchestrator.dispose();
     final binding = TestWidgetsFlutterBinding.ensureInitialized();
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      packageInfoChannel,
+      null,
+    );
     binding.platformDispatcher.views.first.resetPhysicalSize();
     binding.platformDispatcher.views.first.resetDevicePixelRatio();
   });
@@ -84,6 +105,24 @@ void main() {
     await tester.tapAt(Offset(850, labelCenter.dy));
     await tester.pumpAndSettle();
   }
+
+  testWidgets('page header shows the installed package version',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    orchestrator = _RecordingSyncOrchestrator(
+      result: SyncResult(
+        success: true,
+        entitiesMerged: 0,
+        syncedAt: DateTime.utc(2026, 6, 8, 12),
+      ),
+    );
+
+    await tester.pumpWidget(buildScreen(orchestrator));
+    await tester.pumpAndSettle();
+
+    expect(find.text('REPFOUNDRY V0.1.0-SNAPSHOT'), findsOneWidget);
+    expect(find.text('REPFOUNDRY V1.0'), findsNothing);
+  });
 
   group('SettingsScreen weight unit toggle', () {
     testWidgets('selecting lbs updates the shared provider and persists',

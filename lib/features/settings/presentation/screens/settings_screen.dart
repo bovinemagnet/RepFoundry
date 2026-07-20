@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hr_zones/hr_zones.dart';
@@ -555,10 +556,23 @@ class SettingsScreen extends ConsumerWidget {
 
 // ─── Pagehead ─────────────────────────────────────────────────────────────────
 
-class _Pagehead extends StatelessWidget {
+class _Pagehead extends StatefulWidget {
   const _Pagehead({required this.s});
 
   final S s;
+
+  @override
+  State<_Pagehead> createState() => _PageheadState();
+}
+
+class _PageheadState extends State<_Pagehead> {
+  late final Future<PackageInfo> _packageInfo;
+
+  @override
+  void initState() {
+    super.initState();
+    _packageInfo = PackageInfo.fromPlatform();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -568,12 +582,19 @@ class _Pagehead extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Eyebrow: "REPFOUNDRY V1.0"
-          const KineticEyebrow('RepFoundry v1.0'),
+          FutureBuilder<PackageInfo>(
+            future: _packageInfo,
+            builder: (context, snapshot) {
+              final version = snapshot.data?.version;
+              return KineticEyebrow(
+                version == null ? 'RepFoundry' : 'RepFoundry v$version',
+              );
+            },
+          ),
           const SizedBox(height: 10),
           // Large display title
           Text(
-            s.settingsTitle,
+            widget.s.settingsTitle,
             style: KineticText.display(size: 32, letterSpacing: -0.8),
           ),
           const SizedBox(height: 8),
