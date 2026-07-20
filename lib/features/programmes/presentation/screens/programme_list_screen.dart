@@ -6,11 +6,9 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../domain/models/programme.dart';
 import '../../../../core/providers.dart';
-
-final _programmeListProvider =
-    StreamProvider.autoDispose<List<Programme>>((ref) {
-  return ref.watch(programmeRepositoryProvider).watchAllProgrammes();
-});
+import '../../../../core/responsive/breakpoints.dart';
+import '../providers/programme_list_provider.dart';
+import '../widgets/programmes_desktop_view.dart';
 
 class ProgrammeListScreen extends ConsumerWidget {
   const ProgrammeListScreen({super.key});
@@ -18,7 +16,13 @@ class ProgrammeListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
-    final programmesAsync = ref.watch(_programmeListProvider);
+
+    // Wide screens use the desktop master-detail power layout.
+    if (context.isWide) {
+      return const ProgrammesDesktopView();
+    }
+
+    final programmesAsync = ref.watch(programmeListProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(s.programmesTitle)),

@@ -6,6 +6,7 @@ import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/programmes/domain/models/programme.dart';
 import 'package:rep_foundry/features/programmes/domain/repositories/programme_repository.dart';
 import 'package:rep_foundry/features/programmes/presentation/screens/programme_list_screen.dart';
+import 'package:rep_foundry/features/programmes/presentation/widgets/programmes_desktop_view.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 class _FakeProgrammeRepository implements ProgrammeRepository {
@@ -32,7 +33,12 @@ class _FakeProgrammeRepository implements ProgrammeRepository {
   }
 
   @override
-  Future<Programme?> getProgramme(String id) async => null;
+  Future<Programme?> getProgramme(String id) async {
+    for (final p in _initial) {
+      if (p.id == id) return p;
+    }
+    return null;
+  }
 
   @override
   Future<List<Programme>> getAllProgrammes() async => _initial;
@@ -152,6 +158,55 @@ void main() {
 
       expect(find.byType(AlertDialog), findsOneWidget);
       expect(repo.created, isEmpty);
+    });
+
+    testWidgets('wide screens get the desktop master-detail view',
+        (tester) async {
+      tester.view.physicalSize = const Size(1400, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(buildScreen(_FakeProgrammeRepository([])));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ProgrammesDesktopView), findsOneWidget);
+    });
+
+    testWidgets('phone widths keep the mobile list', (tester) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(buildScreen(_FakeProgrammeRepository([])));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ProgrammesDesktopView), findsNothing);
+    });
+
+    testWidgets(
+        'desktop Save does not throw when the editor is embedded (nothing to pop)',
+        (tester) async {
+      tester.view.physicalSize = const Size(1400, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      final programme = Programme.create(name: 'Test', durationWeeks: 4);
+      await tester
+          .pumpWidget(buildScreen(_FakeProgrammeRepository([programme])));
+      await tester.pumpAndSettle();
+
+      // Select the programme in the master list — this embeds
+      // ProgrammeEditScreen inline in the detail pane (not pushed via the
+      // router), so there is no route to pop.
+      await tester.tap(find.text('Test'));
+      await tester.pumpAndSettle();
+
+      // Save in the embedded editor used to call context.pop()
+      // unconditionally, which throws when nothing is poppable.
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
     });
   });
 }

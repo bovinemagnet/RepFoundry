@@ -2904,6 +2904,12 @@ abstract class S {
   /// **'{count} {count, plural, =1{day} other{days}} assigned'**
   String programmeDaysCount(int count);
 
+  /// No description provided for @selectProgrammeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a programme to edit, or create a new one'**
+  String get selectProgrammeHint;
+
   /// No description provided for @weekLabel.
   ///
   /// In en, this message translates to:

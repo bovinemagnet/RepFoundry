@@ -773,6 +773,7 @@
   "@programmeDaysCount": {
     "placeholders": { "count": { "type": "int" } }
   },
+  "selectProgrammeHint": "Select a programme to edit, or create a new one",
   "weekLabel": "Week {number}",
   "@weekLabel": {
     "placeholders": { "number": { "type": "int" } }
