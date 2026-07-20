@@ -42,6 +42,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
     '/history',
     '/analytics',
     '/templates',
+    '/programmes',
   ];
 
   @override

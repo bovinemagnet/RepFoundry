@@ -6,6 +6,7 @@ import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/programmes/domain/models/programme.dart';
 import 'package:rep_foundry/features/programmes/domain/repositories/programme_repository.dart';
 import 'package:rep_foundry/features/programmes/presentation/screens/programme_list_screen.dart';
+import 'package:rep_foundry/features/programmes/presentation/widgets/programmes_desktop_view.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 class _FakeProgrammeRepository implements ProgrammeRepository {
@@ -152,6 +153,29 @@ void main() {
 
       expect(find.byType(AlertDialog), findsOneWidget);
       expect(repo.created, isEmpty);
+    });
+
+    testWidgets('wide screens get the desktop master-detail view',
+        (tester) async {
+      tester.view.physicalSize = const Size(1400, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(buildScreen(_FakeProgrammeRepository([])));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ProgrammesDesktopView), findsOneWidget);
+    });
+
+    testWidgets('phone widths keep the mobile list', (tester) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(buildScreen(_FakeProgrammeRepository([])));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ProgrammesDesktopView), findsNothing);
     });
   });
 }

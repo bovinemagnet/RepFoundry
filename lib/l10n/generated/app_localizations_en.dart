@@ -1606,6 +1606,10 @@ class SEn extends S {
   }
 
   @override
+  String get selectProgrammeHint =>
+      'Select a programme to edit, or create a new one';
+
+  @override
   String weekLabel(int number) {
     return 'Week $number';
   }
