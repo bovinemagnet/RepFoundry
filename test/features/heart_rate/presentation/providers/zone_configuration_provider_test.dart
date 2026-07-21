@@ -1,6 +1,9 @@
+import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hr_zones/hr_zones.dart';
+import 'package:rep_foundry/core/database/app_database.dart' as db;
+import 'package:rep_foundry/core/database/database_provider.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/heart_rate/domain/analytics_events.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/health_profile_provider.dart';
@@ -19,6 +22,18 @@ class _RecordingAnalyticsReporter implements HrAnalyticsReporter {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  late db.AppDatabase database;
+
+  ProviderContainer buildContainer(HrAnalyticsReporter analytics) {
+    database = db.AppDatabase.forTesting(NativeDatabase.memory());
+    return ProviderContainer(
+      overrides: [
+        databaseProvider.overrideWithValue(database),
+        hrAnalyticsReporterProvider.overrideWithValue(analytics),
+      ],
+    );
+  }
+
   group('zoneConfigurationProvider', () {
     late _RecordingAnalyticsReporter analytics;
 
@@ -27,13 +42,13 @@ void main() {
       analytics = _RecordingAnalyticsReporter();
     });
 
-    test('returns null when health profile lacks data to compute zones', () {
-      final container = ProviderContainer(
-        overrides: [
-          hrAnalyticsReporterProvider.overrideWithValue(analytics),
-        ],
-      );
+    tearDown(() => database.close());
+
+    test('returns null when health profile lacks data to compute zones',
+        () async {
+      final container = buildContainer(analytics);
       addTearDown(container.dispose);
+      await container.read(healthProfileProvider.future);
 
       // Empty profile has no age, no measured max, no clinician cap
       // → calculateZones cannot anchor any method.
@@ -44,11 +59,7 @@ void main() {
 
     test('returns a configuration when age is set and fires analytics',
         () async {
-      final container = ProviderContainer(
-        overrides: [
-          hrAnalyticsReporterProvider.overrideWithValue(analytics),
-        ],
-      );
+      final container = buildContainer(analytics);
       addTearDown(container.dispose);
 
       await container.read(healthProfileProvider.notifier).updateAge(35);
@@ -66,11 +77,7 @@ void main() {
     });
 
     test('clinician cap drives high reliability', () async {
-      final container = ProviderContainer(
-        overrides: [
-          hrAnalyticsReporterProvider.overrideWithValue(analytics),
-        ],
-      );
+      final container = buildContainer(analytics);
       addTearDown(container.dispose);
 
       await container
@@ -90,20 +97,18 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    test('is false for an empty profile', () {
-      final container = ProviderContainer();
+    tearDown(() => database.close());
+
+    test('is false for an empty profile', () async {
+      final container = buildContainer(_RecordingAnalyticsReporter());
       addTearDown(container.dispose);
+      await container.read(healthProfileProvider.future);
 
       expect(container.read(cautionModeProvider), isFalse);
     });
 
     test('becomes true when beta blocker flag is set', () async {
-      final container = ProviderContainer(
-        overrides: [
-          hrAnalyticsReporterProvider
-              .overrideWithValue(_RecordingAnalyticsReporter()),
-        ],
-      );
+      final container = buildContainer(_RecordingAnalyticsReporter());
       addTearDown(container.dispose);
 
       await container
@@ -114,12 +119,7 @@ void main() {
     });
 
     test('becomes true when heart condition flag is set', () async {
-      final container = ProviderContainer(
-        overrides: [
-          hrAnalyticsReporterProvider
-              .overrideWithValue(_RecordingAnalyticsReporter()),
-        ],
-      );
+      final container = buildContainer(_RecordingAnalyticsReporter());
       addTearDown(container.dispose);
 
       await container

@@ -1,8 +1,11 @@
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rep_foundry/core/database/app_database.dart' as db;
+import 'package:rep_foundry/core/database/database_provider.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/cardio/application/save_cardio_session_use_case.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
@@ -24,7 +27,7 @@ import '../../../cardio/data/fake_location_service.dart';
 /// first-visit onboarding sheet never opens during a test.
 class _SeededHealthProfileNotifier extends HealthProfileNotifier {
   @override
-  HealthProfile build() => const HealthProfile(age: 35);
+  Future<HealthProfile> build() async => const HealthProfile(age: 35);
 }
 
 /// Notifier override that seeds the panel with a specific initial state so
@@ -48,6 +51,7 @@ void main() {
   late FakeHeartRateService heartRateService;
   late InMemoryCardioSessionRepository cardioRepo;
   late InMemoryWorkoutRepository workoutRepo;
+  late db.AppDatabase database;
 
   // Stub the audioplayers method channel so AudioPlayer construction in
   // initState does not raise MissingPluginException at test time.
@@ -63,6 +67,7 @@ void main() {
     heartRateService = FakeHeartRateService();
     cardioRepo = InMemoryCardioSessionRepository();
     workoutRepo = InMemoryWorkoutRepository();
+    database = db.AppDatabase.forTesting(NativeDatabase.memory());
 
     const audioChannel = MethodChannel('xyz.luan/audioplayers.global');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -77,9 +82,10 @@ void main() {
     binding.platformDispatcher.views.first.devicePixelRatio = 1.0;
   });
 
-  tearDown(() {
+  tearDown(() async {
     locationService.dispose();
     heartRateService.dispose();
+    await database.close();
     final binding = TestWidgetsFlutterBinding.ensureInitialized();
     binding.platformDispatcher.views.first.resetPhysicalSize();
     binding.platformDispatcher.views.first.resetDevicePixelRatio();
@@ -94,6 +100,7 @@ void main() {
   Widget buildScreen() {
     return ProviderScope(
       overrides: [
+        databaseProvider.overrideWithValue(database),
         cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
         saveCardioSessionUseCaseProvider.overrideWithValue(
           SaveCardioSessionUseCase(
@@ -241,6 +248,7 @@ void main() {
     Widget buildScreenWithState(HeartRatePanelState state) {
       return ProviderScope(
         overrides: [
+          databaseProvider.overrideWithValue(database),
           cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
           saveCardioSessionUseCaseProvider.overrideWithValue(
             SaveCardioSessionUseCase(

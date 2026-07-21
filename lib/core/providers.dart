@@ -37,9 +37,11 @@ import '../features/stretching/domain/models/stretching_session.dart';
 import '../features/stretching/domain/repositories/stretching_session_repository.dart';
 import '../features/clients/data/drift_client_repository.dart';
 import '../features/clients/data/drift_client_plan_assignment_repository.dart';
+import '../features/clients/data/drift_health_profile_repository.dart';
 import '../features/clients/domain/models/client.dart';
 import '../features/clients/domain/repositories/client_repository.dart';
 import '../features/clients/domain/repositories/client_plan_assignment_repository.dart';
+import '../features/clients/domain/repositories/health_profile_repository.dart';
 import '../features/clients/presentation/providers/active_client_provider.dart';
 import '../features/sync/application/sync_orchestrator.dart';
 import '../features/sync/data/sync_service_factory.dart';
@@ -119,6 +121,11 @@ final clientsProvider = StreamProvider<List<Client>>((ref) {
 final clientPlanAssignmentRepositoryProvider =
     Provider<ClientPlanAssignmentRepository>((ref) {
   return DriftClientPlanAssignmentRepository(ref.watch(databaseProvider));
+});
+
+final healthProfileRepositoryProvider =
+    Provider<HealthProfileRepository>((ref) {
+  return DriftHealthProfileRepository(ref.watch(databaseProvider));
 });
 
 // Services

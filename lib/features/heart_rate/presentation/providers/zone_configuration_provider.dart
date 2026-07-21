@@ -7,7 +7,8 @@ import 'health_profile_provider.dart';
 
 /// Derived provider that recalculates zones whenever the health profile changes.
 final zoneConfigurationProvider = Provider<ZoneConfiguration?>((ref) {
-  final profile = ref.watch(healthProfileProvider);
+  final profile =
+      ref.watch(healthProfileProvider).value ?? const HealthProfile();
   final config = calculateZones(profile);
   if (config != null) {
     ref.read(hrAnalyticsReporterProvider).trackEvent(
@@ -20,5 +21,6 @@ final zoneConfigurationProvider = Provider<ZoneConfiguration?>((ref) {
 
 /// Whether caution mode is active.
 final cautionModeProvider = Provider<bool>((ref) {
-  return ref.watch(healthProfileProvider).isCautionMode;
+  return (ref.watch(healthProfileProvider).value ?? const HealthProfile())
+      .isCautionMode;
 });

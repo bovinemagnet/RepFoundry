@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hr_zones/hr_zones.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/providers.dart';
@@ -38,7 +39,8 @@ class _HealthProfileOnboardingState
   @override
   void initState() {
     super.initState();
-    final profile = ref.read(healthProfileProvider);
+    final profile =
+        ref.read(healthProfileProvider).value ?? const HealthProfile();
     _ageController.text = profile.age?.toString() ?? '';
     _restingHrController.text = profile.restingHr?.toString() ?? '';
     _measuredMaxController.text = profile.measuredMaxHr?.toString() ?? '';
