@@ -40,6 +40,7 @@ import '../features/clients/data/drift_client_plan_assignment_repository.dart';
 import '../features/clients/domain/models/client.dart';
 import '../features/clients/domain/repositories/client_repository.dart';
 import '../features/clients/domain/repositories/client_plan_assignment_repository.dart';
+import '../features/clients/presentation/providers/active_client_provider.dart';
 import '../features/sync/application/sync_orchestrator.dart';
 import '../features/sync/data/sync_service_factory.dart';
 import '../features/sync/presentation/providers/sync_settings_provider.dart';
@@ -51,7 +52,9 @@ final bodyMetricRepositoryProvider = Provider<BodyMetricRepository>((ref) {
 
 final bodyMetricsStreamProvider =
     StreamProvider.autoDispose<List<BodyMetric>>((ref) {
-  return ref.watch(bodyMetricRepositoryProvider).watchAll(kSelfClientId);
+  final client = ref.watch(activeClientProvider).value;
+  if (client == null) return const Stream.empty();
+  return ref.watch(bodyMetricRepositoryProvider).watchAll(client.id);
 });
 
 final exerciseRepositoryProvider = Provider<ExerciseRepository>((ref) {

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers.dart';
-import '../../../clients/domain/models/client.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 
 /// Holds the current and longest workout streaks.
 class StreakData {
@@ -13,9 +13,10 @@ class StreakData {
 /// Calculates the current streak (consecutive days with workouts ending today
 /// or yesterday) and the longest streak ever recorded.
 final streakProvider = FutureProvider.autoDispose<StreakData>((ref) async {
+  final clientId = (await ref.watch(activeClientProvider.future)).id;
   final repo = ref.watch(workoutRepositoryProvider);
   final workouts = await repo.getWorkoutHistory(
-    clientId: kSelfClientId,
+    clientId: clientId,
     limit: 500,
   );
 

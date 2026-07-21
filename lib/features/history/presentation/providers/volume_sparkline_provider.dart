@@ -1,13 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers.dart';
-import '../../../clients/domain/models/client.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 
 /// Provides total volume per workout for the last 20 workouts (oldest → newest).
 final volumeSparklineProvider =
     FutureProvider.autoDispose<List<double>>((ref) async {
+  final clientId = (await ref.watch(activeClientProvider.future)).id;
   final repo = ref.watch(workoutRepositoryProvider);
   final workouts = await repo.getWorkoutHistory(
-    clientId: kSelfClientId,
+    clientId: clientId,
     limit: 20,
   );
   if (workouts.isEmpty) return const [];

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/providers.dart';
-import '../../../clients/domain/models/client.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 import '../../../workout/domain/models/workout.dart';
 import '../../../workout/domain/models/workout_set.dart';
 
@@ -30,9 +30,10 @@ class WorkoutWithSets {
 /// Shared by the desktop master-detail History layout.
 final workoutHistoryWithSetsProvider =
     FutureProvider.autoDispose<List<WorkoutWithSets>>((ref) async {
+  final clientId = (await ref.watch(activeClientProvider.future)).id;
   final repo = ref.watch(workoutRepositoryProvider);
   final workouts = await repo.getWorkoutHistory(
-    clientId: kSelfClientId,
+    clientId: clientId,
     limit: 50,
   );
   final result = <WorkoutWithSets>[];

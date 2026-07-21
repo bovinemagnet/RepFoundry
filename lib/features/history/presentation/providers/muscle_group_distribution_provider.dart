@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../../core/providers.dart';
-import '../../../clients/domain/models/client.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 
 class MuscleGroupVolume {
   final MuscleGroup group;
@@ -15,8 +15,9 @@ final muscleGroupDistributionProvider =
   final workoutRepo = ref.watch(workoutRepositoryProvider);
   final exerciseRepo = ref.watch(exerciseRepositoryProvider);
 
+  final clientId = (await ref.watch(activeClientProvider.future)).id;
   final workouts = await workoutRepo.getWorkoutHistory(
-    clientId: kSelfClientId,
+    clientId: clientId,
     limit: 100,
   );
   if (workouts.isEmpty) return [];

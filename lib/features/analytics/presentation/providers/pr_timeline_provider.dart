@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers.dart';
-import '../../../clients/domain/models/client.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 import '../../../history/domain/models/personal_record.dart';
 
 class PrTimelineEntry {
@@ -15,8 +15,9 @@ final prTimelineProvider =
   final prRepo = ref.watch(personalRecordRepositoryProvider);
   final exerciseRepo = ref.watch(exerciseRepositoryProvider);
 
+  final clientId = (await ref.watch(activeClientProvider.future)).id;
   final records = await prRepo.getAllRecords(
-    clientId: kSelfClientId,
+    clientId: clientId,
     limit: 200,
   );
   final exercises = await exerciseRepo.getAllExercises();
