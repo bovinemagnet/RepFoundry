@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
 
+import 'clients_table.dart';
+
 @TableIndex(name: 'idx_body_metrics_date', columns: {#date})
 class BodyMetrics extends Table {
   TextColumn get id => text()();
@@ -9,6 +11,9 @@ class BodyMetrics extends Table {
   TextColumn get notes => text().nullable()();
   IntColumn get updatedAt => integer().withDefault(const Constant(0))();
   IntColumn get deletedAt => integer().nullable()();
+  TextColumn get clientId => text()
+      .references(Clients, #id)
+      .withDefault(const Constant(kSelfClientIdConst))();
 
   @override
   Set<Column> get primaryKey => {id};
