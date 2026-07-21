@@ -3654,12 +3654,6 @@ abstract class S {
   /// **'You'**
   String get selfClientBadge;
 
-  /// No description provided for @clientDetailComingSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'More client details are coming soon.'**
-  String get clientDetailComingSoon;
-
   /// No description provided for @switchClient.
   ///
   /// In en, this message translates to:
@@ -3671,6 +3665,48 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Viewing {name}'**
   String viewingClient(String name);
+
+  /// No description provided for @assignedPlans.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned plans'**
+  String get assignedPlans;
+
+  /// No description provided for @assignPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign plan'**
+  String get assignPlan;
+
+  /// No description provided for @unassignPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Unassign'**
+  String get unassignPlan;
+
+  /// No description provided for @noPlansAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'No plans assigned yet'**
+  String get noPlansAssigned;
+
+  /// No description provided for @clientHealthProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Health profile'**
+  String get clientHealthProfile;
+
+  /// No description provided for @healthProfileEditHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to this client to edit their health profile.'**
+  String get healthProfileEditHint;
+
+  /// No description provided for @healthProfileNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get healthProfileNotSet;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

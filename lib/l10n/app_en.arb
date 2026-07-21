@@ -944,10 +944,16 @@
   },
   "noClientsYet": "No clients yet",
   "selfClientBadge": "You",
-  "clientDetailComingSoon": "More client details are coming soon.",
   "switchClient": "Switch client",
   "viewingClient": "Viewing {name}",
   "@viewingClient": {
     "placeholders": { "name": { "type": "String" } }
-  }
+  },
+  "assignedPlans": "Assigned plans",
+  "assignPlan": "Assign plan",
+  "unassignPlan": "Unassign",
+  "noPlansAssigned": "No plans assigned yet",
+  "clientHealthProfile": "Health profile",
+  "healthProfileEditHint": "Switch to this client to edit their health profile.",
+  "healthProfileNotSet": "Not set"
 }

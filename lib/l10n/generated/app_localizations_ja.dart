@@ -1973,13 +1973,32 @@ class SJa extends S {
   String get selfClientBadge => 'You';
 
   @override
-  String get clientDetailComingSoon => 'More client details are coming soon.';
-
-  @override
   String get switchClient => 'Switch client';
 
   @override
   String viewingClient(String name) {
     return 'Viewing $name';
   }
+
+  @override
+  String get assignedPlans => 'Assigned plans';
+
+  @override
+  String get assignPlan => 'Assign plan';
+
+  @override
+  String get unassignPlan => 'Unassign';
+
+  @override
+  String get noPlansAssigned => 'No plans assigned yet';
+
+  @override
+  String get clientHealthProfile => 'Health profile';
+
+  @override
+  String get healthProfileEditHint =>
+      'Switch to this client to edit their health profile.';
+
+  @override
+  String get healthProfileNotSet => 'Not set';
 }

@@ -1696,7 +1696,7 @@ git commit -m "feat: clients roster screen, route, and nav destination"
 **Interfaces:**
 - Consumes: `clientsProvider`, `activeClientProvider`, `Client`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```dart
 // test/features/clients/presentation/client_switcher_test.dart
@@ -1705,21 +1705,21 @@ git commit -m "feat: clients roster screen, route, and nav destination"
 // the sheet/menu, and assert activeClientProvider updated (read the container).
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 Run: `flutter test test/features/clients/presentation/client_switcher_test.dart`
 Expected: FAIL — widget doesn't exist.
 
-- [ ] **Step 3: Implement the switcher and indicator**
+- [x] **Step 3: Implement the switcher and indicator**
 
 `ClientSwitcher` (a `ConsumerWidget`): shows the active client (coloured dot + name; "You" if self) as a tappable chip. Tapping opens a menu/bottom sheet listing `clientsProvider` entries; selecting one calls `ref.read(activeClientProvider.notifier).setActive(client)`. Host it in the `DesktopNavRail` footer (above the pinned Settings). For mobile, expose the same active-client name as a compact chip in the relevant screens' app bars via a small `ActiveClientIndicator` widget in the same file (reads `activeClientProvider`, renders the coloured dot + name; on tap opens the same sheet). Place the indicator on the logging surfaces (active workout, cardio) so the coach always sees whose data they're recording.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `flutter test test/features/clients`
 Expected: PASS
 
-- [ ] **Step 5: Analyse, format, commit**
+- [x] **Step 5: Analyse, format, commit**
 
 ```bash
 dart analyze && dart format lib test
