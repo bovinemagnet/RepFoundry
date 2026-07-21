@@ -10,7 +10,7 @@ import '../../../exercises/domain/models/exercise.dart';
 import '../../../stretching/domain/models/stretching_session.dart';
 import '../../../stretching/presentation/widgets/stretch_preset_localiser.dart';
 import '../../../../core/providers.dart';
-import '../../../clients/domain/models/client.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 import '../../../../core/units/weight_unit.dart';
 import '../../../../core/units/weight_unit_provider.dart';
 import '../../../../core/widgets/loading_widget.dart';
@@ -53,8 +53,9 @@ final _workoutDetailProvider =
     };
 
     final prRepo = ref.watch(personalRecordRepositoryProvider);
+    final clientId = (await ref.watch(activeClientProvider.future)).id;
     final allPrs = await prRepo.getAllRecords(
-      clientId: kSelfClientId,
+      clientId: clientId,
       limit: 500,
     );
     final setIds = sets.map((s) => s.id).toSet();

@@ -4,15 +4,16 @@ import 'package:intl/intl.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/providers.dart';
-import '../../../clients/domain/models/client.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 
 /// Provides a set of dates (normalised to midnight) on which workouts occurred
 /// over the last 12 weeks.
 final workoutDaysProvider =
     FutureProvider.autoDispose<Set<DateTime>>((ref) async {
+  final clientId = (await ref.watch(activeClientProvider.future)).id;
   final repo = ref.watch(workoutRepositoryProvider);
   final workouts = await repo.getWorkoutHistory(
-    clientId: kSelfClientId,
+    clientId: clientId,
     limit: 200,
   );
 
