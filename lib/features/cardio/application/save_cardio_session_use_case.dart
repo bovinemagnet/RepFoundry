@@ -13,6 +13,7 @@ class SaveCardioSessionInput {
   final double? distanceMeters;
   final double? incline;
   final int? avgHeartRate;
+  final String clientId;
 
   const SaveCardioSessionInput({
     required this.exerciseId,
@@ -21,6 +22,7 @@ class SaveCardioSessionInput {
     this.distanceMeters,
     this.incline,
     this.avgHeartRate,
+    this.clientId = kSelfClientId,
   });
 }
 
@@ -61,7 +63,7 @@ class SaveCardioSessionUseCase {
       startedAt: now.subtract(Duration(seconds: input.durationSeconds)),
       completedAt: now,
       notes: 'Cardio: ${input.exerciseName}',
-      clientId: kSelfClientId,
+      clientId: input.clientId,
       updatedAt: now,
     );
 

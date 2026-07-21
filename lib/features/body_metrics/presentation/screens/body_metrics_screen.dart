@@ -6,6 +6,8 @@ import '../../../../core/providers.dart';
 import '../../../../core/units/weight_unit.dart';
 import '../../../../core/units/weight_unit_provider.dart';
 import '../../../../core/widgets/progress_chart_widget.dart';
+import '../../../clients/domain/models/client.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 import '../../../health_sync/data/health_sync_service.dart';
 import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../../../health_sync/presentation/providers/health_weight_import_provider.dart';
@@ -35,6 +37,8 @@ class BodyMetricsScreen extends ConsumerWidget {
                   final metric = BodyMetric.create(
                     weight: sample.weightKg,
                     date: sample.date,
+                    clientId: ref.read(activeClientProvider).value?.id ??
+                        kSelfClientId,
                   );
                   await ref.read(bodyMetricRepositoryProvider).create(metric);
                 },
@@ -237,6 +241,8 @@ class _AddBodyMetricDialogState extends ConsumerState<_AddBodyMetricDialog> {
                 weight: weight,
                 bodyFatPercent: bf,
                 notes: notes,
+                clientId:
+                    ref.read(activeClientProvider).value?.id ?? kSelfClientId,
               ),
             );
           },

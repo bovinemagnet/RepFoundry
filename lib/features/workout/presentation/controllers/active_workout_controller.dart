@@ -7,6 +7,7 @@ import '../../domain/models/workout.dart';
 import '../../domain/models/workout_set.dart';
 import '../../domain/repositories/workout_repository.dart';
 import '../../../clients/domain/models/client.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../../../history/domain/models/personal_record.dart';
@@ -142,6 +143,11 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
   WorkoutRepository get _workoutRepository =>
       ref.watch(workoutRepositoryProvider);
 
+  /// The id of the client currently active in the coach's roster, falling
+  /// back to the "Me" client while the active-client provider is loading.
+  String get _activeClientId =>
+      ref.read(activeClientProvider).value?.id ?? kSelfClientId;
+
   @override
   ActiveWorkoutState build() {
     Future.microtask(() => _init());
@@ -189,7 +195,7 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     state = state.copyWith(isLoading: true);
     try {
       final useCase = ref.read(startWorkoutUseCaseProvider);
-      final workout = await useCase.execute();
+      final workout = await useCase.execute(clientId: _activeClientId);
       state = state.copyWith(
         activeWorkout: workout,
         setsByExercise: {},
@@ -205,7 +211,10 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     state = state.copyWith(isLoading: true);
     try {
       final useCase = ref.read(startWorkoutUseCaseProvider);
-      final workout = await useCase.execute(templateId: template.id);
+      final workout = await useCase.execute(
+        templateId: template.id,
+        clientId: _activeClientId,
+      );
       state = state.copyWith(
         activeWorkout: workout,
         setsByExercise: {},
@@ -416,10 +425,9 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     }
 
     // Fetch ghost sets from the last session for this exercise.
-    // TODO(coach): active client — Task 8.
     final lastSessionSets = await _workoutRepository.getSetsFromLastSession(
       exercise.id,
-      kSelfClientId,
+      _activeClientId,
     );
     final updatedGhosts =
         Map<String, List<GhostSet>>.from(state.ghostSetsByExercise);
@@ -448,10 +456,9 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
   ) async {
     final ghosts = <String, List<GhostSet>>{};
     for (final exerciseId in exerciseIds) {
-      // TODO(coach): active client — Task 8.
       final lastSessionSets = await _workoutRepository.getSetsFromLastSession(
         exerciseId,
-        kSelfClientId,
+        _activeClientId,
       );
       if (lastSessionSets.isNotEmpty) {
         ghosts[exerciseId] = lastSessionSets
@@ -498,6 +505,7 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
           isWarmUp: isWarmUp,
           avgHeartRate: hrSummary?.avgBpm,
           peakHeartRate: hrSummary?.peakBpm,
+          clientId: workout.clientId,
         ),
       );
 

@@ -409,6 +409,29 @@ void main() {
     }
   });
 
+  test('execute() stamps a non-Me active client on the created PR', () async {
+    const clientInput = LogSetInput(
+      workoutId: 'w1',
+      exerciseId: 'e12',
+      setOrder: 1,
+      weight: 100,
+      reps: 5,
+      clientId: 'client-7',
+    );
+    final result = await useCase.execute(clientInput);
+    expect(result.newPersonalRecords, isNotEmpty);
+    for (final pr in result.newPersonalRecords) {
+      expect(pr.clientId, 'client-7');
+    }
+
+    final storedBest = await personalRecordRepository.getBestRecord(
+      'e12',
+      RecordType.maxWeight,
+      'client-7',
+    );
+    expect(storedBest, isNotNull);
+  });
+
   test(
       'execute() skips PR detection when no PersonalRecordRepository '
       'is provided', () async {

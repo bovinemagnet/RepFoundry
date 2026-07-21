@@ -21,6 +21,7 @@ class LogSetInput {
   final bool isWarmUp;
   final int? avgHeartRate;
   final int? peakHeartRate;
+  final String clientId;
 
   const LogSetInput({
     required this.workoutId,
@@ -32,6 +33,7 @@ class LogSetInput {
     this.isWarmUp = false,
     this.avgHeartRate,
     this.peakHeartRate,
+    this.clientId = kSelfClientId,
   });
 }
 
@@ -73,7 +75,7 @@ class LogSetUseCase {
     // Warm-up sets do not count towards personal records.
     final prs = input.isWarmUp
         ? <PersonalRecord>[]
-        : await _checkForPersonalRecords(savedSet);
+        : await _checkForPersonalRecords(savedSet, input.clientId);
 
     for (final pr in prs) {
       await _personalRecordRepository?.createRecord(pr);
@@ -94,7 +96,10 @@ class LogSetUseCase {
     }
   }
 
-  Future<List<PersonalRecord>> _checkForPersonalRecords(WorkoutSet set) async {
+  Future<List<PersonalRecord>> _checkForPersonalRecords(
+    WorkoutSet set,
+    String clientId,
+  ) async {
     final repository = _personalRecordRepository;
     // Without a record store there is no authoritative all-time best to
     // compare against, so PR detection is skipped.
@@ -109,11 +114,10 @@ class LogSetUseCase {
 
     final records = <PersonalRecord>[];
     for (final (recordType, value) in candidates) {
-      // TODO(coach): active client — Task 8.
       final best = await repository.getBestRecord(
         set.exerciseId,
         recordType,
-        kSelfClientId,
+        clientId,
       );
       if (best == null || value > best.value) {
         records.add(PersonalRecord.create(
@@ -121,6 +125,7 @@ class LogSetUseCase {
           recordType: recordType,
           value: value,
           workoutSetId: set.id,
+          clientId: clientId,
         ));
       }
     }

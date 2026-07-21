@@ -143,4 +143,9 @@ void main() {
       expect(repository._created, isEmpty);
     },
   );
+
+  test('execute stamps the given clientId on the new workout', () async {
+    final workout = await useCase.execute(clientId: 'client-9');
+    expect(workout.clientId, 'client-9');
+  });
 }
