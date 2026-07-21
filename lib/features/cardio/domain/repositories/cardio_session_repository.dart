@@ -5,13 +5,16 @@ abstract class CardioSessionRepository {
   Future<CardioSession?> getSession(String id);
   Future<List<CardioSession>> getSessionsForWorkout(String workoutId);
   Future<List<CardioSession>> getSessionsForExercise(
-    String exerciseId, {
-    int limit = 50,
-  });
+    String exerciseId,
+    String clientId,
+  );
   Future<void> deleteSession(String id);
 
-  Future<List<CardioSession>> getAllSessions();
-  Future<CardioSession?> getLastSessionForExercise(String exerciseId);
+  Future<List<CardioSession>> getAllSessions(String clientId);
+  Future<CardioSession?> getLastSessionForExercise(
+    String exerciseId,
+    String clientId,
+  );
 
   Stream<List<CardioSession>> watchSessionsForWorkout(String workoutId);
 }

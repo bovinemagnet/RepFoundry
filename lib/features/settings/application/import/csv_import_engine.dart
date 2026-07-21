@@ -175,8 +175,11 @@ class CsvImportEngine {
         ofType.sort((a, b) => b.$3.compareTo(a.$3));
         final (_, bestSet, bestValue) = ofType.first;
 
-        final stored =
-            await personalRecordRepository.getBestRecord(entry.key, type);
+        final stored = await personalRecordRepository.getBestRecord(
+          entry.key,
+          type,
+          kSelfClientId,
+        );
         if (stored != null && stored.value >= bestValue) continue;
 
         try {

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../../../core/providers.dart';
+import '../../../clients/domain/models/client.dart';
 import '../../../health_sync/data/health_sync_service.dart';
 import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../../application/save_cardio_session_use_case.dart';
@@ -273,7 +274,9 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       clearLastSession: true,
     );
 
-    final lastSession = await _cardioRepository.getLastSessionForExercise(id);
+    // TODO(coach): active client — Task 8.
+    final lastSession =
+        await _cardioRepository.getLastSessionForExercise(id, kSelfClientId);
     state = state.copyWith(lastSession: lastSession, clearLastSession: false);
   }
 

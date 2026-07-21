@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/providers.dart';
+import '../../../clients/domain/models/client.dart';
 import '../../../workout/domain/models/workout.dart';
 import '../../../workout/domain/models/workout_set.dart';
 
@@ -30,7 +31,10 @@ class WorkoutWithSets {
 final workoutHistoryWithSetsProvider =
     FutureProvider.autoDispose<List<WorkoutWithSets>>((ref) async {
   final repo = ref.watch(workoutRepositoryProvider);
-  final workouts = await repo.getWorkoutHistory(limit: 50);
+  final workouts = await repo.getWorkoutHistory(
+    clientId: kSelfClientId,
+    limit: 50,
+  );
   final result = <WorkoutWithSets>[];
   for (final w in workouts) {
     final sets = await repo.getSetsForWorkout(w.id);

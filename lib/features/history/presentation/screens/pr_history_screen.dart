@@ -4,6 +4,7 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../domain/models/personal_record.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../../core/providers.dart';
+import '../../../clients/domain/models/client.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/units/weight_unit.dart';
 import '../../../../core/units/weight_unit_provider.dart';
@@ -23,7 +24,10 @@ final _prHistoryProvider =
   final prRepo = ref.watch(personalRecordRepositoryProvider);
   final exerciseRepo = ref.watch(exerciseRepositoryProvider);
 
-  final allRecords = await prRepo.getAllRecords(limit: 500);
+  final allRecords = await prRepo.getAllRecords(
+    clientId: kSelfClientId,
+    limit: 500,
+  );
   final allExercises = await exerciseRepo.getAllExercises();
   final exercisesById = <String, Exercise>{
     for (final e in allExercises) e.id: e,

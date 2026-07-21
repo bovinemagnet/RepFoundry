@@ -29,7 +29,7 @@ class _StubBodyMetricRepository implements BodyMetricRepository {
   final BodyMetric? latest;
 
   @override
-  Future<BodyMetric?> getLatest() async => latest;
+  Future<BodyMetric?> getLatest(String clientId) async => latest;
 
   @override
   Future<BodyMetric> create(BodyMetric metric) async => metric;
@@ -41,11 +41,12 @@ class _StubBodyMetricRepository implements BodyMetricRepository {
   Future<void> delete(String id) async {}
 
   @override
-  Future<List<BodyMetric>> getAll({int limit = 100}) async =>
+  Future<List<BodyMetric>> getAll(
+          {required String clientId, int limit = 100}) async =>
       [if (latest != null) latest!];
 
   @override
-  Stream<List<BodyMetric>> watchAll() =>
+  Stream<List<BodyMetric>> watchAll(String clientId) =>
       Stream.value([if (latest != null) latest!]);
 }
 

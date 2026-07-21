@@ -17,24 +17,26 @@ class InMemoryPersonalRecordRepository implements PersonalRecordRepository {
 
   @override
   Future<List<PersonalRecord>> getRecordsForExercise(
-    String exerciseId, {
-    RecordType? recordType,
-  }) async {
-    return _records.where((r) {
-      if (r.exerciseId != exerciseId) return false;
-      if (recordType != null && r.recordType != recordType) return false;
-      return true;
-    }).toList();
+    String exerciseId,
+    String clientId,
+  ) async {
+    return _records
+        .where((r) => r.exerciseId == exerciseId && r.clientId == clientId)
+        .toList();
   }
 
   @override
   Future<PersonalRecord?> getBestRecord(
     String exerciseId,
     RecordType recordType,
+    String clientId,
   ) async {
     final matching = _records
         .where(
-          (r) => r.exerciseId == exerciseId && r.recordType == recordType,
+          (r) =>
+              r.exerciseId == exerciseId &&
+              r.recordType == recordType &&
+              r.clientId == clientId,
         )
         .toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -42,8 +44,11 @@ class InMemoryPersonalRecordRepository implements PersonalRecordRepository {
   }
 
   @override
-  Future<List<PersonalRecord>> getAllRecords({int limit = 50}) async {
-    final sorted = List<PersonalRecord>.from(_records)
+  Future<List<PersonalRecord>> getAllRecords({
+    required String clientId,
+    int limit = 50,
+  }) async {
+    final sorted = _records.where((r) => r.clientId == clientId).toList()
       ..sort((a, b) => b.achievedAt.compareTo(a.achievedAt));
     return sorted.take(limit).toList();
   }

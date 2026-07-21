@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart' as db;
 import 'package:rep_foundry/features/body_metrics/data/drift_body_metric_repository.dart';
 import 'package:rep_foundry/features/body_metrics/domain/models/body_metric.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:drift/drift.dart' show Value;
 
 void main() {
@@ -36,7 +37,7 @@ void main() {
         final metric = newMetric();
         await repo.create(metric);
 
-        final results = await repo.getAll();
+        final results = await repo.getAll(clientId: kSelfClientId);
         expect(results, hasLength(1));
         expect(results.first.id, metric.id);
         expect(results.first.weight, 80.0);
@@ -59,7 +60,7 @@ void main() {
         );
         await repo.create(metric);
 
-        final results = await repo.getAll();
+        final results = await repo.getAll(clientId: kSelfClientId);
         expect(results.first.bodyFatPercent, 15.5);
         expect(results.first.notes, 'Morning weigh-in');
       });
@@ -73,7 +74,7 @@ void main() {
         final updated = metric.copyWith(weight: 85.0);
         await repo.update(updated);
 
-        final results = await repo.getAll();
+        final results = await repo.getAll(clientId: kSelfClientId);
         expect(results, hasLength(1));
         expect(results.first.id, metric.id);
         expect(results.first.weight, 85.0);
@@ -87,7 +88,7 @@ void main() {
 
         await repo.delete(metric.id);
 
-        final results = await repo.getAll();
+        final results = await repo.getAll(clientId: kSelfClientId);
         expect(results, isEmpty);
       });
 
@@ -112,8 +113,8 @@ void main() {
         await repo.create(metric);
         await repo.delete(metric.id);
 
-        expect(await repo.getAll(), isEmpty);
-        expect(await repo.getLatest(), isNull);
+        expect(await repo.getAll(clientId: kSelfClientId), isEmpty);
+        expect(await repo.getLatest(kSelfClientId), isNull);
       });
 
       test('manually-tombstoned row (sync-applied) is filtered from reads',
@@ -132,7 +133,7 @@ void main() {
           ),
         );
 
-        expect(await repo.getAll(), isEmpty);
+        expect(await repo.getAll(clientId: kSelfClientId), isEmpty);
       });
     });
 
@@ -145,7 +146,7 @@ void main() {
           ));
         }
 
-        final results = await repo.getAll(limit: 3);
+        final results = await repo.getAll(clientId: kSelfClientId, limit: 3);
         expect(results, hasLength(3));
       });
 
@@ -161,7 +162,7 @@ void main() {
         await repo.create(older);
         await repo.create(newer);
 
-        final results = await repo.getAll();
+        final results = await repo.getAll(clientId: kSelfClientId);
         expect(results.first.weight, 82.0);
         expect(results.last.weight, 80.0);
       });
@@ -169,7 +170,7 @@ void main() {
 
     group('getLatest', () {
       test('returns null when no metrics exist', () async {
-        final latest = await repo.getLatest();
+        final latest = await repo.getLatest(kSelfClientId);
         expect(latest, isNull);
       });
 
@@ -183,7 +184,7 @@ void main() {
           date: DateTime.utc(2025, 6, 1),
         ));
 
-        final latest = await repo.getLatest();
+        final latest = await repo.getLatest(kSelfClientId);
         expect(latest, isNotNull);
         expect(latest!.weight, 82.0);
       });
@@ -192,7 +193,7 @@ void main() {
     group('watchAll', () {
       test('emits when a metric is created', () async {
         final emissions = <List<BodyMetric>>[];
-        final sub = repo.watchAll().listen(emissions.add);
+        final sub = repo.watchAll(kSelfClientId).listen(emissions.add);
         addTearDown(sub.cancel);
 
         await pumpEventQueue();
@@ -210,7 +211,7 @@ void main() {
         await repo.create(metric);
 
         final emissions = <List<BodyMetric>>[];
-        final sub = repo.watchAll().listen(emissions.add);
+        final sub = repo.watchAll(kSelfClientId).listen(emissions.add);
         addTearDown(sub.cancel);
 
         await pumpEventQueue();

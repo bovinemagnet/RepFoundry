@@ -27,14 +27,16 @@ class _RecordingBodyMetricRepository implements BodyMetricRepository {
   Future<void> delete(String id) async {}
 
   @override
-  Future<List<BodyMetric>> getAll({int limit = 100}) async => created;
+  Future<List<BodyMetric>> getAll(
+          {required String clientId, int limit = 100}) async =>
+      created;
 
   @override
-  Future<BodyMetric?> getLatest() async =>
+  Future<BodyMetric?> getLatest(String clientId) async =>
       created.isEmpty ? null : created.last;
 
   @override
-  Stream<List<BodyMetric>> watchAll() => Stream.value(created);
+  Stream<List<BodyMetric>> watchAll(String clientId) => Stream.value(created);
 }
 
 void main() {

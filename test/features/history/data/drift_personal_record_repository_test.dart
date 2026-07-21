@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart' as db;
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/history/data/drift_personal_record_repository.dart';
 import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
 
@@ -36,7 +37,7 @@ void main() {
         final record = newRecord();
         await repo.createRecord(record);
 
-        final records = await repo.getRecordsForExercise('1');
+        final records = await repo.getRecordsForExercise('1', kSelfClientId);
         expect(records, hasLength(1));
         expect(records.first.id, record.id);
         expect(records.first.exerciseId, '1');
@@ -44,25 +45,42 @@ void main() {
         expect(records.first.value, 120.0);
       });
 
-      test('filters by recordType', () async {
-        await repo.createRecord(newRecord(
+      test('is scoped to the client', () async {
+        // personal_records.client_id has a foreign key onto clients.id.
+        await database.batch((b) {
+          b.insertAll(database.clients, [
+            db.ClientsCompanion.insert(
+              id: 'A',
+              name: 'Client A',
+              colour: 0xFF000000,
+              createdAt: 0,
+            ),
+            db.ClientsCompanion.insert(
+              id: 'B',
+              name: 'Client B',
+              colour: 0xFF000000,
+              createdAt: 0,
+            ),
+          ]);
+        });
+
+        final recordA = PersonalRecord.create(
+          exerciseId: '1',
           recordType: RecordType.estimatedOneRepMax,
           value: 120,
-        ));
-        await repo.createRecord(newRecord(
-          recordType: RecordType.maxWeight,
-          value: 100,
-        ));
-
-        final e1rmRecords = await repo.getRecordsForExercise(
-          '1',
+          clientId: 'A',
+        );
+        final recordB = PersonalRecord.create(
+          exerciseId: '1',
           recordType: RecordType.estimatedOneRepMax,
+          value: 100,
+          clientId: 'B',
         );
-        expect(e1rmRecords, hasLength(1));
-        expect(
-          e1rmRecords.first.recordType,
-          RecordType.estimatedOneRepMax,
-        );
+        await repo.createRecord(recordA);
+        await repo.createRecord(recordB);
+
+        final onlyA = await repo.getRecordsForExercise('1', 'A');
+        expect(onlyA.map((r) => r.id), [recordA.id]);
       });
     });
 
@@ -75,6 +93,7 @@ void main() {
         final best = await repo.getBestRecord(
           '1',
           RecordType.estimatedOneRepMax,
+          kSelfClientId,
         );
         expect(best, isNotNull);
         expect(best!.value, 150.0);
@@ -84,6 +103,7 @@ void main() {
         final best = await repo.getBestRecord(
           '1',
           RecordType.estimatedOneRepMax,
+          kSelfClientId,
         );
         expect(best, isNull);
       });
@@ -95,7 +115,7 @@ void main() {
           await repo.createRecord(newRecord(value: 100.0 + i));
         }
 
-        final all = await repo.getAllRecords(limit: 3);
+        final all = await repo.getAllRecords(clientId: kSelfClientId, limit: 3);
         expect(all, hasLength(3));
       });
     });
@@ -123,7 +143,7 @@ void main() {
           ),
         );
 
-        final results = await repo.getRecordsForExercise('1');
+        final results = await repo.getRecordsForExercise('1', kSelfClientId);
         expect(results, hasLength(1));
         expect(results.single.id, live.id);
       });
@@ -144,6 +164,7 @@ void main() {
         final best = await repo.getBestRecord(
           '1',
           RecordType.estimatedOneRepMax,
+          kSelfClientId,
         );
         expect(best, isNotNull);
         expect(best!.value, 100.0);
@@ -163,7 +184,7 @@ void main() {
           ),
         );
 
-        final all = await repo.getAllRecords();
+        final all = await repo.getAllRecords(clientId: kSelfClientId);
         expect(all, hasLength(1));
         expect(all.single.id, live.id);
       });

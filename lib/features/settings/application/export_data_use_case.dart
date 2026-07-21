@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../cardio/domain/models/cardio_session.dart';
 import '../../cardio/domain/repositories/cardio_session_repository.dart';
+import '../../clients/domain/models/client.dart';
 import '../../exercises/domain/models/exercise.dart';
 import '../../exercises/domain/repositories/exercise_repository.dart';
 import '../../history/domain/models/personal_record.dart';
@@ -31,9 +32,14 @@ class ExportDataUseCase {
 
   Future<String> exportAsJson() async {
     final exercises = await exerciseRepository.getAllExercises();
-    final workouts = await workoutRepository.getWorkoutHistory(limit: 10000);
-    final cardioSessions = await cardioSessionRepository.getAllSessions();
+    final workouts = await workoutRepository.getWorkoutHistory(
+      clientId: kSelfClientId,
+      limit: 10000,
+    );
+    final cardioSessions =
+        await cardioSessionRepository.getAllSessions(kSelfClientId);
     final personalRecords = await personalRecordRepository.getAllRecords(
+      clientId: kSelfClientId,
       limit: 10000,
     );
     final stretchingSessions =
@@ -64,9 +70,14 @@ class ExportDataUseCase {
     final exercises = await exerciseRepository.getAllExercises();
     final exerciseNames = {for (final e in exercises) e.id: e.name};
 
-    final workouts = await workoutRepository.getWorkoutHistory(limit: 10000);
-    final cardioSessions = await cardioSessionRepository.getAllSessions();
+    final workouts = await workoutRepository.getWorkoutHistory(
+      clientId: kSelfClientId,
+      limit: 10000,
+    );
+    final cardioSessions =
+        await cardioSessionRepository.getAllSessions(kSelfClientId);
     final personalRecords = await personalRecordRepository.getAllRecords(
+      clientId: kSelfClientId,
       limit: 10000,
     );
     final stretchingSessions =

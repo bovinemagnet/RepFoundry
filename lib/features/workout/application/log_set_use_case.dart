@@ -1,5 +1,6 @@
 import '../domain/models/workout_set.dart';
 import '../domain/repositories/workout_repository.dart';
+import '../../clients/domain/models/client.dart';
 import '../../history/domain/models/personal_record.dart';
 import '../../history/domain/repositories/personal_record_repository.dart';
 
@@ -108,7 +109,12 @@ class LogSetUseCase {
 
     final records = <PersonalRecord>[];
     for (final (recordType, value) in candidates) {
-      final best = await repository.getBestRecord(set.exerciseId, recordType);
+      // TODO(coach): active client — Task 8.
+      final best = await repository.getBestRecord(
+        set.exerciseId,
+        recordType,
+        kSelfClientId,
+      );
       if (best == null || value > best.value) {
         records.add(PersonalRecord.create(
           exerciseId: set.exerciseId,

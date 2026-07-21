@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/cardio/application/save_cardio_session_use_case.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 
 void main() {
@@ -146,7 +147,8 @@ void main() {
           ),
         );
 
-        final sessions = await cardioRepo.getSessionsForExercise('e1');
+        final sessions =
+            await cardioRepo.getSessionsForExercise('e1', kSelfClientId);
         expect(sessions, hasLength(1));
       });
 

@@ -1,12 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers.dart';
+import '../../../clients/domain/models/client.dart';
 import '../../../../core/widgets/progress_chart_widget.dart';
 
 /// Provides per-workout volume as [ProgressDataPoint] for the last 20 workouts.
 final workoutVolumeChartProvider =
     FutureProvider.autoDispose<List<ProgressDataPoint>>((ref) async {
   final repo = ref.watch(workoutRepositoryProvider);
-  final workouts = await repo.getWorkoutHistory(limit: 20);
+  final workouts = await repo.getWorkoutHistory(
+    clientId: kSelfClientId,
+    limit: 20,
+  );
   if (workouts.isEmpty) return const [];
 
   final points = <ProgressDataPoint>[];

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../../core/providers.dart';
+import '../../../clients/domain/models/client.dart';
 
 class TrainedExercise {
   final Exercise exercise;
@@ -14,7 +15,10 @@ final trainedExercisesProvider =
   final workoutRepo = ref.watch(workoutRepositoryProvider);
   final exerciseRepo = ref.watch(exerciseRepositoryProvider);
 
-  final workouts = await workoutRepo.getWorkoutHistory(limit: 100);
+  final workouts = await workoutRepo.getWorkoutHistory(
+    clientId: kSelfClientId,
+    limit: 100,
+  );
   if (workouts.isEmpty) return [];
 
   final setCountByExercise = <String, int>{};

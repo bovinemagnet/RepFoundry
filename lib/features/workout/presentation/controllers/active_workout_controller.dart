@@ -6,6 +6,7 @@ import '../../application/log_set_use_case.dart';
 import '../../domain/models/workout.dart';
 import '../../domain/models/workout_set.dart';
 import '../../domain/repositories/workout_repository.dart';
+import '../../../clients/domain/models/client.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../../../history/domain/models/personal_record.dart';
@@ -415,8 +416,11 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     }
 
     // Fetch ghost sets from the last session for this exercise.
-    final lastSessionSets =
-        await _workoutRepository.getSetsFromLastSession(exercise.id);
+    // TODO(coach): active client — Task 8.
+    final lastSessionSets = await _workoutRepository.getSetsFromLastSession(
+      exercise.id,
+      kSelfClientId,
+    );
     final updatedGhosts =
         Map<String, List<GhostSet>>.from(state.ghostSetsByExercise);
     if (lastSessionSets.isNotEmpty) {
@@ -444,8 +448,11 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
   ) async {
     final ghosts = <String, List<GhostSet>>{};
     for (final exerciseId in exerciseIds) {
-      final lastSessionSets =
-          await _workoutRepository.getSetsFromLastSession(exerciseId);
+      // TODO(coach): active client — Task 8.
+      final lastSessionSets = await _workoutRepository.getSetsFromLastSession(
+        exerciseId,
+        kSelfClientId,
+      );
       if (lastSessionSets.isNotEmpty) {
         ghosts[exerciseId] = lastSessionSets
             .map(

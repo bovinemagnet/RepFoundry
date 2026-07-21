@@ -7,6 +7,7 @@ import 'package:rep_foundry/features/cardio/application/save_cardio_session_use_
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
 import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/cardio/presentation/controllers/cardio_tracking_controller.dart';
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
@@ -151,7 +152,9 @@ void main() {
           async.flushMicrotasks();
 
           late List<CardioSession> sessions;
-          cardioRepo.getSessionsForExercise('e1').then((s) => sessions = s);
+          cardioRepo
+              .getSessionsForExercise('e1', kSelfClientId)
+              .then((s) => sessions = s);
           async.flushMicrotasks();
           expect(sessions.single.durationSeconds, 605);
         });
@@ -220,7 +223,8 @@ void main() {
         expect(controller.state.isRunning, isFalse);
         expect(controller.state.selectedExerciseId, isNull);
 
-        final sessions = await cardioRepo.getSessionsForExercise('e1');
+        final sessions =
+            await cardioRepo.getSessionsForExercise('e1', kSelfClientId);
         expect(sessions, hasLength(1));
       });
 
@@ -329,7 +333,8 @@ void main() {
 
         await controller.save();
 
-        final sessions = await cardioRepo.getSessionsForExercise('e1');
+        final sessions =
+            await cardioRepo.getSessionsForExercise('e1', kSelfClientId);
         expect(sessions, hasLength(1));
         expect(sessions.first.distanceMeters, 500.0);
       });
@@ -442,7 +447,8 @@ void main() {
 
         await controller.save();
 
-        final sessions = await cardioRepo.getSessionsForExercise('e1');
+        final sessions =
+            await cardioRepo.getSessionsForExercise('e1', kSelfClientId);
         expect(sessions, hasLength(1));
         expect(sessions.first.avgHeartRate, 150); // (140+150+160)/3
       });
@@ -498,7 +504,8 @@ void main() {
         controller.pause();
         await controller.save();
 
-        final sessions = await cardioRepo.getSessionsForExercise('e1');
+        final sessions =
+            await cardioRepo.getSessionsForExercise('e1', kSelfClientId);
         expect(sessions, hasLength(1));
         // Average across the full session, not just the post-resume segment.
         expect(sessions.first.avgHeartRate, 150);
@@ -520,7 +527,8 @@ void main() {
         // Manual value 100 should be ignored in favour of HR readings.
         await controller.save(avgHeartRate: 100);
 
-        final sessions = await cardioRepo.getSessionsForExercise('e1');
+        final sessions =
+            await cardioRepo.getSessionsForExercise('e1', kSelfClientId);
         expect(sessions, hasLength(1));
         expect(sessions.first.avgHeartRate, 150); // (140+160)/2, not 100
       });

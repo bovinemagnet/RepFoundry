@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
 import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
@@ -66,7 +67,8 @@ void main() {
       expect(result.rowsSkipped, 3);
       expect(result.duplicatesSkipped, 0);
 
-      final workouts = await workoutRepo.getWorkoutHistory();
+      final workouts =
+          await workoutRepo.getWorkoutHistory(clientId: kSelfClientId);
       expect(workouts, hasLength(1));
       final sets = await workoutRepo.getSetsForWorkout(workouts.single.id);
       expect(sets, hasLength(2));
@@ -85,7 +87,8 @@ void main() {
 
       await engine.import(history());
 
-      final workouts = await workoutRepo.getWorkoutHistory();
+      final workouts =
+          await workoutRepo.getWorkoutHistory(clientId: kSelfClientId);
       final sets = await workoutRepo.getSetsForWorkout(workouts.single.id);
       expect(sets.first.exerciseId, bench.id);
     });
@@ -108,7 +111,8 @@ void main() {
       expect(second.exercisesCreated, 0);
       expect(second.duplicatesSkipped, greaterThan(0));
 
-      final workouts = await workoutRepo.getWorkoutHistory();
+      final workouts =
+          await workoutRepo.getWorkoutHistory(clientId: kSelfClientId);
       expect(workouts, hasLength(1));
       expect(await workoutRepo.getSetsForWorkout(workouts.single.id),
           hasLength(2));
@@ -118,7 +122,8 @@ void main() {
 
     test('set updatedAt is the historical timestamp, not now', () async {
       await engine.import(history());
-      final workouts = await workoutRepo.getWorkoutHistory();
+      final workouts =
+          await workoutRepo.getWorkoutHistory(clientId: kSelfClientId);
       final sets = await workoutRepo.getSetsForWorkout(workouts.single.id);
       expect(sets.first.updatedAt, start);
     });
@@ -131,7 +136,8 @@ void main() {
         expect(result.personalRecordsImported, greaterThan(0));
         final all = await exerciseRepo.getAllExercises();
         final bench = all.singleWhere((e) => e.name == 'Barbell Bench Press');
-        final best = await prRepo.getBestRecord(bench.id, RecordType.maxWeight);
+        final best = await prRepo.getBestRecord(
+            bench.id, RecordType.maxWeight, kSelfClientId);
         expect(best, isNotNull);
         expect(best!.value, 80);
         expect(best.achievedAt, start);
@@ -148,7 +154,8 @@ void main() {
 
         await engine.import(history());
 
-        final best = await prRepo.getBestRecord(bench.id, RecordType.maxWeight);
+        final best = await prRepo.getBestRecord(
+            bench.id, RecordType.maxWeight, kSelfClientId);
         expect(best!.value, 200);
       });
 

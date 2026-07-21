@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers.dart';
+import '../../../clients/domain/models/client.dart';
 import 'weekly_volume_provider.dart';
 
 class WeeklyLoad {
@@ -43,7 +44,10 @@ List<WeeklyLoad> computeTrainingLoad(List<SetData> sets) {
 final trainingLoadProvider =
     FutureProvider.autoDispose<List<WeeklyLoad>>((ref) async {
   final repo = ref.watch(workoutRepositoryProvider);
-  final workouts = await repo.getWorkoutHistory(limit: 200);
+  final workouts = await repo.getWorkoutHistory(
+    clientId: kSelfClientId,
+    limit: 200,
+  );
   final completedIds = [
     for (final w in workouts)
       if (w.completedAt != null) w.id,

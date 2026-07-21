@@ -78,7 +78,7 @@ void main() {
     });
 
     group('getSessionsForExercise', () {
-      test('returns sessions for an exercise with limit', () async {
+      test('returns sessions for an exercise scoped to the client', () async {
         final workout = await createParentWorkout();
         for (var i = 0; i < 5; i++) {
           await repo.createSession(
@@ -86,14 +86,15 @@ void main() {
           );
         }
 
-        final sessions = await repo.getSessionsForExercise('17', limit: 3);
-        expect(sessions, hasLength(3));
+        final sessions = await repo.getSessionsForExercise('17', kSelfClientId);
+        expect(sessions, hasLength(5));
       });
     });
 
     group('getLastSessionForExercise', () {
       test('returns null when no sessions exist', () async {
-        final result = await repo.getLastSessionForExercise('16');
+        final result =
+            await repo.getLastSessionForExercise('16', kSelfClientId);
         expect(result, isNull);
       });
 
@@ -127,7 +128,8 @@ void main() {
         );
         await repo.createSession(newerSession);
 
-        final result = await repo.getLastSessionForExercise('16');
+        final result =
+            await repo.getLastSessionForExercise('16', kSelfClientId);
         expect(result, isNotNull);
         expect(result!.id, newerSession.id);
         expect(result.durationSeconds, 900);
@@ -139,8 +141,49 @@ void main() {
           newSession(workoutId: workout.id, exerciseId: '17'),
         );
 
-        final result = await repo.getLastSessionForExercise('16');
+        final result =
+            await repo.getLastSessionForExercise('16', kSelfClientId);
         expect(result, isNull);
+      });
+    });
+
+    group('client scoping', () {
+      test('getAllSessions is scoped to the client', () async {
+        // cardio_sessions.client_id has a foreign key onto clients.id.
+        await database.batch((b) {
+          b.insertAll(database.clients, [
+            db.ClientsCompanion.insert(
+              id: 'A',
+              name: 'Client A',
+              colour: 0xFF000000,
+              createdAt: 0,
+            ),
+            db.ClientsCompanion.insert(
+              id: 'B',
+              name: 'Client B',
+              colour: 0xFF000000,
+              createdAt: 0,
+            ),
+          ]);
+        });
+        final workout = await createParentWorkout();
+        final sessionA = CardioSession.create(
+          workoutId: workout.id,
+          exerciseId: '16',
+          durationSeconds: 600,
+          clientId: 'A',
+        );
+        final sessionB = CardioSession.create(
+          workoutId: workout.id,
+          exerciseId: '16',
+          durationSeconds: 600,
+          clientId: 'B',
+        );
+        await repo.createSession(sessionA);
+        await repo.createSession(sessionB);
+
+        final onlyA = await repo.getAllSessions('A');
+        expect(onlyA.map((s) => s.id), [sessionA.id]);
       });
     });
 
@@ -180,10 +223,11 @@ void main() {
         expect(forWorkout, hasLength(1));
         expect(forWorkout.single.id, live.id);
 
-        final all = await repo.getAllSessions();
+        final all = await repo.getAllSessions(kSelfClientId);
         expect(all, hasLength(1));
 
-        final lastForExercise = await repo.getLastSessionForExercise('16');
+        final lastForExercise =
+            await repo.getLastSessionForExercise('16', kSelfClientId);
         expect(lastForExercise, isNotNull);
         expect(lastForExercise!.id, live.id);
       });

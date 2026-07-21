@@ -53,12 +53,15 @@ class DriftWorkoutRepository implements WorkoutRepository {
 
   @override
   Future<List<Workout>> getWorkoutHistory({
+    required String clientId,
     int limit = 20,
     DateTime? before,
   }) async {
     final q = _db.select(_db.workouts)
       ..where((t) {
-        var cond = t.completedAt.isNotNull() & t.deletedAt.isNull();
+        var cond = t.clientId.equals(clientId) &
+            t.completedAt.isNotNull() &
+            t.deletedAt.isNull();
         if (before != null) {
           cond =
               cond & t.startedAt.isSmallerThanValue(dateTimeToEpochMs(before));
@@ -203,17 +206,24 @@ class DriftWorkoutRepository implements WorkoutRepository {
   }
 
   @override
-  Future<List<WorkoutSet>> getSetsFromLastSession(String exerciseId) async {
+  Future<List<WorkoutSet>> getSetsFromLastSession(
+    String exerciseId,
+    String clientId,
+  ) async {
     // Find the most recent completed, non-deleted workout containing this exercise.
     final workoutIdResult = await _db.customSelect(
       'SELECT w.id FROM workouts w '
       'INNER JOIN workout_sets ws ON ws.workout_id = w.id '
       'WHERE ws.exercise_id = ? '
+      'AND w.client_id = ? '
       'AND w.completed_at IS NOT NULL '
       'AND w.deleted_at IS NULL '
       'ORDER BY w.started_at DESC '
       'LIMIT 1',
-      variables: [Variable.withString(exerciseId)],
+      variables: [
+        Variable.withString(exerciseId),
+        Variable.withString(clientId)
+      ],
     ).getSingleOrNull();
 
     if (workoutIdResult == null) return [];
@@ -236,10 +246,13 @@ class DriftWorkoutRepository implements WorkoutRepository {
   // ── Streams ───────────────────────────────────────────────────────────
 
   @override
-  Stream<List<Workout>> watchWorkoutHistory() {
+  Stream<List<Workout>> watchWorkoutHistory(String clientId) {
     final q = _db.select(_db.workouts)
       ..where(
-        (t) => t.completedAt.isNotNull() & t.deletedAt.isNull(),
+        (t) =>
+            t.clientId.equals(clientId) &
+            t.completedAt.isNotNull() &
+            t.deletedAt.isNull(),
       )
       ..orderBy([(t) => OrderingTerm.desc(t.startedAt)]);
     return q.watch().map((rows) => rows.map(_workoutToDomain).toList());
