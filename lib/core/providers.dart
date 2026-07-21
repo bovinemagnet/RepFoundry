@@ -36,7 +36,9 @@ import '../features/stretching/data/drift_stretching_session_repository.dart';
 import '../features/stretching/domain/models/stretching_session.dart';
 import '../features/stretching/domain/repositories/stretching_session_repository.dart';
 import '../features/clients/data/drift_client_repository.dart';
+import '../features/clients/data/drift_client_plan_assignment_repository.dart';
 import '../features/clients/domain/repositories/client_repository.dart';
+import '../features/clients/domain/repositories/client_plan_assignment_repository.dart';
 import '../features/sync/application/sync_orchestrator.dart';
 import '../features/sync/data/sync_service_factory.dart';
 import '../features/sync/presentation/providers/sync_settings_provider.dart';
@@ -104,6 +106,11 @@ final stretchingSessionsForWorkoutProvider =
 
 final clientRepositoryProvider = Provider<ClientRepository>((ref) {
   return DriftClientRepository(ref.watch(databaseProvider));
+});
+
+final clientPlanAssignmentRepositoryProvider =
+    Provider<ClientPlanAssignmentRepository>((ref) {
+  return DriftClientPlanAssignmentRepository(ref.watch(databaseProvider));
 });
 
 // Services
