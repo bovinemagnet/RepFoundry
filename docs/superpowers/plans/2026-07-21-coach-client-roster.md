@@ -1602,11 +1602,11 @@ git commit -m "feat: per-client health profile with legacy migration"
 **Interfaces:**
 - Consumes: `clientsProvider`, `clientRepositoryProvider`, `Client`.
 
-- [ ] **Step 1: Add l10n strings**
+- [x] **Step 1: Add l10n strings**
 
 In `lib/l10n/app_en.arb` add: `"clientsTitle": "Clients"`, `"newClient": "New client"`, `"newClientTitle": "New client"`, `"clientNameLabel": "Name"`, `"deleteClientTitle": "Delete client?"`, `"deleteClientContent": "Delete {name}? Their logged data is kept but hidden.", "@deleteClientContent": {"placeholders": {"name": {"type": "String"}}}`, `"noClientsYet": "No clients yet"`, `"selfClientBadge": "You"`. Run `flutter gen-l10n`.
 
-- [ ] **Step 2: Write the failing widget test**
+- [x] **Step 2: Write the failing widget test**
 
 ```dart
 // test/features/clients/presentation/client_roster_screen_test.dart
@@ -1638,16 +1638,16 @@ void main() {
 }
 ```
 
-- [ ] **Step 3: Run to verify it fails**
+- [x] **Step 3: Run to verify it fails**
 
 Run: `flutter test test/features/clients/presentation/client_roster_screen_test.dart`
 Expected: FAIL — screen doesn't exist.
 
-- [ ] **Step 4: Implement the roster screen**
+- [x] **Step 4: Implement the roster screen**
 
 Build `ClientRosterScreen` (a `ConsumerWidget`) that watches `clientsProvider` and shows a `ListView` of clients — each a `ListTile` with a `CircleAvatar` tinted `Color(client.colour)`, the name, a "You" badge when `isSelf`, and a `PopupMenuButton` with Edit and (for non-self) Delete. A `FloatingActionButton.extended` opens a create dialog (name field + a small colour picker row) that calls `clientRepositoryProvider.createClient(Client.create(name:, colour:))`. Delete calls `softDeleteClient` after a confirm dialog; the self client shows no delete. Follow the exact structure of `programme_list_screen.dart` (Task 5 of the desktop work) for dialogs and tiles, but bind to clients. Tapping a client navigates to `/clients/${client.id}` (the detail screen from Task 13).
 
-- [ ] **Step 5: Register the route and nav destination**
+- [x] **Step 5: Register the route and nav destination**
 
 In `router.dart`, add inside the ShellRoute `routes:` list:
 
@@ -1669,12 +1669,12 @@ GoRoute(
 
 In `desktop_nav_rail.dart`, add a "Clients" `RailDestination` (icon `Icons.groups_outlined`, label from `s.clientsTitle`) — put it in a new leading position or the "Review" group; keep the flat build order deliberate. In `scaffold_with_nav_bar.dart`, extend `_railIndexForLocation` and `_onRailDestinationSelected` with a `/clients` case at the matching flat index, and add a 9th key to `_railShortcutKeys` (`LogicalKeyboardKey.digit9`) so the Ctrl-shortcut list stays aligned with the rail order. Keep the rail's build order and the flat-index switch in lock-step (a comment in both files already documents the order — update it).
 
-- [ ] **Step 6: Run tests to verify they pass**
+- [x] **Step 6: Run tests to verify they pass**
 
 Run: `flutter test test/features/clients test/core/widgets`
 Expected: PASS. Then `flutter test` for the whole suite.
 
-- [ ] **Step 7: Analyse, format, commit**
+- [x] **Step 7: Analyse, format, commit**
 
 ```bash
 dart analyze && dart format lib test
@@ -1740,7 +1740,7 @@ git commit -m "feat: client switcher and active-client indicator"
 **Interfaces:**
 - Consumes: `clientRepositoryProvider`, `clientPlanAssignmentRepositoryProvider`, `workoutTemplateRepositoryProvider`, `programmeRepositoryProvider`, `healthProfileRepositoryProvider`, `Client`, `PlanType`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```dart
 // test/features/clients/presentation/client_detail_screen_test.dart
@@ -1749,21 +1749,21 @@ git commit -m "feat: client switcher and active-client indicator"
 // "Assign plan" affordance is present.
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 Run: `flutter test test/features/clients/presentation/client_detail_screen_test.dart`
 Expected: FAIL — screen doesn't exist.
 
-- [ ] **Step 3: Implement the detail screen**
+- [x] **Step 3: Implement the detail screen**
 
 `ClientDetailScreen({required String clientId})` (a `ConsumerWidget`): header with the client's name/colour and an edit action; an "Assigned plans" section watching `clientPlanAssignmentRepositoryProvider.watchAssignments(clientId)` (resolve each `planId` to its template/programme name via the respective repo) with unassign buttons and an "Assign plan" action that opens a picker of library templates + programmes and calls `assign(clientId, planType, planId)`; and a "Health profile" section that opens the existing health-profile editor scoped to this client (reads/writes `healthProfileRepositoryProvider` for `clientId`). Reuse existing health-profile editing widgets from `lib/features/heart_rate/` where possible rather than duplicating fields.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `flutter test test/features/clients`
 Expected: PASS. Then `flutter test`.
 
-- [ ] **Step 5: Analyse, format, commit**
+- [x] **Step 5: Analyse, format, commit**
 
 ```bash
 dart analyze && dart format lib test
