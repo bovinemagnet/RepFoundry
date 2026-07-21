@@ -930,5 +930,19 @@
   "stretchPresetNinetyNinety": "90/90 Hip Stretch",
   "stretchPresetFrogPose": "Frog Pose",
   "stretchPresetFrontSplits": "Front Splits",
-  "stretchPresetSideSplits": "Side Splits (Middle Splits)"
+  "stretchPresetSideSplits": "Side Splits (Middle Splits)",
+
+  "clientsTitle": "Clients",
+  "newClient": "New client",
+  "newClientTitle": "New client",
+  "clientNameLabel": "Name",
+  "editClient": "Edit client",
+  "deleteClientTitle": "Delete client?",
+  "deleteClientContent": "Delete {name}? Their logged data is kept but hidden.",
+  "@deleteClientContent": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "noClientsYet": "No clients yet",
+  "selfClientBadge": "You",
+  "clientDetailComingSoon": "More client details are coming soon."
 }

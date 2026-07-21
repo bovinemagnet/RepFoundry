@@ -1942,4 +1942,36 @@ class SJa extends S {
 
   @override
   String get stretchPresetSideSplits => '横開脚（中間スプリット）';
+
+  @override
+  String get clientsTitle => 'Clients';
+
+  @override
+  String get newClient => 'New client';
+
+  @override
+  String get newClientTitle => 'New client';
+
+  @override
+  String get clientNameLabel => 'Name';
+
+  @override
+  String get editClient => 'Edit client';
+
+  @override
+  String get deleteClientTitle => 'Delete client?';
+
+  @override
+  String deleteClientContent(String name) {
+    return 'Delete $name? Their logged data is kept but hidden.';
+  }
+
+  @override
+  String get noClientsYet => 'No clients yet';
+
+  @override
+  String get selfClientBadge => 'You';
+
+  @override
+  String get clientDetailComingSoon => 'More client details are coming soon.';
 }

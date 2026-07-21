@@ -3599,6 +3599,66 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Side Splits (Middle Splits)'**
   String get stretchPresetSideSplits;
+
+  /// No description provided for @clientsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clients'**
+  String get clientsTitle;
+
+  /// No description provided for @newClient.
+  ///
+  /// In en, this message translates to:
+  /// **'New client'**
+  String get newClient;
+
+  /// No description provided for @newClientTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New client'**
+  String get newClientTitle;
+
+  /// No description provided for @clientNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get clientNameLabel;
+
+  /// No description provided for @editClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit client'**
+  String get editClient;
+
+  /// No description provided for @deleteClientTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete client?'**
+  String get deleteClientTitle;
+
+  /// No description provided for @deleteClientContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}? Their logged data is kept but hidden.'**
+  String deleteClientContent(String name);
+
+  /// No description provided for @noClientsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No clients yet'**
+  String get noClientsYet;
+
+  /// No description provided for @selfClientBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get selfClientBadge;
+
+  /// No description provided for @clientDetailComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'More client details are coming soon.'**
+  String get clientDetailComingSoon;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

@@ -17,6 +17,8 @@ import '../features/history/presentation/screens/pr_history_screen.dart';
 import '../features/analytics/presentation/screens/analytics_screen.dart';
 import '../features/programmes/presentation/screens/programme_list_screen.dart';
 import '../features/programmes/presentation/screens/programme_edit_screen.dart';
+import '../features/clients/presentation/screens/client_roster_screen.dart';
+import '../features/clients/presentation/screens/client_detail_screen.dart';
 import '../core/widgets/scaffold_with_nav_bar.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -78,6 +80,18 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: ':id',
                 builder: (context, state) => ProgrammeEditScreen(
                   programmeId: state.pathParameters['id']!,
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/clients',
+            builder: (context, state) => const ClientRosterScreen(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) => ClientDetailScreen(
+                  clientId: state.pathParameters['id']!,
                 ),
               ),
             ],

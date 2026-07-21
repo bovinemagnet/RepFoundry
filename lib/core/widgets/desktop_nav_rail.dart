@@ -84,6 +84,11 @@ class DesktopNavRail extends StatelessWidget {
             icon: Icons.favorite_border,
             activeIcon: Icons.favorite,
           ),
+          RailDestination(
+            label: s.clientsTitle,
+            icon: Icons.groups_outlined,
+            activeIcon: Icons.groups,
+          ),
         ],
       ),
       RailGroup(
