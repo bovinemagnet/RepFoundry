@@ -205,6 +205,11 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
+      // Do NOT add clientId here. Omitting it preserves each row's existing
+      // client on conflict (DoUpdate copies only present columns), and new
+      // rows default to the Me client via the column default. Adding
+      // clientId would be a v2 sync change (roster + per-entity clientId in
+      // the snapshot).
       _guardedUpsertAll(batch, database.workouts, [
         for (final w in snapshot.workouts)
           db.WorkoutsCompanion.insert(
@@ -238,6 +243,8 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
+      // Do NOT add clientId here — see the guard comment above the workouts
+      // upsert; the same reasoning applies to every scoped table.
       _guardedUpsertAll(batch, database.cardioSessions, [
         for (final c in snapshot.cardioSessions)
           db.CardioSessionsCompanion.insert(
@@ -253,6 +260,8 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
+      // Do NOT add clientId here — see the guard comment above the workouts
+      // upsert; the same reasoning applies to every scoped table.
       _guardedUpsertAll(batch, database.personalRecords, [
         for (final pr in snapshot.personalRecords)
           db.PersonalRecordsCompanion.insert(
@@ -293,6 +302,8 @@ class SyncSnapshotSerialiser {
           ),
       ]);
 
+      // Do NOT add clientId here — see the guard comment above the workouts
+      // upsert; the same reasoning applies to every scoped table.
       _guardedUpsertAll(batch, database.bodyMetrics, [
         for (final bm in snapshot.bodyMetrics)
           db.BodyMetricsCompanion.insert(
