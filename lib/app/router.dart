@@ -18,6 +18,7 @@ import '../features/analytics/presentation/screens/analytics_screen.dart';
 import '../features/programmes/presentation/screens/programme_list_screen.dart';
 import '../features/programmes/presentation/screens/programme_edit_screen.dart';
 import '../features/clients/presentation/screens/client_roster_screen.dart';
+import '../features/clients/presentation/widgets/client_switcher.dart';
 import '../features/clients/presentation/screens/client_detail_screen.dart';
 import '../core/widgets/scaffold_with_nav_bar.dart';
 
@@ -30,7 +31,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       // core tabs surface the bottom nav (see [ScaffoldWithNavBar]); the others
       // keep their original full-screen presentation.
       ShellRoute(
-        builder: (context, state, child) => ScaffoldWithNavBar(child: child),
+        builder: (context, state, child) => ScaffoldWithNavBar(
+          railFooter: const ClientSwitcher(),
+          child: child,
+        ),
         routes: [
           GoRoute(
             path: '/workout',

@@ -19,9 +19,13 @@ import 'desktop_nav_rail.dart';
 ///   two-pane "power layout" fill the pane; the rest are centred at a readable
 ///   maximum width rather than stretched.
 class ScaffoldWithNavBar extends StatelessWidget {
-  const ScaffoldWithNavBar({super.key, required this.child});
+  const ScaffoldWithNavBar({super.key, required this.child, this.railFooter});
 
   final Widget child;
+
+  /// Passed straight through to [DesktopNavRail.railFooter]; the router
+  /// supplies the client switcher so this widget stays feature-agnostic.
+  final Widget? railFooter;
 
   static const _navBarHeight = 72.0;
 
@@ -101,6 +105,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                   selectedIndex: _railIndexForLocation(location),
                   onDestinationSelected: (index) =>
                       _onRailDestinationSelected(index, context),
+                  railFooter: railFooter,
                 ),
                 Expanded(child: content),
               ],

@@ -1974,4 +1974,12 @@ class SJa extends S {
 
   @override
   String get clientDetailComingSoon => 'More client details are coming soon.';
+
+  @override
+  String get switchClient => 'Switch client';
+
+  @override
+  String viewingClient(String name) {
+    return 'Viewing $name';
+  }
 }

@@ -3659,6 +3659,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'More client details are coming soon.'**
   String get clientDetailComingSoon;
+
+  /// No description provided for @switchClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch client'**
+  String get switchClient;
+
+  /// No description provided for @viewingClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Viewing {name}'**
+  String viewingClient(String name);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

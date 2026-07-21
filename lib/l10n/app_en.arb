@@ -944,5 +944,10 @@
   },
   "noClientsYet": "No clients yet",
   "selfClientBadge": "You",
-  "clientDetailComingSoon": "More client details are coming soon."
+  "clientDetailComingSoon": "More client details are coming soon.",
+  "switchClient": "Switch client",
+  "viewingClient": "Viewing {name}",
+  "@viewingClient": {
+    "placeholders": { "name": { "type": "String" } }
+  }
 }
