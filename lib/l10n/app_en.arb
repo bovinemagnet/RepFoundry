@@ -954,6 +954,5 @@
   "unassignPlan": "Unassign",
   "noPlansAssigned": "No plans assigned yet",
   "clientHealthProfile": "Health profile",
-  "healthProfileEditHint": "Switch to this client to edit their health profile.",
-  "healthProfileNotSet": "Not set"
+  "healthProfileSaved": "Health profile saved"
 }

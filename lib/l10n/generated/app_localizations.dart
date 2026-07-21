@@ -3696,17 +3696,11 @@ abstract class S {
   /// **'Health profile'**
   String get clientHealthProfile;
 
-  /// No description provided for @healthProfileEditHint.
+  /// No description provided for @healthProfileSaved.
   ///
   /// In en, this message translates to:
-  /// **'Switch to this client to edit their health profile.'**
-  String get healthProfileEditHint;
-
-  /// No description provided for @healthProfileNotSet.
-  ///
-  /// In en, this message translates to:
-  /// **'Not set'**
-  String get healthProfileNotSet;
+  /// **'Health profile saved'**
+  String get healthProfileSaved;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

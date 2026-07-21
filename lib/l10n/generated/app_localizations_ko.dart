@@ -1995,9 +1995,5 @@ class SKo extends S {
   String get clientHealthProfile => 'Health profile';
 
   @override
-  String get healthProfileEditHint =>
-      'Switch to this client to edit their health profile.';
-
-  @override
-  String get healthProfileNotSet => 'Not set';
+  String get healthProfileSaved => 'Health profile saved';
 }

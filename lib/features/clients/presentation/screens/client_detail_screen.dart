@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hr_zones/hr_zones.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
@@ -10,7 +11,10 @@ import '../../domain/models/client.dart';
 import '../../domain/models/client_plan_assignment.dart';
 
 /// Assignments for one client, resolved to the plan's display name.
-final _assignmentsProvider = StreamProvider.autoDispose
+///
+/// Exposed (not file-private) so widget tests can override it with an
+/// in-memory double instead of driving the real Drift watch stream.
+final clientAssignmentsProvider = StreamProvider.autoDispose
     .family<List<ClientPlanAssignment>, String>((ref, clientId) {
   return ref
       .watch(clientPlanAssignmentRepositoryProvider)
@@ -18,12 +22,15 @@ final _assignmentsProvider = StreamProvider.autoDispose
 });
 
 /// Library plans (templates + programmes) offered by the assign picker.
-final _templatesProvider =
+///
+/// Exposed for the same test-override reason as [clientAssignmentsProvider].
+final clientDetailTemplatesProvider =
     StreamProvider.autoDispose<List<WorkoutTemplate>>((ref) {
   return ref.watch(workoutTemplateRepositoryProvider).watchAllTemplates();
 });
 
-final _programmesProvider = StreamProvider.autoDispose<List<Programme>>((ref) {
+final clientDetailProgrammesProvider =
+    StreamProvider.autoDispose<List<Programme>>((ref) {
   return ref.watch(programmeRepositoryProvider).watchAllProgrammes();
 });
 
@@ -76,7 +83,7 @@ class ClientDetailScreen extends ConsumerWidget {
           ),
           const Divider(height: 1),
           _SectionHeading(s.clientHealthProfile),
-          _HealthProfileSummary(clientId: clientId),
+          _HealthProfileEditor(clientId: clientId),
         ],
       ),
     );
@@ -116,7 +123,7 @@ class _AssignedPlans extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
-    final assignments = ref.watch(_assignmentsProvider(clientId));
+    final assignments = ref.watch(clientAssignmentsProvider(clientId));
 
     return assignments.when(
       loading: () => const Padding(
@@ -162,13 +169,13 @@ class _AssignedPlans extends ConsumerWidget {
   /// Resolves a plan id to its library name, or null while the lists load.
   String? _planName(WidgetRef ref, ClientPlanAssignment assignment) {
     if (assignment.planType == PlanType.programme) {
-      final programmes = ref.watch(_programmesProvider).value;
+      final programmes = ref.watch(clientDetailProgrammesProvider).value;
       for (final programme in programmes ?? const <Programme>[]) {
         if (programme.id == assignment.planId) return programme.name;
       }
       return null;
     }
-    final templates = ref.watch(_templatesProvider).value;
+    final templates = ref.watch(clientDetailTemplatesProvider).value;
     for (final template in templates ?? const <WorkoutTemplate>[]) {
       if (template.id == assignment.planId) return template.name;
     }
@@ -184,8 +191,10 @@ class _AssignPlanSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final s = S.of(context)!;
-    final templates = ref.watch(_templatesProvider).value ?? const [];
-    final programmes = ref.watch(_programmesProvider).value ?? const [];
+    final templates =
+        ref.watch(clientDetailTemplatesProvider).value ?? const [];
+    final programmes =
+        ref.watch(clientDetailProgrammesProvider).value ?? const [];
 
     Future<void> assign(PlanType type, String planId) async {
       Navigator.of(context).pop();
@@ -223,17 +232,17 @@ class _AssignPlanSheet extends ConsumerWidget {
   }
 }
 
-/// Read-only view of the client's stored profile. Editing still happens
-/// through the heart-rate screens, which are scoped to the active client.
-class _HealthProfileSummary extends ConsumerWidget {
-  const _HealthProfileSummary({required this.clientId});
+/// Loads the client's stored profile, then hands it to [_HealthProfileForm]
+/// to edit. Editing here always targets [clientId], regardless of which
+/// client is active elsewhere in the app.
+class _HealthProfileEditor extends ConsumerWidget {
+  const _HealthProfileEditor({required this.clientId});
 
   final String clientId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = S.of(context)!;
-    final profile = ref.watch(_healthProfileProvider(clientId));
+    final profile = ref.watch(clientHealthProfileProvider(clientId));
 
     return profile.when(
       loading: () => const Padding(
@@ -244,50 +253,161 @@ class _HealthProfileSummary extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         child: Text(error.toString()),
       ),
-      data: (value) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _ProfileRow(label: s.ageLabel, value: value.age?.toString()),
-          _ProfileRow(
-            label: s.restingHrLabel,
-            value: value.restingHr?.toString(),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: Text(
-              s.healthProfileEditHint,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
-        ],
+      data: (value) => _HealthProfileForm(
+        key: ValueKey(clientId),
+        clientId: clientId,
+        initialProfile: value,
       ),
     );
   }
 }
 
-final _healthProfileProvider =
+final clientHealthProfileProvider =
     FutureProvider.autoDispose.family<HealthProfile, String>((ref, clientId) {
   return ref.watch(healthProfileRepositoryProvider).getForClient(clientId);
 });
 
-class _ProfileRow extends StatelessWidget {
-  const _ProfileRow({required this.label, required this.value});
+/// Editable form for a single client's health profile. Saves directly via
+/// [healthProfileRepositoryProvider] rather than [healthProfileProvider],
+/// which is hard-wired to the active client.
+class _HealthProfileForm extends ConsumerStatefulWidget {
+  const _HealthProfileForm({
+    super.key,
+    required this.clientId,
+    required this.initialProfile,
+  });
 
-  final String label;
-  final String? value;
+  final String clientId;
+  final HealthProfile initialProfile;
+
+  @override
+  ConsumerState<_HealthProfileForm> createState() => _HealthProfileFormState();
+}
+
+class _HealthProfileFormState extends ConsumerState<_HealthProfileForm> {
+  late final TextEditingController _ageController;
+  late final TextEditingController _restingHrController;
+  late final TextEditingController _measuredMaxHrController;
+  late final TextEditingController _clinicianMaxHrController;
+  late bool _betaBlocker;
+  late bool _heartCondition;
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = widget.initialProfile;
+    _ageController = TextEditingController(text: profile.age?.toString() ?? '');
+    _restingHrController =
+        TextEditingController(text: profile.restingHr?.toString() ?? '');
+    _measuredMaxHrController =
+        TextEditingController(text: profile.measuredMaxHr?.toString() ?? '');
+    _clinicianMaxHrController =
+        TextEditingController(text: profile.clinicianMaxHr?.toString() ?? '');
+    _betaBlocker = profile.betaBlocker;
+    _heartCondition = profile.heartCondition;
+  }
+
+  @override
+  void dispose() {
+    _ageController.dispose();
+    _restingHrController.dispose();
+    _measuredMaxHrController.dispose();
+    _clinicianMaxHrController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(label),
-          Text(value ?? s.healthProfileNotSet),
+          TextFormField(
+            controller: _ageController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: InputDecoration(
+              labelText: s.ageLabel,
+              hintText: s.ageHint,
+              suffixText: s.yearsSuffix,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _restingHrController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: InputDecoration(
+              labelText: s.restingHeartRate,
+              hintText: s.restingHrHint,
+              suffixText: s.bpmSuffix,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _measuredMaxHrController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: InputDecoration(
+              labelText: s.measuredMaxHeartRate,
+              hintText: s.measuredMaxHrHint,
+              suffixText: s.bpmSuffix,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _clinicianMaxHrController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: InputDecoration(
+              labelText: s.clinicianMaxHeartRate,
+              hintText: s.clinicianMaxHrHint,
+              suffixText: s.bpmSuffix,
+            ),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(s.betaBlockerMedication),
+            value: _betaBlocker,
+            onChanged: (value) => setState(() => _betaBlocker = value),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(s.heartConditionLabel),
+            value: _heartCondition,
+            onChanged: (value) => setState(() => _heartCondition = value),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton(
+              onPressed: _save,
+              child: Text(s.save),
+            ),
+          ),
+          const SizedBox(height: 16),
         ],
       ),
     );
+  }
+
+  Future<void> _save() async {
+    final s = S.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final profile = HealthProfile(
+      age: int.tryParse(_ageController.text),
+      restingHr: int.tryParse(_restingHrController.text),
+      measuredMaxHr: int.tryParse(_measuredMaxHrController.text),
+      clinicianMaxHr: int.tryParse(_clinicianMaxHrController.text),
+      betaBlocker: _betaBlocker,
+      heartCondition: _heartCondition,
+    );
+    await ref
+        .read(healthProfileRepositoryProvider)
+        .saveForClient(widget.clientId, profile);
+    if (!mounted) return;
+    messenger.showSnackBar(SnackBar(content: Text(s.healthProfileSaved)));
   }
 }
