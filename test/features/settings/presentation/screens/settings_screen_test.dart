@@ -124,6 +124,55 @@ void main() {
     expect(find.text('REPFOUNDRY V1.0'), findsNothing);
   });
 
+  testWidgets(
+      'Theme and Layout selectors stack below their labels on a narrow phone',
+      (tester) async {
+    // Regression for issue #79: on a narrow Android phone (~360dp) the wide
+    // segmented selectors squeezed the label column to ~one character, so
+    // "Theme"/"Layout" wrapped one letter per line. On narrow widths the
+    // selector must sit BELOW the label rather than beside it.
+    SharedPreferences.setMockInitialValues({});
+    final binding = TestWidgetsFlutterBinding.ensureInitialized();
+    binding.platformDispatcher.views.first.physicalSize = const Size(360, 800);
+    binding.platformDispatcher.views.first.devicePixelRatio = 1.0;
+    orchestrator = _RecordingSyncOrchestrator(
+      result: SyncResult(
+        success: true,
+        entitiesMerged: 0,
+        syncedAt: DateTime.utc(2026, 6, 8, 12),
+      ),
+    );
+
+    await tester.pumpWidget(buildScreen(orchestrator));
+    await tester.pumpAndSettle();
+
+    // No RenderFlex overflow anywhere on the screen.
+    expect(tester.takeException(), isNull);
+
+    // The list builds lazily, so scroll each row into view before measuring.
+    final scrollable = find.byType(Scrollable).first;
+
+    // Theme row: the "Dark" segment sits below the "Theme" label.
+    await tester.scrollUntilVisible(find.text('Theme'), 300,
+        scrollable: scrollable);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getTopLeft(find.text('Dark')).dy,
+      greaterThanOrEqualTo(tester.getBottomLeft(find.text('Theme')).dy),
+      reason: 'Theme selector should stack below its label on a narrow phone',
+    );
+
+    // Layout row: the "Mobile" segment sits below the "Layout" label.
+    await tester.scrollUntilVisible(find.text('Layout'), 300,
+        scrollable: scrollable);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getTopLeft(find.text('Mobile')).dy,
+      greaterThanOrEqualTo(tester.getBottomLeft(find.text('Layout')).dy),
+      reason: 'Layout selector should stack below its label on a narrow phone',
+    );
+  });
+
   group('SettingsScreen weight unit toggle', () {
     testWidgets('selecting lbs updates the shared provider and persists',
         (tester) async {

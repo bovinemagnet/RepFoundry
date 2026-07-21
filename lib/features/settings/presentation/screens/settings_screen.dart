@@ -281,6 +281,7 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.contrast,
                 title: s.themeLabel,
                 subtitle: null,
+                stackTrailingWhenNarrow: true,
                 trailing: _CompactSegmented<ThemeMode>(
                   selected: themeMode,
                   options: [
@@ -309,6 +310,7 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.devices,
                 title: s.layoutLabel,
                 subtitle: s.layoutSubtitle,
+                stackTrailingWhenNarrow: true,
                 trailing: _CompactSegmented<LayoutMode>(
                   selected: layoutMode,
                   options: [
@@ -670,6 +672,7 @@ class _Set2Row extends StatelessWidget {
     this.trailing,
     this.onTap,
     this.danger = false,
+    this.stackTrailingWhenNarrow = false,
   });
 
   final IconData icon;
@@ -681,61 +684,99 @@ class _Set2Row extends StatelessWidget {
   /// When true, colours the icon and title with [ColorScheme.error].
   final bool danger;
 
+  /// When true, a wide [trailing] control (such as a multi-segment selector)
+  /// moves onto its own line below the label once the row is too narrow to
+  /// hold both side by side. Without this, the label column collapses to a
+  /// single character on phone widths (issue #79).
+  final bool stackTrailingWhenNarrow;
+
+  /// Below this row width the stacked layout is used.
+  static const double _stackBelowWidth = 420;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final iconColour = danger ? cs.error : cs.primary;
     final titleColour = danger ? cs.error : cs.onSurface;
 
+    final iconBox = SizedBox(
+      width: 24,
+      child: Icon(icon, size: 21, color: iconColour),
+    );
+
+    final labelBlock = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: KineticText.display(
+            size: 14.5,
+            weight: FontWeight.w600,
+            letterSpacing: 0,
+            color: titleColour,
+          ),
+        ),
+        if (subtitle != null && subtitle!.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Text(
+            subtitle!,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.manrope(
+              fontSize: 11.5,
+              height: 1.35,
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ],
+    );
+
     final content = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Icon — 21 px, accent or error colour
-          SizedBox(
-            width: 24,
-            child: Icon(icon, size: 21, color: iconColour),
-          ),
-          const SizedBox(width: 14),
-          // Title + optional subtitle
-          Expanded(
-            child: Column(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final stacked = stackTrailingWhenNarrow &&
+              trailing != null &&
+              constraints.maxWidth < _stackBelowWidth;
+
+          if (stacked) {
+            // Label on its own line so it keeps the full row width, with the
+            // wide control beneath it.
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: KineticText.display(
-                    size: 14.5,
-                    weight: FontWeight.w600,
-                    letterSpacing: 0,
-                    color: titleColour,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    iconBox,
+                    const SizedBox(width: 14),
+                    Expanded(child: labelBlock),
+                  ],
                 ),
-                if (subtitle != null && subtitle!.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle!,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.manrope(
-                      fontSize: 11.5,
-                      height: 1.35,
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+                const SizedBox(height: 12),
+                Align(alignment: Alignment.centerLeft, child: trailing!),
               ],
-            ),
-          ),
-          if (trailing != null) ...[
-            const SizedBox(width: 10),
-            trailing!,
-          ],
-        ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              iconBox,
+              const SizedBox(width: 14),
+              Expanded(child: labelBlock),
+              if (trailing != null) ...[
+                const SizedBox(width: 10),
+                trailing!,
+              ],
+            ],
+          );
+        },
       ),
     );
 
