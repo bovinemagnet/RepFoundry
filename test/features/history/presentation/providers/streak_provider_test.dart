@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/history/presentation/providers/streak_provider.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
@@ -31,6 +32,7 @@ void main() {
           id: 'w$i',
           startedAt: date.toUtc(),
           completedAt: date.add(const Duration(hours: 1)).toUtc(),
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         await repo.createWorkout(workout);
@@ -67,6 +69,7 @@ void main() {
           id: 'w$i',
           startedAt: date.toUtc(),
           completedAt: date.add(const Duration(hours: 1)).toUtc(),
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         await repo.createWorkout(workout);
@@ -95,6 +98,7 @@ void main() {
           id: 'w$i',
           startedAt: date.toUtc(),
           completedAt: date.add(const Duration(hours: 1)).toUtc(),
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         await repo.createWorkout(workout);

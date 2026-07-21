@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 
 void main() {
@@ -16,6 +17,7 @@ void main() {
         id: 'test-id',
         startedAt: now.subtract(const Duration(hours: 1)),
         completedAt: now,
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       expect(workout.status, WorkoutStatus.completed);
@@ -26,6 +28,7 @@ void main() {
         id: 'test-id',
         startedAt: DateTime.now().toUtc(),
         deletedAt: DateTime.now().toUtc(),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       expect(workout.isDeleted, isTrue);
@@ -46,14 +49,17 @@ void main() {
       final a = Workout(
           id: 'same',
           startedAt: DateTime.now().toUtc(),
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024));
       final b = Workout(
           id: 'same',
           startedAt: DateTime.now().toUtc(),
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024));
       final c = Workout(
           id: 'other',
           startedAt: DateTime.now().toUtc(),
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024));
       expect(a, equals(b));
       expect(a, isNot(equals(c)));
@@ -66,6 +72,7 @@ void main() {
         id: 'id',
         startedAt: start,
         completedAt: end,
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       expect(workout.elapsed.inMinutes, 90);

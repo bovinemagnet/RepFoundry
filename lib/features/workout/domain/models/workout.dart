@@ -1,5 +1,7 @@
 import 'package:uuid/uuid.dart';
 
+import '../../../clients/domain/models/client.dart';
+
 enum WorkoutStatus { inProgress, completed }
 
 class Workout {
@@ -8,6 +10,7 @@ class Workout {
   final DateTime? completedAt;
   final String? templateId;
   final String? notes;
+  final String clientId;
   final DateTime updatedAt;
   final DateTime? deletedAt;
 
@@ -17,6 +20,7 @@ class Workout {
     this.completedAt,
     this.templateId,
     this.notes,
+    required this.clientId,
     required this.updatedAt,
     this.deletedAt,
   });
@@ -37,6 +41,7 @@ class Workout {
     DateTime? completedAt,
     String? templateId,
     String? notes,
+    String? clientId,
     DateTime? updatedAt,
     DateTime? deletedAt,
   }) {
@@ -46,18 +51,24 @@ class Workout {
       completedAt: completedAt ?? this.completedAt,
       templateId: templateId ?? this.templateId,
       notes: notes ?? this.notes,
+      clientId: clientId ?? this.clientId,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
-  static Workout create({String? templateId, String? notes}) {
+  static Workout create({
+    String? templateId,
+    String? notes,
+    String clientId = kSelfClientId,
+  }) {
     final now = DateTime.now().toUtc();
     return Workout(
       id: const Uuid().v4(),
       startedAt: now,
       templateId: templateId,
       notes: notes,
+      clientId: clientId,
       updatedAt: now,
     );
   }

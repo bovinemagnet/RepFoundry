@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart' as db;
 import 'package:rep_foundry/features/cardio/data/drift_cardio_session_repository.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/workout/data/drift_workout_repository.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 
@@ -102,12 +103,14 @@ void main() {
           id: 'older',
           startedAt: DateTime.utc(2026, 1, 1),
           completedAt: DateTime.utc(2026, 1, 1, 0, 30),
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         final newerWorkout = Workout(
           id: 'newer',
           startedAt: DateTime.utc(2026, 3, 1),
           completedAt: DateTime.utc(2026, 3, 1, 0, 30),
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         await workoutRepo.createWorkout(olderWorkout);

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
 import 'package:rep_foundry/features/cardio/domain/repositories/cardio_session_repository.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/exercises/domain/repositories/exercise_repository.dart';
 import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
@@ -643,6 +644,7 @@ void main() {
           id: 'w-existing',
           startedAt: DateTime.utc(2024, 1, 15, 10),
           completedAt: DateTime.utc(2024, 1, 15, 11),
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024, 1, 15),
         ));
 

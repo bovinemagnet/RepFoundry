@@ -1,11 +1,14 @@
 import 'package:uuid/uuid.dart';
 
+import '../../../clients/domain/models/client.dart';
+
 class BodyMetric {
   final String id;
   final DateTime date;
   final double weight;
   final double? bodyFatPercent;
   final String? notes;
+  final String clientId;
   final DateTime updatedAt;
   final DateTime? deletedAt;
 
@@ -15,6 +18,7 @@ class BodyMetric {
     required this.weight,
     this.bodyFatPercent,
     this.notes,
+    required this.clientId,
     required this.updatedAt,
     this.deletedAt,
   });
@@ -29,6 +33,7 @@ class BodyMetric {
     String? notes,
     bool clearBodyFat = false,
     bool clearNotes = false,
+    String? clientId,
     DateTime? updatedAt,
     DateTime? deletedAt,
   }) {
@@ -39,6 +44,7 @@ class BodyMetric {
       bodyFatPercent:
           clearBodyFat ? null : (bodyFatPercent ?? this.bodyFatPercent),
       notes: clearNotes ? null : (notes ?? this.notes),
+      clientId: clientId ?? this.clientId,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
     );
@@ -49,6 +55,7 @@ class BodyMetric {
     DateTime? date,
     double? bodyFatPercent,
     String? notes,
+    String clientId = kSelfClientId,
   }) {
     final now = DateTime.now().toUtc();
     return BodyMetric(
@@ -57,6 +64,7 @@ class BodyMetric {
       weight: weight,
       bodyFatPercent: bodyFatPercent,
       notes: notes,
+      clientId: clientId,
       updatedAt: now,
     );
   }

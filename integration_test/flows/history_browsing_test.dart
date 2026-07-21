@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/data/drift_exercise_repository.dart';
 import 'package:rep_foundry/features/workout/data/drift_workout_repository.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
@@ -29,6 +30,7 @@ void main() {
         id: 'test-workout-1',
         startedAt: now.subtract(const Duration(hours: 2)),
         completedAt: now.subtract(const Duration(hours: 1)),
+        clientId: kSelfClientId,
         updatedAt: now,
       );
       await repo.createWorkout(workout);

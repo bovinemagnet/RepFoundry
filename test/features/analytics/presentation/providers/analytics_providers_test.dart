@@ -5,6 +5,7 @@ import 'package:rep_foundry/features/analytics/presentation/providers/muscle_bal
 import 'package:rep_foundry/features/analytics/presentation/providers/pr_timeline_provider.dart';
 import 'package:rep_foundry/features/analytics/presentation/providers/training_load_provider.dart';
 import 'package:rep_foundry/features/analytics/presentation/providers/weekly_volume_provider.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
@@ -303,6 +304,7 @@ void main() {
         recordType: RecordType.maxWeight,
         value: 100,
         achievedAt: earlier,
+        clientId: kSelfClientId,
         updatedAt: now,
       );
       final newerRecord = PersonalRecord(
@@ -311,6 +313,7 @@ void main() {
         recordType: RecordType.maxWeight,
         value: 120,
         achievedAt: later,
+        clientId: kSelfClientId,
         updatedAt: now,
       );
 
@@ -342,6 +345,7 @@ void main() {
         recordType: RecordType.estimatedOneRepMax,
         value: 200,
         achievedAt: now,
+        clientId: kSelfClientId,
         updatedAt: now,
       );
       await prRepo.createRecord(orphanRecord);

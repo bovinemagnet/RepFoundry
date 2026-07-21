@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/history/presentation/providers/workout_duration_chart_provider.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
@@ -28,6 +29,7 @@ void main() {
         id: 'w1',
         startedAt: start,
         completedAt: end,
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       await repo.createWorkout(workout);
@@ -50,12 +52,14 @@ void main() {
         id: 'w1',
         startedAt: DateTime.utc(2026, 1, 12, 10, 0),
         completedAt: DateTime.utc(2026, 1, 12, 11, 0), // 60 mins
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       final w2 = Workout(
         id: 'w2',
         startedAt: DateTime.utc(2026, 1, 10, 10, 0),
         completedAt: DateTime.utc(2026, 1, 10, 10, 45), // 45 mins
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       await repo.createWorkout(w1);

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/templates/application/convert_workout_to_template_use_case.dart';
@@ -48,6 +49,7 @@ void main() {
       id: 'w1',
       startedAt: now,
       completedAt: now.add(const Duration(minutes: 45)),
+      clientId: kSelfClientId,
       updatedAt: now,
     );
     await workoutRepo.createWorkout(workout);

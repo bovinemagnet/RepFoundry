@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
@@ -44,6 +45,7 @@ void main() {
         id: 'w1',
         startedAt: now,
         completedAt: now.add(const Duration(minutes: 45)),
+        clientId: kSelfClientId,
         updatedAt: now,
       ),
     );
@@ -74,6 +76,7 @@ void main() {
         id: 'w1',
         startedAt: now,
         completedAt: now.add(const Duration(minutes: 45)),
+        clientId: kSelfClientId,
         updatedAt: now,
       ),
     );
@@ -127,6 +130,7 @@ void main() {
         id: 'w1',
         startedAt: now,
         completedAt: now.add(const Duration(minutes: 45)),
+        clientId: kSelfClientId,
         updatedAt: now,
       ),
     );
@@ -163,6 +167,7 @@ void main() {
         id: 'w1',
         startedAt: now,
         completedAt: now.add(const Duration(minutes: 45)),
+        clientId: kSelfClientId,
         updatedAt: now,
       ),
     );

@@ -390,6 +390,7 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
         completedAt: null,
         templateId: workout.templateId,
         notes: workout.notes,
+        clientId: workout.clientId,
         updatedAt: DateTime.now().toUtc(),
         deletedAt: workout.deletedAt,
       );

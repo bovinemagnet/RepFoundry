@@ -21,6 +21,7 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
             distanceMeters: Value(session.distanceMeters),
             incline: Value(session.incline),
             avgHeartRate: Value(session.avgHeartRate),
+            clientId: Value(session.clientId),
             updatedAt: Value(dateTimeToEpochMs(session.updatedAt)),
           ),
         );
@@ -106,6 +107,7 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
       distanceMeters: row.distanceMeters,
       incline: row.incline,
       avgHeartRate: row.avgHeartRate,
+      clientId: row.clientId,
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
       deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );

@@ -1,5 +1,7 @@
 import 'package:uuid/uuid.dart';
 
+import '../../../clients/domain/models/client.dart';
+
 class CardioSession {
   final String id;
   final String workoutId;
@@ -8,6 +10,7 @@ class CardioSession {
   final double? distanceMeters;
   final double? incline;
   final int? avgHeartRate;
+  final String clientId;
   final DateTime updatedAt;
   final DateTime? deletedAt;
 
@@ -19,6 +22,7 @@ class CardioSession {
     this.distanceMeters,
     this.incline,
     this.avgHeartRate,
+    required this.clientId,
     required this.updatedAt,
     this.deletedAt,
   });
@@ -40,6 +44,7 @@ class CardioSession {
     double? distanceMeters,
     double? incline,
     int? avgHeartRate,
+    String clientId = kSelfClientId,
   }) {
     return CardioSession(
       id: const Uuid().v4(),
@@ -49,6 +54,7 @@ class CardioSession {
       distanceMeters: distanceMeters,
       incline: incline,
       avgHeartRate: avgHeartRate,
+      clientId: clientId,
       updatedAt: DateTime.now().toUtc(),
     );
   }

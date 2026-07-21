@@ -188,6 +188,27 @@ void main() {
       });
     });
 
+    test('createWorkout persists and reads back clientId', () async {
+      // workouts.client_id has a foreign key onto clients.id, so a client
+      // row must exist before a workout can reference it.
+      await database.into(database.clients).insert(
+            db.ClientsCompanion.insert(
+              id: 'client-42',
+              name: 'Test Client',
+              colour: 0xFF000000,
+              createdAt: 0,
+            ),
+          );
+
+      final w = Workout.create(clientId: 'client-42');
+      await repo.createWorkout(w);
+      // Not yet completed, so history is empty; read the row directly instead.
+      final row = await (database.select(database.workouts)
+            ..where((t) => t.id.equals(w.id)))
+          .getSingle();
+      expect(row.clientId, 'client-42');
+    });
+
     group('addSet & getSetsForWorkout', () {
       test('persists and retrieves sets ordered by setOrder', () async {
         final workout = newWorkout();

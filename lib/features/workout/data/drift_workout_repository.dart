@@ -22,6 +22,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
             completedAt: Value(nullableDateTimeToEpochMs(workout.completedAt)),
             templateId: Value(workout.templateId),
             notes: Value(workout.notes),
+            clientId: Value(workout.clientId),
             updatedAt: Value(dateTimeToEpochMs(workout.updatedAt)),
           ),
         );
@@ -261,6 +262,7 @@ class DriftWorkoutRepository implements WorkoutRepository {
       completedAt: nullableDateTimeFromEpochMs(row.completedAt),
       templateId: row.templateId,
       notes: row.notes,
+      clientId: row.clientId,
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
       deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );

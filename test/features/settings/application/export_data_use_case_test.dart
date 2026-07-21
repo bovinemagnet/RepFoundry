@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart'
     as domain;
@@ -61,6 +62,7 @@ void main() {
         id: 'w1',
         startedAt: DateTime(2024, 1, 1),
         completedAt: DateTime(2024, 1, 1, 1),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       await workoutRepo.createWorkout(workout);
@@ -101,6 +103,7 @@ void main() {
         id: 'w-stretch',
         startedAt: DateTime.utc(2026, 4, 30, 10),
         completedAt: DateTime.utc(2026, 4, 30, 11),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2026, 4, 30),
       );
       await workoutRepo.createWorkout(workout);
@@ -144,6 +147,7 @@ void main() {
       final workout = Workout(
         id: 'w-soft',
         startedAt: DateTime.utc(2026, 4, 30),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2026, 4, 30),
       );
       await workoutRepo.createWorkout(workout);
@@ -200,6 +204,7 @@ void main() {
         id: 'w1',
         startedAt: DateTime(2024, 1, 1),
         completedAt: DateTime(2024, 1, 1, 1),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       await workoutRepo.createWorkout(workout);
@@ -239,6 +244,7 @@ void main() {
         id: 'w2',
         startedAt: DateTime(2024, 2, 1),
         completedAt: DateTime(2024, 2, 1, 1),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       await workoutRepo.createWorkout(workout);
@@ -263,6 +269,7 @@ void main() {
         id: 'w3',
         startedAt: DateTime(2024, 3, 1),
         completedAt: DateTime(2024, 3, 1, 1),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       await workoutRepo.createWorkout(workout);
@@ -272,6 +279,7 @@ void main() {
         exerciseId: '16',
         durationSeconds: 1800,
         distanceMeters: 5000,
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       ));
 
@@ -288,6 +296,7 @@ void main() {
         recordType: RecordType.estimatedOneRepMax,
         value: 120.0,
         achievedAt: DateTime(2024, 4, 1),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       ));
 
@@ -303,6 +312,7 @@ void main() {
         id: 'w-csv',
         startedAt: DateTime(2026, 4, 30, 10),
         completedAt: DateTime(2026, 4, 30, 11),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2026, 4, 30),
       );
       await workoutRepo.createWorkout(workout);
@@ -337,6 +347,7 @@ void main() {
         id: 'w-csv2',
         startedAt: DateTime(2026, 4, 30, 10),
         completedAt: DateTime(2026, 4, 30, 11),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2026, 4, 30),
       );
       await workoutRepo.createWorkout(workout);

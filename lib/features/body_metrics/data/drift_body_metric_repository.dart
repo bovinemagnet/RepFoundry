@@ -19,6 +19,7 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
             weight: metric.weight,
             bodyFatPercent: Value(metric.bodyFatPercent),
             notes: Value(metric.notes),
+            clientId: Value(metric.clientId),
             updatedAt: Value(dateTimeToEpochMs(metric.updatedAt)),
           ),
         );
@@ -87,6 +88,7 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
       weight: row.weight,
       bodyFatPercent: row.bodyFatPercent,
       notes: row.notes,
+      clientId: row.clientId,
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
       deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );

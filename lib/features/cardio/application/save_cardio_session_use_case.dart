@@ -1,5 +1,6 @@
 import 'package:uuid/uuid.dart';
 
+import '../../clients/domain/models/client.dart';
 import '../domain/models/cardio_session.dart';
 import '../domain/repositories/cardio_session_repository.dart';
 import '../../workout/domain/models/workout.dart';
@@ -60,6 +61,7 @@ class SaveCardioSessionUseCase {
       startedAt: now.subtract(Duration(seconds: input.durationSeconds)),
       completedAt: now,
       notes: 'Cardio: ${input.exerciseName}',
+      clientId: kSelfClientId,
       updatedAt: now,
     );
 
@@ -72,6 +74,7 @@ class SaveCardioSessionUseCase {
       distanceMeters: input.distanceMeters,
       incline: input.incline,
       avgHeartRate: input.avgHeartRate,
+      clientId: createdWorkout.clientId,
     );
 
     await _cardioRepository.createSession(session);

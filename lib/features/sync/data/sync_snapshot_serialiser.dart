@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import '../../../core/database/app_database.dart' as db;
 import '../../../core/database/converters.dart';
 import '../../body_metrics/domain/models/body_metric.dart';
+import '../../clients/domain/models/client.dart';
 import '../../cardio/domain/models/cardio_session.dart';
 import '../../exercises/domain/models/exercise.dart';
 import '../../history/domain/models/personal_record.dart';
@@ -423,6 +424,7 @@ class SyncSnapshotSerialiser {
         completedAt: nullableDateTimeFromEpochMs(row.completedAt),
         templateId: row.templateId,
         notes: row.notes,
+        clientId: row.clientId,
         updatedAt: dateTimeFromEpochMs(row.updatedAt),
         deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       );
@@ -452,6 +454,7 @@ class SyncSnapshotSerialiser {
         distanceMeters: row.distanceMeters,
         incline: row.incline,
         avgHeartRate: row.avgHeartRate,
+        clientId: row.clientId,
         updatedAt: dateTimeFromEpochMs(row.updatedAt),
         deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       );
@@ -464,6 +467,7 @@ class SyncSnapshotSerialiser {
         value: row.value,
         achievedAt: dateTimeFromEpochMs(row.achievedAt),
         workoutSetId: row.workoutSetId,
+        clientId: row.clientId,
         updatedAt: dateTimeFromEpochMs(row.updatedAt),
         deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       );
@@ -487,6 +491,7 @@ class SyncSnapshotSerialiser {
         weight: row.weight,
         bodyFatPercent: row.bodyFatPercent,
         notes: row.notes,
+        clientId: row.clientId,
         updatedAt: dateTimeFromEpochMs(row.updatedAt),
         deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
       );
@@ -700,6 +705,7 @@ class SyncSnapshotSerialiser {
             : null,
         templateId: m['templateId'] as String?,
         notes: m['notes'] as String?,
+        clientId: m['clientId'] as String? ?? kSelfClientId,
         updatedAt: DateTime.parse(m['updatedAt'] as String),
         deletedAt: m['deletedAt'] != null
             ? DateTime.parse(m['deletedAt'] as String)
@@ -731,6 +737,7 @@ class SyncSnapshotSerialiser {
         distanceMeters: (m['distanceMeters'] as num?)?.toDouble(),
         incline: (m['incline'] as num?)?.toDouble(),
         avgHeartRate: m['avgHeartRate'] as int?,
+        clientId: m['clientId'] as String? ?? kSelfClientId,
         updatedAt: DateTime.parse(m['updatedAt'] as String),
         deletedAt: _parseNullableDate(m['deletedAt']),
       );
@@ -743,6 +750,7 @@ class SyncSnapshotSerialiser {
         value: (m['value'] as num).toDouble(),
         achievedAt: DateTime.parse(m['achievedAt'] as String),
         workoutSetId: m['workoutSetId'] as String?,
+        clientId: m['clientId'] as String? ?? kSelfClientId,
         updatedAt: DateTime.parse(m['updatedAt'] as String),
         deletedAt: _parseNullableDate(m['deletedAt']),
       );
@@ -775,6 +783,7 @@ class SyncSnapshotSerialiser {
         weight: (m['weight'] as num).toDouble(),
         bodyFatPercent: (m['bodyFatPercent'] as num?)?.toDouble(),
         notes: m['notes'] as String?,
+        clientId: m['clientId'] as String? ?? kSelfClientId,
         updatedAt: DateTime.parse(m['updatedAt'] as String),
         deletedAt: _parseNullableDate(m['deletedAt']),
       );
