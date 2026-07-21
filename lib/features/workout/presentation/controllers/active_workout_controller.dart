@@ -180,7 +180,10 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
         allExercises.where((e) => byExercise.containsKey(e.id)).toList();
 
     // Load ghost sets for all exercises already in the workout.
-    final ghosts = await _loadGhostsForExercises(byExercise.keys.toList());
+    final ghosts = await _loadGhostsForExercises(
+      byExercise.keys.toList(),
+      workout.clientId,
+    );
 
     state = state.copyWith(
       activeWorkout: workout,
@@ -414,7 +417,8 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
   }
 
   Future<void> addExercise(Exercise exercise) async {
-    if (state.activeWorkout == null) return;
+    final workout = state.activeWorkout;
+    if (workout == null) return;
 
     final updated = Map<String, List<WorkoutSet>>.from(state.setsByExercise);
     updated.putIfAbsent(exercise.id, () => []);
@@ -424,10 +428,13 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
       updatedExercises.add(exercise);
     }
 
-    // Fetch ghost sets from the last session for this exercise.
+    // Fetch ghost sets from the last session for this exercise. Uses the
+    // in-progress workout's clientId (matching logSet) rather than the live
+    // active client, so a mid-workout client switch doesn't pull ghosts from
+    // the wrong client.
     final lastSessionSets = await _workoutRepository.getSetsFromLastSession(
       exercise.id,
-      _activeClientId,
+      workout.clientId,
     );
     final updatedGhosts =
         Map<String, List<GhostSet>>.from(state.ghostSetsByExercise);
@@ -453,12 +460,13 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
 
   Future<Map<String, List<GhostSet>>> _loadGhostsForExercises(
     List<String> exerciseIds,
+    String clientId,
   ) async {
     final ghosts = <String, List<GhostSet>>{};
     for (final exerciseId in exerciseIds) {
       final lastSessionSets = await _workoutRepository.getSetsFromLastSession(
         exerciseId,
-        _activeClientId,
+        clientId,
       );
       if (lastSessionSets.isNotEmpty) {
         ghosts[exerciseId] = lastSessionSets

@@ -209,6 +209,8 @@ final exportDataUseCaseProvider = Provider<ExportDataUseCase>((ref) {
     cardioSessionRepository: ref.watch(cardioSessionRepositoryProvider),
     personalRecordRepository: ref.watch(personalRecordRepositoryProvider),
     stretchingSessionRepository: ref.watch(stretchingSessionRepositoryProvider),
+    clientRepository: ref.watch(clientRepositoryProvider),
+    bodyMetricRepository: ref.watch(bodyMetricRepositoryProvider),
   );
 });
 

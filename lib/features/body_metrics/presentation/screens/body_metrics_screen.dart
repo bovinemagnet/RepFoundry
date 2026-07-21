@@ -34,11 +34,13 @@ class BodyMetricsScreen extends ConsumerWidget {
               action: SnackBarAction(
                 label: s.importWeightAction,
                 onPressed: () async {
+                  // Platform health data (Apple Health / Google Fit) belongs
+                  // to the device owner — the coach — so it always imports
+                  // to the Me client, regardless of which client is active.
                   final metric = BodyMetric.create(
                     weight: sample.weightKg,
                     date: sample.date,
-                    clientId: ref.read(activeClientProvider).value?.id ??
-                        kSelfClientId,
+                    clientId: kSelfClientId,
                   );
                   await ref.read(bodyMetricRepositoryProvider).create(metric);
                 },
