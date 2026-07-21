@@ -42,10 +42,14 @@ void main() {
   }
 
   group('SyncSnapshotSerialiser.applyToDatabase – client_id sync-safety', () {
-    test('preserves the local client_id when the incoming row does not win',
-        () async {
+    test(
+        'blocks the write entirely (row untouched) when the incoming row '
+        'does not win', () async {
       // Seed a non-Me client and a local workout it owns, updated more
-      // recently than the incoming snapshot row.
+      // recently than the incoming snapshot row, so the guarded upsert's
+      // WHERE excluded.updated_at > updated_at is FALSE and the write never
+      // happens.
+      final localUpdatedAt = DateTime.utc(2026, 4, 30, 10, 0);
       await database.into(database.clients).insert(db.ClientsCompanion.insert(
             id: 'client-X',
             name: 'Client X',
@@ -55,20 +59,26 @@ void main() {
       await database.into(database.workouts).insert(db.WorkoutsCompanion.insert(
             id: 'w1',
             startedAt: 0,
-            updatedAt: const Value(100),
+            notes: const Value('local-original'),
+            updatedAt: Value(localUpdatedAt.millisecondsSinceEpoch),
             clientId: const Value('client-X'),
           ));
 
+      // Incoming row is strictly older than the local row, so the guard
+      // blocks the write and the local row must remain untouched.
       final incoming = Workout(
         id: 'w1',
         startedAt: start,
+        notes: 'incoming-should-be-ignored',
         clientId: kSelfClientId,
-        updatedAt: start, // well before the local row's updatedAt (epoch 100)
+        updatedAt: start, // one hour before localUpdatedAt
       );
 
       await serialiser.applyToDatabase(database, snapshotWith([incoming]));
 
-      expect(await clientIdOf('w1'), 'client-X');
+      final row = await database.select(database.workouts).getSingle();
+      expect(row.clientId, 'client-X'); // ownership untouched
+      expect(row.notes, 'local-original'); // write was blocked entirely
     });
 
     test(
