@@ -109,6 +109,10 @@ final clientRepositoryProvider = Provider<ClientRepository>((ref) {
   return DriftClientRepository(ref.watch(databaseProvider));
 });
 
+final clientsProvider = StreamProvider<List<Client>>((ref) {
+  return ref.watch(clientRepositoryProvider).watchClients();
+});
+
 final clientPlanAssignmentRepositoryProvider =
     Provider<ClientPlanAssignmentRepository>((ref) {
   return DriftClientPlanAssignmentRepository(ref.watch(databaseProvider));
