@@ -7,8 +7,23 @@ import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/body_metrics/domain/models/body_metric.dart';
 import 'package:rep_foundry/features/body_metrics/domain/repositories/body_metric_repository.dart';
 import 'package:rep_foundry/features/body_metrics/presentation/screens/body_metrics_screen.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
+import 'package:rep_foundry/features/clients/presentation/providers/active_client_provider.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
+import 'package:rep_foundry/features/health_sync/presentation/providers/health_weight_import_provider.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
+
+/// Always resolves to a fixed, non-Me client, regardless of SharedPreferences
+/// state — used to prove the health-import write targets Me even when a
+/// different client is active in the roster.
+class _FakeActiveClientNotifier extends ActiveClientNotifier {
+  _FakeActiveClientNotifier(this._client);
+
+  final Client _client;
+
+  @override
+  Future<Client> build() async => _client;
+}
 
 /// Records created metrics so tests can assert on the persisted values.
 class _RecordingBodyMetricRepository implements BodyMetricRepository {
@@ -27,14 +42,16 @@ class _RecordingBodyMetricRepository implements BodyMetricRepository {
   Future<void> delete(String id) async {}
 
   @override
-  Future<List<BodyMetric>> getAll({int limit = 100}) async => created;
+  Future<List<BodyMetric>> getAll(
+          {required String clientId, int limit = 100}) async =>
+      created;
 
   @override
-  Future<BodyMetric?> getLatest() async =>
+  Future<BodyMetric?> getLatest(String clientId) async =>
       created.isEmpty ? null : created.last;
 
   @override
-  Stream<List<BodyMetric>> watchAll() => Stream.value(created);
+  Stream<List<BodyMetric>> watchAll(String clientId) => Stream.value(created);
 }
 
 void main() {
@@ -261,6 +278,64 @@ void main() {
       // canPop() reflects the route stack without requiring a render frame.
       expect(nav.canPop(), isFalse,
           reason: 'Dialog route should have been popped by Cancel');
+    });
+
+    // -------------------------------------------------------------------------
+    // 9. Health-import write always targets the Me client.
+    //
+    // Platform health data (Apple Health / Google Fit) belongs to the device
+    // owner — the coach — so importing it must land on kSelfClientId even
+    // when a different client is active in the roster. The manual "Add
+    // Measurement" dialog (tests 6-7 above) intentionally keeps targeting
+    // the active client.
+    // -------------------------------------------------------------------------
+    testWidgets('healthImport_targetsMeClient_whenADifferentClientIsActive',
+        (tester) async {
+      final repository = _RecordingBodyMetricRepository();
+      final otherClient = Client(
+        id: 'other-client-id',
+        name: 'Alex',
+        colour: 0xFF00FF00,
+        notes: null,
+        isSelf: false,
+        createdAt: DateTime.now().toUtc(),
+        updatedAt: DateTime.now().toUtc(),
+        deletedAt: null,
+      );
+      final sample = (weightKg: 80.0, date: DateTime.now().toUtc());
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            bodyMetricsStreamProvider.overrideWith(
+              (ref) => Stream.value(const []),
+            ),
+            healthSyncSettingsProvider.overrideWith(
+              HealthSyncSettingsNotifier.new,
+            ),
+            bodyMetricRepositoryProvider.overrideWithValue(repository),
+            activeClientProvider.overrideWith(
+              () => _FakeActiveClientNotifier(otherClient),
+            ),
+            healthWeightCheckProvider.overrideWith((ref) async => sample),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
+            home: BodyMetricsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // The import snackbar action should have appeared.
+      expect(find.text('Import'), findsOneWidget);
+
+      await tester.tap(find.text('Import'));
+      await tester.pumpAndSettle();
+
+      expect(repository.created, hasLength(1));
+      expect(repository.created.single.clientId, kSelfClientId);
     });
   });
 }

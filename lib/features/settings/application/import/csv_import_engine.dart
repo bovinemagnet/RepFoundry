@@ -1,5 +1,6 @@
 import 'package:uuid/uuid.dart';
 
+import '../../../clients/domain/models/client.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../exercises/domain/repositories/exercise_repository.dart';
 import '../../../history/domain/models/personal_record.dart';
@@ -62,6 +63,7 @@ class CsvImportEngine {
             startedAt: parsedWorkout.startedAt,
             completedAt: parsedWorkout.completedAt,
             notes: parsedWorkout.name,
+            clientId: kSelfClientId,
             updatedAt: parsedWorkout.startedAt,
           ));
           workoutsImported++;
@@ -173,8 +175,11 @@ class CsvImportEngine {
         ofType.sort((a, b) => b.$3.compareTo(a.$3));
         final (_, bestSet, bestValue) = ofType.first;
 
-        final stored =
-            await personalRecordRepository.getBestRecord(entry.key, type);
+        final stored = await personalRecordRepository.getBestRecord(
+          entry.key,
+          type,
+          kSelfClientId,
+        );
         if (stored != null && stored.value >= bestValue) continue;
 
         try {
@@ -185,6 +190,7 @@ class CsvImportEngine {
             value: bestValue,
             achievedAt: bestSet.timestamp,
             workoutSetId: bestSet.id,
+            clientId: kSelfClientId,
             updatedAt: bestSet.timestamp,
           ));
           created++;

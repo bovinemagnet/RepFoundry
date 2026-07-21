@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'exercises_table.dart';
 import 'workout_sets_table.dart';
+import 'clients_table.dart';
 
 @TableIndex(
     name: 'idx_personal_records_exercise_achieved',
@@ -15,6 +16,9 @@ class PersonalRecords extends Table {
       text().nullable().references(WorkoutSets, #id)();
   IntColumn get updatedAt => integer().withDefault(const Constant(0))();
   IntColumn get deletedAt => integer().nullable()();
+  TextColumn get clientId => text()
+      .references(Clients, #id)
+      .withDefault(const Constant(kSelfClientIdConst))();
 
   @override
   Set<Column> get primaryKey => {id};

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 import '../../../exercises/domain/models/exercise.dart';
 
 class MuscleBalance {
@@ -17,7 +18,11 @@ final muscleBalanceProvider =
   final exercises = await exerciseRepo.getAllExercises();
   final exerciseMap = {for (final e in exercises) e.id: e};
 
-  final workouts = await workoutRepo.getWorkoutHistory(limit: 100);
+  final clientId = (await ref.watch(activeClientProvider.future)).id;
+  final workouts = await workoutRepo.getWorkoutHistory(
+    clientId: clientId,
+    limit: 100,
+  );
   final volumeByGroup = <MuscleGroup, double>{};
 
   final completedIds = [

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/units/weight_unit.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
 import 'package:rep_foundry/features/settings/application/import_data_use_case.dart';
@@ -57,13 +58,15 @@ void main() {
       expect(result.rowsSkipped, 1); // the Running row
       expect(result.exercisesCreated, greaterThan(0));
 
-      final workouts = await workoutRepo.getWorkoutHistory();
+      final workouts =
+          await workoutRepo.getWorkoutHistory(clientId: kSelfClientId);
       expect(workouts, hasLength(2));
     });
 
     test('applies the chosen fallback unit', () async {
       final kgResult = await useCase.importFromCsv(fixture('strong.csv'));
-      final workouts = await workoutRepo.getWorkoutHistory();
+      final workouts =
+          await workoutRepo.getWorkoutHistory(clientId: kSelfClientId);
       final sets = await workoutRepo.getSetsForWorkout(workouts.last.id);
       expect(kgResult.setsImported, greaterThan(0));
       expect(sets.any((s) => s.weight == 80.0), isTrue);
@@ -81,7 +84,8 @@ void main() {
         fixture('strong.csv'),
         fallbackUnit: WeightUnit.lbs,
       );
-      final lbsWorkouts = await lbsRepo.getWorkoutHistory();
+      final lbsWorkouts =
+          await lbsRepo.getWorkoutHistory(clientId: kSelfClientId);
       final lbsSets = await lbsRepo.getSetsForWorkout(lbsWorkouts.first.id);
       expect(
         lbsSets.map((s) => s.weight),

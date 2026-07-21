@@ -49,7 +49,8 @@ class SettingsScreen extends ConsumerWidget {
     final layoutMode = ref.watch(layoutModeProvider);
     final weightUnit = ref.watch(weightUnitProvider);
     final userAge = ref.watch(userAgeProvider);
-    final profile = ref.watch(healthProfileProvider);
+    final profile =
+        ref.watch(healthProfileProvider).value ?? const HealthProfile();
     final zoneConfig = ref.watch(zoneConfigurationProvider);
 
     final s = S.of(context)!;

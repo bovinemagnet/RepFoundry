@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart' show AppDatabase;
 import 'package:rep_foundry/features/body_metrics/domain/models/body_metric.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
 import 'package:rep_foundry/features/programmes/domain/models/programme.dart';
@@ -45,6 +46,7 @@ void main() {
         Workout(
           id: 'wo-1',
           startedAt: ts,
+          clientId: kSelfClientId,
           updatedAt: ts,
           deletedAt: tombstone,
         ),
@@ -68,6 +70,7 @@ void main() {
           workoutId: 'wo-1',
           exerciseId: 'ex-1',
           durationSeconds: 600,
+          clientId: kSelfClientId,
           updatedAt: ts,
           deletedAt: tombstone,
         ),
@@ -79,6 +82,7 @@ void main() {
           recordType: RecordType.maxWeight,
           value: 100,
           achievedAt: ts,
+          clientId: kSelfClientId,
           updatedAt: ts,
           deletedAt: tombstone,
         ),
@@ -110,6 +114,7 @@ void main() {
           id: 'bm-1',
           date: ts,
           weight: 80,
+          clientId: kSelfClientId,
           updatedAt: ts,
           deletedAt: tombstone,
         ),

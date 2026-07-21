@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
 import 'package:rep_foundry/features/settings/presentation/providers/import_file_picker_provider.dart';
@@ -107,7 +108,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Imported 2 workouts'), findsOneWidget);
-      expect(await workoutRepo.getWorkoutHistory(), hasLength(2));
+      expect(await workoutRepo.getWorkoutHistory(clientId: kSelfClientId),
+          hasLength(2));
     });
 
     testWidgets('Hevy file confirms without a unit question', (tester) async {
@@ -122,7 +124,8 @@ void main() {
       await tester.tap(find.text('Import'));
       await tester.pumpAndSettle();
 
-      expect(await workoutRepo.getWorkoutHistory(), hasLength(2));
+      expect(await workoutRepo.getWorkoutHistory(clientId: kSelfClientId),
+          hasLength(2));
     });
 
     testWidgets('unsupported content shows an error and imports nothing',
@@ -133,7 +136,8 @@ void main() {
       await tapImportFromFile(tester);
 
       expect(find.textContaining('Unsupported file format'), findsOneWidget);
-      expect(await workoutRepo.getWorkoutHistory(), isEmpty);
+      expect(await workoutRepo.getWorkoutHistory(clientId: kSelfClientId),
+          isEmpty);
     });
 
     testWidgets('cancelled picker does nothing', (tester) async {
@@ -143,7 +147,8 @@ void main() {
       await tapImportFromFile(tester);
 
       expect(find.byType(AlertDialog), findsNothing);
-      expect(await workoutRepo.getWorkoutHistory(), isEmpty);
+      expect(await workoutRepo.getWorkoutHistory(clientId: kSelfClientId),
+          isEmpty);
     });
 
     testWidgets('JSON file content routes through the JSON importer',
@@ -160,7 +165,8 @@ void main() {
       await tester.tap(find.text('Import'));
       await tester.pumpAndSettle();
 
-      expect(await workoutRepo.getWorkoutHistory(), hasLength(1));
+      expect(await workoutRepo.getWorkoutHistory(clientId: kSelfClientId),
+          hasLength(1));
     });
   });
 }

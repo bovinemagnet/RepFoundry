@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:csv/csv.dart';
 
 import '../../../core/units/weight_unit.dart';
+import '../../clients/domain/models/client.dart';
 import 'import/csv_format_adapter.dart';
 import 'import/csv_import_engine.dart';
 import '../../cardio/domain/models/cardio_session.dart';
@@ -179,6 +180,7 @@ class ImportDataUseCase {
             : null,
         templateId: map['templateId'] as String?,
         notes: map['notes'] as String?,
+        clientId: kSelfClientId,
         updatedAt: DateTime.now().toUtc(),
       );
       try {
@@ -233,6 +235,7 @@ class ImportDataUseCase {
         incline:
             map['incline'] != null ? (map['incline'] as num).toDouble() : null,
         avgHeartRate: map['avgHeartRate'] as int?,
+        clientId: kSelfClientId,
         updatedAt: DateTime.now().toUtc(),
       );
       try {
@@ -254,6 +257,7 @@ class ImportDataUseCase {
         value: (map['value'] as num).toDouble(),
         achievedAt: DateTime.parse(map['achievedAt'] as String),
         workoutSetId: map['workoutSetId'] as String?,
+        clientId: kSelfClientId,
         updatedAt: DateTime.now().toUtc(),
       );
       try {

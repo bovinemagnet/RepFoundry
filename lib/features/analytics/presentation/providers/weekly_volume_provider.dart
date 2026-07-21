@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 
 class SetData {
   final DateTime date;
@@ -47,8 +48,12 @@ List<WeeklyVolume> computeWeeklyVolume(List<SetData> sets) {
 
 final weeklyVolumeProvider =
     FutureProvider.autoDispose<List<WeeklyVolume>>((ref) async {
+  final clientId = (await ref.watch(activeClientProvider.future)).id;
   final repo = ref.watch(workoutRepositoryProvider);
-  final workouts = await repo.getWorkoutHistory(limit: 200);
+  final workouts = await repo.getWorkoutHistory(
+    clientId: clientId,
+    limit: 200,
+  );
   final completedIds = [
     for (final w in workouts)
       if (w.completedAt != null) w.id,

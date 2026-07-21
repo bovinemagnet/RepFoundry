@@ -4,6 +4,7 @@ import 'package:rep_foundry/features/workout/application/log_set_use_case.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
 import 'package:rep_foundry/features/workout/domain/repositories/workout_repository.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
 import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
 
@@ -37,6 +38,7 @@ class _FakeWorkoutRepository implements WorkoutRepository {
   Future<Workout?> getActiveWorkout() async => null;
   @override
   Future<List<Workout>> getWorkoutHistory({
+    required String clientId,
     int limit = 20,
     DateTime? before,
   }) async =>
@@ -60,10 +62,14 @@ class _FakeWorkoutRepository implements WorkoutRepository {
   @override
   Future<void> deleteSet(String setId) async {}
   @override
-  Future<List<WorkoutSet>> getSetsFromLastSession(String exerciseId) async =>
+  Future<List<WorkoutSet>> getSetsFromLastSession(
+    String exerciseId,
+    String clientId,
+  ) async =>
       [];
   @override
-  Stream<List<Workout>> watchWorkoutHistory() => const Stream.empty();
+  Stream<List<Workout>> watchWorkoutHistory(String clientId) =>
+      const Stream.empty();
   @override
   Stream<List<WorkoutSet>> watchSetsForWorkout(String workoutId) =>
       const Stream.empty();
@@ -381,6 +387,7 @@ void main() {
     final storedBest = await personalRecordRepository.getBestRecord(
       'e10',
       RecordType.maxWeight,
+      kSelfClientId,
     );
     expect(storedBest!.value, 120.0);
   });
@@ -396,9 +403,33 @@ void main() {
       ),
     );
     for (final type in RecordType.values) {
-      final best = await personalRecordRepository.getBestRecord('e11', type);
+      final best = await personalRecordRepository.getBestRecord(
+          'e11', type, kSelfClientId);
       expect(best, isNotNull, reason: 'expected initial PR for $type');
     }
+  });
+
+  test('execute() stamps a non-Me active client on the created PR', () async {
+    const clientInput = LogSetInput(
+      workoutId: 'w1',
+      exerciseId: 'e12',
+      setOrder: 1,
+      weight: 100,
+      reps: 5,
+      clientId: 'client-7',
+    );
+    final result = await useCase.execute(clientInput);
+    expect(result.newPersonalRecords, isNotEmpty);
+    for (final pr in result.newPersonalRecords) {
+      expect(pr.clientId, 'client-7');
+    }
+
+    final storedBest = await personalRecordRepository.getBestRecord(
+      'e12',
+      RecordType.maxWeight,
+      'client-7',
+    );
+    expect(storedBest, isNotNull);
   });
 
   test(

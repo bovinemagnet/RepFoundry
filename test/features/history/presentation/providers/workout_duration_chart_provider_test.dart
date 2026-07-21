@@ -1,16 +1,44 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
+import 'package:rep_foundry/features/clients/presentation/providers/active_client_provider.dart';
 import 'package:rep_foundry/features/history/presentation/providers/workout_duration_chart_provider.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import 'package:rep_foundry/core/providers.dart';
+
+/// An [AsyncNotifier] override that resolves the active client to the fixed
+/// "Me" client, without touching the database.
+class _FixedActiveClientNotifier extends ActiveClientNotifier {
+  _FixedActiveClientNotifier(this._client);
+
+  final Client _client;
+
+  @override
+  Future<Client> build() async => _client;
+}
+
+final _meClient = Client(
+  id: kSelfClientId,
+  name: 'Me',
+  colour: 0xFF4CAF50,
+  notes: null,
+  isSelf: true,
+  createdAt: DateTime.utc(2024),
+  updatedAt: DateTime.utc(2024),
+  deletedAt: null,
+);
 
 void main() {
   group('workoutDurationChartProvider', () {
     test('returns empty list when no workouts', () async {
       final repo = InMemoryWorkoutRepository();
       final container = ProviderContainer(
-        overrides: [workoutRepositoryProvider.overrideWithValue(repo)],
+        overrides: [
+          workoutRepositoryProvider.overrideWithValue(repo),
+          activeClientProvider
+              .overrideWith(() => _FixedActiveClientNotifier(_meClient)),
+        ],
       );
       addTearDown(container.dispose);
 
@@ -28,12 +56,17 @@ void main() {
         id: 'w1',
         startedAt: start,
         completedAt: end,
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       await repo.createWorkout(workout);
 
       final container = ProviderContainer(
-        overrides: [workoutRepositoryProvider.overrideWithValue(repo)],
+        overrides: [
+          workoutRepositoryProvider.overrideWithValue(repo),
+          activeClientProvider
+              .overrideWith(() => _FixedActiveClientNotifier(_meClient)),
+        ],
       );
       addTearDown(container.dispose);
 
@@ -50,19 +83,25 @@ void main() {
         id: 'w1',
         startedAt: DateTime.utc(2026, 1, 12, 10, 0),
         completedAt: DateTime.utc(2026, 1, 12, 11, 0), // 60 mins
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       final w2 = Workout(
         id: 'w2',
         startedAt: DateTime.utc(2026, 1, 10, 10, 0),
         completedAt: DateTime.utc(2026, 1, 10, 10, 45), // 45 mins
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       await repo.createWorkout(w1);
       await repo.createWorkout(w2);
 
       final container = ProviderContainer(
-        overrides: [workoutRepositoryProvider.overrideWithValue(repo)],
+        overrides: [
+          workoutRepositoryProvider.overrideWithValue(repo),
+          activeClientProvider
+              .overrideWith(() => _FixedActiveClientNotifier(_meClient)),
+        ],
       );
       addTearDown(container.dispose);
 

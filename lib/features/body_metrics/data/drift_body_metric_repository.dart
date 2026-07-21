@@ -19,6 +19,7 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
             weight: metric.weight,
             bodyFatPercent: Value(metric.bodyFatPercent),
             notes: Value(metric.notes),
+            clientId: Value(metric.clientId),
             updatedAt: Value(dateTimeToEpochMs(metric.updatedAt)),
           ),
         );
@@ -53,9 +54,12 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
   }
 
   @override
-  Future<List<BodyMetric>> getAll({int limit = 100}) async {
+  Future<List<BodyMetric>> getAll({
+    required String clientId,
+    int limit = 100,
+  }) async {
     final q = _db.select(_db.bodyMetrics)
-      ..where((t) => t.deletedAt.isNull())
+      ..where((t) => t.clientId.equals(clientId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.date)])
       ..limit(limit);
     final rows = await q.get();
@@ -63,9 +67,9 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
   }
 
   @override
-  Future<BodyMetric?> getLatest() async {
+  Future<BodyMetric?> getLatest(String clientId) async {
     final q = _db.select(_db.bodyMetrics)
-      ..where((t) => t.deletedAt.isNull())
+      ..where((t) => t.clientId.equals(clientId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.date)])
       ..limit(1);
     final row = await q.getSingleOrNull();
@@ -73,9 +77,9 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
   }
 
   @override
-  Stream<List<BodyMetric>> watchAll() {
+  Stream<List<BodyMetric>> watchAll(String clientId) {
     final q = _db.select(_db.bodyMetrics)
-      ..where((t) => t.deletedAt.isNull())
+      ..where((t) => t.clientId.equals(clientId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.date)]);
     return q.watch().map((rows) => rows.map(_toDomain).toList());
   }
@@ -87,6 +91,7 @@ class DriftBodyMetricRepository implements BodyMetricRepository {
       weight: row.weight,
       bodyFatPercent: row.bodyFatPercent,
       notes: row.notes,
+      clientId: row.clientId,
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
       deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );

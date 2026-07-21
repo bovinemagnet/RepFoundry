@@ -71,7 +71,8 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     await showDisclaimerIfNeeded(context, analytics: analytics);
 
     if (!mounted) return;
-    final profile = ref.read(healthProfileProvider);
+    final profile = await ref.read(healthProfileProvider.future);
+    if (!mounted) return;
     if (profile.age == null) {
       await showHealthProfileOnboarding(context);
     }
@@ -119,7 +120,8 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     final s = S.of(context)!;
     final panelState = ref.watch(heartRatePanelProvider);
     final controller = ref.read(heartRatePanelProvider.notifier);
-    final profile = ref.watch(healthProfileProvider);
+    final profile =
+        ref.watch(healthProfileProvider).value ?? const HealthProfile();
     final zoneConfig = ref.watch(zoneConfigurationProvider);
     final chartWindow = ref.watch(chartWindowProvider);
     final showZoneBands = ref.watch(zoneBandsProvider);

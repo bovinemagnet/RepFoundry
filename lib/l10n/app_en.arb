@@ -930,5 +930,29 @@
   "stretchPresetNinetyNinety": "90/90 Hip Stretch",
   "stretchPresetFrogPose": "Frog Pose",
   "stretchPresetFrontSplits": "Front Splits",
-  "stretchPresetSideSplits": "Side Splits (Middle Splits)"
+  "stretchPresetSideSplits": "Side Splits (Middle Splits)",
+
+  "clientsTitle": "Clients",
+  "newClient": "New client",
+  "newClientTitle": "New client",
+  "clientNameLabel": "Name",
+  "editClient": "Edit client",
+  "deleteClientTitle": "Delete client?",
+  "deleteClientContent": "Delete {name}? Their logged data is kept but hidden.",
+  "@deleteClientContent": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "noClientsYet": "No clients yet",
+  "selfClientBadge": "You",
+  "switchClient": "Switch client",
+  "viewingClient": "Viewing {name}",
+  "@viewingClient": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "assignedPlans": "Assigned plans",
+  "assignPlan": "Assign plan",
+  "unassignPlan": "Unassign",
+  "noPlansAssigned": "No plans assigned yet",
+  "clientHealthProfile": "Health profile",
+  "healthProfileSaved": "Health profile saved"
 }

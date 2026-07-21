@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
+import 'package:rep_foundry/features/clients/presentation/providers/active_client_provider.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
@@ -12,6 +14,28 @@ import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
+
+/// An [AsyncNotifier] override that resolves the active client to the fixed
+/// "Me" client, without touching the database.
+class _FixedActiveClientNotifier extends ActiveClientNotifier {
+  _FixedActiveClientNotifier(this._client);
+
+  final Client _client;
+
+  @override
+  Future<Client> build() async => _client;
+}
+
+final _meClient = Client(
+  id: kSelfClientId,
+  name: 'Me',
+  colour: 0xFF4CAF50,
+  notes: null,
+  isSelf: true,
+  createdAt: DateTime.utc(2024),
+  updatedAt: DateTime.utc(2024),
+  deletedAt: null,
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +50,9 @@ void main() {
             .overrideWithValue(InMemoryPersonalRecordRepository()),
         stretchingSessionRepositoryProvider
             .overrideWithValue(InMemoryStretchingSessionRepository()),
+        activeClientProvider.overrideWith(
+          () => _FixedActiveClientNotifier(_meClient),
+        ),
       ],
       child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -44,6 +71,7 @@ void main() {
         id: 'w1',
         startedAt: now,
         completedAt: now.add(const Duration(minutes: 45)),
+        clientId: kSelfClientId,
         updatedAt: now,
       ),
     );
@@ -74,6 +102,7 @@ void main() {
         id: 'w1',
         startedAt: now,
         completedAt: now.add(const Duration(minutes: 45)),
+        clientId: kSelfClientId,
         updatedAt: now,
       ),
     );
@@ -95,6 +124,9 @@ void main() {
           stretchingSessionRepositoryProvider
               .overrideWithValue(InMemoryStretchingSessionRepository()),
           workoutTemplateRepositoryProvider.overrideWithValue(templateRepo),
+          activeClientProvider.overrideWith(
+            () => _FixedActiveClientNotifier(_meClient),
+          ),
         ],
         child: const MaterialApp(
           localizationsDelegates: S.localizationsDelegates,
@@ -127,6 +159,7 @@ void main() {
         id: 'w1',
         startedAt: now,
         completedAt: now.add(const Duration(minutes: 45)),
+        clientId: kSelfClientId,
         updatedAt: now,
       ),
     );
@@ -163,6 +196,7 @@ void main() {
         id: 'w1',
         startedAt: now,
         completedAt: now.add(const Duration(minutes: 45)),
+        clientId: kSelfClientId,
         updatedAt: now,
       ),
     );

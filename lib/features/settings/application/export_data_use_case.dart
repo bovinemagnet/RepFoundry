@@ -2,8 +2,12 @@ import 'dart:convert';
 
 import 'package:intl/intl.dart';
 
+import '../../body_metrics/domain/models/body_metric.dart';
+import '../../body_metrics/domain/repositories/body_metric_repository.dart';
 import '../../cardio/domain/models/cardio_session.dart';
 import '../../cardio/domain/repositories/cardio_session_repository.dart';
+import '../../clients/domain/models/client.dart';
+import '../../clients/domain/repositories/client_repository.dart';
 import '../../exercises/domain/models/exercise.dart';
 import '../../exercises/domain/repositories/exercise_repository.dart';
 import '../../history/domain/models/personal_record.dart';
@@ -20,6 +24,8 @@ class ExportDataUseCase {
   final CardioSessionRepository cardioSessionRepository;
   final PersonalRecordRepository personalRecordRepository;
   final StretchingSessionRepository stretchingSessionRepository;
+  final ClientRepository clientRepository;
+  final BodyMetricRepository bodyMetricRepository;
 
   const ExportDataUseCase({
     required this.workoutRepository,
@@ -27,15 +33,42 @@ class ExportDataUseCase {
     required this.cardioSessionRepository,
     required this.personalRecordRepository,
     required this.stretchingSessionRepository,
+    required this.clientRepository,
+    required this.bodyMetricRepository,
   });
+
+  /// "Export All Data" is a full backup, so it must cover every client in
+  /// the roster — not just Me — otherwise a restore silently drops other
+  /// clients' history. NOTE (v1 limitation): the import/restore side still
+  /// consolidates everything onto Me; full client-aware restore is deferred
+  /// to the roster-sync spec.
+  Future<List<Client>> _allClients() => clientRepository.watchClients().first;
 
   Future<String> exportAsJson() async {
     final exercises = await exerciseRepository.getAllExercises();
-    final workouts = await workoutRepository.getWorkoutHistory(limit: 10000);
-    final cardioSessions = await cardioSessionRepository.getAllSessions();
-    final personalRecords = await personalRecordRepository.getAllRecords(
-      limit: 10000,
-    );
+    final clients = await _allClients();
+
+    final workouts = <Workout>[];
+    final cardioSessions = <CardioSession>[];
+    final personalRecords = <PersonalRecord>[];
+    final bodyMetrics = <BodyMetric>[];
+    for (final client in clients) {
+      workouts.addAll(await workoutRepository.getWorkoutHistory(
+        clientId: client.id,
+        limit: 10000,
+      ));
+      cardioSessions.addAll(
+        await cardioSessionRepository.getAllSessions(client.id),
+      );
+      personalRecords.addAll(await personalRecordRepository.getAllRecords(
+        clientId: client.id,
+        limit: 10000,
+      ));
+      bodyMetrics.addAll(await bodyMetricRepository.getAll(
+        clientId: client.id,
+        limit: 10000,
+      ));
+    }
     final stretchingSessions =
         await stretchingSessionRepository.getAllSessions();
 
@@ -54,6 +87,7 @@ class ExportDataUseCase {
       'workouts': workoutsWithSets,
       'cardioSessions': cardioSessions.map(_cardioToMap).toList(),
       'personalRecords': personalRecords.map(_prToMap).toList(),
+      'bodyMetrics': bodyMetrics.map(_bodyMetricToMap).toList(),
       'stretchingSessions': stretchingSessions.map(_stretchingToMap).toList(),
     };
 
@@ -64,19 +98,38 @@ class ExportDataUseCase {
     final exercises = await exerciseRepository.getAllExercises();
     final exerciseNames = {for (final e in exercises) e.id: e.name};
 
-    final workouts = await workoutRepository.getWorkoutHistory(limit: 10000);
-    final cardioSessions = await cardioSessionRepository.getAllSessions();
-    final personalRecords = await personalRecordRepository.getAllRecords(
-      limit: 10000,
-    );
+    final clients = await _allClients();
+
+    final workouts = <Workout>[];
+    final cardioSessions = <CardioSession>[];
+    final personalRecords = <PersonalRecord>[];
+    final bodyMetrics = <BodyMetric>[];
+    for (final client in clients) {
+      workouts.addAll(await workoutRepository.getWorkoutHistory(
+        clientId: client.id,
+        limit: 10000,
+      ));
+      cardioSessions.addAll(
+        await cardioSessionRepository.getAllSessions(client.id),
+      );
+      personalRecords.addAll(await personalRecordRepository.getAllRecords(
+        clientId: client.id,
+        limit: 10000,
+      ));
+      bodyMetrics.addAll(await bodyMetricRepository.getAll(
+        clientId: client.id,
+        limit: 10000,
+      ));
+    }
     final stretchingSessions =
         await stretchingSessionRepository.getAllSessions();
 
     final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
 
-    // sets.csv
+    // sets.csv — client_id is the parent workout's, since WorkoutSet itself
+    // is not directly client-scoped.
     final setLines = StringBuffer()
-      ..writeln('date,exercise,weight,reps,rpe,volume,e1rm');
+      ..writeln('client_id,date,exercise,weight,reps,rpe,volume,e1rm');
     for (final workout in workouts) {
       final sets = await workoutRepository.getSetsForWorkout(workout.id);
       for (final set in sets) {
@@ -85,7 +138,7 @@ class ExportDataUseCase {
         final date = dateFormat.format(set.timestamp);
         final rpe = set.rpe?.toStringAsFixed(1) ?? '';
         setLines.writeln(
-          '$date,$name,${set.weight},${set.reps},$rpe,${set.volume},${set.estimatedOneRepMax.toStringAsFixed(1)}',
+          '${workout.clientId},$date,$name,${set.weight},${set.reps},$rpe,${set.volume},${set.estimatedOneRepMax.toStringAsFixed(1)}',
         );
       }
     }
@@ -93,7 +146,7 @@ class ExportDataUseCase {
     // cardio.csv
     final cardioLines = StringBuffer()
       ..writeln(
-          'date,exercise,duration_min,distance_km,avg_pace,avg_heart_rate');
+          'client_id,date,exercise,duration_min,distance_km,avg_pace,avg_heart_rate');
     for (final session in cardioSessions) {
       final name =
           _escapeCsv(exerciseNames[session.exerciseId] ?? session.exerciseId);
@@ -106,15 +159,29 @@ class ExportDataUseCase {
           : '';
       final pace = session.paceMinutesPerKm?.toStringAsFixed(2) ?? '';
       final hr = session.avgHeartRate?.toString() ?? '';
-      cardioLines.writeln('$date,$name,$durationMin,$distanceKm,$pace,$hr');
+      cardioLines.writeln(
+          '${session.clientId},$date,$name,$durationMin,$distanceKm,$pace,$hr');
     }
 
     // personal_records.csv
-    final prLines = StringBuffer()..writeln('date,exercise,record_type,value');
+    final prLines = StringBuffer()
+      ..writeln('client_id,date,exercise,record_type,value');
     for (final pr in personalRecords) {
       final name = _escapeCsv(exerciseNames[pr.exerciseId] ?? pr.exerciseId);
       final date = dateFormat.format(pr.achievedAt);
-      prLines.writeln('$date,$name,${pr.recordType.name},${pr.value}');
+      prLines.writeln(
+          '${pr.clientId},$date,$name,${pr.recordType.name},${pr.value}');
+    }
+
+    // body_metrics.csv
+    final bodyMetricLines = StringBuffer()
+      ..writeln('client_id,date,weight,body_fat_percent,notes');
+    for (final metric in bodyMetrics) {
+      final date = dateFormat.format(metric.date);
+      final bodyFat = metric.bodyFatPercent?.toString() ?? '';
+      bodyMetricLines.writeln(
+        '${metric.clientId},$date,${metric.weight},$bodyFat,${_escapeCsv(metric.notes ?? '')}',
+      );
     }
 
     // stretching.csv — one row per session. workoutDate is the parent
@@ -150,6 +217,7 @@ class ExportDataUseCase {
       'sets.csv': setLines.toString(),
       'cardio.csv': cardioLines.toString(),
       'personal_records.csv': prLines.toString(),
+      'body_metrics.csv': bodyMetricLines.toString(),
       'stretching.csv': stretchingLines.toString(),
     };
   }
@@ -176,6 +244,7 @@ class ExportDataUseCase {
         'completedAt': w.completedAt?.toIso8601String(),
         'templateId': w.templateId,
         'notes': w.notes,
+        'clientId': w.clientId,
       };
 
   Map<String, dynamic> _setToMap(WorkoutSet s) => {
@@ -200,6 +269,7 @@ class ExportDataUseCase {
         'distanceMeters': c.distanceMeters,
         'incline': c.incline,
         'avgHeartRate': c.avgHeartRate,
+        'clientId': c.clientId,
       };
 
   Map<String, dynamic> _prToMap(PersonalRecord pr) => {
@@ -209,6 +279,16 @@ class ExportDataUseCase {
         'value': pr.value,
         'achievedAt': pr.achievedAt.toIso8601String(),
         'workoutSetId': pr.workoutSetId,
+        'clientId': pr.clientId,
+      };
+
+  Map<String, dynamic> _bodyMetricToMap(BodyMetric m) => {
+        'id': m.id,
+        'date': m.date.toIso8601String(),
+        'weight': m.weight,
+        'bodyFatPercent': m.bodyFatPercent,
+        'notes': m.notes,
+        'clientId': m.clientId,
       };
 
   Map<String, dynamic> _stretchingToMap(StretchingSession s) => {

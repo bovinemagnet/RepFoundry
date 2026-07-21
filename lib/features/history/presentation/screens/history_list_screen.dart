@@ -12,6 +12,7 @@ import '../../../../core/responsive/breakpoints.dart';
 import '../../../workout/domain/models/workout.dart';
 import '../../../workout/domain/models/workout_set.dart';
 import '../../../../core/providers.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/units/weight_unit.dart';
 import '../../../../core/units/weight_unit_provider.dart';
@@ -41,8 +42,12 @@ class _WorkoutWithSets {
 
 final _workoutHistoryProvider =
     FutureProvider.autoDispose<List<_WorkoutWithSets>>((ref) async {
+  final clientId = (await ref.watch(activeClientProvider.future)).id;
   final repo = ref.watch(workoutRepositoryProvider);
-  final workouts = await repo.getWorkoutHistory(limit: 50);
+  final workouts = await repo.getWorkoutHistory(
+    clientId: clientId,
+    limit: 50,
+  );
   final setsByWorkout =
       await repo.getSetsForWorkouts([for (final w in workouts) w.id]);
   return [

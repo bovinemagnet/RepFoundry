@@ -35,6 +35,14 @@ import '../features/stretching/application/save_stretching_session_use_case.dart
 import '../features/stretching/data/drift_stretching_session_repository.dart';
 import '../features/stretching/domain/models/stretching_session.dart';
 import '../features/stretching/domain/repositories/stretching_session_repository.dart';
+import '../features/clients/data/drift_client_repository.dart';
+import '../features/clients/data/drift_client_plan_assignment_repository.dart';
+import '../features/clients/data/drift_health_profile_repository.dart';
+import '../features/clients/domain/models/client.dart';
+import '../features/clients/domain/repositories/client_repository.dart';
+import '../features/clients/domain/repositories/client_plan_assignment_repository.dart';
+import '../features/clients/domain/repositories/health_profile_repository.dart';
+import '../features/clients/presentation/providers/active_client_provider.dart';
 import '../features/sync/application/sync_orchestrator.dart';
 import '../features/sync/data/sync_service_factory.dart';
 import '../features/sync/presentation/providers/sync_settings_provider.dart';
@@ -46,7 +54,9 @@ final bodyMetricRepositoryProvider = Provider<BodyMetricRepository>((ref) {
 
 final bodyMetricsStreamProvider =
     StreamProvider.autoDispose<List<BodyMetric>>((ref) {
-  return ref.watch(bodyMetricRepositoryProvider).watchAll();
+  final client = ref.watch(activeClientProvider).value;
+  if (client == null) return const Stream.empty();
+  return ref.watch(bodyMetricRepositoryProvider).watchAll(client.id);
 });
 
 final exerciseRepositoryProvider = Provider<ExerciseRepository>((ref) {
@@ -99,6 +109,24 @@ final stretchingSessionsForWorkoutProvider =
         .watchSessionsForWorkout(workoutId);
   },
 );
+
+final clientRepositoryProvider = Provider<ClientRepository>((ref) {
+  return DriftClientRepository(ref.watch(databaseProvider));
+});
+
+final clientsProvider = StreamProvider<List<Client>>((ref) {
+  return ref.watch(clientRepositoryProvider).watchClients();
+});
+
+final clientPlanAssignmentRepositoryProvider =
+    Provider<ClientPlanAssignmentRepository>((ref) {
+  return DriftClientPlanAssignmentRepository(ref.watch(databaseProvider));
+});
+
+final healthProfileRepositoryProvider =
+    Provider<HealthProfileRepository>((ref) {
+  return DriftHealthProfileRepository(ref.watch(databaseProvider));
+});
 
 // Services
 final locationServiceProvider = Provider<LocationService>((ref) {
@@ -181,6 +209,8 @@ final exportDataUseCaseProvider = Provider<ExportDataUseCase>((ref) {
     cardioSessionRepository: ref.watch(cardioSessionRepositoryProvider),
     personalRecordRepository: ref.watch(personalRecordRepositoryProvider),
     stretchingSessionRepository: ref.watch(stretchingSessionRepositoryProvider),
+    clientRepository: ref.watch(clientRepositoryProvider),
+    bodyMetricRepository: ref.watch(bodyMetricRepositoryProvider),
   );
 });
 

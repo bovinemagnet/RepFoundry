@@ -20,6 +20,7 @@ class DriftPersonalRecordRepository implements PersonalRecordRepository {
             value: record.value,
             achievedAt: dateTimeToEpochMs(record.achievedAt),
             workoutSetId: Value(record.workoutSetId),
+            clientId: Value(record.clientId),
             updatedAt: Value(dateTimeToEpochMs(record.updatedAt)),
           ),
         );
@@ -28,17 +29,14 @@ class DriftPersonalRecordRepository implements PersonalRecordRepository {
 
   @override
   Future<List<PersonalRecord>> getRecordsForExercise(
-    String exerciseId, {
-    RecordType? recordType,
-  }) async {
+    String exerciseId,
+    String clientId,
+  ) async {
     final q = _db.select(_db.personalRecords)
-      ..where((t) {
-        var cond = t.exerciseId.equals(exerciseId) & t.deletedAt.isNull();
-        if (recordType != null) {
-          cond = cond & t.recordType.equals(recordType.name);
-        }
-        return cond;
-      })
+      ..where((t) =>
+          t.exerciseId.equals(exerciseId) &
+          t.clientId.equals(clientId) &
+          t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.achievedAt)]);
     final rows = await q.get();
     return rows.map(_toDomain).toList();
@@ -48,12 +46,14 @@ class DriftPersonalRecordRepository implements PersonalRecordRepository {
   Future<PersonalRecord?> getBestRecord(
     String exerciseId,
     RecordType recordType,
+    String clientId,
   ) async {
     final q = _db.select(_db.personalRecords)
       ..where(
         (t) =>
             t.exerciseId.equals(exerciseId) &
             t.recordType.equals(recordType.name) &
+            t.clientId.equals(clientId) &
             t.deletedAt.isNull(),
       )
       ..orderBy([(t) => OrderingTerm.desc(t.value)])
@@ -63,9 +63,12 @@ class DriftPersonalRecordRepository implements PersonalRecordRepository {
   }
 
   @override
-  Future<List<PersonalRecord>> getAllRecords({int limit = 50}) async {
+  Future<List<PersonalRecord>> getAllRecords({
+    required String clientId,
+    int limit = 50,
+  }) async {
     final q = _db.select(_db.personalRecords)
-      ..where((t) => t.deletedAt.isNull())
+      ..where((t) => t.clientId.equals(clientId) & t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.achievedAt)])
       ..limit(limit);
     final rows = await q.get();
@@ -88,6 +91,7 @@ class DriftPersonalRecordRepository implements PersonalRecordRepository {
       value: row.value,
       achievedAt: dateTimeFromEpochMs(row.achievedAt),
       workoutSetId: row.workoutSetId,
+      clientId: row.clientId,
       updatedAt: dateTimeFromEpochMs(row.updatedAt),
       deletedAt: nullableDateTimeFromEpochMs(row.deletedAt),
     );

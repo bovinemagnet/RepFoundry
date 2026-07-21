@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
 
 void main() {
@@ -45,6 +46,7 @@ void main() {
           workoutId: 'w1',
           exerciseId: 'e1',
           durationSeconds: 1800,
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         expect(session.paceMinutesPerKm, isNull);
@@ -57,6 +59,7 @@ void main() {
           exerciseId: 'e1',
           durationSeconds: 1800,
           distanceMeters: 0,
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         expect(session.paceMinutesPerKm, isNull);
@@ -69,6 +72,7 @@ void main() {
           exerciseId: 'e1',
           durationSeconds: 1800,
           distanceMeters: -100,
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         expect(session.paceMinutesPerKm, isNull);
@@ -81,6 +85,7 @@ void main() {
           exerciseId: 'e1',
           durationSeconds: 1800,
           distanceMeters: 5000,
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         expect(session.paceMinutesPerKm, 6.0);
@@ -94,6 +99,7 @@ void main() {
           workoutId: 'w1',
           exerciseId: 'e1',
           durationSeconds: 3661,
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         expect(session.duration, const Duration(seconds: 3661));
@@ -109,6 +115,7 @@ void main() {
           workoutId: 'w1',
           exerciseId: 'e1',
           durationSeconds: 100,
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         final b = CardioSession(
@@ -116,6 +123,7 @@ void main() {
           workoutId: 'w2',
           exerciseId: 'e2',
           durationSeconds: 200,
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         expect(a, equals(b));
@@ -128,6 +136,7 @@ void main() {
           workoutId: 'w1',
           exerciseId: 'e1',
           durationSeconds: 100,
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         final b = CardioSession(
@@ -135,6 +144,7 @@ void main() {
           workoutId: 'w1',
           exerciseId: 'e1',
           durationSeconds: 100,
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024),
         );
         expect(a, isNot(equals(b)));

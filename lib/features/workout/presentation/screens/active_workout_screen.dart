@@ -12,6 +12,7 @@ import '../widgets/rest_timer_widget.dart';
 import '../../domain/models/workout_set.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../programmes/domain/models/programme.dart';
+import '../../../clients/presentation/widgets/client_switcher.dart';
 import '../../../stretching/presentation/widgets/add_stretching_sheet.dart';
 import '../../../stretching/presentation/widgets/stretching_section.dart';
 import '../../../templates/domain/models/workout_template.dart';
@@ -1163,6 +1164,10 @@ class _KineticWorkoutHeader extends StatelessWidget {
             style: KineticText.display(size: 16, color: cs.onSurface),
           ),
           const Spacer(),
+          // Active client badge — so the coach can't log a set for the
+          // wrong client without noticing.
+          const ActiveClientIndicator(),
+          const SizedBox(width: 10),
           // Finish pill — keeps the "Finish" text widget for tests
           GestureDetector(
             onTap: isLoading ? null : onFinish,

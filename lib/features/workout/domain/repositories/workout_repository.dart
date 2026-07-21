@@ -5,7 +5,11 @@ abstract class WorkoutRepository {
   Future<Workout> createWorkout(Workout workout);
   Future<Workout?> getWorkout(String id);
   Future<Workout?> getActiveWorkout();
-  Future<List<Workout>> getWorkoutHistory({int limit = 20, DateTime? before});
+  Future<List<Workout>> getWorkoutHistory({
+    required String clientId,
+    int limit = 20,
+    DateTime? before,
+  });
   Future<Workout> updateWorkout(Workout workout);
   Future<void> deleteWorkout(String id);
 
@@ -24,8 +28,11 @@ abstract class WorkoutRepository {
   Future<WorkoutSet?> getLastSetForExercise(String exerciseId);
   Future<WorkoutSet> updateSet(WorkoutSet set);
   Future<void> deleteSet(String setId);
-  Future<List<WorkoutSet>> getSetsFromLastSession(String exerciseId);
+  Future<List<WorkoutSet>> getSetsFromLastSession(
+    String exerciseId,
+    String clientId,
+  );
 
-  Stream<List<Workout>> watchWorkoutHistory();
+  Stream<List<Workout>> watchWorkoutHistory(String clientId);
   Stream<List<WorkoutSet>> watchSetsForWorkout(String workoutId);
 }

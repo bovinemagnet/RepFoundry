@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../../../core/providers.dart';
+import '../../../clients/domain/models/client.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 import '../../../health_sync/data/health_sync_service.dart';
 import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../../application/save_cardio_session_use_case.dart';
@@ -38,6 +40,11 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       ref.read(healthSyncServiceProvider);
   HealthSyncSettings get _healthSyncSettings =>
       ref.read(healthSyncSettingsProvider);
+
+  /// The id of the client currently active in the coach's roster, falling
+  /// back to the "Me" client while the active-client provider is loading.
+  String get _activeClientId =>
+      ref.read(activeClientProvider).value?.id ?? kSelfClientId;
 
   @override
   CardioTrackingState build() {
@@ -273,7 +280,10 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       clearLastSession: true,
     );
 
-    final lastSession = await _cardioRepository.getLastSessionForExercise(id);
+    final lastSession = await _cardioRepository.getLastSessionForExercise(
+      id,
+      _activeClientId,
+    );
     state = state.copyWith(lastSession: lastSession, clearLastSession: false);
   }
 
@@ -312,6 +322,7 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
           distanceMeters: effectiveDistance,
           incline: incline,
           avgHeartRate: effectiveHeartRate,
+          clientId: _activeClientId,
         ),
       );
 

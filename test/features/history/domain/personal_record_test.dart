@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
 
 void main() {
@@ -68,6 +69,7 @@ void main() {
         recordType: RecordType.maxWeight,
         value: 80.0,
         achievedAt: now,
+        clientId: kSelfClientId,
         updatedAt: now,
       );
       final b = PersonalRecord(
@@ -76,6 +78,7 @@ void main() {
         recordType: RecordType.maxReps,
         value: 15.0,
         achievedAt: now,
+        clientId: kSelfClientId,
         updatedAt: now,
       );
 
@@ -91,6 +94,7 @@ void main() {
         recordType: RecordType.maxWeight,
         value: 80.0,
         achievedAt: now,
+        clientId: kSelfClientId,
         updatedAt: now,
       );
       final b = PersonalRecord(
@@ -99,6 +103,7 @@ void main() {
         recordType: RecordType.maxWeight,
         value: 80.0,
         achievedAt: now,
+        clientId: kSelfClientId,
         updatedAt: now,
       );
 
@@ -115,6 +120,7 @@ void main() {
         recordType: RecordType.estimatedOneRepMax,
         value: 120.0,
         achievedAt: now,
+        clientId: kSelfClientId,
         updatedAt: now,
       );
 

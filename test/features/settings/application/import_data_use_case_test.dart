@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
 import 'package:rep_foundry/features/cardio/domain/repositories/cardio_session_repository.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/exercises/domain/repositories/exercise_repository.dart';
 import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
@@ -83,7 +84,7 @@ class _FakeWorkoutRepository implements WorkoutRepository {
   Future<Workout?> getActiveWorkout() async => null;
   @override
   Future<List<Workout>> getWorkoutHistory(
-          {int limit = 20, DateTime? before}) async =>
+          {required String clientId, int limit = 20, DateTime? before}) async =>
       [];
   @override
   Future<Workout> updateWorkout(Workout workout) async => workout;
@@ -107,10 +108,14 @@ class _FakeWorkoutRepository implements WorkoutRepository {
   @override
   Future<void> deleteSet(String setId) async {}
   @override
-  Future<List<WorkoutSet>> getSetsFromLastSession(String exerciseId) async =>
+  Future<List<WorkoutSet>> getSetsFromLastSession(
+    String exerciseId,
+    String clientId,
+  ) async =>
       [];
   @override
-  Stream<List<Workout>> watchWorkoutHistory() => const Stream.empty();
+  Stream<List<Workout>> watchWorkoutHistory(String clientId) =>
+      const Stream.empty();
   @override
   Stream<List<WorkoutSet>> watchSetsForWorkout(String workoutId) =>
       const Stream.empty();
@@ -135,16 +140,21 @@ class _FakeCardioSessionRepository implements CardioSessionRepository {
   Future<List<CardioSession>> getSessionsForWorkout(String workoutId) async =>
       [];
   @override
-  Future<List<CardioSession>> getSessionsForExercise(String exerciseId,
-          {int limit = 50}) async =>
+  Future<List<CardioSession>> getSessionsForExercise(
+    String exerciseId,
+    String clientId,
+  ) async =>
       [];
   @override
   Future<void> deleteSession(String id) async {}
   @override
-  Future<List<CardioSession>> getAllSessions() async =>
+  Future<List<CardioSession>> getAllSessions(String clientId) async =>
       _sessions.values.toList();
   @override
-  Future<CardioSession?> getLastSessionForExercise(String exerciseId) async =>
+  Future<CardioSession?> getLastSessionForExercise(
+    String exerciseId,
+    String clientId,
+  ) async =>
       null;
   @override
   Stream<List<CardioSession>> watchSessionsForWorkout(String workoutId) =>
@@ -166,16 +176,23 @@ class _FakePersonalRecordRepository implements PersonalRecordRepository {
   // Unused stubs
   @override
   Future<List<PersonalRecord>> getRecordsForExercise(
-    String exerciseId, {
-    RecordType? recordType,
-  }) async =>
+    String exerciseId,
+    String clientId,
+  ) async =>
       [];
   @override
   Future<PersonalRecord?> getBestRecord(
-          String exerciseId, RecordType recordType) async =>
+    String exerciseId,
+    RecordType recordType,
+    String clientId,
+  ) async =>
       null;
   @override
-  Future<List<PersonalRecord>> getAllRecords({int limit = 50}) async => [];
+  Future<List<PersonalRecord>> getAllRecords({
+    required String clientId,
+    int limit = 50,
+  }) async =>
+      [];
   @override
   Stream<List<PersonalRecord>> watchRecordsForExercise(String exerciseId) =>
       const Stream.empty();
@@ -643,6 +660,7 @@ void main() {
           id: 'w-existing',
           startedAt: DateTime.utc(2024, 1, 15, 10),
           completedAt: DateTime.utc(2024, 1, 15, 11),
+          clientId: kSelfClientId,
           updatedAt: DateTime.utc(2024, 1, 15),
         ));
 

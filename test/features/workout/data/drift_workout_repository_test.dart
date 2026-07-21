@@ -1,6 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart' as db;
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/workout/data/drift_workout_repository.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
@@ -110,7 +111,7 @@ void main() {
           w2.copyWith(completedAt: DateTime.utc(2025, 1, 2, 1)),
         );
 
-        final history = await repo.getWorkoutHistory();
+        final history = await repo.getWorkoutHistory(clientId: kSelfClientId);
         expect(history, hasLength(2));
         expect(history.first.id, w2.id); // newer first
       });
@@ -126,7 +127,8 @@ void main() {
           );
         }
 
-        final history = await repo.getWorkoutHistory(limit: 3);
+        final history =
+            await repo.getWorkoutHistory(clientId: kSelfClientId, limit: 3);
         expect(history, hasLength(3));
       });
 
@@ -144,6 +146,7 @@ void main() {
         );
 
         final history = await repo.getWorkoutHistory(
+          clientId: kSelfClientId,
           before: DateTime.utc(2025, 3, 1),
         );
         expect(history, hasLength(1));
@@ -158,7 +161,7 @@ void main() {
         );
         await repo.deleteWorkout(w.id);
 
-        final history = await repo.getWorkoutHistory();
+        final history = await repo.getWorkoutHistory(clientId: kSelfClientId);
         expect(history, isEmpty);
       });
     });
@@ -186,6 +189,27 @@ void main() {
         final fetched = await repo.getWorkout(workout.id);
         expect(fetched, isNull);
       });
+    });
+
+    test('createWorkout persists and reads back clientId', () async {
+      // workouts.client_id has a foreign key onto clients.id, so a client
+      // row must exist before a workout can reference it.
+      await database.into(database.clients).insert(
+            db.ClientsCompanion.insert(
+              id: 'client-42',
+              name: 'Test Client',
+              colour: 0xFF000000,
+              createdAt: 0,
+            ),
+          );
+
+      final w = Workout.create(clientId: 'client-42');
+      await repo.createWorkout(w);
+      // Not yet completed, so history is empty; read the row directly instead.
+      final row = await (database.select(database.workouts)
+            ..where((t) => t.id.equals(w.id)))
+          .getSingle();
+      expect(row.clientId, 'client-42');
     });
 
     group('addSet & getSetsForWorkout', () {
@@ -395,7 +419,8 @@ void main() {
     group('watchWorkoutHistory', () {
       test('emits when workouts change', () async {
         final emissions = <List<Workout>>[];
-        final sub = repo.watchWorkoutHistory().listen(emissions.add);
+        final sub =
+            repo.watchWorkoutHistory(kSelfClientId).listen(emissions.add);
         addTearDown(sub.cancel);
 
         await pumpEventQueue();
@@ -432,9 +457,44 @@ void main() {
       });
     });
 
+    group('client scoping', () {
+      test('getWorkoutHistory is scoped to the client', () async {
+        // workouts.client_id has a foreign key onto clients.id, so both
+        // client rows must exist before their workouts can reference them.
+        await database.batch((b) {
+          b.insertAll(database.clients, [
+            db.ClientsCompanion.insert(
+              id: 'A',
+              name: 'Client A',
+              colour: 0xFF000000,
+              createdAt: 0,
+            ),
+            db.ClientsCompanion.insert(
+              id: 'B',
+              name: 'Client B',
+              colour: 0xFF000000,
+              createdAt: 0,
+            ),
+          ]);
+        });
+
+        final a = Workout.create(clientId: 'A').copyWith(
+          completedAt: DateTime.now().toUtc(),
+        );
+        final b = Workout.create(clientId: 'B').copyWith(
+          completedAt: DateTime.now().toUtc(),
+        );
+        await repo.createWorkout(a);
+        await repo.createWorkout(b);
+
+        final onlyA = await repo.getWorkoutHistory(clientId: 'A');
+        expect(onlyA.map((w) => w.id), [a.id]);
+      });
+    });
+
     group('getSetsFromLastSession', () {
       test('returns empty list when no history', () async {
-        final result = await repo.getSetsFromLastSession('1');
+        final result = await repo.getSetsFromLastSession('1', kSelfClientId);
         expect(result, isEmpty);
       });
 
@@ -462,7 +522,7 @@ void main() {
           w2.copyWith(completedAt: DateTime.utc(2025, 2, 1, 1)),
         );
 
-        final result = await repo.getSetsFromLastSession('1');
+        final result = await repo.getSetsFromLastSession('1', kSelfClientId);
         expect(result, hasLength(2));
         expect(result.first.weight, 80);
         expect(result.last.weight, 85);
@@ -486,7 +546,7 @@ void main() {
           newSet(workoutId: w2.id, setOrder: 1, weight: 100, reps: 3),
         );
 
-        final result = await repo.getSetsFromLastSession('1');
+        final result = await repo.getSetsFromLastSession('1', kSelfClientId);
         expect(result, hasLength(1));
         expect(result.first.weight, 60);
       });
@@ -502,7 +562,7 @@ void main() {
         );
         await repo.deleteWorkout(w1.id);
 
-        final result = await repo.getSetsFromLastSession('1');
+        final result = await repo.getSetsFromLastSession('1', kSelfClientId);
         expect(result, isEmpty);
       });
 
@@ -523,7 +583,7 @@ void main() {
           w.copyWith(completedAt: DateTime.utc(2025, 1, 1, 1)),
         );
 
-        final result = await repo.getSetsFromLastSession('1');
+        final result = await repo.getSetsFromLastSession('1', kSelfClientId);
         expect(result, hasLength(3));
         expect(result[0].setOrder, 1);
         expect(result[1].setOrder, 2);

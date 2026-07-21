@@ -5,6 +5,8 @@ import 'package:rep_foundry/features/analytics/presentation/providers/muscle_bal
 import 'package:rep_foundry/features/analytics/presentation/providers/pr_timeline_provider.dart';
 import 'package:rep_foundry/features/analytics/presentation/providers/training_load_provider.dart';
 import 'package:rep_foundry/features/analytics/presentation/providers/weekly_volume_provider.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
+import 'package:rep_foundry/features/clients/presentation/providers/active_client_provider.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
@@ -17,6 +19,29 @@ import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
 // Helpers
 // ---------------------------------------------------------------------------
 
+/// An [AsyncNotifier] override that resolves the active client to a fixed
+/// value, without touching the database — keeps these provider-level tests
+/// isolated to their in-memory repositories.
+class _FixedActiveClientNotifier extends ActiveClientNotifier {
+  _FixedActiveClientNotifier(this._client);
+
+  final Client _client;
+
+  @override
+  Future<Client> build() async => _client;
+}
+
+final _meClient = Client(
+  id: kSelfClientId,
+  name: 'Me',
+  colour: 0xFF4CAF50,
+  notes: null,
+  isSelf: true,
+  createdAt: DateTime.utc(2024),
+  updatedAt: DateTime.utc(2024),
+  deletedAt: null,
+);
+
 /// Creates a [ProviderContainer] with in-memory repository overrides and
 /// registers [addTearDown] automatically.
 ProviderContainer _makeContainer({
@@ -26,6 +51,9 @@ ProviderContainer _makeContainer({
 }) {
   final container = ProviderContainer(
     overrides: [
+      activeClientProvider.overrideWith(
+        () => _FixedActiveClientNotifier(_meClient),
+      ),
       if (workoutRepo != null)
         workoutRepositoryProvider.overrideWithValue(workoutRepo),
       if (exerciseRepo != null)
@@ -303,6 +331,7 @@ void main() {
         recordType: RecordType.maxWeight,
         value: 100,
         achievedAt: earlier,
+        clientId: kSelfClientId,
         updatedAt: now,
       );
       final newerRecord = PersonalRecord(
@@ -311,6 +340,7 @@ void main() {
         recordType: RecordType.maxWeight,
         value: 120,
         achievedAt: later,
+        clientId: kSelfClientId,
         updatedAt: now,
       );
 
@@ -342,6 +372,7 @@ void main() {
         recordType: RecordType.estimatedOneRepMax,
         value: 200,
         achievedAt: now,
+        clientId: kSelfClientId,
         updatedAt: now,
       );
       await prRepo.createRecord(orphanRecord);

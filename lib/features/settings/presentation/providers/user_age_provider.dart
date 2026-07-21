@@ -9,7 +9,7 @@ import '../../../heart_rate/presentation/providers/health_profile_provider.dart'
 class UserAgeNotifier extends Notifier<int?> {
   @override
   int? build() {
-    return ref.watch(healthProfileProvider.select((p) => p.age));
+    return ref.watch(healthProfileProvider.select((p) => p.value?.age));
   }
 
   Future<void> setAge(int? age) async {

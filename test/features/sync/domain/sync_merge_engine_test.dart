@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/sync/domain/models/sync_snapshot.dart';
 import 'package:rep_foundry/features/sync/domain/sync_merge_engine.dart';
@@ -51,6 +52,7 @@ void main() {
         startedAt: baseTime,
         updatedAt: updatedAt,
         notes: notes,
+        clientId: kSelfClientId,
         deletedAt: deletedAt,
       );
 

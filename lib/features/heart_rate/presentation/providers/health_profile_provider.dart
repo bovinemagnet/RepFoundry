@@ -3,118 +3,116 @@ import 'package:hr_zones/hr_zones.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/providers.dart';
+import '../../../clients/domain/models/client.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 import '../../domain/analytics_events.dart';
 
-class HealthProfileNotifier extends Notifier<HealthProfile> {
+class HealthProfileNotifier extends AsyncNotifier<HealthProfile> {
   @override
-  HealthProfile build() {
-    _load();
-    return const HealthProfile();
+  Future<HealthProfile> build() async {
+    await _migrateLegacyProfileOnce();
+    final client = await ref.watch(activeClientProvider.future);
+    return ref.watch(healthProfileRepositoryProvider).getForClient(client.id);
   }
 
-  HrAnalyticsReporter? get analyticsReporter =>
-      ref.watch(hrAnalyticsReporterProvider);
-
-  Future<void> _load() async {
+  /// One-time migration of the legacy single-profile SharedPreferences data
+  /// into the "Me" client's row, guarded by a done-flag key.
+  Future<void> _migrateLegacyProfileOnce() async {
     final prefs = await SharedPreferences.getInstance();
-
-    int? age = prefs.getInt('hr_age');
-    if (age == null) {
-      final legacyAge = prefs.getInt('user_age');
-      if (legacyAge != null) {
-        age = legacyAge;
-        await prefs.setInt('hr_age', legacyAge);
-      }
-    }
-
-    state = HealthProfile(
-      age: age,
+    if (prefs.getBool('health_profile_migrated_v1') ?? false) return;
+    final legacy = HealthProfile(
+      age: prefs.getInt('hr_age') ?? prefs.getInt('user_age'),
       restingHr: prefs.getInt('hr_resting_hr'),
       measuredMaxHr: prefs.getInt('hr_measured_max_hr'),
       clinicianMaxHr: prefs.getInt('hr_clinician_max_hr'),
       betaBlocker: prefs.getBool('hr_beta_blocker') ?? false,
       heartCondition: prefs.getBool('hr_heart_condition') ?? false,
     );
+    await ref
+        .read(healthProfileRepositoryProvider)
+        .saveForClient(kSelfClientId, legacy);
+    await prefs.setBool('health_profile_migrated_v1', true);
+  }
+
+  HrAnalyticsReporter? get analyticsReporter =>
+      ref.watch(hrAnalyticsReporterProvider);
+
+  Future<void> _save(HealthProfile updated) async {
+    final clientId = ref.read(activeClientProvider).value?.id ?? kSelfClientId;
+    await ref.read(healthProfileRepositoryProvider).saveForClient(
+          clientId,
+          updated,
+        );
+    state = AsyncData(updated);
   }
 
   Future<void> updateAge(int? age) async {
-    state =
-        age != null ? state.copyWith(age: age) : state.copyWith(clearAge: true);
-    final prefs = await SharedPreferences.getInstance();
+    final current = await future;
+    final updated = age != null
+        ? current.copyWith(age: age)
+        : current.copyWith(clearAge: true);
+    await _save(updated);
     if (age != null) {
-      await prefs.setInt('hr_age', age);
-      await prefs.setInt('user_age', age);
       analyticsReporter?.trackEvent(
         HrAnalyticsEvent.healthFieldCompleted,
         {'field': 'age'},
       );
-    } else {
-      await prefs.remove('hr_age');
-      await prefs.remove('user_age');
     }
   }
 
   Future<void> updateRestingHeartRate(int? restingHr) async {
-    state = restingHr != null
-        ? state.copyWith(restingHr: restingHr)
-        : state.copyWith(clearRestingHr: true);
-    final prefs = await SharedPreferences.getInstance();
+    final current = await future;
+    final updated = restingHr != null
+        ? current.copyWith(restingHr: restingHr)
+        : current.copyWith(clearRestingHr: true);
+    await _save(updated);
     if (restingHr != null) {
-      await prefs.setInt('hr_resting_hr', restingHr);
       analyticsReporter?.trackEvent(
         HrAnalyticsEvent.healthFieldCompleted,
         {'field': 'restingHeartRate'},
       );
-    } else {
-      await prefs.remove('hr_resting_hr');
     }
   }
 
   Future<void> updateMeasuredMaxHeartRate(int? measuredMax) async {
-    state = measuredMax != null
-        ? state.copyWith(measuredMaxHr: measuredMax)
-        : state.copyWith(clearMeasuredMaxHr: true);
-    final prefs = await SharedPreferences.getInstance();
-    if (measuredMax != null) {
-      await prefs.setInt('hr_measured_max_hr', measuredMax);
-    } else {
-      await prefs.remove('hr_measured_max_hr');
-    }
+    final current = await future;
+    final updated = measuredMax != null
+        ? current.copyWith(measuredMaxHr: measuredMax)
+        : current.copyWith(clearMeasuredMaxHr: true);
+    await _save(updated);
   }
 
   Future<void> setTakingBetaBlocker(bool value) async {
-    state = state.copyWith(betaBlocker: value);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('hr_beta_blocker', value);
-    if (state.isCautionMode) {
+    final current = await future;
+    final updated = current.copyWith(betaBlocker: value);
+    await _save(updated);
+    if (updated.isCautionMode) {
       analyticsReporter?.trackEvent(HrAnalyticsEvent.cautionModeActivated);
     }
   }
 
   Future<void> setHasHeartCondition(bool value) async {
-    state = state.copyWith(heartCondition: value);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('hr_heart_condition', value);
-    if (state.isCautionMode) {
+    final current = await future;
+    final updated = current.copyWith(heartCondition: value);
+    await _save(updated);
+    if (updated.isCautionMode) {
       analyticsReporter?.trackEvent(HrAnalyticsEvent.cautionModeActivated);
     }
   }
 
   Future<void> setClinicianMaxHr(int? maxHr) async {
-    state = maxHr != null
-        ? state.copyWith(clinicianMaxHr: maxHr)
-        : state.copyWith(clearClinicianMaxHr: true);
-    final prefs = await SharedPreferences.getInstance();
+    final current = await future;
+    final updated = maxHr != null
+        ? current.copyWith(clinicianMaxHr: maxHr)
+        : current.copyWith(clearClinicianMaxHr: true);
+    await _save(updated);
     if (maxHr != null) {
-      await prefs.setInt('hr_clinician_max_hr', maxHr);
       analyticsReporter?.trackEvent(HrAnalyticsEvent.customCapUsed);
-    } else {
-      await prefs.remove('hr_clinician_max_hr');
     }
   }
 }
 
 final healthProfileProvider =
-    NotifierProvider<HealthProfileNotifier, HealthProfile>(
+    AsyncNotifierProvider<HealthProfileNotifier, HealthProfile>(
   HealthProfileNotifier.new,
 );

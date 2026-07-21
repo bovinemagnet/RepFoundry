@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers.dart';
+import '../../../clients/domain/models/client.dart';
 import '../../data/health_sync_service.dart';
 import 'health_sync_settings_provider.dart';
 
@@ -16,7 +17,8 @@ final healthWeightCheckProvider =
     final sample = await healthService.readLatestWeight();
     if (sample == null) return null;
 
-    final latest = await ref.watch(bodyMetricRepositoryProvider).getLatest();
+    final latest =
+        await ref.watch(bodyMetricRepositoryProvider).getLatest(kSelfClientId);
     if (latest != null && !sample.date.isAfter(latest.date)) return null;
 
     return sample;

@@ -5,6 +5,7 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/providers.dart';
 import '../../../../core/widgets/kinetic.dart';
+import '../../../clients/presentation/widgets/client_switcher.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../controllers/cardio_tracking_controller.dart';
 import '../controllers/cardio_tracking_state.dart';
@@ -78,8 +79,16 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
           // ── Kinetic app header ──────────────────────────────
           const KineticAppHeader(),
 
-          // ── Screen title (pagehead eyebrow) ────────────────
-          KineticEyebrow(s.cardioTitle),
+          // ── Screen title (pagehead eyebrow) ─────────────────
+          // Active client badge alongside it — so the coach can't log a
+          // session for the wrong client without noticing.
+          Row(
+            children: [
+              KineticEyebrow(s.cardioTitle),
+              const Spacer(),
+              const ActiveClientIndicator(),
+            ],
+          ),
           const SizedBox(height: 12),
 
           // ── Sport segmented control (.seg pill) ────────────

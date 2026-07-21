@@ -1,5 +1,7 @@
 import 'package:uuid/uuid.dart';
 
+import '../../../clients/domain/models/client.dart';
+
 enum RecordType {
   estimatedOneRepMax,
   maxWeight,
@@ -14,6 +16,7 @@ class PersonalRecord {
   final double value;
   final DateTime achievedAt;
   final String? workoutSetId;
+  final String clientId;
   final DateTime updatedAt;
   final DateTime? deletedAt;
 
@@ -24,6 +27,7 @@ class PersonalRecord {
     required this.value,
     required this.achievedAt,
     this.workoutSetId,
+    required this.clientId,
     required this.updatedAt,
     this.deletedAt,
   });
@@ -35,6 +39,7 @@ class PersonalRecord {
     required RecordType recordType,
     required double value,
     String? workoutSetId,
+    String clientId = kSelfClientId,
   }) {
     final now = DateTime.now().toUtc();
     return PersonalRecord(
@@ -44,6 +49,7 @@ class PersonalRecord {
       value: value,
       achievedAt: now,
       workoutSetId: workoutSetId,
+      clientId: clientId,
       updatedAt: now,
     );
   }

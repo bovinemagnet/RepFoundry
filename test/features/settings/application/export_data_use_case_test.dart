@@ -1,8 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/body_metrics/domain/models/body_metric.dart';
+import 'package:rep_foundry/features/body_metrics/domain/repositories/body_metric_repository.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
+import 'package:rep_foundry/features/clients/domain/repositories/client_repository.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart'
     as domain;
@@ -15,6 +19,79 @@ import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
 
+/// Minimal in-memory [ClientRepository] fake — the only production
+/// implementation is Drift-backed, so tests supply the roster directly.
+class _FakeClientRepository implements ClientRepository {
+  _FakeClientRepository(this.clients);
+
+  final List<Client> clients;
+
+  @override
+  Stream<List<Client>> watchClients() => Stream.value(clients);
+
+  @override
+  Future<Client?> getClient(String id) async =>
+      clients.where((c) => c.id == id).firstOrNull;
+
+  @override
+  Future<Client> getSelfClient() =>
+      Future.value(clients.firstWhere((c) => c.isSelf));
+
+  @override
+  Future<Client> createClient(Client client) async => client;
+
+  @override
+  Future<Client> updateClient(Client client) async => client;
+
+  @override
+  Future<void> softDeleteClient(String id) async {}
+}
+
+/// Minimal in-memory [BodyMetricRepository] fake — mirrors the pattern used
+/// for the other in-memory test repositories.
+class _FakeBodyMetricRepository implements BodyMetricRepository {
+  final List<BodyMetric> _metrics = [];
+
+  @override
+  Future<BodyMetric> create(BodyMetric metric) async {
+    _metrics.add(metric);
+    return metric;
+  }
+
+  @override
+  Future<BodyMetric> update(BodyMetric metric) async => metric;
+
+  @override
+  Future<void> delete(String id) async {}
+
+  @override
+  Future<List<BodyMetric>> getAll(
+          {required String clientId, int limit = 100}) async =>
+      _metrics.where((m) => m.clientId == clientId).toList();
+
+  @override
+  Future<BodyMetric?> getLatest(String clientId) async =>
+      _metrics.where((m) => m.clientId == clientId).lastOrNull;
+
+  @override
+  Stream<List<BodyMetric>> watchAll(String clientId) =>
+      Stream.value(_metrics.where((m) => m.clientId == clientId).toList());
+}
+
+Client _client({required String id, bool isSelf = false, String name = ''}) {
+  final now = DateTime.utc(2024);
+  return Client(
+    id: id,
+    name: name,
+    colour: 0xFF000000,
+    notes: null,
+    isSelf: isSelf,
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+  );
+}
+
 void main() {
   late ExportDataUseCase useCase;
   late InMemoryWorkoutRepository workoutRepo;
@@ -22,6 +99,10 @@ void main() {
   late InMemoryCardioSessionRepository cardioRepo;
   late InMemoryPersonalRecordRepository prRepo;
   late InMemoryStretchingSessionRepository stretchingRepo;
+  late _FakeBodyMetricRepository bodyMetricRepo;
+  late _FakeClientRepository clientRepo;
+
+  const otherClientId = 'other-client-id';
 
   setUp(() {
     workoutRepo = InMemoryWorkoutRepository();
@@ -29,12 +110,19 @@ void main() {
     cardioRepo = InMemoryCardioSessionRepository();
     prRepo = InMemoryPersonalRecordRepository();
     stretchingRepo = InMemoryStretchingSessionRepository();
+    bodyMetricRepo = _FakeBodyMetricRepository();
+    clientRepo = _FakeClientRepository([
+      _client(id: kSelfClientId, isSelf: true, name: 'Me'),
+      _client(id: otherClientId, name: 'Alex'),
+    ]);
     useCase = ExportDataUseCase(
       workoutRepository: workoutRepo,
       exerciseRepository: exerciseRepo,
       cardioSessionRepository: cardioRepo,
       personalRecordRepository: prRepo,
       stretchingSessionRepository: stretchingRepo,
+      clientRepository: clientRepo,
+      bodyMetricRepository: bodyMetricRepo,
     );
   });
 
@@ -61,6 +149,7 @@ void main() {
         id: 'w1',
         startedAt: DateTime(2024, 1, 1),
         completedAt: DateTime(2024, 1, 1, 1),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       await workoutRepo.createWorkout(workout);
@@ -101,6 +190,7 @@ void main() {
         id: 'w-stretch',
         startedAt: DateTime.utc(2026, 4, 30, 10),
         completedAt: DateTime.utc(2026, 4, 30, 11),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2026, 4, 30),
       );
       await workoutRepo.createWorkout(workout);
@@ -144,6 +234,7 @@ void main() {
       final workout = Workout(
         id: 'w-soft',
         startedAt: DateTime.utc(2026, 4, 30),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2026, 4, 30),
       );
       await workoutRepo.createWorkout(workout);
@@ -176,7 +267,7 @@ void main() {
   });
 
   group('exportAsCsv', () {
-    test('returns four CSV files', () async {
+    test('returns five CSV files', () async {
       final csvFiles = await useCase.exportAsCsv();
       expect(
         csvFiles.keys,
@@ -184,6 +275,7 @@ void main() {
           'sets.csv',
           'cardio.csv',
           'personal_records.csv',
+          'body_metrics.csv',
           'stretching.csv',
         ]),
       );
@@ -192,7 +284,7 @@ void main() {
     test('sets.csv has header row', () async {
       final csvFiles = await useCase.exportAsCsv();
       final lines = csvFiles['sets.csv']!.split('\n');
-      expect(lines[0], 'date,exercise,weight,reps,rpe,volume,e1rm');
+      expect(lines[0], 'client_id,date,exercise,weight,reps,rpe,volume,e1rm');
     });
 
     test('sets.csv includes workout set data', () async {
@@ -200,6 +292,7 @@ void main() {
         id: 'w1',
         startedAt: DateTime(2024, 1, 1),
         completedAt: DateTime(2024, 1, 1, 1),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       await workoutRepo.createWorkout(workout);
@@ -239,6 +332,7 @@ void main() {
         id: 'w2',
         startedAt: DateTime(2024, 2, 1),
         completedAt: DateTime(2024, 2, 1, 1),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       await workoutRepo.createWorkout(workout);
@@ -263,6 +357,7 @@ void main() {
         id: 'w3',
         startedAt: DateTime(2024, 3, 1),
         completedAt: DateTime(2024, 3, 1, 1),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       );
       await workoutRepo.createWorkout(workout);
@@ -272,6 +367,7 @@ void main() {
         exerciseId: '16',
         durationSeconds: 1800,
         distanceMeters: 5000,
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       ));
 
@@ -288,6 +384,7 @@ void main() {
         recordType: RecordType.estimatedOneRepMax,
         value: 120.0,
         achievedAt: DateTime(2024, 4, 1),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2024),
       ));
 
@@ -303,6 +400,7 @@ void main() {
         id: 'w-csv',
         startedAt: DateTime(2026, 4, 30, 10),
         completedAt: DateTime(2026, 4, 30, 11),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2026, 4, 30),
       );
       await workoutRepo.createWorkout(workout);
@@ -337,6 +435,7 @@ void main() {
         id: 'w-csv2',
         startedAt: DateTime(2026, 4, 30, 10),
         completedAt: DateTime(2026, 4, 30, 11),
+        clientId: kSelfClientId,
         updatedAt: DateTime.utc(2026, 4, 30),
       );
       await workoutRepo.createWorkout(workout);
@@ -354,6 +453,130 @@ void main() {
       final content = (await useCase.exportAsCsv())['stretching.csv']!;
       expect(content, contains('"Wrist, finger circles"'));
       expect(content, contains('"felt good, no pain"'));
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Full-roster coverage: "Export All Data" is a backup, so it must not
+  // silently drop clients other than Me. These tests seed a second client's
+  // workout, cardio session, PR and body metric and assert each shows up in
+  // both export formats, attributed to the right clientId.
+  // ---------------------------------------------------------------------------
+  group('multi-client export', () {
+    test(
+        'exportAsJson includes a second client\'s workout, cardio session, '
+        'PR and body metric', () async {
+      final workout = Workout(
+        id: 'w-other',
+        startedAt: DateTime.utc(2024, 5, 1),
+        completedAt: DateTime.utc(2024, 5, 1, 1),
+        clientId: otherClientId,
+        updatedAt: DateTime.utc(2024, 5, 1),
+      );
+      await workoutRepo.createWorkout(workout);
+      await workoutRepo.addSet(WorkoutSet(
+        id: 's-other',
+        workoutId: 'w-other',
+        exerciseId: '1',
+        setOrder: 1,
+        weight: 60,
+        reps: 8,
+        timestamp: DateTime.utc(2024, 5, 1),
+        updatedAt: DateTime.utc(2024, 5, 1),
+      ));
+      await cardioRepo.createSession(CardioSession(
+        id: 'c-other',
+        workoutId: 'w-other',
+        exerciseId: '16',
+        durationSeconds: 900,
+        clientId: otherClientId,
+        updatedAt: DateTime.utc(2024, 5, 1),
+      ));
+      await prRepo.createRecord(PersonalRecord(
+        id: 'pr-other',
+        exerciseId: '1',
+        recordType: RecordType.maxWeight,
+        value: 60.0,
+        achievedAt: DateTime.utc(2024, 5, 1),
+        clientId: otherClientId,
+        updatedAt: DateTime.utc(2024, 5, 1),
+      ));
+      await bodyMetricRepo.create(BodyMetric.create(
+        weight: 70.0,
+        date: DateTime.utc(2024, 5, 1),
+        clientId: otherClientId,
+      ));
+
+      final json = await useCase.exportAsJson();
+      final data = jsonDecode(json) as Map<String, dynamic>;
+
+      final workouts = data['workouts'] as List;
+      expect(
+        workouts.any((w) =>
+            (w as Map<String, dynamic>)['id'] == 'w-other' &&
+            w['clientId'] == otherClientId),
+        isTrue,
+      );
+
+      final cardioSessions = data['cardioSessions'] as List;
+      expect(
+        cardioSessions.any((c) =>
+            (c as Map<String, dynamic>)['id'] == 'c-other' &&
+            c['clientId'] == otherClientId),
+        isTrue,
+      );
+
+      final personalRecords = data['personalRecords'] as List;
+      expect(
+        personalRecords.any((pr) =>
+            (pr as Map<String, dynamic>)['id'] == 'pr-other' &&
+            pr['clientId'] == otherClientId),
+        isTrue,
+      );
+
+      final bodyMetrics = data['bodyMetrics'] as List;
+      expect(
+        bodyMetrics.any(
+            (m) => (m as Map<String, dynamic>)['clientId'] == otherClientId),
+        isTrue,
+      );
+    });
+
+    test('exportAsCsv attributes rows to their owning clientId', () async {
+      final workout = Workout(
+        id: 'w-other-csv',
+        startedAt: DateTime.utc(2024, 5, 2),
+        completedAt: DateTime.utc(2024, 5, 2, 1),
+        clientId: otherClientId,
+        updatedAt: DateTime.utc(2024, 5, 2),
+      );
+      await workoutRepo.createWorkout(workout);
+      await workoutRepo.addSet(WorkoutSet(
+        id: 's-other-csv',
+        workoutId: 'w-other-csv',
+        exerciseId: '1',
+        setOrder: 1,
+        weight: 55,
+        reps: 10,
+        timestamp: DateTime.utc(2024, 5, 2),
+        updatedAt: DateTime.utc(2024, 5, 2),
+      ));
+      await bodyMetricRepo.create(BodyMetric.create(
+        weight: 71.5,
+        date: DateTime.utc(2024, 5, 2),
+        clientId: otherClientId,
+      ));
+
+      final csvFiles = await useCase.exportAsCsv();
+
+      final setLines = csvFiles['sets.csv']!.split('\n');
+      expect(setLines.any((l) => l.startsWith('$otherClientId,')), isTrue);
+
+      final bodyMetricLines = csvFiles['body_metrics.csv']!.split('\n');
+      expect(
+        bodyMetricLines.any((l) => l.startsWith('$otherClientId,')),
+        isTrue,
+      );
     });
   });
 }

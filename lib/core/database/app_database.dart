@@ -3,7 +3,10 @@ import 'package:drift_flutter/drift_flutter.dart';
 
 import 'tables/body_metrics_table.dart';
 import 'tables/cardio_sessions_table.dart';
+import 'tables/client_plan_assignments_table.dart';
+import 'tables/clients_table.dart';
 import 'tables/exercises_table.dart';
+import 'tables/health_profiles_table.dart';
 import 'tables/personal_records_table.dart';
 import 'tables/programme_days_table.dart';
 import 'tables/programmes_table.dart';
@@ -29,6 +32,9 @@ part 'app_database.g.dart';
   ProgrammeDays,
   ProgressionRules,
   StretchingSessions,
+  Clients,
+  ClientPlanAssignments,
+  HealthProfiles,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -38,7 +44,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// Static accessor for the schema version, usable from non-database code
   /// (e.g. the sync serialiser) without an `AppDatabase` instance.
-  static const int schemaVersionConst = 12;
+  static const int schemaVersionConst = 13;
 
   @override
   int get schemaVersion => schemaVersionConst;
@@ -52,6 +58,7 @@ class AppDatabase extends _$AppDatabase {
           await m.createAll();
           await batch((b) {
             b.insertAll(exercises, _defaultExercises);
+            b.insert(clients, _selfClientCompanion());
           });
         },
         onUpgrade: (m, from, to) async {
@@ -275,6 +282,27 @@ class AppDatabase extends _$AppDatabase {
               'ALTER TABLE workout_sets ADD COLUMN peak_heart_rate INTEGER',
             );
           }
+          if (from < 13) {
+            // Coach client roster: a "Me" client owns all pre-existing data,
+            // and every coach-scoped table gains a client_id column that
+            // defaults to Me.
+            await m.createTable(clients);
+            await m.createTable(clientPlanAssignments);
+            await m.createTable(healthProfiles);
+            await into(clients).insert(_selfClientCompanion());
+            for (final table in [
+              'workouts',
+              'cardio_sessions',
+              'personal_records',
+              'body_metrics',
+            ]) {
+              await customStatement(
+                'ALTER TABLE $table ADD COLUMN client_id TEXT NOT NULL '
+                "DEFAULT '$kSelfClientIdConst' REFERENCES clients(id)",
+              );
+            }
+            await m.createIndex(idxClientPlanAssignmentsUnique);
+          }
         },
       );
 
@@ -303,6 +331,17 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 }
+
+/// The Companion for the always-present "Me" self-client, seeded on fresh
+/// installs and inserted once during the v13 upgrade.
+ClientsCompanion _selfClientCompanion() => ClientsCompanion.insert(
+      id: kSelfClientIdConst,
+      name: 'Me',
+      colour: 0xFF4CAF50,
+      isSelf: const Value(true),
+      createdAt: 0,
+      updatedAt: const Value(0),
+    );
 
 /// The 21 default exercises seeded on first run.
 /// IDs '1'–'21' match the in-memory implementation.

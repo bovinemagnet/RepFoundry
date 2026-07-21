@@ -26,6 +26,7 @@ class _FakeWorkoutRepository implements WorkoutRepository {
   Future<Workout?> getActiveWorkout() async => null;
   @override
   Future<List<Workout>> getWorkoutHistory({
+    required String clientId,
     int limit = 20,
     DateTime? before,
   }) async =>
@@ -51,10 +52,14 @@ class _FakeWorkoutRepository implements WorkoutRepository {
   @override
   Future<void> deleteSet(String setId) async {}
   @override
-  Future<List<WorkoutSet>> getSetsFromLastSession(String exerciseId) async =>
+  Future<List<WorkoutSet>> getSetsFromLastSession(
+    String exerciseId,
+    String clientId,
+  ) async =>
       [];
   @override
-  Stream<List<Workout>> watchWorkoutHistory() => const Stream.empty();
+  Stream<List<Workout>> watchWorkoutHistory(String clientId) =>
+      const Stream.empty();
   @override
   Stream<List<WorkoutSet>> watchSetsForWorkout(String workoutId) =>
       const Stream.empty();

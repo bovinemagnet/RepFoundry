@@ -39,12 +39,14 @@ class InMemoryWorkoutRepository implements WorkoutRepository {
 
   @override
   Future<List<Workout>> getWorkoutHistory({
+    required String clientId,
     int limit = 20,
     DateTime? before,
   }) async {
     var results = _workouts
         .where(
           (w) =>
+              w.clientId == clientId &&
               w.status == WorkoutStatus.completed &&
               !w.isDeleted &&
               (before == null || w.startedAt.isBefore(before)),
@@ -121,10 +123,16 @@ class InMemoryWorkoutRepository implements WorkoutRepository {
   }
 
   @override
-  Future<List<WorkoutSet>> getSetsFromLastSession(String exerciseId) async {
+  Future<List<WorkoutSet>> getSetsFromLastSession(
+    String exerciseId,
+    String clientId,
+  ) async {
     // Find the most recent completed, non-deleted workout containing this exercise.
     final completedWorkouts = _workouts
-        .where((w) => w.status == WorkoutStatus.completed && !w.isDeleted)
+        .where((w) =>
+            w.clientId == clientId &&
+            w.status == WorkoutStatus.completed &&
+            !w.isDeleted)
         .toList()
       ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
 
@@ -161,7 +169,10 @@ class InMemoryWorkoutRepository implements WorkoutRepository {
   }
 
   @override
-  Stream<List<Workout>> watchWorkoutHistory() => _historyController.stream;
+  Stream<List<Workout>> watchWorkoutHistory(String clientId) =>
+      _historyController.stream.map(
+        (workouts) => workouts.where((w) => w.clientId == clientId).toList(),
+      );
 
   @override
   Stream<List<WorkoutSet>> watchSetsForWorkout(String workoutId) {

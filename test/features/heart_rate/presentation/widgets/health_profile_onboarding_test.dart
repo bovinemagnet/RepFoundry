@@ -1,17 +1,37 @@
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/core/database/app_database.dart' as db;
+import 'package:rep_foundry/core/database/database_provider.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/heart_rate/data/noop_analytics_reporter.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/health_profile_provider.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/widgets/health_profile_onboarding.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group('HealthProfileOnboarding', () {
+    final databases = <db.AppDatabase>[];
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+    });
+
+    tearDown(() async {
+      for (final database in databases) {
+        await database.close();
+      }
+      databases.clear();
+    });
+
     Widget buildApp() {
+      final database = db.AppDatabase.forTesting(NativeDatabase.memory());
+      databases.add(database);
       return ProviderScope(
         overrides: [
+          databaseProvider.overrideWithValue(database),
           hrAnalyticsReporterProvider
               .overrideWithValue(NoopAnalyticsReporter()),
         ],
@@ -86,9 +106,12 @@ void main() {
 
     testWidgets('entering age and pressing next saves value', (tester) async {
       late ProviderContainer container;
+      final database = db.AppDatabase.forTesting(NativeDatabase.memory());
+      databases.add(database);
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            databaseProvider.overrideWithValue(database),
             hrAnalyticsReporterProvider
                 .overrideWithValue(NoopAnalyticsReporter()),
           ],
@@ -122,7 +145,7 @@ void main() {
       expect(find.text('Step 2 of 4'), findsOneWidget);
 
       // Verify the age was persisted to the notifier
-      final profile = container.read(healthProfileProvider);
+      final profile = await container.read(healthProfileProvider.future);
       expect(profile.age, 49);
     });
 

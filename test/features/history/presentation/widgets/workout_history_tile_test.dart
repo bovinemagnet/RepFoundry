@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/widgets/bar_sparkline_widget.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
 import 'package:rep_foundry/features/history/presentation/widgets/workout_history_tile.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
@@ -31,6 +32,7 @@ void main() {
       id: 'wo-1',
       startedAt: start,
       completedAt: completedAt ?? start.add(const Duration(minutes: 45)),
+      clientId: kSelfClientId,
       updatedAt: start,
     );
   }

@@ -12,16 +12,20 @@ import 'desktop_nav_rail.dart';
 ///
 /// - **Mobile** (`< 600`): the existing glass bottom navigation bar, shown only
 ///   for the five core tabs (Workout, History, Cardio, Heart Rate, Settings).
-///   Deeper routes that the shell also wraps (Analytics, Templates, Programmes)
-///   keep their original full-screen presentation with no bottom nav.
+///   Deeper routes that the shell also wraps (Analytics, Templates, Programmes,
+///   Clients) keep their original full-screen presentation with no bottom nav.
 /// - **Tablet / Desktop** (`>= 600`): a persistent labeled [DesktopNavRail] on
 ///   the left with the page content beside it. Screens that provide a bespoke
 ///   two-pane "power layout" fill the pane; the rest are centred at a readable
 ///   maximum width rather than stretched.
 class ScaffoldWithNavBar extends StatelessWidget {
-  const ScaffoldWithNavBar({super.key, required this.child});
+  const ScaffoldWithNavBar({super.key, required this.child, this.railFooter});
 
   final Widget child;
+
+  /// Passed straight through to [DesktopNavRail.railFooter]; the router
+  /// supplies the client switcher so this widget stays feature-agnostic.
+  final Widget? railFooter;
 
   static const _navBarHeight = 72.0;
 
@@ -46,7 +50,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
     '/programmes',
   ];
 
-  /// Ctrl+1 … Ctrl+8 jump to the rail destinations in rail order.
+  /// Ctrl+1 … Ctrl+9 jump to the rail destinations in rail order.
   static const _railShortcutKeys = [
     LogicalKeyboardKey.digit1,
     LogicalKeyboardKey.digit2,
@@ -56,6 +60,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
     LogicalKeyboardKey.digit6,
     LogicalKeyboardKey.digit7,
     LogicalKeyboardKey.digit8,
+    LogicalKeyboardKey.digit9,
   ];
 
   @override
@@ -100,6 +105,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                   selectedIndex: _railIndexForLocation(location),
                   onDestinationSelected: (index) =>
                       _onRailDestinationSelected(index, context),
+                  railFooter: railFooter,
                 ),
                 Expanded(child: content),
               ],
@@ -183,18 +189,19 @@ class ScaffoldWithNavBar extends StatelessWidget {
     }
   }
 
-  /// Rail (desktop) flat index across all eight destinations.
-  /// Order: Workout, Cardio, History, Analytics, Heart Rate, Templates,
-  /// Programmes, Settings.
+  /// Rail (desktop) flat index across all nine destinations.
+  /// Order: Workout, Cardio, History, Analytics, Heart Rate, Clients,
+  /// Templates, Programmes, Settings.
   int _railIndexForLocation(String location) {
     if (location.startsWith('/workout')) return 0;
     if (location.startsWith('/cardio')) return 1;
     if (location.startsWith('/history')) return 2;
     if (location.startsWith('/analytics')) return 3;
     if (location.startsWith('/heart-rate')) return 4;
-    if (location.startsWith('/templates')) return 5;
-    if (location.startsWith('/programmes')) return 6;
-    return 7; // settings
+    if (location.startsWith('/clients')) return 5;
+    if (location.startsWith('/templates')) return 6;
+    if (location.startsWith('/programmes')) return 7;
+    return 8; // settings
   }
 
   void _onRailDestinationSelected(int index, BuildContext context) {
@@ -210,10 +217,12 @@ class ScaffoldWithNavBar extends StatelessWidget {
       case 4:
         context.go('/heart-rate');
       case 5:
-        context.go('/templates');
+        context.go('/clients');
       case 6:
-        context.go('/programmes');
+        context.go('/templates');
       case 7:
+        context.go('/programmes');
+      case 8:
         context.go('/settings');
     }
   }

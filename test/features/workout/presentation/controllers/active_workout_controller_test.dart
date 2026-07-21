@@ -8,6 +8,7 @@ import 'package:drift/native.dart';
 import 'package:rep_foundry/core/database/app_database.dart' show AppDatabase;
 import 'package:rep_foundry/core/heart_rate/hr_session_recorder.dart';
 import 'package:rep_foundry/core/providers.dart';
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
@@ -395,6 +396,7 @@ void main() {
             id: 'w-done',
             startedAt: now.subtract(const Duration(hours: 1)),
             completedAt: now,
+            clientId: kSelfClientId,
             updatedAt: now,
           ),
         );
@@ -435,6 +437,7 @@ void main() {
             id: 'w-old',
             startedAt: now.subtract(const Duration(days: 1)),
             completedAt: now.subtract(const Duration(days: 1)),
+            clientId: kSelfClientId,
             updatedAt: now,
           ),
         );

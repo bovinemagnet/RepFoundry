@@ -39,11 +39,16 @@ class DesktopNavRail extends StatelessWidget {
     super.key,
     required this.selectedIndex,
     required this.onDestinationSelected,
+    this.railFooter,
   });
 
   /// Flat index across all grouped destinations followed by Settings (last).
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
+
+  /// Optional widget shown just above the pinned Settings entry. Supplied by
+  /// the router so this core widget stays free of feature dependencies.
+  final Widget? railFooter;
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +88,11 @@ class DesktopNavRail extends StatelessWidget {
             label: s.navHeartRate,
             icon: Icons.favorite_border,
             activeIcon: Icons.favorite,
+          ),
+          RailDestination(
+            label: s.clientsTitle,
+            icon: Icons.groups_outlined,
+            activeIcon: Icons.groups,
           ),
         ],
       ),
@@ -143,6 +153,11 @@ class DesktopNavRail extends StatelessWidget {
             ),
           ),
           Divider(height: 1, thickness: 1, color: cs.outlineVariant),
+          if (railFooter != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(6, 8, 6, 0),
+              child: railFooter,
+            ),
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 6),
             child: _RailItem(

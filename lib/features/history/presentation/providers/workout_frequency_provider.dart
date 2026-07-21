@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 
 /// A single week's workout count for the frequency chart.
 class WeeklyFrequency {
@@ -12,8 +13,12 @@ class WeeklyFrequency {
 /// Provides workout counts grouped by week for the last 12 weeks.
 final workoutFrequencyProvider =
     FutureProvider.autoDispose<List<WeeklyFrequency>>((ref) async {
+  final clientId = (await ref.watch(activeClientProvider.future)).id;
   final repo = ref.watch(workoutRepositoryProvider);
-  final workouts = await repo.getWorkoutHistory(limit: 200);
+  final workouts = await repo.getWorkoutHistory(
+    clientId: clientId,
+    limit: 200,
+  );
 
   final now = DateTime.now();
   // Start of the current week (Monday).

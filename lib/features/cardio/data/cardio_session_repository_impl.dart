@@ -27,24 +27,29 @@ class InMemoryCardioSessionRepository implements CardioSessionRepository {
 
   @override
   Future<List<CardioSession>> getSessionsForExercise(
-    String exerciseId, {
-    int limit = 50,
-  }) async {
+    String exerciseId,
+    String clientId,
+  ) async {
     return _sessions
-        .where((s) => s.exerciseId == exerciseId)
-        .take(limit)
+        .where((s) => s.exerciseId == exerciseId && s.clientId == clientId)
         .toList();
   }
 
   @override
-  Future<List<CardioSession>> getAllSessions() async {
-    return List.unmodifiable(_sessions);
+  Future<List<CardioSession>> getAllSessions(String clientId) async {
+    return List.unmodifiable(
+      _sessions.where((s) => s.clientId == clientId),
+    );
   }
 
   @override
-  Future<CardioSession?> getLastSessionForExercise(String exerciseId) async {
-    final matching =
-        _sessions.where((s) => s.exerciseId == exerciseId).toList();
+  Future<CardioSession?> getLastSessionForExercise(
+    String exerciseId,
+    String clientId,
+  ) async {
+    final matching = _sessions
+        .where((s) => s.exerciseId == exerciseId && s.clientId == clientId)
+        .toList();
     if (matching.isEmpty) return null;
     return matching.last;
   }

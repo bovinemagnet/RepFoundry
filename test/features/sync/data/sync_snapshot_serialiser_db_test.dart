@@ -1,6 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart' as db;
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/stretching/data/drift_stretching_session_repository.dart';
 import 'package:rep_foundry/features/stretching/domain/models/stretching_session.dart';
 import 'package:rep_foundry/features/sync/data/sync_snapshot_serialiser.dart';
@@ -91,6 +92,7 @@ void main() {
       id: id,
       startedAt: DateTime.utc(2026, 4, 30, 9, 0),
       notes: notes,
+      clientId: kSelfClientId,
       updatedAt: updatedAt,
     );
   }
