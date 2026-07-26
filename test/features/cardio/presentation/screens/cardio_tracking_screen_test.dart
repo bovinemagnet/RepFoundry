@@ -128,6 +128,54 @@ void main() {
       expect(find.text('Save Session'), findsNothing);
     });
 
+    testWidgets(
+        'heart rate tile stacks the Connect action below the label on a '
+        'narrow phone', (tester) async {
+      // On a ~411dp phone the icon, help button and Connect button squeezed
+      // the text column to ~140dp, wrapping "Heart Rate Monitor" onto two
+      // lines and the subtitle onto three. Same family as issue #79: the
+      // action moves below the label rather than beside it.
+      final binding = TestWidgetsFlutterBinding.ensureInitialized();
+      binding.platformDispatcher.views.first.physicalSize =
+          const Size(720, 1480);
+      binding.platformDispatcher.views.first.devicePixelRatio = 1.75;
+
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+
+      final title = find.text('Heart Rate Monitor');
+      final connect = find.widgetWithText(FilledButton, 'Connect');
+      expect(title, findsOneWidget);
+      expect(connect, findsOneWidget);
+
+      // Stacked: the Connect button starts below the title, not beside it.
+      expect(
+        tester.getTopLeft(connect).dy,
+        greaterThan(tester.getBottomLeft(title).dy),
+        reason: 'Connect must sit below the label on a narrow phone',
+      );
+
+      // With the full width available the title no longer wraps.
+      expect(tester.getSize(title).height, lessThan(30));
+    });
+
+    testWidgets('heart rate tile keeps Connect beside the label when wide',
+        (tester) async {
+      // Default harness surface is 800dp wide — the side-by-side layout must
+      // be preserved there so tablets/desktop are unchanged.
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+
+      final title = find.text('Heart Rate Monitor');
+      final connect = find.widgetWithText(FilledButton, 'Connect');
+
+      expect(
+        tester.getTopLeft(connect).dx,
+        greaterThan(tester.getBottomRight(title).dx),
+        reason: 'Connect stays beside the label on a wide surface',
+      );
+    });
+
     testWidgets('Connect offers to enable Bluetooth before giving up',
         (tester) async {
       heartRateService.permissionGranted = false;
