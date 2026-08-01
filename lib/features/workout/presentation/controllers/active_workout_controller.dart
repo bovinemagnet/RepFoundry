@@ -227,6 +227,7 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
         exercises: [],
         isLoading: false,
       );
+      ref.read(trainerEventBusProvider).emit(const WorkoutStarted());
 
       // Add each exercise from the template
       final exerciseRepo = ref.read(exerciseRepositoryProvider);
