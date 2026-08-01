@@ -15,6 +15,8 @@ import '../../../heart_rate/presentation/providers/zone_bands_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../../heart_rate/presentation/widgets/health_profile_onboarding.dart';
 import '../../../../core/database/database_provider.dart';
+import '../../../../core/entitlements/entitlement.dart';
+import '../../../../core/entitlements/entitlement_provider.dart';
 import '../../../../core/providers.dart'
     show
         healthSyncServiceProvider,
@@ -52,6 +54,8 @@ class SettingsScreen extends ConsumerWidget {
     final profile =
         ref.watch(healthProfileProvider).value ?? const HealthProfile();
     final zoneConfig = ref.watch(zoneConfigurationProvider);
+    final hasVirtualTrainer =
+        ref.watch(entitlementServiceProvider).has(Entitlement.virtualTrainer);
 
     final s = S.of(context)!;
     final cs = Theme.of(context).colorScheme;
@@ -396,6 +400,22 @@ class SettingsScreen extends ConsumerWidget {
             _SyncRemindersCard(s: s),
 
             const SizedBox(height: 22),
+
+            // ── VIRTUAL TRAINER (entitlement-gated) ──────────────────────
+            if (hasVirtualTrainer) ...[
+              KineticSectionLabel(s.trainerSettingsTitle),
+              const SizedBox(height: 11),
+              _Set2Card(children: [
+                _Set2Row(
+                  icon: Icons.record_voice_over_outlined,
+                  title: s.trainerSettingsEntry,
+                  subtitle: s.trainerSettingsEntrySubtitle,
+                  trailing: _ChevronTrailing(),
+                  onTap: () => context.push('/settings/trainer'),
+                ),
+              ]),
+              const SizedBox(height: 22),
+            ],
 
             // ── DATA ──────────────────────────────────────────────────────
             KineticSectionLabel(s.sectionData),

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../features/body_metrics/presentation/screens/body_metrics_screen.dart';
 import '../features/workout/presentation/screens/active_workout_screen.dart';
 import '../features/history/presentation/screens/history_list_screen.dart';
@@ -20,6 +21,8 @@ import '../features/programmes/presentation/screens/programme_edit_screen.dart';
 import '../features/clients/presentation/screens/client_roster_screen.dart';
 import '../features/clients/presentation/widgets/client_switcher.dart';
 import '../features/clients/presentation/screens/client_detail_screen.dart';
+import '../features/trainer/presentation/providers/coach_bridge.dart';
+import '../features/trainer/presentation/screens/trainer_settings_screen.dart';
 import '../core/widgets/scaffold_with_nav_bar.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -31,9 +34,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       // core tabs surface the bottom nav (see [ScaffoldWithNavBar]); the others
       // keep their original full-screen presentation.
       ShellRoute(
-        builder: (context, state, child) => ScaffoldWithNavBar(
-          railFooter: const ClientSwitcher(),
-          child: child,
+        builder: (context, state, child) => Consumer(
+          builder: (context, ref, _) {
+            // Keeps the coach alive for the life of the app shell, so it
+            // hears every trainer event regardless of which tab is active.
+            ref.watch(coachBridgeProvider(S.of(context)!));
+            return ScaffoldWithNavBar(
+              railFooter: const ClientSwitcher(),
+              child: child,
+            );
+          },
         ),
         routes: [
           GoRoute(
@@ -111,6 +121,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'notifications',
                 builder: (context, state) => const NotificationsScreen(),
+              ),
+              GoRoute(
+                path: 'trainer',
+                builder: (context, state) => const TrainerSettingsScreen(),
               ),
             ],
           ),
