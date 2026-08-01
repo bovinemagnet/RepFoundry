@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../settings/presentation/providers/rest_timer_settings_provider.dart';
+import '../../../trainer/domain/trainer_event.dart';
+import '../../../trainer/presentation/providers/trainer_event_bus.dart';
 
 /// Provider that holds the current rest timer state in seconds remaining.
 /// A value of null means the timer is not running.
@@ -31,13 +33,23 @@ class RestTimerNotifier extends Notifier<int?> {
   void start(int seconds) {
     _timer?.cancel();
     state = seconds;
+    ref
+        .read(trainerEventBusProvider)
+        .emit(RestStarted(duration: Duration(seconds: seconds)));
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (state == null || state! <= 0) {
         t.cancel();
         _completedNaturally = true;
         state = null;
+        ref.read(trainerEventBusProvider).emit(const RestFinished());
       } else {
         state = state! - 1;
+        final remaining = state!;
+        if (remaining >= 1 && remaining <= 3) {
+          ref
+              .read(trainerEventBusProvider)
+              .emit(RestCountdown(secondsLeft: remaining));
+        }
       }
     });
   }
