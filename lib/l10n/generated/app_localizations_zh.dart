@@ -150,6 +150,9 @@ class SZh extends S {
   String get sectionAbout => '关于';
 
   @override
+  String get sectionCoach => 'Coach';
+
+  @override
   String get ageLabel => '年龄';
 
   @override
@@ -2129,9 +2132,6 @@ class SZh extends S {
   @override
   String get trainerVoiceUnavailable =>
       'No speech engine found on this device, so the coach cannot speak.';
-
-  @override
-  String get trainerSettingsEntry => 'Virtual Trainer';
 
   @override
   String get trainerSettingsEntrySubtitle =>

@@ -81,7 +81,15 @@ class TrainerSettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text(s.trainerReviewDisclaimer),
-            onTap: () => showTrainerDisclaimer(context),
+            onTap: () async {
+              // Explicitly declining after having previously accepted
+              // withdraws consent, so revoking is reachable from the UI
+              // rather than only ever being set to true.
+              final accepted = await showTrainerDisclaimer(context);
+              if (accepted == false) {
+                await notifier.revokeDisclaimer();
+              }
+            },
           ),
         ],
       ),

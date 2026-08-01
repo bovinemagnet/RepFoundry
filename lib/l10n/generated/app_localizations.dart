@@ -384,6 +384,12 @@ abstract class S {
   /// **'About'**
   String get sectionAbout;
 
+  /// No description provided for @sectionCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach'**
+  String get sectionCoach;
+
   /// No description provided for @ageLabel.
   ///
   /// In en, this message translates to:
@@ -3935,12 +3941,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'No speech engine found on this device, so the coach cannot speak.'**
   String get trainerVoiceUnavailable;
-
-  /// No description provided for @trainerSettingsEntry.
-  ///
-  /// In en, this message translates to:
-  /// **'Virtual Trainer'**
-  String get trainerSettingsEntry;
 
   /// No description provided for @trainerSettingsEntrySubtitle.
   ///

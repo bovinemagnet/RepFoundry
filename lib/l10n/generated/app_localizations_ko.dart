@@ -150,6 +150,9 @@ class SKo extends S {
   String get sectionAbout => '정보';
 
   @override
+  String get sectionCoach => 'Coach';
+
+  @override
   String get ageLabel => '나이';
 
   @override
@@ -2135,9 +2138,6 @@ class SKo extends S {
   @override
   String get trainerVoiceUnavailable =>
       'No speech engine found on this device, so the coach cannot speak.';
-
-  @override
-  String get trainerSettingsEntry => 'Virtual Trainer';
 
   @override
   String get trainerSettingsEntrySubtitle =>

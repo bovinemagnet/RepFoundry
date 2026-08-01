@@ -38,9 +38,15 @@ class TrainerSettings {
 }
 
 class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
+  /// Every mutator awaits this before touching `state`, so a write landing
+  /// before the initial `SharedPreferences` load resolves is never clobbered
+  /// by that load completing afterwards. Mirrors the same guard in
+  /// `UnlockedEntitlementsNotifier`.
+  Future<void>? _loading;
+
   @override
   TrainerSettings build() {
-    Future.microtask(_load);
+    _loading = _load();
     return const TrainerSettings();
   }
 
@@ -60,6 +66,7 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
   /// Enabling is refused until the safety notice has been accepted, so the
   /// gate cannot be bypassed by toggling the switch.
   Future<void> setEnabled(bool value) async {
+    await _loading;
     if (value && !state.disclaimerAccepted) return;
     state = state.copyWith(enabled: value);
     final prefs = await SharedPreferences.getInstance();
@@ -67,24 +74,28 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
   }
 
   Future<void> setCountdowns(bool value) async {
+    await _loading;
     state = state.copyWith(countdownsEnabled: value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('trainer_countdowns', value);
   }
 
   Future<void> setEncouragement(bool value) async {
+    await _loading;
     state = state.copyWith(encouragementEnabled: value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('trainer_encouragement', value);
   }
 
   Future<void> setSpeechRate(double value) async {
+    await _loading;
     state = state.copyWith(speechRate: value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('trainer_speech_rate', value);
   }
 
   Future<void> acceptDisclaimer() async {
+    await _loading;
     state = state.copyWith(disclaimerAccepted: true);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('trainer_disclaimer_accepted', true);
@@ -92,6 +103,7 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
 
   /// Revoking also silences the coach: consent and speech move together.
   Future<void> revokeDisclaimer() async {
+    await _loading;
     state = state.copyWith(disclaimerAccepted: false, enabled: false);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('trainer_disclaimer_accepted', false);

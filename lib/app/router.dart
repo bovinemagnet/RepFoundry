@@ -38,7 +38,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           builder: (context, ref, _) {
             // Keeps the coach alive for the life of the app shell, so it
             // hears every trainer event regardless of which tab is active.
-            ref.watch(coachBridgeProvider(S.of(context)!));
+            // `coachBridgeProvider` is a single non-family instance; pushing
+            // the localisations instance in via the setter on every build
+            // (rather than keying the provider on it) means a locale change
+            // updates the existing subscription instead of leaking a second,
+            // still-listening bridge.
+            ref.read(coachBridgeProvider).strings = S.of(context)!;
             return ScaffoldWithNavBar(
               railFooter: const ClientSwitcher(),
               child: child,

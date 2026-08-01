@@ -17,18 +17,25 @@ final Map<String, PhraseBuilder> phraseResolvers = {
   'coachSteadyPr1': (s, _) => s.coachSteadyPr1,
   'coachSteadyPr2': (s, _) => s.coachSteadyPr2,
   'coachSteadyPr3': (s, _) => s.coachSteadyPr3,
+  // `as int?` rather than `! as int`: a missing/mistyped arg falls back to 0
+  // instead of throwing inside a stream listener. Unreachable with the
+  // current pack (CoachingEngine always supplies the matching arg for these
+  // keys), but speech-time is the wrong place to discover a mismatch.
   'coachSteadyCountdown1': (s, a) =>
-      s.coachSteadyCountdown1(a['secondsLeft']! as int),
+      s.coachSteadyCountdown1(a['secondsLeft'] as int? ?? 0),
   'coachSteadyCountdown2': (s, a) =>
-      s.coachSteadyCountdown2(a['secondsLeft']! as int),
+      s.coachSteadyCountdown2(a['secondsLeft'] as int? ?? 0),
   'coachSteadyCountdown3': (s, a) =>
-      s.coachSteadyCountdown3(a['secondsLeft']! as int),
+      s.coachSteadyCountdown3(a['secondsLeft'] as int? ?? 0),
   'coachSteadyRestDone1': (s, _) => s.coachSteadyRestDone1,
   'coachSteadyRestDone2': (s, _) => s.coachSteadyRestDone2,
   'coachSteadyRestDone3': (s, _) => s.coachSteadyRestDone3,
-  'coachSteadyFinish1': (s, a) => s.coachSteadyFinish1(a['totalSets']! as int),
-  'coachSteadyFinish2': (s, a) => s.coachSteadyFinish2(a['totalSets']! as int),
-  'coachSteadyFinish3': (s, a) => s.coachSteadyFinish3(a['totalSets']! as int),
+  'coachSteadyFinish1': (s, a) =>
+      s.coachSteadyFinish1(a['totalSets'] as int? ?? 0),
+  'coachSteadyFinish2': (s, a) =>
+      s.coachSteadyFinish2(a['totalSets'] as int? ?? 0),
+  'coachSteadyFinish3': (s, a) =>
+      s.coachSteadyFinish3(a['totalSets'] as int? ?? 0),
 };
 
 String? resolvePhrase(S s, String key, Map<String, Object> args) {

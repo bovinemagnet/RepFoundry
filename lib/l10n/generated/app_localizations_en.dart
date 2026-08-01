@@ -152,6 +152,9 @@ class SEn extends S {
   String get sectionAbout => 'About';
 
   @override
+  String get sectionCoach => 'Coach';
+
+  @override
   String get ageLabel => 'Age';
 
   @override
@@ -2183,9 +2186,6 @@ class SEn extends S {
   @override
   String get trainerVoiceUnavailable =>
       'No speech engine found on this device, so the coach cannot speak.';
-
-  @override
-  String get trainerSettingsEntry => 'Virtual Trainer';
 
   @override
   String get trainerSettingsEntrySubtitle =>

@@ -116,6 +116,36 @@ void main() {
     expect(speechService.spoken, hasLength(1));
   });
 
+  testWidgets(
+      'reviewing the disclaimer and declining it revokes consent and '
+      'disables the trainer', (tester) async {
+    // Gives revokeDisclaimer() a real UI path to be reached from: previously
+    // "Review safety notice" discarded the sheet's result entirely.
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    // Accept once via the master switch, as in the earlier test.
+    await tester.tap(find.widgetWithText(SwitchListTile, 'Enable coach'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('I understand'));
+    await tester.pumpAndSettle();
+    expect(findEnableSwitch(tester).value, isTrue);
+
+    // Now review the notice again and decline it.
+    await tester.tap(find.text('Review safety notice'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Not now'));
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TrainerSettingsScreen)),
+    );
+    final settings = container.read(trainerSettingsProvider);
+    expect(settings.disclaimerAccepted, isFalse);
+    expect(settings.enabled, isFalse);
+    expect(findEnableSwitch(tester).value, isFalse);
+  });
+
   group('SettingsScreen entitlement gate', () {
     const packageInfoChannel =
         MethodChannel('dev.fluttercommunity.plus/package_info');
@@ -172,7 +202,32 @@ void main() {
       await tester.pumpWidget(buildSettingsScreen(_NeverEntitled()));
       await tester.pumpAndSettle();
 
-      expect(find.text('Virtual Trainer'), findsNothing);
+      // The trainer section sits below several others in a lazily-built
+      // ListView, so an assertion without scrolling would pass whether or
+      // not the gate actually works (the tile simply wouldn't be mounted
+      // yet either way). A single scroll straight to a distant target (e.g.
+      // the footer) is *also* not a reliable check: the sliver drops
+      // far-off-screen children once scrolled past their cache extent, so a
+      // broken gate's tile could be built, then unmounted again by the time
+      // the scroll settles further down — indistinguishable from never
+      // having been built at all. Instead, check at every small step of the
+      // scroll, so the tile is caught the moment it would enter the
+      // viewport/cache if the gate were broken.
+      final scrollable = find.byType(Scrollable).first;
+      var sawTile = false;
+      for (var i = 0; i < 25 && !sawTile; i++) {
+        sawTile = find.text('Virtual Trainer').evaluate().isNotEmpty ||
+            find.text('COACH').evaluate().isNotEmpty;
+        await tester.drag(scrollable, const Offset(0, -150));
+        await tester.pump();
+      }
+      sawTile = sawTile ||
+          find.text('Virtual Trainer').evaluate().isNotEmpty ||
+          find.text('COACH').evaluate().isNotEmpty;
+
+      expect(sawTile, isFalse,
+          reason: 'the trainer tile must never be reachable, at any scroll '
+              'position, while the entitlement is not held');
     });
 
     testWidgets('shows the trainer tile when entitled', (tester) async {
@@ -186,7 +241,8 @@ void main() {
         scrollable: scrollable,
       );
 
-      expect(find.text('Virtual Trainer'), findsWidgets);
+      expect(find.text('Virtual Trainer'), findsOneWidget);
+      expect(find.text('COACH'), findsOneWidget);
     });
   });
 }

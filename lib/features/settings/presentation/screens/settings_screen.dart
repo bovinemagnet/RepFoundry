@@ -401,14 +401,14 @@ class SettingsScreen extends ConsumerWidget {
 
             const SizedBox(height: 22),
 
-            // ── VIRTUAL TRAINER (entitlement-gated) ──────────────────────
+            // ── COACH (entitlement-gated) ─────────────────────────────────
             if (hasVirtualTrainer) ...[
-              KineticSectionLabel(s.trainerSettingsTitle),
+              KineticSectionLabel(s.sectionCoach),
               const SizedBox(height: 11),
               _Set2Card(children: [
                 _Set2Row(
                   icon: Icons.record_voice_over_outlined,
-                  title: s.trainerSettingsEntry,
+                  title: s.trainerSettingsTitle,
                   subtitle: s.trainerSettingsEntrySubtitle,
                   trailing: _ChevronTrailing(),
                   onTap: () => context.push('/settings/trainer'),

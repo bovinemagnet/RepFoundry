@@ -150,6 +150,9 @@ class SJa extends S {
   String get sectionAbout => 'このアプリについて';
 
   @override
+  String get sectionCoach => 'Coach';
+
+  @override
   String get ageLabel => '年齢';
 
   @override
@@ -2136,9 +2139,6 @@ class SJa extends S {
   @override
   String get trainerVoiceUnavailable =>
       'No speech engine found on this device, so the coach cannot speak.';
-
-  @override
-  String get trainerSettingsEntry => 'Virtual Trainer';
 
   @override
   String get trainerSettingsEntrySubtitle =>

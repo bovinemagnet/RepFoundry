@@ -7,11 +7,16 @@ Future<bool?> showTrainerDisclaimer(BuildContext context) {
   return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     builder: (context) {
       final s = S.of(context)!;
-      return SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+      // SingleChildScrollView so a long body at a large text scale on a
+      // short viewport scrolls rather than pushing the accept/decline
+      // buttons off-screen — this sheet is the one gate the whole feature
+      // depends on, so it must stay reachable at any size.
+      return Padding(
+        padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

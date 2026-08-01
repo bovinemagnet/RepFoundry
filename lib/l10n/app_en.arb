@@ -102,6 +102,7 @@
   "sectionRestTimer": "Rest Timer",
   "sectionData": "Data",
   "sectionAbout": "About",
+  "sectionCoach": "Coach",
 
   "ageLabel": "Age",
   "ageSubtitleSet": "{age} years (max HR: {maxHr} bpm)",
@@ -1015,6 +1016,5 @@
   "trainerEncouragement": "Encouragement",
   "trainerReviewDisclaimer": "Review safety notice",
   "trainerVoiceUnavailable": "No speech engine found on this device, so the coach cannot speak.",
-  "trainerSettingsEntry": "Virtual Trainer",
   "trainerSettingsEntrySubtitle": "Your coach's voice, persona, and safety notice."
 }
