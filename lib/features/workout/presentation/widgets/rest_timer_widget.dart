@@ -8,6 +8,7 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../settings/presentation/providers/rest_timer_settings_provider.dart';
 import '../../../trainer/domain/trainer_event.dart';
+import '../../../trainer/presentation/providers/coach_announcements.dart';
 import '../../../trainer/presentation/providers/trainer_event_bus.dart';
 
 /// Provider that holds the current rest timer state in seconds remaining.
@@ -89,7 +90,10 @@ class _RestTimerWidgetState extends ConsumerState<RestTimerWidget> {
     if (settings.vibrationEnabled) {
       HapticFeedback.heavyImpact();
     }
-    if (settings.soundEnabled) {
+    // The chime takes exclusive audio focus and would cut the coach off
+    // mid-sentence, so it stands down whenever the coach announces rest end
+    // itself. Vibration is unaffected — it does not contend for audio.
+    if (settings.soundEnabled && !ref.read(coachAnnouncesRestEndProvider)) {
       _audioPlayer?.play(AssetSource('sounds/timer_complete.wav'));
     }
   }
