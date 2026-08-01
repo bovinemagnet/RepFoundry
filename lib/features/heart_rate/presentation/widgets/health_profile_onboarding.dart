@@ -61,38 +61,53 @@ class _HealthProfileOnboardingState
   @override
   Widget build(BuildContext context) {
     final s = S.of(context)!;
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+    final theme = Theme.of(context);
+    // The app theme draws fields as a fill with no enabled border, and that
+    // fill is nearly the same colour as this sheet — leaving an unfocused
+    // field looking like plain text. Give them a visible outline instead.
+    final outlined = theme.copyWith(
+      inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+        ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  s.onboardingTitle,
-                  style: Theme.of(context).textTheme.titleLarge,
+    );
+    return Theme(
+      data: outlined,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 24,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    s.onboardingTitle,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                 ),
-              ),
-              Text(
-                s.onboardingStepOf(_step + 1, 4),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          LinearProgressIndicator(value: (_step + 1) / 4),
-          const SizedBox(height: 20),
-          _buildStep(),
-          const SizedBox(height: 20),
-          _buildNav(),
-        ],
+                Text(
+                  s.onboardingStepOf(_step + 1, 4),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            LinearProgressIndicator(value: (_step + 1) / 4),
+            const SizedBox(height: 20),
+            _buildStep(),
+            const SizedBox(height: 20),
+            _buildNav(),
+          ],
+        ),
       ),
     );
   }
@@ -126,7 +141,6 @@ class _HealthProfileOnboardingState
           controller: _ageController,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          autofocus: true,
           decoration: InputDecoration(
             labelText: s.ageLabel,
             hintText: s.ageHint,

@@ -190,6 +190,63 @@ void main() {
     );
 
     testWidgets(
+      'extended FAB clears the last ADD SET button at the end of the list',
+      (tester) async {
+        // On a 411dp phone the extended "Add Exercise" FAB floats over the
+        // list. That is expected mid-scroll, but once scrolled to the end the
+        // bottom padding must keep the last ADD SET button tappable rather
+        // than hidden beneath the FAB.
+        final binding = TestWidgetsFlutterBinding.ensureInitialized();
+        binding.platformDispatcher.views.first.physicalSize =
+            const Size(720, 1480);
+        binding.platformDispatcher.views.first.devicePixelRatio = 1.75;
+        addTearDown(() {
+          binding.platformDispatcher.views.first.resetPhysicalSize();
+          binding.platformDispatcher.views.first.resetDevicePixelRatio();
+        });
+
+        await tester.pumpWidget(buildScreen());
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Start Workout'));
+        await tester.pumpAndSettle();
+
+        final element = tester.element(find.byType(ActiveWorkoutScreen));
+        final container = ProviderScope.containerOf(element);
+        final notifier =
+            container.read(activeWorkoutControllerProvider.notifier);
+
+        for (var i = 0; i < 4; i++) {
+          await notifier.addExercise(makeExercise('ex-$i', 'Exercise $i'));
+        }
+        await tester.pumpAndSettle();
+
+        // Scroll to the very end of the list.
+        final state = tester.state<ActiveWorkoutScreenState>(
+          find.byType(ActiveWorkoutScreen),
+        );
+        state.scrollController
+            .jumpTo(state.scrollController.position.maxScrollExtent);
+        await tester.pumpAndSettle();
+
+        final fab = find.byType(FloatingActionButton);
+        expect(fab, findsOneWidget);
+
+        final addSetButtons = find.text('ADD SET');
+        expect(addSetButtons, findsWidgets);
+
+        // The last ADD SET button must not sit underneath the FAB.
+        final fabRect = tester.getRect(fab);
+        final lastAddSet = tester.getRect(addSetButtons.last);
+        expect(
+          fabRect.overlaps(lastAddSet),
+          isFalse,
+          reason: 'FAB $fabRect must not cover ADD SET $lastAddSet',
+        );
+      },
+    );
+
+    testWidgets(
       'handleAddExercise_scrollsNewExerciseToTop_afterAdd',
       (tester) async {
         await tester.pumpWidget(buildScreen());

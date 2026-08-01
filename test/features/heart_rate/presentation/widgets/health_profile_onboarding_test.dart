@@ -60,6 +60,46 @@ void main() {
       expect(find.text('Age'), findsOneWidget);
     });
 
+    testWidgets('does not open the keyboard over the sheet on step 1',
+        (tester) async {
+      // The age field used to autofocus, so arriving on the Heart Rate tab
+      // raised the numeric keyboard immediately and it covered the sheet
+      // including the Skip/Next buttons. The sheet must be readable first.
+      await tester.pumpWidget(buildApp());
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      final ageField = tester.widget<TextField>(find.byType(TextField));
+      expect(ageField.autofocus, isFalse);
+
+      final focus = ageField.focusNode;
+      expect(focus?.hasFocus ?? false, isFalse);
+    });
+
+    testWidgets('age field is visibly outlined when unfocused', (tester) async {
+      // The app theme uses enabledBorder: BorderSide.none with a filled
+      // background, and that fill is nearly identical to the bottom sheet's
+      // surface — so an unfocused field reads as plain text with no hint that
+      // it can be tapped. Autofocus used to mask this. The sheet must give its
+      // fields a visible outline in the enabled state.
+      await tester.pumpWidget(buildApp());
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      final decorator = tester.widget<InputDecorator>(
+        find.byType(InputDecorator).first,
+      );
+      final enabled = decorator.decoration.enabledBorder;
+
+      expect(enabled, isNotNull);
+      expect(
+        enabled!.borderSide.style,
+        BorderStyle.solid,
+        reason: 'unfocused field needs a visible outline',
+      );
+      expect(enabled.borderSide.width, greaterThan(0));
+    });
+
     testWidgets('navigates through all 4 steps', (tester) async {
       await tester.pumpWidget(buildApp());
       await tester.tap(find.text('Open'));

@@ -330,53 +330,48 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
         borderRadius: BorderRadius.circular(22),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: cs.primary.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(13),
+      child: _HrConnectPrompt(
+        icon: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: cs.primary.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(13),
+          ),
+          child: Icon(Icons.bluetooth, color: cs.primary, size: 22),
+        ),
+        label: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              s.heartRateMonitorCard,
+              style: KineticText.display(
+                size: 15,
+                letterSpacing: -0.2,
+                color: cs.onSurface,
+              ),
             ),
-            child: Icon(Icons.bluetooth, color: cs.primary, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  s.heartRateMonitorCard,
-                  style: KineticText.display(
-                    size: 15,
-                    letterSpacing: -0.2,
-                    color: cs.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  s.heartRateMonitorSubtitle,
-                  style: GoogleFonts.manrope(
-                    fontSize: 12,
-                    color: cs.onSurfaceVariant,
-                  ),
-                ),
-              ],
+            const SizedBox(height: 2),
+            Text(
+              s.heartRateMonitorSubtitle,
+              style: GoogleFonts.manrope(
+                fontSize: 12,
+                color: cs.onSurfaceVariant,
+              ),
             ),
-          ),
-          IconButton(
-            icon: Icon(Icons.help_outline, color: cs.onSurfaceVariant),
-            tooltip: s.setupGuide,
-            onPressed: () => showHrSetupGuide(context),
-          ),
-          FilledButton.tonal(
-            onPressed: cardioState.isSaving
-                ? null
-                : () => _showHrDevicePicker(controller),
-            child: Text(s.connect),
-          ),
-        ],
+          ],
+        ),
+        help: IconButton(
+          icon: Icon(Icons.help_outline, color: cs.onSurfaceVariant),
+          tooltip: s.setupGuide,
+          onPressed: () => showHrSetupGuide(context),
+        ),
+        action: FilledButton.tonal(
+          onPressed: cardioState.isSaving
+              ? null
+              : () => _showHrDevicePicker(controller),
+          child: Text(s.connect),
+        ),
       ),
     );
   }
@@ -604,6 +599,68 @@ class _HeroTimer extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+// ── Heart rate connect prompt ────────────────────────────────────────────────
+
+/// Lays out the BLE connect tile: icon + label with the help and Connect
+/// actions beside them. On a narrow phone the actions would squeeze the label
+/// column to about a third of the width, wrapping "Heart Rate Monitor" over
+/// several lines (issue #79 family), so below [_stackBelowWidth] the actions
+/// move onto their own line and the label gets the full width.
+class _HrConnectPrompt extends StatelessWidget {
+  const _HrConnectPrompt({
+    required this.icon,
+    required this.label,
+    required this.help,
+    required this.action,
+  });
+
+  final Widget icon;
+  final Widget label;
+  final Widget help;
+  final Widget action;
+
+  /// Below this the icon, label and both actions no longer fit on one line
+  /// without wrapping the label.
+  static const _stackBelowWidth = 420.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final labelRow = Row(
+          children: [
+            icon,
+            const SizedBox(width: 14),
+            Expanded(child: label),
+          ],
+        );
+
+        if (constraints.maxWidth >= _stackBelowWidth) {
+          return Row(
+            children: [
+              Expanded(child: labelRow),
+              help,
+              action,
+            ],
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            labelRow,
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [help, action],
+            ),
+          ],
+        );
+      },
     );
   }
 }
