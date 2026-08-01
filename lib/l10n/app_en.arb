@@ -241,6 +241,8 @@
   "aboutFeatureCardio": "GPS-tracked cardio sessions",
   "aboutBuiltWith": "Built with Flutter",
   "aboutViewLicences": "Open-source licences",
+  "betaUnlockVirtualTrainer": "Unlock Virtual Trainer (beta)",
+  "betaUnlockVirtualTrainerSubtitle": "Enables the audio coaching companion while it is in beta.",
 
   "heartRateTitle": "Heart Rate",
   "connectHrMonitor": "Connect HR Monitor",

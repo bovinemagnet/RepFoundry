@@ -422,6 +422,13 @@ class SEn extends S {
   String get aboutViewLicences => 'Open-source licences';
 
   @override
+  String get betaUnlockVirtualTrainer => 'Unlock Virtual Trainer (beta)';
+
+  @override
+  String get betaUnlockVirtualTrainerSubtitle =>
+      'Enables the audio coaching companion while it is in beta.';
+
+  @override
   String get heartRateTitle => 'Heart Rate';
 
   @override

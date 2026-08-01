@@ -410,6 +410,13 @@ class SKo extends S {
   String get aboutViewLicences => '오픈소스 라이선스';
 
   @override
+  String get betaUnlockVirtualTrainer => 'Unlock Virtual Trainer (beta)';
+
+  @override
+  String get betaUnlockVirtualTrainerSubtitle =>
+      'Enables the audio coaching companion while it is in beta.';
+
+  @override
   String get heartRateTitle => '심박수';
 
   @override

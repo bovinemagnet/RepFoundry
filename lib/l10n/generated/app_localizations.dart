@@ -876,6 +876,18 @@ abstract class S {
   /// **'Open-source licences'**
   String get aboutViewLicences;
 
+  /// No description provided for @betaUnlockVirtualTrainer.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Virtual Trainer (beta)'**
+  String get betaUnlockVirtualTrainer;
+
+  /// No description provided for @betaUnlockVirtualTrainerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enables the audio coaching companion while it is in beta.'**
+  String get betaUnlockVirtualTrainerSubtitle;
+
   /// No description provided for @heartRateTitle.
   ///
   /// In en, this message translates to:

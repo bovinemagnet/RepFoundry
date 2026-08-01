@@ -410,6 +410,13 @@ class SZh extends S {
   String get aboutViewLicences => '开源许可证';
 
   @override
+  String get betaUnlockVirtualTrainer => 'Unlock Virtual Trainer (beta)';
+
+  @override
+  String get betaUnlockVirtualTrainerSubtitle =>
+      'Enables the audio coaching companion while it is in beta.';
+
+  @override
   String get heartRateTitle => '心率';
 
   @override

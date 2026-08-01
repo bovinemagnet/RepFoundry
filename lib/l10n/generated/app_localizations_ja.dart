@@ -411,6 +411,13 @@ class SJa extends S {
   String get aboutViewLicences => 'オープンソースライセンス';
 
   @override
+  String get betaUnlockVirtualTrainer => 'Unlock Virtual Trainer (beta)';
+
+  @override
+  String get betaUnlockVirtualTrainerSubtitle =>
+      'Enables the audio coaching companion while it is in beta.';
+
+  @override
   String get heartRateTitle => '心拍数';
 
   @override
