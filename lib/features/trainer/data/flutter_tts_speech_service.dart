@@ -18,10 +18,13 @@ class FlutterTtsSpeechService implements SpeechService {
 
   bool _configured = false;
   SpeechPriority? _currentPriority;
+  int _speechGeneration = 0;
 
+  /// Runs one-off setup. Left un-flagged until every step succeeds, so a
+  /// transient failure (engine not yet connected, etc.) is retried on the
+  /// next call rather than permanently disabling ducking for this object.
   Future<void> _configure() async {
     if (_configured) return;
-    _configured = true;
 
     await _tts.setSpeechRate(_speechRate);
     await _tts.awaitSpeakCompletion(true);
@@ -34,6 +37,8 @@ class FlutterTtsSpeechService implements SpeechService {
       IosTextToSpeechAudioMode.spokenAudio,
     );
     await _tts.setQueueMode(0);
+
+    _configured = true;
   }
 
   @override
@@ -41,6 +46,11 @@ class FlutterTtsSpeechService implements SpeechService {
     String text, {
     SpeechPriority priority = SpeechPriority.encouragement,
   }) async {
+    // Identifies this call's turn at holding `_currentPriority`. Only
+    // assigned once this call has actually taken over speech, so a
+    // pre-empted call's `finally` below can tell whether a newer call has
+    // since taken over before clearing the field.
+    int? generation;
     try {
       await _configure();
 
@@ -52,6 +62,7 @@ class FlutterTtsSpeechService implements SpeechService {
         await _tts.stop();
       }
 
+      generation = ++_speechGeneration;
       _currentPriority = priority;
       // `focus: true` requests transient, duckable audio focus on Android
       // (AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK); it is ignored on other
@@ -61,7 +72,13 @@ class FlutterTtsSpeechService implements SpeechService {
     } catch (e) {
       developer.log('Trainer speech failed', name: 'trainer', error: e);
     } finally {
-      _currentPriority = null;
+      // Only clear if no later call has already taken over — otherwise a
+      // cue cancelled by a higher-priority interruption would clobber the
+      // interrupting cue's still-in-flight priority once its own cancelled
+      // await resolves.
+      if (generation != null && generation == _speechGeneration) {
+        _currentPriority = null;
+      }
     }
   }
 
