@@ -6,11 +6,22 @@ import '../providers/coach_bridge.dart';
 import '../providers/trainer_settings_provider.dart';
 import '../widgets/trainer_disclaimer_sheet.dart';
 
-class TrainerSettingsScreen extends ConsumerWidget {
+class TrainerSettingsScreen extends ConsumerStatefulWidget {
   const TrainerSettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TrainerSettingsScreen> createState() =>
+      _TrainerSettingsScreenState();
+}
+
+class _TrainerSettingsScreenState extends ConsumerState<TrainerSettingsScreen> {
+  /// The rate being dragged right now. Held locally so the slider tracks the
+  /// thumb without persisting — and so recreating the TTS engine — on every
+  /// one of the drag's many intermediate values.
+  double? _draggingRate;
+
+  @override
+  Widget build(BuildContext context) {
     final s = S.of(context)!;
     final settings = ref.watch(trainerSettingsProvider);
     final notifier = ref.read(trainerSettingsProvider.notifier);
@@ -56,15 +67,23 @@ class TrainerSettingsScreen extends ConsumerWidget {
           ListTile(
             title: Text(s.trainerSpeechRate),
             subtitle: Slider(
-              value: settings.speechRate,
+              value: _draggingRate ?? settings.speechRate,
               min: 0.25,
               max: 1.0,
               divisions: 15,
-              onChanged: (value) => notifier.setSpeechRate(value),
+              // Persisting on every intermediate value would write to
+              // preferences and tear down and rebuild the TTS engine up to
+              // sixteen times per drag, each teardown calling stop() and so
+              // cutting the coach off mid-sentence. The drag stays visually
+              // live; only the final value is committed.
+              onChanged: (value) => setState(() => _draggingRate = value),
+              onChangeEnd: (value) async {
+                await notifier.setSpeechRate(value);
+                if (mounted) setState(() => _draggingRate = null);
+              },
             ),
             trailing: TextButton(
-              onPressed: () =>
-                  ref.read(speechServiceProvider).speak(s.trainerTestPhrase),
+              onPressed: () => _testVoice(context, settings, notifier, s),
               child: Text(s.trainerTestVoice),
             ),
           ),
@@ -102,6 +121,23 @@ class TrainerSettingsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  /// Consent must precede speech, here as everywhere else: the test phrase is
+  /// still the coach's voice, so an entitled user who has never seen the
+  /// safety notice must see it first and accept it before the device speaks.
+  Future<void> _testVoice(
+    BuildContext context,
+    TrainerSettings settings,
+    TrainerSettingsNotifier notifier,
+    S s,
+  ) async {
+    if (!settings.disclaimerAccepted) {
+      final accepted = await showTrainerDisclaimer(context);
+      if (accepted != true) return;
+      await notifier.acceptDisclaimer();
+    }
+    await ref.read(speechServiceProvider).speak(s.trainerTestPhrase);
   }
 
   Future<void> _confirmWithdraw(

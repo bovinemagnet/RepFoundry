@@ -106,14 +106,92 @@ void main() {
     expect(findEnableSwitch(tester).value, isTrue);
   });
 
-  testWidgets('Test voice speaks exactly one phrase', (tester) async {
+  testWidgets('Test voice stays silent until the safety notice is accepted',
+      (tester) async {
+    // Regression: the tile is gated on entitlement, not consent, so an
+    // entitled user who had never seen the notice could make the device
+    // speak straight from settings — the one hole in the invariant that the
+    // coach never speaks before the disclaimer is accepted.
     await tester.pumpWidget(buildScreen());
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Test voice'));
     await tester.pumpAndSettle();
 
+    expect(find.text('Before your coach speaks'), findsOneWidget);
+
+    await tester.tap(find.text('Not now'));
+    await tester.pumpAndSettle();
+
+    expect(speechService.spoken, isEmpty);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TrainerSettingsScreen)),
+    );
+    expect(container.read(trainerSettingsProvider).disclaimerAccepted, isFalse);
+  });
+
+  testWidgets('Test voice speaks exactly one phrase once consent is given',
+      (tester) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Test voice'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('I understand'));
+    await tester.pumpAndSettle();
+
     expect(speechService.spoken, hasLength(1));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TrainerSettingsScreen)),
+    );
+    expect(container.read(trainerSettingsProvider).disclaimerAccepted, isTrue);
+  });
+
+  testWidgets(
+      'Test voice does not re-prompt once the notice has already been '
+      'accepted', (tester) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(SwitchListTile, 'Enable coach'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('I understand'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Test voice'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Before your coach speaks'), findsNothing);
+    expect(speechService.spoken, hasLength(1));
+  });
+
+  testWidgets(
+      'dragging the speech-rate slider stays visually live but persists only '
+      'on release', (tester) async {
+    // Regression: persisting on every intermediate value wrote to
+    // preferences and recreated the TTS engine up to sixteen times per drag,
+    // each teardown calling stop() and cutting the coach off mid-sentence.
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TrainerSettingsScreen)),
+    );
+    expect(container.read(trainerSettingsProvider).speechRate, 0.5);
+
+    tester.widget<Slider>(find.byType(Slider)).onChanged!(0.75);
+    await tester.pump();
+
+    expect(tester.widget<Slider>(find.byType(Slider)).value, 0.75,
+        reason: 'the thumb must still track the drag');
+    expect(container.read(trainerSettingsProvider).speechRate, 0.5,
+        reason: 'an intermediate drag value must not be persisted');
+
+    tester.widget<Slider>(find.byType(Slider)).onChangeEnd!(0.75);
+    await tester.pumpAndSettle();
+
+    expect(container.read(trainerSettingsProvider).speechRate, 0.75);
+    expect(tester.widget<Slider>(find.byType(Slider)).value, 0.75);
   });
 
   Future<void> enableViaMasterSwitch(WidgetTester tester) async {

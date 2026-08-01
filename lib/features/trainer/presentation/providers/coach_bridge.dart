@@ -6,10 +6,10 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/entitlements/entitlement.dart';
 import '../../../../core/entitlements/entitlement_provider.dart';
+import '../../../../core/entitlements/entitlement_service.dart';
 import '../../application/coaching_engine.dart';
 import '../../data/flutter_tts_speech_service.dart';
 import '../../data/persona_packs.dart';
-import '../../domain/coaching_cue.dart';
 import '../../domain/speech_service.dart';
 import '../../domain/trainer_event.dart';
 import 'phrase_resolver.dart';
@@ -45,6 +45,25 @@ class CoachBridge {
         unawaited(_ref.read(speechServiceProvider).stop());
       }
     });
+    // Losing the entitlement mid-utterance must silence the coach for the
+    // same reason: revoking access has to take effect now, not after the
+    // sentence in flight finishes.
+    //
+    // Subscribed through the container rather than with `_ref.listen`:
+    // `entitlementServiceProvider` is derived, and a provider-internal
+    // listener on a derived provider is lazy — nothing recomputes it, so the
+    // callback would never fire until some unrelated reader happened to
+    // touch it. A container subscription keeps it eagerly recomputed. It is
+    // closed in [dispose] alongside the event subscription.
+    _entitlementSubscription = _ref.container.listen<EntitlementService>(
+      entitlementServiceProvider,
+      (previous, next) {
+        final had = previous?.has(Entitlement.virtualTrainer) ?? false;
+        if (had && !next.has(Entitlement.virtualTrainer)) {
+          unawaited(_ref.read(speechServiceProvider).stop());
+        }
+      },
+    );
   }
 
   final Ref _ref;
@@ -56,6 +75,7 @@ class CoachBridge {
 
   late final CoachingEngine _engine;
   late final StreamSubscription<TrainerEvent> _subscription;
+  late final ProviderSubscription<EntitlementService> _entitlementSubscription;
 
   void _onEvent(TrainerEvent event) {
     final strings = this.strings;
@@ -71,8 +91,16 @@ class CoachBridge {
 
     if (event is WorkoutStarted) _engine.reset();
 
-    final cue = _engine.onEvent(event, now: DateTime.now());
-    if (cue != null && _allowedBySettings(cue, settings)) {
+    // The toggles go *into* the engine rather than filtering its result: a
+    // cue the user has switched off must not consume a phrase from the
+    // variety bank nor restart the encouragement cooldown.
+    final cue = _engine.onEvent(
+      event,
+      now: DateTime.now(),
+      countdownsEnabled: settings.countdownsEnabled,
+      encouragementEnabled: settings.encouragementEnabled,
+    );
+    if (cue != null) {
       final text = resolvePhrase(strings, cue.phraseKey, cue.args);
       if (text != null) {
         unawaited(
@@ -89,16 +117,9 @@ class CoachBridge {
     }
   }
 
-  bool _allowedBySettings(CoachingCue cue, TrainerSettings settings) {
-    return switch (cue.priority) {
-      SpeechPriority.countdown => settings.countdownsEnabled,
-      SpeechPriority.encouragement => settings.encouragementEnabled,
-      SpeechPriority.milestone || SpeechPriority.safety => true,
-    };
-  }
-
   void dispose() {
     unawaited(_subscription.cancel());
+    _entitlementSubscription.close();
   }
 }
 

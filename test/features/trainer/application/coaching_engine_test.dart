@@ -18,6 +18,8 @@ const _testPersona = Persona(
   },
 );
 
+/// Defaults to a *fixed* cadence so the majority of tests stay deterministic;
+/// the randomised 2–3 default is exercised explicitly in its own group.
 CoachingEngine _engine({
   int encouragementEverySets = 2,
   Duration cooldown = const Duration(seconds: 20),
@@ -26,7 +28,8 @@ CoachingEngine _engine({
       persona: _testPersona,
       random: Random(1),
       encouragementCooldown: cooldown,
-      encouragementEverySets: encouragementEverySets,
+      encouragementMinSets: encouragementEverySets,
+      encouragementMaxSets: encouragementEverySets,
     );
 
 void main() {
@@ -64,6 +67,182 @@ void main() {
 
       expect(first, isNull);
       expect(second, isNotNull);
+    });
+  });
+
+  group('randomised encouragement quota', () {
+    /// Returns how many logged sets it took before the engine first spoke.
+    int setsUntilFirstEncouragement(int seed) {
+      final engine = CoachingEngine(
+        persona: _testPersona,
+        random: Random(seed),
+        encouragementCooldown: Duration.zero,
+      );
+      for (var i = 1; i <= 10; i++) {
+        final cue = engine.onEvent(
+          SetLogged(setNumber: i, isPersonalRecord: false),
+          now: t0.add(Duration(minutes: i)),
+        );
+        if (cue != null) return i;
+      }
+      return -1;
+    }
+
+    test('by default speaks on the 2nd or 3rd set, never sooner or later', () {
+      // Spec §4.4: "roughly every 2nd–3rd logged set (randomised)".
+      final observed = <int>{};
+      for (var seed = 1; seed <= 40; seed++) {
+        observed.add(setsUntilFirstEncouragement(seed));
+      }
+
+      expect(observed.difference({2, 3}), isEmpty,
+          reason: 'the quota must stay inside the 2–3 band, got $observed');
+      expect(observed, containsAll(<int>[2, 3]),
+          reason: 'a fixed cadence would only ever produce one of the two; '
+              'the gap must actually be randomised');
+    });
+
+    test('redraws the gap after each encouragement rather than fixing it once',
+        () {
+      // Two consecutive gaps differing within a single session can only
+      // happen if the quota is redrawn, not chosen once at construction.
+      var sawDifferingGaps = false;
+      for (var seed = 1; seed <= 40 && !sawDifferingGaps; seed++) {
+        final engine = CoachingEngine(
+          persona: _testPersona,
+          random: Random(seed),
+          encouragementCooldown: Duration.zero,
+        );
+        final gaps = <int>[];
+        var sinceCue = 0;
+        for (var i = 1; i <= 12; i++) {
+          sinceCue++;
+          final cue = engine.onEvent(
+            SetLogged(setNumber: i, isPersonalRecord: false),
+            now: t0.add(Duration(minutes: i)),
+          );
+          if (cue != null) {
+            gaps.add(sinceCue);
+            sinceCue = 0;
+          }
+        }
+        if (gaps.toSet().length > 1) sawDifferingGaps = true;
+      }
+
+      expect(sawDifferingGaps, isTrue);
+    });
+
+    test('a min equal to max gives a fixed cadence and draws no randomness',
+        () {
+      // Relied upon by the seeded tests above and below: a fixed cadence must
+      // not perturb the phrase-picking sequence.
+      final engine =
+          _engine(encouragementEverySets: 3, cooldown: Duration.zero);
+
+      expect(
+        engine.onEvent(const SetLogged(setNumber: 1, isPersonalRecord: false),
+            now: t0),
+        isNull,
+      );
+      expect(
+        engine.onEvent(const SetLogged(setNumber: 2, isPersonalRecord: false),
+            now: t0),
+        isNull,
+      );
+      expect(
+        engine.onEvent(const SetLogged(setNumber: 3, isPersonalRecord: false),
+            now: t0),
+        isNotNull,
+      );
+    });
+  });
+
+  group('cue toggles', () {
+    test('a suppressed countdown does not consume a phrase from the bank', () {
+      // The engine — not the caller — owns "whether to speak", so a cue the
+      // user has switched off must leave no trace at all: same phrase bank,
+      // same position in the random sequence.
+      final suppressedFirst = _engine();
+      for (var i = 0; i < 2; i++) {
+        expect(
+          suppressedFirst.onEvent(const RestFinished(),
+              now: t0.add(Duration(seconds: i)), countdownsEnabled: false),
+          isNull,
+        );
+      }
+      final afterSuppression = suppressedFirst.onEvent(
+        const RestFinished(),
+        now: t0.add(const Duration(seconds: 5)),
+      );
+
+      final untouched = _engine();
+      final firstEver = untouched.onEvent(const RestFinished(), now: t0);
+
+      expect(afterSuppression!.phraseKey, firstEver!.phraseKey,
+          reason: 'the two suppressed cues burned phrases from the variety '
+              'bank that the user never heard');
+    });
+
+    test('a suppressed countdown does not restart the encouragement cooldown',
+        () {
+      final engine = _engine(encouragementEverySets: 1);
+
+      // A real encouragement cue at t0 starts the 20-second cooldown.
+      expect(
+        engine.onEvent(const SetLogged(setNumber: 1, isPersonalRecord: false),
+            now: t0),
+        isNotNull,
+      );
+
+      // Rest runs with countdowns switched off, finishing at t0 + 30s.
+      for (final secondsLeft in [3, 2, 1]) {
+        expect(
+          engine.onEvent(
+            RestCountdown(secondsLeft: secondsLeft),
+            now: t0.add(Duration(seconds: 27 + (3 - secondsLeft))),
+            countdownsEnabled: false,
+          ),
+          isNull,
+        );
+      }
+      expect(
+        engine.onEvent(const RestFinished(),
+            now: t0.add(const Duration(seconds: 30)), countdownsEnabled: false),
+        isNull,
+      );
+
+      // The next set lands 35s after the last thing actually spoken, well
+      // past the cooldown — so encouragement is due.
+      final next = engine.onEvent(
+        const SetLogged(setNumber: 2, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 35)),
+      );
+
+      expect(next, isNotNull,
+          reason: 'switching countdowns off must not silently make the coach '
+              'quieter by pushing the cooldown forward on every rest');
+    });
+
+    test('the encouragement toggle suppresses only encouragement cues', () {
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+
+      expect(
+        engine.onEvent(const SetLogged(setNumber: 1, isPersonalRecord: false),
+            now: t0, encouragementEnabled: false),
+        isNull,
+      );
+      expect(
+        engine.onEvent(const SetLogged(setNumber: 2, isPersonalRecord: true),
+            now: t0, encouragementEnabled: false),
+        isNotNull,
+        reason: 'a personal record is a milestone, not encouragement',
+      );
+      expect(
+        engine.onEvent(const RestFinished(),
+            now: t0, encouragementEnabled: false),
+        isNotNull,
+      );
     });
   });
 

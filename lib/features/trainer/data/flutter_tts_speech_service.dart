@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:developer' as developer;
+import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../domain/coaching_cue.dart';
@@ -17,17 +19,33 @@ class FlutterTtsSpeechService implements SpeechService {
   final double _speechRate;
 
   bool _configured = false;
+
+  /// The in-flight configuration run, if any. Two cues arriving before the
+  /// first run finishes must await the same future rather than both driving
+  /// the platform setup — `_configured` alone cannot close that window,
+  /// because it is only set once every step has succeeded.
+  Future<void>? _configuring;
+
   SpeechPriority? _currentPriority;
   int _speechGeneration = 0;
 
   /// Runs one-off setup. Left un-flagged until every step succeeds, so a
   /// transient failure (engine not yet connected, etc.) is retried on the
   /// next call rather than permanently disabling ducking for this object.
-  Future<void> _configure() async {
-    if (_configured) return;
+  Future<void> _configure() {
+    if (_configured) return Future<void>.value();
+    // `whenComplete` clears the memo either way — a failed run must be
+    // retried by the next call rather than permanently memoised as broken —
+    // and its callback runs before any awaiter resumes, so no caller can
+    // observe a stale completed future here.
+    return _configuring ??=
+        _runConfiguration().whenComplete(() => _configuring = null);
+  }
 
+  Future<void> _runConfiguration() async {
     await _tts.setSpeechRate(_speechRate);
     await _tts.awaitSpeakCompletion(true);
+    // Guarded plugin-side to iOS by flutter_tts; a no-op elsewhere.
     await _tts.setIosAudioCategory(
       IosTextToSpeechAudioCategory.playback,
       [
@@ -36,7 +54,14 @@ class FlutterTtsSpeechService implements SpeechService {
       ],
       IosTextToSpeechAudioMode.spokenAudio,
     );
-    await _tts.setQueueMode(0);
+    // Android-only: `setQueueMode` has no platform guard in flutter_tts and
+    // no case in the iOS or macOS plugins, so calling it there throws
+    // MissingPluginException and would abort configuration before a single
+    // word was ever spoken. Ducking on iOS comes from the audio category
+    // set above instead.
+    if (!kIsWeb && Platform.isAndroid) {
+      await _tts.setQueueMode(0);
+    }
 
     _configured = true;
   }

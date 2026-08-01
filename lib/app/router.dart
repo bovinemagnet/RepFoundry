@@ -23,6 +23,8 @@ import '../features/clients/presentation/widgets/client_switcher.dart';
 import '../features/clients/presentation/screens/client_detail_screen.dart';
 import '../features/trainer/presentation/providers/coach_bridge.dart';
 import '../features/trainer/presentation/screens/trainer_settings_screen.dart';
+import '../core/entitlements/entitlement.dart';
+import '../core/entitlements/entitlement_provider.dart';
 import '../core/widgets/scaffold_with_nav_bar.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -129,6 +131,15 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: 'trainer',
+                // The settings tile is entitlement-gated, but the route must
+                // be too: a deep link or a restored location would otherwise
+                // reach the screen without the entitlement being held.
+                redirect: (context, state) {
+                  final entitled = ref
+                      .read(entitlementServiceProvider)
+                      .has(Entitlement.virtualTrainer);
+                  return entitled ? null : '/settings';
+                },
                 builder: (context, state) => const TrainerSettingsScreen(),
               ),
             ],

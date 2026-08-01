@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:mockito/annotations.dart';
@@ -33,6 +34,30 @@ void main() {
     await expectLater(service.speak('hello'), completes);
   });
 
+  test(
+      'still speaks on a platform whose TTS plugin does not implement '
+      'setQueueMode', () async {
+    // Regression: `setQueueMode` is Android-only — the iOS and macOS plugins
+    // have no case for it, so the platform channel answers
+    // FlutterMethodNotImplemented and `invokeMethod` throws
+    // MissingPluginException. Configuring without a platform guard therefore
+    // aborted `_configure()` before it ever reached `speak()`, silencing the
+    // coach permanently on those platforms with no visible symptom.
+    final tts = MockFlutterTts();
+    _stubSuccessfulConfiguration(tts);
+    when(tts.setQueueMode(any)).thenThrow(
+      MissingPluginException(
+        "No implementation found for method setQueueMode on channel flutter_tts",
+      ),
+    );
+    when(tts.speak('hello', focus: true)).thenAnswer((_) async {});
+    final service = FlutterTtsSpeechService(tts: tts);
+
+    await service.speak('hello');
+
+    verify(tts.speak('hello', focus: true)).called(1);
+  });
+
   test('reports unavailable when no languages are returned', () async {
     final tts = MockFlutterTts();
     when(tts.getLanguages).thenAnswer((_) async => <String>[]);
@@ -63,6 +88,32 @@ void main() {
     verify(tts.setIosAudioCategory(any, any, any)).called(1);
     verifyNever(tts.speak('first attempt', focus: true));
     verify(tts.speak('second attempt', focus: true)).called(1);
+  });
+
+  test('concurrent cues share one configuration run rather than repeating it',
+      () {
+    fakeAsync((async) {
+      final tts = MockFlutterTts();
+      _stubSuccessfulConfiguration(tts);
+      final configureGate = Completer<dynamic>();
+      when(tts.setSpeechRate(any)).thenAnswer((_) => configureGate.future);
+      when(tts.speak(any, focus: anyNamed('focus')))
+          .thenAnswer((_) async => null);
+      final service = FlutterTtsSpeechService(tts: tts);
+
+      // Both cues arrive before configuration has finished, so neither can
+      // see `_configured` set yet.
+      unawaited(service.speak('first', priority: SpeechPriority.milestone));
+      unawaited(service.speak('second', priority: SpeechPriority.safety));
+      async.flushMicrotasks();
+
+      configureGate.complete();
+      async.flushMicrotasks();
+
+      verify(tts.setSpeechRate(any)).called(1);
+      verify(tts.awaitSpeakCompletion(any)).called(1);
+      verify(tts.setIosAudioCategory(any, any, any)).called(1);
+    });
   });
 
   test('a higher-priority cue interrupts a lower-priority cue in flight', () {

@@ -13,9 +13,12 @@ class CoachingEngine {
     required Persona persona,
     Random? random,
     this.encouragementCooldown = const Duration(seconds: 20),
-    this.encouragementEverySets = 2,
+    this.encouragementMinSets = 2,
+    this.encouragementMaxSets = 3,
   })  : _persona = persona,
-        _random = random ?? Random();
+        _random = random ?? Random() {
+    _encouragementQuota = _pickEncouragementQuota();
+  }
 
   final Persona _persona;
   final Random _random;
@@ -25,21 +28,37 @@ class CoachingEngine {
   /// about audio coaching, but a missed countdown makes the feature useless.
   final Duration encouragementCooldown;
 
-  /// Encourage on every Nth logged set rather than every one.
-  final int encouragementEverySets;
+  /// Encourage on roughly every 2nd–3rd logged set: the gap is redrawn after
+  /// each encouragement so the coach does not fall into an audible rhythm.
+  /// Set both to the same value for a fixed cadence.
+  final int encouragementMinSets;
+  final int encouragementMaxSets;
 
   final Set<String> _spokenPhrases = {};
   DateTime? _lastSpokenAt;
   int _setsSinceEncouragement = 0;
+  late int _encouragementQuota;
 
   /// Clears per-session state. Call when a workout starts or finishes.
   void reset() {
     _spokenPhrases.clear();
     _lastSpokenAt = null;
     _setsSinceEncouragement = 0;
+    _encouragementQuota = _pickEncouragementQuota();
   }
 
-  CoachingCue? onEvent(TrainerEvent event, {required DateTime now}) {
+  /// Decides whether and what to say.
+  ///
+  /// The user's cue toggles are passed in rather than applied to the result,
+  /// so a suppressed cue never consumes a phrase from the variety bank nor
+  /// restarts the encouragement cooldown. The engine stays the single owner
+  /// of "whether to speak".
+  CoachingCue? onEvent(
+    TrainerEvent event, {
+    required DateTime now,
+    bool countdownsEnabled = true,
+    bool encouragementEnabled = true,
+  }) {
     return switch (event) {
       WorkoutStarted() => _speak(event.kind, SpeechPriority.milestone, now),
       WorkoutFinished(:final totalSets) => _speak(
@@ -50,21 +69,26 @@ class CoachingEngine {
         ),
       SetLogged(isPersonalRecord: true) =>
         _speak(event.kind, SpeechPriority.milestone, now),
-      SetLogged(isPersonalRecord: false) => _onSetLogged(now),
-      RestCountdown(:final secondsLeft) => _speak(
-          event.kind,
-          SpeechPriority.countdown,
-          now,
-          args: {'secondsLeft': secondsLeft},
-        ),
-      RestFinished() => _speak(event.kind, SpeechPriority.countdown, now),
+      SetLogged(isPersonalRecord: false) =>
+        encouragementEnabled ? _onSetLogged(now) : null,
+      RestCountdown(:final secondsLeft) => countdownsEnabled
+          ? _speak(
+              event.kind,
+              SpeechPriority.countdown,
+              now,
+              args: {'secondsLeft': secondsLeft},
+            )
+          : null,
+      RestFinished() => countdownsEnabled
+          ? _speak(event.kind, SpeechPriority.countdown, now)
+          : null,
       RestStarted() => null,
     };
   }
 
   CoachingCue? _onSetLogged(DateTime now) {
     _setsSinceEncouragement++;
-    if (_setsSinceEncouragement < encouragementEverySets) return null;
+    if (_setsSinceEncouragement < _encouragementQuota) return null;
 
     final last = _lastSpokenAt;
     if (last != null && now.difference(last) < encouragementCooldown) {
@@ -76,8 +100,19 @@ class CoachingEngine {
       SpeechPriority.encouragement,
       now,
     );
-    if (cue != null) _setsSinceEncouragement = 0;
+    if (cue != null) {
+      _setsSinceEncouragement = 0;
+      _encouragementQuota = _pickEncouragementQuota();
+    }
     return cue;
+  }
+
+  /// Draws the next encouragement gap. A fixed cadence (min == max) draws
+  /// nothing, so seeding the engine for a phrase-variety test is unaffected.
+  int _pickEncouragementQuota() {
+    final span = encouragementMaxSets - encouragementMinSets;
+    if (span <= 0) return encouragementMinSets;
+    return encouragementMinSets + _random.nextInt(span + 1);
   }
 
   CoachingCue? _speak(

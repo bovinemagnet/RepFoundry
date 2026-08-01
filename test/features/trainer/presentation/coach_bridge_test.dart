@@ -40,6 +40,21 @@ class _SeededTrainerSettingsNotifier extends TrainerSettingsNotifier {
   void forceUpdate(TrainerSettings next) => state = next;
 }
 
+/// Seeds the real entitlement chain synchronously (no `SharedPreferences`)
+/// and exposes [forceUpdate] so a test can revoke an entitlement mid-session.
+/// Overriding `entitlementServiceProvider` directly would pin it to a single
+/// value and so could never exercise the bridge's reaction to a change.
+class _SeededEntitlementsNotifier extends UnlockedEntitlementsNotifier {
+  _SeededEntitlementsNotifier(this._seed);
+
+  final Set<Entitlement> _seed;
+
+  @override
+  Set<Entitlement> build() => _seed;
+
+  void forceUpdate(Set<Entitlement> next) => state = next;
+}
+
 /// A stand-in for [coachBridgeProvider] whose `create` callback each test
 /// overrides, so the engine's [Random] source can be seeded — the real
 /// provider only ever passes `null` (unseeded) in production.
@@ -275,6 +290,79 @@ void main() {
     expect(speechService.stopCount, 1,
         reason: 'the master switch must cut off in-flight speech '
             'immediately, not just prevent the next cue');
+  });
+
+  test('losing the trainer entitlement stops any in-flight speech immediately',
+      () async {
+    final entitlements =
+        _SeededEntitlementsNotifier({Entitlement.virtualTrainer});
+    final container = ProviderContainer(overrides: [
+      speechServiceProvider.overrideWithValue(speechService),
+      trainerSettingsProvider.overrideWith(
+        () => _SeededTrainerSettingsNotifier(
+          const TrainerSettings(enabled: true, disclaimerAccepted: true),
+        ),
+      ),
+      unlockedEntitlementsProvider.overrideWith(() => entitlements),
+      _bridgeUnderTest.overrideWith((ref) {
+        final bridge = CoachBridge(ref, random: Random(1));
+        ref.onDispose(bridge.dispose);
+        return bridge;
+      }),
+    ]);
+    addTearDown(container.dispose);
+
+    final bridge = container.read(_bridgeUnderTest);
+    bridge.strings = lookupS(const Locale('en'));
+    expect(speechService.stopCount, 0);
+
+    // Toggling the beta unlock off in About while the coach is mid-sentence.
+    // `entitlementServiceProvider` is derived, so it recomputes on the next
+    // microtask rather than synchronously with the notifier's write.
+    entitlements.forceUpdate(const {});
+    await Future<void>.delayed(Duration.zero);
+
+    expect(speechService.stopCount, 1,
+        reason: 'revoking access must cut the coach off now, not after the '
+            'sentence in flight finishes');
+  });
+
+  test(
+      'a countdown suppressed by the toggle neither burns a phrase nor '
+      'restarts the encouragement cooldown', () async {
+    // Regression: the bridge used to let the engine record a cue and only
+    // then discard it, so switching rest countdowns off silently made the
+    // coach quieter — every rest pushed the 20-second encouragement cooldown
+    // forward to the moment rest ended.
+    final container = buildContainer(
+      settings: const TrainerSettings(
+        enabled: true,
+        disclaimerAccepted: true,
+        countdownsEnabled: false,
+      ),
+    );
+    final bridge = container.read(_bridgeUnderTest);
+    bridge.strings = lookupS(const Locale('en'));
+
+    final bus = container.read(trainerEventBusProvider);
+    for (final secondsLeft in [3, 2, 1]) {
+      bus.emit(RestCountdown(secondsLeft: secondsLeft));
+      await Future<void>.delayed(Duration.zero);
+    }
+    bus.emit(const RestFinished());
+    await Future<void>.delayed(Duration.zero);
+    expect(speechService.spoken, isEmpty);
+
+    // The encouragement quota is at most three sets, and nothing has actually
+    // been spoken, so the cooldown cannot be in play.
+    for (var setNumber = 1; setNumber <= 3; setNumber++) {
+      bus.emit(SetLogged(setNumber: setNumber, isPersonalRecord: false));
+      await Future<void>.delayed(Duration.zero);
+    }
+
+    expect(speechService.spoken, isNotEmpty,
+        reason: 'the suppressed countdowns must not have moved the cooldown '
+            'forward, or encouragement stays silent for the next 20 seconds');
   });
 
   test(
