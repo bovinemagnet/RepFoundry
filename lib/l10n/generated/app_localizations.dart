@@ -384,6 +384,12 @@ abstract class S {
   /// **'About'**
   String get sectionAbout;
 
+  /// No description provided for @sectionCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach'**
+  String get sectionCoach;
+
   /// No description provided for @ageLabel.
   ///
   /// In en, this message translates to:
@@ -875,6 +881,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Open-source licences'**
   String get aboutViewLicences;
+
+  /// No description provided for @betaUnlockVirtualTrainer.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Virtual Trainer (beta)'**
+  String get betaUnlockVirtualTrainer;
+
+  /// No description provided for @betaUnlockVirtualTrainerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enables the audio coaching companion while it is in beta.'**
+  String get betaUnlockVirtualTrainerSubtitle;
 
   /// No description provided for @heartRateTitle.
   ///
@@ -3701,6 +3719,258 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Health profile saved'**
   String get healthProfileSaved;
+
+  /// No description provided for @coachSteadyStart1.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s get to work. Take your time and move well.'**
+  String get coachSteadyStart1;
+
+  /// No description provided for @coachSteadyStart2.
+  ///
+  /// In en, this message translates to:
+  /// **'Session started. Nice and steady.'**
+  String get coachSteadyStart2;
+
+  /// No description provided for @coachSteadyStart3.
+  ///
+  /// In en, this message translates to:
+  /// **'Good to see you. Let\'s make this one count.'**
+  String get coachSteadyStart3;
+
+  /// No description provided for @coachSteadySet1.
+  ///
+  /// In en, this message translates to:
+  /// **'Good set. Breathe, reset, go again when you\'re ready.'**
+  String get coachSteadySet1;
+
+  /// No description provided for @coachSteadySet2.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s logged. Nice control.'**
+  String get coachSteadySet2;
+
+  /// No description provided for @coachSteadySet3.
+  ///
+  /// In en, this message translates to:
+  /// **'Steady work. Keep that form.'**
+  String get coachSteadySet3;
+
+  /// No description provided for @coachSteadySet4.
+  ///
+  /// In en, this message translates to:
+  /// **'Well done. Take the rest you need.'**
+  String get coachSteadySet4;
+
+  /// No description provided for @coachSteadyPr1.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s a personal record. Excellent work.'**
+  String get coachSteadyPr1;
+
+  /// No description provided for @coachSteadyPr2.
+  ///
+  /// In en, this message translates to:
+  /// **'New best. All that consistency is paying off.'**
+  String get coachSteadyPr2;
+
+  /// No description provided for @coachSteadyPr3.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal record. Take a moment — you earned it.'**
+  String get coachSteadyPr3;
+
+  /// No description provided for @coachSteadyCountdown1.
+  ///
+  /// In en, this message translates to:
+  /// **'{secondsLeft}'**
+  String coachSteadyCountdown1(int secondsLeft);
+
+  /// No description provided for @coachSteadyCountdown2.
+  ///
+  /// In en, this message translates to:
+  /// **'{secondsLeft}…'**
+  String coachSteadyCountdown2(int secondsLeft);
+
+  /// No description provided for @coachSteadyCountdown3.
+  ///
+  /// In en, this message translates to:
+  /// **'{secondsLeft}.'**
+  String coachSteadyCountdown3(int secondsLeft);
+
+  /// No description provided for @coachSteadyRestDone1.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest is up. Go when you\'re ready.'**
+  String get coachSteadyRestDone1;
+
+  /// No description provided for @coachSteadyRestDone2.
+  ///
+  /// In en, this message translates to:
+  /// **'Time. Take your position.'**
+  String get coachSteadyRestDone2;
+
+  /// No description provided for @coachSteadyRestDone3.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s your rest. Next set when you\'re set.'**
+  String get coachSteadyRestDone3;
+
+  /// No description provided for @coachSteadyFinish1.
+  ///
+  /// In en, this message translates to:
+  /// **'Session complete. {totalSets} sets logged. Well done.'**
+  String coachSteadyFinish1(int totalSets);
+
+  /// No description provided for @coachSteadyFinish2.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s the work done — {totalSets} sets. Good session.'**
+  String coachSteadyFinish2(int totalSets);
+
+  /// No description provided for @coachSteadyFinish3.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished. {totalSets} sets in the bank.'**
+  String coachSteadyFinish3(int totalSets);
+
+  /// No description provided for @trainerDisclaimerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before your coach speaks'**
+  String get trainerDisclaimerTitle;
+
+  /// No description provided for @trainerDisclaimerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The coach is a companion to help you stay on track — not a personal trainer, and not medical advice. It does not know your form, your injuries, or your limits. Stop exercising and seek medical help if you feel pain, dizziness, or chest discomfort.'**
+  String get trainerDisclaimerBody;
+
+  /// No description provided for @trainerDisclaimerAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand'**
+  String get trainerDisclaimerAccept;
+
+  /// No description provided for @trainerDisclaimerDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get trainerDisclaimerDecline;
+
+  /// No description provided for @trainerSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Virtual Trainer'**
+  String get trainerSettingsTitle;
+
+  /// No description provided for @trainerEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable coach'**
+  String get trainerEnable;
+
+  /// No description provided for @trainerEnableSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaks encouragement and rest countdowns through your headphones.'**
+  String get trainerEnableSubtitle;
+
+  /// No description provided for @trainerPersona.
+  ///
+  /// In en, this message translates to:
+  /// **'Coaching voice'**
+  String get trainerPersona;
+
+  /// No description provided for @trainerPersonaSteady.
+  ///
+  /// In en, this message translates to:
+  /// **'Steady'**
+  String get trainerPersonaSteady;
+
+  /// No description provided for @trainerPersonaSteadyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Calm and measured'**
+  String get trainerPersonaSteadyDescription;
+
+  /// No description provided for @trainerMoreVoicesComing.
+  ///
+  /// In en, this message translates to:
+  /// **'More voices are on the way.'**
+  String get trainerMoreVoicesComing;
+
+  /// No description provided for @trainerSpeechRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech rate'**
+  String get trainerSpeechRate;
+
+  /// No description provided for @trainerTestVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Test voice'**
+  String get trainerTestVoice;
+
+  /// No description provided for @trainerTestPhrase.
+  ///
+  /// In en, this message translates to:
+  /// **'This is your coach. Good set — take your rest.'**
+  String get trainerTestPhrase;
+
+  /// No description provided for @trainerCountdowns.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest countdowns'**
+  String get trainerCountdowns;
+
+  /// No description provided for @trainerEncouragement.
+  ///
+  /// In en, this message translates to:
+  /// **'Encouragement'**
+  String get trainerEncouragement;
+
+  /// No description provided for @trainerReviewDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Review safety notice'**
+  String get trainerReviewDisclaimer;
+
+  /// No description provided for @trainerVoiceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No speech engine found on this device, so the coach cannot speak.'**
+  String get trainerVoiceUnavailable;
+
+  /// No description provided for @trainerWithdrawConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw consent'**
+  String get trainerWithdrawConsent;
+
+  /// No description provided for @trainerWithdrawConsentConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw consent?'**
+  String get trainerWithdrawConsentConfirmTitle;
+
+  /// No description provided for @trainerWithdrawConsentConfirmContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This turns the coach off and clears your acceptance of the safety notice. You\'ll need to accept it again before the coach can speak.'**
+  String get trainerWithdrawConsentConfirmContent;
+
+  /// No description provided for @trainerWithdrawConsentAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get trainerWithdrawConsentAction;
+
+  /// No description provided for @trainerSettingsEntrySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach\'s voice, persona, and safety notice.'**
+  String get trainerSettingsEntrySubtitle;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

@@ -150,6 +150,9 @@ class SJa extends S {
   String get sectionAbout => 'このアプリについて';
 
   @override
+  String get sectionCoach => 'Coach';
+
+  @override
   String get ageLabel => '年齢';
 
   @override
@@ -409,6 +412,13 @@ class SJa extends S {
 
   @override
   String get aboutViewLicences => 'オープンソースライセンス';
+
+  @override
+  String get betaUnlockVirtualTrainer => 'Unlock Virtual Trainer (beta)';
+
+  @override
+  String get betaUnlockVirtualTrainerSubtitle =>
+      'Enables the audio coaching companion while it is in beta.';
 
   @override
   String get heartRateTitle => '心拍数';
@@ -1997,4 +2007,153 @@ class SJa extends S {
 
   @override
   String get healthProfileSaved => 'Health profile saved';
+
+  @override
+  String get coachSteadyStart1 =>
+      'Let\'s get to work. Take your time and move well.';
+
+  @override
+  String get coachSteadyStart2 => 'Session started. Nice and steady.';
+
+  @override
+  String get coachSteadyStart3 =>
+      'Good to see you. Let\'s make this one count.';
+
+  @override
+  String get coachSteadySet1 =>
+      'Good set. Breathe, reset, go again when you\'re ready.';
+
+  @override
+  String get coachSteadySet2 => 'That\'s logged. Nice control.';
+
+  @override
+  String get coachSteadySet3 => 'Steady work. Keep that form.';
+
+  @override
+  String get coachSteadySet4 => 'Well done. Take the rest you need.';
+
+  @override
+  String get coachSteadyPr1 => 'That\'s a personal record. Excellent work.';
+
+  @override
+  String get coachSteadyPr2 => 'New best. All that consistency is paying off.';
+
+  @override
+  String get coachSteadyPr3 =>
+      'Personal record. Take a moment — you earned it.';
+
+  @override
+  String coachSteadyCountdown1(int secondsLeft) {
+    return '$secondsLeft';
+  }
+
+  @override
+  String coachSteadyCountdown2(int secondsLeft) {
+    return '$secondsLeft…';
+  }
+
+  @override
+  String coachSteadyCountdown3(int secondsLeft) {
+    return '$secondsLeft.';
+  }
+
+  @override
+  String get coachSteadyRestDone1 => 'Rest is up. Go when you\'re ready.';
+
+  @override
+  String get coachSteadyRestDone2 => 'Time. Take your position.';
+
+  @override
+  String get coachSteadyRestDone3 =>
+      'That\'s your rest. Next set when you\'re set.';
+
+  @override
+  String coachSteadyFinish1(int totalSets) {
+    return 'Session complete. $totalSets sets logged. Well done.';
+  }
+
+  @override
+  String coachSteadyFinish2(int totalSets) {
+    return 'That\'s the work done — $totalSets sets. Good session.';
+  }
+
+  @override
+  String coachSteadyFinish3(int totalSets) {
+    return 'Finished. $totalSets sets in the bank.';
+  }
+
+  @override
+  String get trainerDisclaimerTitle => 'Before your coach speaks';
+
+  @override
+  String get trainerDisclaimerBody =>
+      'The coach is a companion to help you stay on track — not a personal trainer, and not medical advice. It does not know your form, your injuries, or your limits. Stop exercising and seek medical help if you feel pain, dizziness, or chest discomfort.';
+
+  @override
+  String get trainerDisclaimerAccept => 'I understand';
+
+  @override
+  String get trainerDisclaimerDecline => 'Not now';
+
+  @override
+  String get trainerSettingsTitle => 'Virtual Trainer';
+
+  @override
+  String get trainerEnable => 'Enable coach';
+
+  @override
+  String get trainerEnableSubtitle =>
+      'Speaks encouragement and rest countdowns through your headphones.';
+
+  @override
+  String get trainerPersona => 'Coaching voice';
+
+  @override
+  String get trainerPersonaSteady => 'Steady';
+
+  @override
+  String get trainerPersonaSteadyDescription => 'Calm and measured';
+
+  @override
+  String get trainerMoreVoicesComing => 'More voices are on the way.';
+
+  @override
+  String get trainerSpeechRate => 'Speech rate';
+
+  @override
+  String get trainerTestVoice => 'Test voice';
+
+  @override
+  String get trainerTestPhrase =>
+      'This is your coach. Good set — take your rest.';
+
+  @override
+  String get trainerCountdowns => 'Rest countdowns';
+
+  @override
+  String get trainerEncouragement => 'Encouragement';
+
+  @override
+  String get trainerReviewDisclaimer => 'Review safety notice';
+
+  @override
+  String get trainerVoiceUnavailable =>
+      'No speech engine found on this device, so the coach cannot speak.';
+
+  @override
+  String get trainerWithdrawConsent => 'Withdraw consent';
+
+  @override
+  String get trainerWithdrawConsentConfirmTitle => 'Withdraw consent?';
+
+  @override
+  String get trainerWithdrawConsentConfirmContent =>
+      'This turns the coach off and clears your acceptance of the safety notice. You\'ll need to accept it again before the coach can speak.';
+
+  @override
+  String get trainerWithdrawConsentAction => 'Withdraw';
+
+  @override
+  String get trainerSettingsEntrySubtitle =>
+      'Your coach\'s voice, persona, and safety notice.';
 }

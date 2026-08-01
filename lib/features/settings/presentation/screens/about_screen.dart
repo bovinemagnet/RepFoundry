@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:rep_foundry/core/entitlements/entitlement.dart';
+import 'package:rep_foundry/core/entitlements/entitlement_provider.dart';
 import 'package:rep_foundry/core/widgets/rep_foundry_app_icon.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -105,6 +108,23 @@ class AboutScreen extends StatelessWidget {
               _FeatureTile(
                 icon: Icons.directions_run,
                 text: s.aboutFeatureCardio,
+              ),
+
+              const Divider(),
+
+              // Beta
+              Consumer(
+                builder: (context, ref, _) {
+                  final unlocked = ref.watch(unlockedEntitlementsProvider);
+                  return SwitchListTile(
+                    title: Text(s.betaUnlockVirtualTrainer),
+                    subtitle: Text(s.betaUnlockVirtualTrainerSubtitle),
+                    value: unlocked.contains(Entitlement.virtualTrainer),
+                    onChanged: (_) => ref
+                        .read(unlockedEntitlementsProvider.notifier)
+                        .toggle(Entitlement.virtualTrainer),
+                  );
+                },
               ),
 
               const Divider(),

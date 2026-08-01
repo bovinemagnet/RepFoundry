@@ -13,6 +13,8 @@ import '../../../health_sync/presentation/providers/health_sync_settings_provide
 import '../../../history/domain/models/personal_record.dart';
 import '../../../programmes/domain/models/programme.dart';
 import '../../../templates/domain/models/workout_template.dart';
+import '../../../trainer/domain/trainer_event.dart';
+import '../../../trainer/presentation/providers/trainer_event_bus.dart';
 import '../models/ghost_set.dart';
 import '../../../../core/heart_rate/hr_session_recorder.dart';
 import '../../../../core/providers.dart';
@@ -205,6 +207,7 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
         exercises: [],
         isLoading: false,
       );
+      ref.read(trainerEventBusProvider).emit(const WorkoutStarted());
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -224,6 +227,7 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
         exercises: [],
         isLoading: false,
       );
+      ref.read(trainerEventBusProvider).emit(const WorkoutStarted());
 
       // Add each exercise from the template
       final exerciseRepo = ref.read(exerciseRepositoryProvider);
@@ -370,6 +374,12 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
         // Cloud sync is best-effort — don't fail the workout
       }
 
+      ref.read(trainerEventBusProvider).emit(
+            WorkoutFinished(
+              totalSets: state.setsByExercise.values
+                  .fold<int>(0, (sum, sets) => sum + sets.length),
+            ),
+          );
       state = const ActiveWorkoutState();
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -536,6 +546,12 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
       } else {
         state = state.copyWith(setsByExercise: updated);
       }
+      ref.read(trainerEventBusProvider).emit(
+            SetLogged(
+              setNumber: updated[exerciseId]!.length,
+              isPersonalRecord: result.newPersonalRecords.isNotEmpty,
+            ),
+          );
     } catch (e) {
       // Surface the validation message without the exception class name so it
       // reads cleanly in the error SnackBar.

@@ -102,6 +102,7 @@
   "sectionRestTimer": "Rest Timer",
   "sectionData": "Data",
   "sectionAbout": "About",
+  "sectionCoach": "Coach",
 
   "ageLabel": "Age",
   "ageSubtitleSet": "{age} years (max HR: {maxHr} bpm)",
@@ -241,6 +242,8 @@
   "aboutFeatureCardio": "GPS-tracked cardio sessions",
   "aboutBuiltWith": "Built with Flutter",
   "aboutViewLicences": "Open-source licences",
+  "betaUnlockVirtualTrainer": "Unlock Virtual Trainer (beta)",
+  "betaUnlockVirtualTrainerSubtitle": "Enables the audio coaching companion while it is in beta.",
 
   "heartRateTitle": "Heart Rate",
   "connectHrMonitor": "Connect HR Monitor",
@@ -954,5 +957,68 @@
   "unassignPlan": "Unassign",
   "noPlansAssigned": "No plans assigned yet",
   "clientHealthProfile": "Health profile",
-  "healthProfileSaved": "Health profile saved"
+  "healthProfileSaved": "Health profile saved",
+
+  "coachSteadyStart1": "Let's get to work. Take your time and move well.",
+  "coachSteadyStart2": "Session started. Nice and steady.",
+  "coachSteadyStart3": "Good to see you. Let's make this one count.",
+  "coachSteadySet1": "Good set. Breathe, reset, go again when you're ready.",
+  "coachSteadySet2": "That's logged. Nice control.",
+  "coachSteadySet3": "Steady work. Keep that form.",
+  "coachSteadySet4": "Well done. Take the rest you need.",
+  "coachSteadyPr1": "That's a personal record. Excellent work.",
+  "coachSteadyPr2": "New best. All that consistency is paying off.",
+  "coachSteadyPr3": "Personal record. Take a moment — you earned it.",
+  "coachSteadyCountdown1": "{secondsLeft}",
+  "@coachSteadyCountdown1": {
+    "placeholders": { "secondsLeft": { "type": "int" } }
+  },
+  "coachSteadyCountdown2": "{secondsLeft}…",
+  "@coachSteadyCountdown2": {
+    "placeholders": { "secondsLeft": { "type": "int" } }
+  },
+  "coachSteadyCountdown3": "{secondsLeft}.",
+  "@coachSteadyCountdown3": {
+    "placeholders": { "secondsLeft": { "type": "int" } }
+  },
+  "coachSteadyRestDone1": "Rest is up. Go when you're ready.",
+  "coachSteadyRestDone2": "Time. Take your position.",
+  "coachSteadyRestDone3": "That's your rest. Next set when you're set.",
+  "coachSteadyFinish1": "Session complete. {totalSets} sets logged. Well done.",
+  "@coachSteadyFinish1": {
+    "placeholders": { "totalSets": { "type": "int" } }
+  },
+  "coachSteadyFinish2": "That's the work done — {totalSets} sets. Good session.",
+  "@coachSteadyFinish2": {
+    "placeholders": { "totalSets": { "type": "int" } }
+  },
+  "coachSteadyFinish3": "Finished. {totalSets} sets in the bank.",
+  "@coachSteadyFinish3": {
+    "placeholders": { "totalSets": { "type": "int" } }
+  },
+
+  "trainerDisclaimerTitle": "Before your coach speaks",
+  "trainerDisclaimerBody": "The coach is a companion to help you stay on track — not a personal trainer, and not medical advice. It does not know your form, your injuries, or your limits. Stop exercising and seek medical help if you feel pain, dizziness, or chest discomfort.",
+  "trainerDisclaimerAccept": "I understand",
+  "trainerDisclaimerDecline": "Not now",
+
+  "trainerSettingsTitle": "Virtual Trainer",
+  "trainerEnable": "Enable coach",
+  "trainerEnableSubtitle": "Speaks encouragement and rest countdowns through your headphones.",
+  "trainerPersona": "Coaching voice",
+  "trainerPersonaSteady": "Steady",
+  "trainerPersonaSteadyDescription": "Calm and measured",
+  "trainerMoreVoicesComing": "More voices are on the way.",
+  "trainerSpeechRate": "Speech rate",
+  "trainerTestVoice": "Test voice",
+  "trainerTestPhrase": "This is your coach. Good set — take your rest.",
+  "trainerCountdowns": "Rest countdowns",
+  "trainerEncouragement": "Encouragement",
+  "trainerReviewDisclaimer": "Review safety notice",
+  "trainerVoiceUnavailable": "No speech engine found on this device, so the coach cannot speak.",
+  "trainerWithdrawConsent": "Withdraw consent",
+  "trainerWithdrawConsentConfirmTitle": "Withdraw consent?",
+  "trainerWithdrawConsentConfirmContent": "This turns the coach off and clears your acceptance of the safety notice. You'll need to accept it again before the coach can speak.",
+  "trainerWithdrawConsentAction": "Withdraw",
+  "trainerSettingsEntrySubtitle": "Your coach's voice, persona, and safety notice."
 }
