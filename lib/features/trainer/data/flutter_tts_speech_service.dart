@@ -46,10 +46,11 @@ class FlutterTtsSpeechService implements SpeechService {
     String text, {
     SpeechPriority priority = SpeechPriority.encouragement,
   }) async {
-    // Identifies this call's turn at holding `_currentPriority`. Only
-    // assigned once this call has actually taken over speech, so a
-    // pre-empted call's `finally` below can tell whether a newer call has
-    // since taken over before clearing the field.
+    // Identifies this call's claim on `_currentPriority`. Assigned
+    // synchronously, in the same stretch as the priority check below and
+    // before any `await`, so a concurrently-arriving call always compares
+    // itself against an up-to-date claim rather than a stale one left over
+    // from before this call's own `stop()` resolves.
     int? generation;
     try {
       await _configure();
@@ -57,13 +58,19 @@ class FlutterTtsSpeechService implements SpeechService {
       // A higher-priority cue cuts off whatever is playing; an equal or lower
       // one waits its turn by being dropped, so cues never pile up.
       final current = _currentPriority;
-      if (current != null) {
-        if (priority.index <= current.index) return;
-        await _tts.stop();
-      }
+      if (current != null && priority.index <= current.index) return;
 
       generation = ++_speechGeneration;
       _currentPriority = priority;
+
+      if (current != null) {
+        await _tts.stop();
+        // Another call may have claimed a higher priority while `stop()`
+        // was in flight. If so, this call has been superseded: abandon it
+        // without ever speaking or touching shared state again.
+        if (generation != _speechGeneration) return;
+      }
+
       // `focus: true` requests transient, duckable audio focus on Android
       // (AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK); it is ignored on other
       // platforms, where ducking is instead governed by

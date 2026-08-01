@@ -172,4 +172,86 @@ void main() {
       async.flushMicrotasks();
     });
   });
+
+  test(
+      'a cue cannot lower _currentPriority while a higher-priority cue '
+      'claimed by it is still in flight (three concurrent cues)', () {
+    fakeAsync((async) {
+      final tts = MockFlutterTts();
+      _stubSuccessfulConfiguration(tts);
+      final encouragementSpeak = Completer<dynamic>();
+      final safetySpeak = Completer<dynamic>();
+      final stopCalls = <Completer<dynamic>>[];
+      when(tts.speak('encouragement cue', focus: true))
+          .thenAnswer((_) => encouragementSpeak.future);
+      when(tts.speak('safety cue', focus: true))
+          .thenAnswer((_) => safetySpeak.future);
+      when(tts.speak('milestone cue', focus: true))
+          .thenAnswer((_) async => null);
+      when(tts.speak('countdown cue', focus: true))
+          .thenAnswer((_) async => null);
+      // Each `stop()` call gets its own completer so the test can resolve
+      // them in a chosen order, rather than all at once.
+      when(tts.stop()).thenAnswer((_) {
+        final completer = Completer<dynamic>();
+        stopCalls.add(completer);
+        return completer.future;
+      });
+      final service = FlutterTtsSpeechService(tts: tts);
+
+      // Cue A (encouragement) starts and suspends waiting on the engine.
+      unawaited(
+        service.speak(
+          'encouragement cue',
+          priority: SpeechPriority.encouragement,
+        ),
+      );
+      async.flushMicrotasks();
+
+      // Cue B (safety) arrives: it reads the still-`encouragement` current
+      // priority and is now suspended on its own `stop()` call.
+      unawaited(
+        service.speak('safety cue', priority: SpeechPriority.safety),
+      );
+      async.flushMicrotasks();
+
+      // Cue C (milestone) arrives while B's `stop()` is still in flight —
+      // the exact window in which a read-then-act race could let it read a
+      // stale, not-yet-updated current priority.
+      unawaited(
+        service.speak('milestone cue', priority: SpeechPriority.milestone),
+      );
+      async.flushMicrotasks();
+
+      // Resolve B's `stop()` before any possible second `stop()` from C, to
+      // reproduce the interleaving where the higher-priority cue's own
+      // cancellation resolves first.
+      stopCalls[0].complete();
+      async.flushMicrotasks();
+      if (stopCalls.length > 1) {
+        stopCalls[1].complete();
+        async.flushMicrotasks();
+      }
+
+      // The milestone cue must never speak over the still-in-flight safety
+      // cue, and must never have issued a second `stop()` call to cut it
+      // off.
+      verifyNever(tts.speak('milestone cue', focus: true));
+      verify(tts.speak('safety cue', focus: true)).called(1);
+      verify(tts.stop()).called(1);
+
+      // A countdown cue (lower than safety, higher than milestone) must
+      // still be dropped — proving `_currentPriority` reads `safety`, not
+      // a `milestone` value a lower-priority cue clobbered it with.
+      unawaited(
+        service.speak('countdown cue', priority: SpeechPriority.countdown),
+      );
+      async.flushMicrotasks();
+      verifyNever(tts.speak('countdown cue', focus: true));
+
+      safetySpeak.complete();
+      encouragementSpeak.complete();
+      async.flushMicrotasks();
+    });
+  });
 }
