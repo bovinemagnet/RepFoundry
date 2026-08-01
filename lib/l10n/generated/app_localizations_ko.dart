@@ -2140,6 +2140,19 @@ class SKo extends S {
       'No speech engine found on this device, so the coach cannot speak.';
 
   @override
+  String get trainerWithdrawConsent => 'Withdraw consent';
+
+  @override
+  String get trainerWithdrawConsentConfirmTitle => 'Withdraw consent?';
+
+  @override
+  String get trainerWithdrawConsentConfirmContent =>
+      'This turns the coach off and clears your acceptance of the safety notice. You\'ll need to accept it again before the coach can speak.';
+
+  @override
+  String get trainerWithdrawConsentAction => 'Withdraw';
+
+  @override
   String get trainerSettingsEntrySubtitle =>
       'Your coach\'s voice, persona, and safety notice.';
 }

@@ -1016,5 +1016,9 @@
   "trainerEncouragement": "Encouragement",
   "trainerReviewDisclaimer": "Review safety notice",
   "trainerVoiceUnavailable": "No speech engine found on this device, so the coach cannot speak.",
+  "trainerWithdrawConsent": "Withdraw consent",
+  "trainerWithdrawConsentConfirmTitle": "Withdraw consent?",
+  "trainerWithdrawConsentConfirmContent": "This turns the coach off and clears your acceptance of the safety notice. You'll need to accept it again before the coach can speak.",
+  "trainerWithdrawConsentAction": "Withdraw",
   "trainerSettingsEntrySubtitle": "Your coach's voice, persona, and safety notice."
 }

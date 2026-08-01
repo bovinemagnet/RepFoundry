@@ -3942,6 +3942,30 @@ abstract class S {
   /// **'No speech engine found on this device, so the coach cannot speak.'**
   String get trainerVoiceUnavailable;
 
+  /// No description provided for @trainerWithdrawConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw consent'**
+  String get trainerWithdrawConsent;
+
+  /// No description provided for @trainerWithdrawConsentConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw consent?'**
+  String get trainerWithdrawConsentConfirmTitle;
+
+  /// No description provided for @trainerWithdrawConsentConfirmContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This turns the coach off and clears your acceptance of the safety notice. You\'ll need to accept it again before the coach can speak.'**
+  String get trainerWithdrawConsentConfirmContent;
+
+  /// No description provided for @trainerWithdrawConsentAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get trainerWithdrawConsentAction;
+
   /// No description provided for @trainerSettingsEntrySubtitle.
   ///
   /// In en, this message translates to:

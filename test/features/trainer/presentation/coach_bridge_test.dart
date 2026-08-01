@@ -136,18 +136,27 @@ void main() {
   });
 
   test(
-      'WorkoutStarted resets the engine so a nearly-exhausted phrase kind has '
-      'its full pool back afterwards', () async {
-    // Use up 2 of the 3 restFinished phrases, leaving exactly one unheard.
-    // Without a reset, the engine's "prefer unheard" rule would then force
-    // that one remaining phrase every single time, with no randomness left
-    // to vary the outcome — so if WorkoutStarted did not reset the engine,
-    // every trial below would produce the exact same closing line regardless
-    // of seed. Observing more than one distinct outcome across seeds proves
-    // the reset happened.
-    final outcomes = <String>{};
+      'WorkoutStarted resets the engine so a phrase heard before it can be '
+      'heard again immediately after', () async {
+    // Speak two of the three restFinished phrases (p1, p2), then
+    // WorkoutStarted, then restFinished once more, and check whether that
+    // third pick ever repeats p1 or p2 across several seeds.
+    //
+    // This — not "does the outcome vary across seeds" — is the property
+    // that actually discriminates: which single phrase is left unheard
+    // before the reset is itself seed-dependent, so a plain variety check
+    // would still pass even with the `_engine.reset()` call deleted from
+    // coach_bridge.dart. But *whether a repeat is possible at all* is not
+    // seed-dependent. Without a reset, the pool held before the third pick
+    // contains exactly the one phrase distinct from p1 and p2 (that is what
+    // "unheard" means once two of three have been spoken), so the third
+    // pick can never equal p1 or p2, for any seed. With the reset, the pool
+    // is back to all three, so a repeat is a roughly 2-in-3 event per
+    // trial — observing it even once across a handful of seeds proves the
+    // reset ran.
+    var sawRepeat = false;
 
-    for (var seed = 1; seed <= 12; seed++) {
+    for (var seed = 1; seed <= 12 && !sawRepeat; seed++) {
       final trialSpeech = SilentSpeechService();
       final container = ProviderContainer(overrides: [
         speechServiceProvider.overrideWithValue(trialSpeech),
@@ -171,24 +180,29 @@ void main() {
       final bus = container.read(trainerEventBusProvider);
       bus.emit(const RestFinished());
       await Future<void>.delayed(Duration.zero);
+      final p1 = trialSpeech.spoken[0];
+
       bus.emit(const RestFinished());
       await Future<void>.delayed(Duration.zero);
+      final p2 = trialSpeech.spoken[1];
 
       bus.emit(const WorkoutStarted());
       await Future<void>.delayed(Duration.zero);
 
       bus.emit(const RestFinished());
       await Future<void>.delayed(Duration.zero);
+      final p3 = trialSpeech.spoken.last;
 
-      outcomes.add(trialSpeech.spoken.last);
+      if (p3 == p1 || p3 == p2) sawRepeat = true;
     }
 
     expect(
-      outcomes.length,
-      greaterThan(1),
-      reason: 'if WorkoutStarted did not reset the engine, the one phrase '
-          'left unheard before it would be forced every time regardless of '
-          'seed, and every trial would produce the same line',
+      sawRepeat,
+      isTrue,
+      reason: 'without a reset, the phrase left unheard before WorkoutStarted '
+          'is by construction distinct from the first two, so it could '
+          'never recur here regardless of seed; observing a repeat proves '
+          'the reset happened',
     );
   });
 

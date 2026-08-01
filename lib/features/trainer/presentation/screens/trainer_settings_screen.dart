@@ -81,18 +81,57 @@ class TrainerSettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text(s.trainerReviewDisclaimer),
-            onTap: () async {
-              // Explicitly declining after having previously accepted
-              // withdraws consent, so revoking is reachable from the UI
-              // rather than only ever being set to true.
-              final accepted = await showTrainerDisclaimer(context);
-              if (accepted == false) {
-                await notifier.revokeDisclaimer();
-              }
-            },
+            // Read-only: opened to re-read the notice, so neither button may
+            // change any setting. "Not now" here must behave like closing
+            // the sheet, not like withdrawing consent — that is a separate,
+            // deliberate action below with its own confirmation.
+            onTap: () => showTrainerDisclaimer(context),
+          ),
+          if (settings.disclaimerAccepted)
+            ListTile(
+              leading: Icon(
+                Icons.remove_circle_outline,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              title: Text(
+                s.trainerWithdrawConsent,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+              onTap: () => _confirmWithdraw(context, notifier, s),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmWithdraw(
+    BuildContext context,
+    TrainerSettingsNotifier notifier,
+    S s,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.trainerWithdrawConsentConfirmTitle),
+        content: Text(s.trainerWithdrawConsentConfirmContent),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(s.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(s.trainerWithdrawConsentAction),
           ),
         ],
       ),
     );
+
+    if (confirmed == true) {
+      await notifier.revokeDisclaimer();
+    }
   }
 }

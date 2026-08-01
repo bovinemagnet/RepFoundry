@@ -116,22 +116,26 @@ void main() {
     expect(speechService.spoken, hasLength(1));
   });
 
-  testWidgets(
-      'reviewing the disclaimer and declining it revokes consent and '
-      'disables the trainer', (tester) async {
-    // Gives revokeDisclaimer() a real UI path to be reached from: previously
-    // "Review safety notice" discarded the sheet's result entirely.
-    await tester.pumpWidget(buildScreen());
-    await tester.pumpAndSettle();
-
-    // Accept once via the master switch, as in the earlier test.
+  Future<void> enableViaMasterSwitch(WidgetTester tester) async {
     await tester.tap(find.widgetWithText(SwitchListTile, 'Enable coach'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('I understand'));
     await tester.pumpAndSettle();
+  }
+
+  testWidgets(
+      'dismissing the review sheet with "Not now" leaves consent and the '
+      'master switch untouched', (tester) async {
+    // Regression: reviewing the notice just to re-read it must never have a
+    // side effect. "Not now" here must behave like closing the sheet, not
+    // like the earlier bug where it silently withdrew consent and turned
+    // the coach off with no explanation.
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    await enableViaMasterSwitch(tester);
     expect(findEnableSwitch(tester).value, isTrue);
 
-    // Now review the notice again and decline it.
     await tester.tap(find.text('Review safety notice'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Not now'));
@@ -141,9 +145,76 @@ void main() {
       tester.element(find.byType(TrainerSettingsScreen)),
     );
     final settings = container.read(trainerSettingsProvider);
+    expect(settings.disclaimerAccepted, isTrue);
+    expect(settings.enabled, isTrue);
+    expect(findEnableSwitch(tester).value, isTrue);
+  });
+
+  testWidgets(
+      'withdrawing consent via its own confirmed action revokes consent and '
+      'disables the trainer', (tester) async {
+    // Gives revokeDisclaimer() a real, but deliberate and confirmed, UI path
+    // to be reached from — separate from the read-only review sheet.
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    await enableViaMasterSwitch(tester);
+    expect(findEnableSwitch(tester).value, isTrue);
+
+    await tester.scrollUntilVisible(
+      find.text('Withdraw consent'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Withdraw consent'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Withdraw consent?'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Withdraw'));
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TrainerSettingsScreen)),
+    );
+    final settings = container.read(trainerSettingsProvider);
     expect(settings.disclaimerAccepted, isFalse);
     expect(settings.enabled, isFalse);
     expect(findEnableSwitch(tester).value, isFalse);
+  });
+
+  testWidgets('cancelling the withdraw confirmation changes nothing',
+      (tester) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    await enableViaMasterSwitch(tester);
+
+    await tester.scrollUntilVisible(
+      find.text('Withdraw consent'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Withdraw consent'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TrainerSettingsScreen)),
+    );
+    final settings = container.read(trainerSettingsProvider);
+    expect(settings.disclaimerAccepted, isTrue);
+    expect(settings.enabled, isTrue);
+  });
+
+  testWidgets(
+      'no withdraw-consent row is shown before the disclaimer is '
+      'ever accepted', (tester) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Withdraw consent'), findsNothing);
   });
 
   group('SettingsScreen entitlement gate', () {
@@ -213,17 +284,31 @@ void main() {
       // having been built at all. Instead, check at every small step of the
       // scroll, so the tile is caught the moment it would enter the
       // viewport/cache if the gate were broken.
+      //
+      // The loop terminates on `position.atEdge` (having actually scrolled)
+      // rather than a hardcoded step count, so it keeps covering the whole
+      // list — and stays a meaningful check rather than silently reverting
+      // to vacuous — if the settings screen grows taller in future.
       final scrollable = find.byType(Scrollable).first;
+      final position = tester.state<ScrollableState>(scrollable).position;
       var sawTile = false;
-      for (var i = 0; i < 25 && !sawTile; i++) {
+      var iterations = 0;
+      const safetyCap = 500; // guards against an unexpected hang only.
+      while (!sawTile && iterations < safetyCap) {
         sawTile = find.text('Virtual Trainer').evaluate().isNotEmpty ||
             find.text('COACH').evaluate().isNotEmpty;
+        if (sawTile) break;
+        if (position.atEdge && position.pixels > 0) {
+          // Reached the bottom of the list without ever seeing the tile.
+          break;
+        }
         await tester.drag(scrollable, const Offset(0, -150));
         await tester.pump();
+        iterations++;
       }
-      sawTile = sawTile ||
-          find.text('Virtual Trainer').evaluate().isNotEmpty ||
-          find.text('COACH').evaluate().isNotEmpty;
+      expect(iterations, lessThan(safetyCap),
+          reason: 'scroll never reached the bottom edge — check the '
+              'Scrollable/position lookup rather than trusting this result');
 
       expect(sawTile, isFalse,
           reason: 'the trainer tile must never be reachable, at any scroll '
