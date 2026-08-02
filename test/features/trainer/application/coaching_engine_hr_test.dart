@@ -251,6 +251,27 @@ void main() {
       expect(engine.isAboveCap, isFalse);
     });
 
+    test('reset clears the cap-warning repeat timer', () {
+      // Fix round 2, Important 2: reset() clears _lastCapWarningAt, but
+      // nothing re-issued HeartRateAboveCap afterwards to prove it. Live
+      // consequence: coach_bridge.dart calls reset() on both WorkoutStarted
+      // and WorkoutFinished, so a session ending above cap followed by a new
+      // one starting within 30s would have its first safety warning
+      // swallowed by a stale repeat window.
+      final engine = _engine();
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
+
+      engine.reset();
+
+      final cue = engine.onEvent(
+        const HeartRateAboveCap(bpm: 180, cap: 170),
+        now: t0.add(const Duration(seconds: 5)),
+      );
+
+      expect(cue, isNotNull);
+      expect(cue!.priority, SpeechPriority.safety);
+    });
+
     test('reset lifts zone-5 suppression', () {
       final engine =
           _engine(encouragementEverySets: 1, cooldown: Duration.zero);

@@ -45,6 +45,15 @@ class CoachingEngine {
   DateTime? _lastCapWarningAt;
   int? _currentZone;
 
+  /// The current call's caution-mode flag, set as the first statement of
+  /// [onEvent] and read by [_encouragementBlocked]. A field rather than a
+  /// parameter threaded through every private helper and into [_speak]: a
+  /// forgotten parameter at a new call site is exactly how milestone cues
+  /// escaped the above-cap/zone-5 gate before (see fix round 1) — a field
+  /// cannot be forgotten the same way. Not session state, so [reset] leaves
+  /// it alone; it is overwritten on every [onEvent] call before it is read.
+  bool _cautionMode = false;
+
   /// Whether the last `HeartRateAboveCap`/`HeartRateBackBelowCap` event left
   /// the reading above the user's safe maximum.
   bool get isAboveCap => _aboveCap;
@@ -75,24 +84,19 @@ class CoachingEngine {
     bool hrSafetyWarningsEnabled = true,
     bool cautionMode = false,
   }) {
+    _cautionMode = cautionMode;
     return switch (event) {
-      WorkoutStarted() => _speak(event.kind, SpeechPriority.milestone, now,
-          cautionMode: cautionMode),
+      WorkoutStarted() => _speak(event.kind, SpeechPriority.milestone, now),
       WorkoutFinished(:final totalSets) => _speak(
           event.kind,
           SpeechPriority.milestone,
           now,
           args: {'totalSets': totalSets},
-          cautionMode: cautionMode,
         ),
-      SetLogged(isPersonalRecord: true) => _speak(
-          event.kind,
-          SpeechPriority.milestone,
-          now,
-          cautionMode: cautionMode,
-        ),
+      SetLogged(isPersonalRecord: true) =>
+        _speak(event.kind, SpeechPriority.milestone, now),
       SetLogged(isPersonalRecord: false) =>
-        encouragementEnabled ? _onSetLogged(now, cautionMode) : null,
+        encouragementEnabled ? _onSetLogged(now) : null,
       RestCountdown(:final secondsLeft) => countdownsEnabled
           ? _speak(
               event.kind,
@@ -125,8 +129,8 @@ class CoachingEngine {
   /// bypass the rule (countdowns, zone callouts, the safety cues
   /// themselves) opts out explicitly with `encouragement: false` rather
   /// than the rule having to be remembered at each call site.
-  bool _encouragementBlocked(bool cautionMode) =>
-      _aboveCap || cautionMode || _currentZone == 5;
+  bool get _encouragementBlocked =>
+      _aboveCap || _cautionMode || _currentZone == 5;
 
   /// Records the new zone unconditionally — zone 5 must be tracked even when
   /// callouts are switched off — and speaks it unless callouts are disabled
@@ -189,6 +193,13 @@ class CoachingEngine {
   /// tracking an above-cap episode. Lifts the suppression and resets the
   /// repeat timer, so a later cap crossing warns immediately rather than
   /// inheriting a stale cooldown.
+  ///
+  /// Deliberately not gated by `hrSafetyWarningsEnabled` yet — that setting
+  /// is unreachable until a caller actually surfaces it (Task 4). Whoever
+  /// wires it in here must clear `_aboveCap`/`_lastCapWarningAt` first and
+  /// only then check the toggle, the same order `_onAboveCap` follows: an
+  /// early return before clearing state would leave encouragement suppressed
+  /// for the rest of the session with no event able to lift it.
   CoachingCue? _onBackBelowCap(DateTime now) {
     if (!_aboveCap) return null;
 
@@ -202,7 +213,7 @@ class CoachingEngine {
     );
   }
 
-  CoachingCue? _onSetLogged(DateTime now, bool cautionMode) {
+  CoachingCue? _onSetLogged(DateTime now) {
     _setsSinceEncouragement++;
     if (_setsSinceEncouragement < _encouragementQuota) return null;
 
@@ -215,7 +226,6 @@ class CoachingEngine {
       TrainerEventKind.setLogged,
       SpeechPriority.encouragement,
       now,
-      cautionMode: cautionMode,
     );
     if (cue != null) {
       _setsSinceEncouragement = 0;
@@ -238,9 +248,8 @@ class CoachingEngine {
     DateTime now, {
     Map<String, Object> args = const {},
     bool encouragement = true,
-    bool cautionMode = false,
   }) {
-    if (encouragement && _encouragementBlocked(cautionMode)) return null;
+    if (encouragement && _encouragementBlocked) return null;
 
     final phrase = _pickPhrase(kind);
     if (phrase == null) return null;

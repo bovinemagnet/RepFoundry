@@ -110,10 +110,19 @@ class CoachBridge {
     }
 
     // Reset for the next session, but never cut off the sign-off line we just
-    // started speaking.
+    // started speaking. A null cue here can now mean two different things:
+    // no phrase was available (safe to stop), or the finish cue was
+    // suppressed because the reading is still above the safety cap — in
+    // which case a SpeechPriority.safety warning is the most likely thing
+    // still playing, and cutting it off mid-sentence is the one truncation
+    // this feature must never produce. Read isAboveCap before reset() clears
+    // it.
     if (event is WorkoutFinished) {
+      final aboveCapAtFinish = _engine.isAboveCap;
       _engine.reset();
-      if (cue == null) unawaited(_ref.read(speechServiceProvider).stop());
+      if (cue == null && !aboveCapAtFinish) {
+        unawaited(_ref.read(speechServiceProvider).stop());
+      }
     }
   }
 

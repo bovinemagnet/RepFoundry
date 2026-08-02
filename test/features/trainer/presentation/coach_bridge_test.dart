@@ -366,6 +366,31 @@ void main() {
   });
 
   test(
+      'WorkoutFinished above cap does not cut off an in-flight safety '
+      'warning', () async {
+    // Regression: the finish cue is suppressed while above cap, which makes
+    // the bridge's null-cue branch reachable for the first time in exactly
+    // this state — the one state where a SpeechPriority.safety warning is
+    // most likely still playing. The old code called stop() unconditionally
+    // on a null cue, so it would cut that warning off mid-sentence.
+    final container = buildContainer();
+    final bridge = container.read(_bridgeUnderTest);
+    bridge.strings = lookupS(const Locale('en'));
+
+    final bus = container.read(trainerEventBusProvider);
+    bus.emit(const HeartRateAboveCap(bpm: 180, cap: 170));
+    await Future<void>.delayed(Duration.zero);
+    expect(speechService.stopCount, 0);
+
+    bus.emit(const WorkoutFinished(totalSets: 5));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(speechService.stopCount, 0,
+        reason: 'the finish cue is suppressed above cap, but the safety '
+            'warning must be left to finish, not cut off');
+  });
+
+  test(
       'reading coachBridgeProvider again after a locale change reuses the '
       'same bridge instead of leaking a duplicate subscription', () async {
     final container = ProviderContainer(overrides: [
