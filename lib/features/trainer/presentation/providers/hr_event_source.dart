@@ -37,16 +37,36 @@ import 'trainer_event_bus.dart';
 ///   the only signal this source can rely on for the real hardware. Stream
 ///   closure and stream errors are also handled the same way, both because a
 ///   test double may use them and because they cost nothing to cover.
+///
+///   [signalLossTimeout] must stay longer than the service's own reconnect
+///   schedule (`ReconnectStrategy.defaultDelays`: 2s, 4s, 8s, …) plus the
+///   connect/discover/subscribe work after each delay, or a routine,
+///   recoverable dropout announces a false "back under your maximum" — a
+///   safety-relevant false negative — followed by a second "above your
+///   maximum" moments later once the strap reconnects and the reading
+///   arrives. Too long costs only extra silence (encouragement stays
+///   suppressed a little longer); too short speaks the false all-clear. See
+///   the constructor's default for the reasoning behind the chosen value.
 class HrEventSource {
   HrEventSource(
     this._ref, {
     Duration zoneDwell = const Duration(seconds: 10),
     Duration capRepeat = const Duration(seconds: 30),
-    this.capHysteresisMargin = 5,
+    int capHysteresisMargin = 5,
     Duration capHysteresisDwell = const Duration(seconds: 5),
-    Duration signalLossTimeout = const Duration(seconds: 8),
+    // Android routinely fails the first reconnect attempt with GATT 133
+    // (see FlutterBlueHeartRateService's doc comment and
+    // ReconnectStrategy), so the common case is recovery on the *second*
+    // attempt: cumulative delay 2s + 4s = 6s, plus connect/discoverServices/
+    // setNotifyValue overhead, lands around 8-12s. A third attempt starts at
+    // a cumulative 14s and can land close to 20s. 25s clears all three with
+    // a margin, while remaining well short of the fourth attempt's 30s
+    // cumulative delay — by that point the outage is genuinely extended and
+    // the asymmetry favours erring toward silence over a false all-clear.
+    Duration signalLossTimeout = const Duration(seconds: 25),
   })  : _zoneDwell = zoneDwell,
         _capRepeat = capRepeat,
+        _capHysteresisMargin = capHysteresisMargin,
         _capHysteresisDwell = capHysteresisDwell,
         _signalLossTimeout = signalLossTimeout {
     _subscription = _ref.read(heartRateServiceProvider).heartRateStream.listen(
@@ -64,7 +84,7 @@ class HrEventSource {
   /// "meaningfully below" rather than noise. Five beats comfortably clears
   /// the couple of beats of jitter a BLE reading can carry from one sample
   /// to the next, without delaying a genuine recovery by much.
-  final int capHysteresisMargin;
+  final int _capHysteresisMargin;
   final Duration _capHysteresisDwell;
   final Duration _signalLossTimeout;
 
@@ -83,8 +103,21 @@ class HrEventSource {
     _resetSignalLossTimer();
 
     final config = _ref.read(zoneConfigurationProvider);
-    if (config == null) return;
+    if (config == null) {
+      // The profile can go from usable to unusable mid-session (e.g. the
+      // user clears their age or health flags and calculateZones can no
+      // longer resolve a method). Readings keep arriving either way, so
+      // without this the signal-loss timer above keeps getting reset and
+      // never fires, and _aboveCap would stay stuck exactly as it would on
+      // a real BLE dropout. Route it through the same recovery path.
+      _onSignalLoss();
+      return;
+    }
 
+    // Cap before zone is load-bearing, not incidental: the engine swallows
+    // the zone callout entirely while above cap, so if a single reading is
+    // both a new zone and above the cap, the safety cue must be the one
+    // that reaches the engine first. Do not reorder these two lines.
     _handleCap(bpm, config.maxHr);
     _handleZone(bpm, config);
   }
@@ -132,8 +165,12 @@ class HrEventSource {
         _emit(HeartRateAboveCap(bpm: bpm, cap: cap));
         return;
       }
-      final last = _lastCapWarningAt;
-      if (last == null || now.difference(last) >= _capRepeat) {
+      // _lastCapWarningAt is always non-null here: it is set in the same
+      // statement as _aboveCap = true above and only ever cleared alongside
+      // _aboveCap = false, so reaching this branch (_aboveCap already true)
+      // guarantees it was set on some earlier reading.
+      final last = _lastCapWarningAt!;
+      if (now.difference(last) >= _capRepeat) {
         _lastCapWarningAt = now;
         _emit(HeartRateAboveCap(bpm: bpm, cap: cap));
       }
@@ -142,7 +179,7 @@ class HrEventSource {
 
     if (!_aboveCap) return;
 
-    if (bpm > cap - capHysteresisMargin) {
+    if (bpm > cap - _capHysteresisMargin) {
       // Below the cap but still within the noise band — not a genuine
       // recovery. Reset rather than pause the dwell: a reading that dips
       // here after some dwell has already accrued must not be able to
@@ -169,10 +206,18 @@ class HrEventSource {
     _signalLossTimer = Timer(_signalLossTimeout, _onSignalLoss);
   }
 
-  /// Fired when the stream goes quiet for [_signalLossTimeout], closes, or
-  /// errors. Only ever has anything to do while above cap — otherwise there
-  /// is no stuck suppression to clear.
+  /// Fired when the stream goes quiet for [_signalLossTimeout], closes,
+  /// errors, or the zone configuration becomes unusable mid-session.
+  ///
+  /// Always clears any pending zone candidate: a candidate zone recorded
+  /// just before a gap must not be promoted on the first reading afterwards
+  /// with credit for time it was never actually, continuously observed in.
+  /// Only clears the cap state and emits [HeartRateBackBelowCap] while
+  /// actually above cap — otherwise there is no stuck suppression to clear.
   void _onSignalLoss() {
+    _candidateZone = null;
+    _candidateZoneSince = null;
+
     if (!_aboveCap) return;
     _aboveCap = false;
     _lastCapWarningAt = null;

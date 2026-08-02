@@ -133,13 +133,21 @@ void main() {
     // distinct from "use the default test config", and a bare `T?` parameter
     // can't distinguish "not passed" from "passed as null".
     bool nullZoneConfig = false,
+    // Lets a test change the resolved config mid-session (paired with
+    // `container.invalidate(zoneConfigurationProvider)`), for scenarios
+    // where the profile goes from usable to unusable partway through.
+    // Takes precedence over `nullZoneConfig` when supplied.
+    ZoneConfiguration? Function()? zoneConfigResolver,
     HrEventSource Function(Ref ref)? create,
   }) {
     final container = ProviderContainer(overrides: [
       heartRateServiceProvider.overrideWithValue(heartRateService),
       entitlementServiceProvider.overrideWithValue(_AlwaysEntitled()),
-      zoneConfigurationProvider
-          .overrideWithValue(nullZoneConfig ? null : _config()),
+      zoneConfigurationProvider.overrideWith(
+        (ref) => zoneConfigResolver != null
+            ? zoneConfigResolver()
+            : (nullZoneConfig ? null : _config()),
+      ),
       _sourceUnderTest.overrideWith(create ?? (ref) => HrEventSource(ref)),
     ]);
     addTearDown(container.dispose);
@@ -215,6 +223,32 @@ void main() {
         expect(received, hasLength(1),
             reason: 'the zone never changed, so no further zone events '
                 'should be emitted');
+      });
+    });
+
+    test(
+        'alternating between two zones never settles long enough to be '
+        'announced — the anti-flicker path the dwell exists for', () {
+      fakeAsync((async) {
+        final hr = FakeHeartRateService();
+        final container = buildContainer(heartRateService: hr);
+        container.read(_sourceUnderTest);
+
+        // 130 (zone 3) and 150 (zone 4), once a second, for 30s — every
+        // reading replaces the previous candidate before it can ever
+        // accumulate the 10s dwell, so this specifically exercises the
+        // candidate-replacement branch with two genuinely different zones,
+        // not just the "same zone repeated" path the other tests cover.
+        for (var i = 0; i < 30; i++) {
+          hr.emitHeartRate(i.isEven ? 130 : 150);
+          async.flushMicrotasks();
+          async.elapse(const Duration(seconds: 1));
+        }
+
+        expect(received, isEmpty,
+            reason: 'boundary flicker between two zones must never be '
+                'announced — this is the single most likely way the '
+                'feature becomes intolerable');
       });
     });
   });
@@ -458,11 +492,11 @@ void main() {
         async.flushMicrotasks();
         expect(received, hasLength(1));
 
-        async.elapse(const Duration(seconds: 7));
+        async.elapse(const Duration(seconds: 24));
         expect(received, hasLength(1),
             reason: 'the signal-loss timeout has not elapsed yet');
 
-        async.elapse(const Duration(seconds: 2));
+        async.elapse(const Duration(seconds: 1));
         expect(received, hasLength(2));
         expect(received.last, isA<HeartRateBackBelowCap>());
       });
@@ -477,7 +511,10 @@ void main() {
         hr.emitHeartRate(130); // ordinary reading, well under the cap
         async.flushMicrotasks();
 
-        async.elapse(const Duration(seconds: 20));
+        // Past the 25s default signal-loss timeout, so this genuinely
+        // exercises the quiet-timer firing, not just a gap too short to
+        // matter.
+        async.elapse(const Duration(seconds: 30));
 
         expect(received.whereType<HeartRateBackBelowCap>(), isEmpty);
       });
@@ -538,6 +575,48 @@ void main() {
         expect(received, isEmpty);
       });
     });
+
+    test(
+        'the config going null mid-session while above cap immediately '
+        'clears the stuck suppression, not just on the next signal-loss '
+        'timeout', () {
+      fakeAsync((async) {
+        final hr = FakeHeartRateService();
+        ZoneConfiguration? config = _config();
+        final container = buildContainer(
+          heartRateService: hr,
+          zoneConfigResolver: () => config,
+        );
+        container.read(_sourceUnderTest);
+
+        hr.emitHeartRate(190); // above the 180 cap while config is usable
+        async.flushMicrotasks();
+        expect(received, hasLength(1));
+        expect(received.single, isA<HeartRateAboveCap>());
+
+        // The user clears their health profile — calculateZones can no
+        // longer resolve a method, so zoneConfigurationProvider goes null.
+        config = null;
+        container.invalidate(zoneConfigurationProvider);
+
+        hr.emitHeartRate(190); // would still be above a cap, if one existed
+        async.flushMicrotasks();
+
+        expect(received, hasLength(2),
+            reason: 'a null config must not leave _aboveCap stuck; without '
+                'this fix, encouragement would stay suppressed for the rest '
+                'of the session with no event able to lift it, and nothing '
+                'short of the (much longer) signal-loss timeout would ever '
+                'clear it');
+        expect(received.last, isA<HeartRateBackBelowCap>());
+
+        // And it must not then repeat on every further null-config reading —
+        // _aboveCap is already false, so there is nothing left to clear.
+        hr.emitHeartRate(190);
+        async.flushMicrotasks();
+        expect(received, hasLength(2));
+      });
+    });
   });
 
   group('lifecycle', () {
@@ -556,12 +635,22 @@ void main() {
         // If dispose failed to cancel the signal-loss timer, this elapse
         // would fire it and wrongly emit HeartRateBackBelowCap even though
         // the source has been torn down.
-        async.elapse(const Duration(seconds: 8));
+        async.elapse(const Duration(seconds: 25));
         expect(received, hasLength(1),
             reason: 'dispose must cancel the signal-loss timer');
 
-        // A leaked subscription would still forward further readings.
-        hr.emitHeartRate(30);
+        // A leaked subscription would still forward further readings. The
+        // probe has to be one that would actually emit from a *live* source
+        // — a bare disconnected-looking value like 30 resolves to no zone
+        // and, since bpm <= cap, only ever touches `_belowCapSince` inside
+        // `_handleCap`, so it would pass this assertion even with a leaked
+        // subscription. 130 twice, 5s apart, is exactly the sequence that
+        // would produce HeartRateBackBelowCap from a live source (still
+        // above cap from the very first reading above).
+        hr.emitHeartRate(130);
+        async.flushMicrotasks();
+        async.elapse(const Duration(seconds: 5));
+        hr.emitHeartRate(130);
         async.flushMicrotasks();
         expect(received, hasLength(1),
             reason: 'dispose must cancel the stream subscription');
@@ -660,7 +749,7 @@ void main() {
         expect(capEvents(), hasLength(3));
         expect(capEvents().last, isA<HeartRateBackBelowCap>());
 
-        // Signal-loss timeout: 3s instead of the 8s default.
+        // Signal-loss timeout: 3s instead of the 25s default.
         hr.emitHeartRate(190);
         async.flushMicrotasks();
         expect(capEvents(), hasLength(4));
