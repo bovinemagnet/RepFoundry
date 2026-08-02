@@ -356,5 +356,60 @@ void main() {
       expect(cue, isNull);
       expect(engine.isAboveCap, isTrue);
     });
+
+    // Requirement B (carried forward from earlier reviews): the toggle must
+    // also govern HeartRateBackBelowCap, not just HeartRateAboveCap — a user
+    // who muted safety warnings must never hear "back under your maximum"
+    // having never heard a warning.
+    test('false silences the back-below-cap reassurance too', () {
+      final engine = _engine();
+      engine.onEvent(
+        const HeartRateAboveCap(bpm: 180, cap: 170),
+        now: t0,
+        hrSafetyWarningsEnabled: false,
+      );
+
+      final cue = engine.onEvent(
+        const HeartRateBackBelowCap(),
+        now: t0.add(const Duration(seconds: 5)),
+        hrSafetyWarningsEnabled: false,
+      );
+
+      expect(cue, isNull);
+      expect(engine.isAboveCap, isFalse,
+          reason: 'the suppression must still lift even though the '
+              'reassurance itself stays silent');
+    });
+
+    test(
+        'false still lets encouragement resume once back below cap — the '
+        'toggle must not leave the session silenced for good', () {
+      // Critical constraint: _onBackBelowCap must clear _aboveCap and
+      // _lastCapWarningAt before checking the toggle, not after an early
+      // return. Getting the order wrong here leaves encouragement suppressed
+      // for the rest of the session with no event able to lift it.
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+      engine.onEvent(
+        const HeartRateAboveCap(bpm: 180, cap: 170),
+        now: t0,
+        hrSafetyWarningsEnabled: false,
+      );
+      final reassurance = engine.onEvent(
+        const HeartRateBackBelowCap(),
+        now: t0.add(const Duration(seconds: 5)),
+        hrSafetyWarningsEnabled: false,
+      );
+
+      final cue = engine.onEvent(
+        const SetLogged(setNumber: 1, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 10)),
+      );
+
+      expect(reassurance, isNull, reason: 'muted, so no speech');
+      expect(cue, isNotNull,
+          reason: 'encouragement must resume once genuinely back below cap, '
+              'even though the toggle kept the bookend line silent');
+    });
   });
 }

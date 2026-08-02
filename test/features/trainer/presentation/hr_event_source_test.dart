@@ -9,6 +9,8 @@ import 'package:rep_foundry/core/entitlements/entitlement_provider.dart';
 import 'package:rep_foundry/core/entitlements/entitlement_service.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
+import 'package:rep_foundry/features/heart_rate/presentation/providers/heart_rate_panel_visibility_provider.dart';
+import 'package:rep_foundry/features/heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/zone_configuration_provider.dart';
 import 'package:rep_foundry/features/trainer/domain/trainer_event.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/hr_event_source.dart';
@@ -19,6 +21,19 @@ import '../../cardio/data/fake_heart_rate_service.dart';
 class _AlwaysEntitled implements EntitlementService {
   @override
   bool has(Entitlement entitlement) => true;
+}
+
+/// Pushes a fixed [MaxHrAlertSettings] synchronously, bypassing
+/// `SharedPreferences` entirely — this test file has nothing to do with
+/// heart-rate readings, so the real notifier's plugin-channel load must
+/// never run.
+class _SeededMaxHrAlertNotifier extends MaxHrAlertNotifier {
+  _SeededMaxHrAlertNotifier(this._seed);
+
+  final MaxHrAlertSettings _seed;
+
+  @override
+  MaxHrAlertSettings build() => _seed;
 }
 
 /// A minimal [HeartRateService] whose stream can be made to emit an error,
@@ -139,6 +154,11 @@ void main() {
     // Takes precedence over `nullZoneConfig` when supplied.
     ZoneConfiguration? Function()? zoneConfigResolver,
     HrEventSource Function(Ref ref)? create,
+    // Defaults match production defaults (chime on, panel not mounted), so
+    // every existing test's timing is unaffected — the sequencing delay only
+    // ever activates when a test opts in via [panelVisible].
+    bool panelVisible = false,
+    MaxHrAlertSettings maxHrAlertSettings = const MaxHrAlertSettings(),
   }) {
     final container = ProviderContainer(overrides: [
       heartRateServiceProvider.overrideWithValue(heartRateService),
@@ -148,8 +168,20 @@ void main() {
             ? zoneConfigResolver()
             : (nullZoneConfig ? null : _config()),
       ),
+      // Overridden directly rather than left to resolve through
+      // SharedPreferences: the real notifier can't load without a mocked
+      // plugin channel, which this test file deliberately does not set up
+      // (it has nothing to do with heart-rate readings).
+      // heartRatePanelVisibleProvider needs no override — its notifier is
+      // in-memory only and never touches SharedPreferences.
+      maxHrAlertProvider.overrideWith(
+        () => _SeededMaxHrAlertNotifier(maxHrAlertSettings),
+      ),
       _sourceUnderTest.overrideWith(create ?? (ref) => HrEventSource(ref)),
     ]);
+    if (panelVisible) {
+      container.read(heartRatePanelVisibleProvider.notifier).setVisible(true);
+    }
     addTearDown(container.dispose);
 
     final sub = container.read(trainerEventBusProvider).events.listen(
@@ -619,6 +651,160 @@ void main() {
     });
   });
 
+  group('sequencing with the max-HR alert chime (decision 1)', () {
+    // The panel's own chime is the faster safety signal and must be heard
+    // first, so the coach's spoken warning is delayed by ~1.5s — but only
+    // when the panel is actually mounted and its sound alert is on; the
+    // chime never sounds otherwise, so there is nothing to sequence after.
+    test(
+        'delays the first above-cap emission when the panel is visible and '
+        'its sound alert is on', () {
+      fakeAsync((async) {
+        final hr = FakeHeartRateService();
+        final container = buildContainer(
+          heartRateService: hr,
+          panelVisible: true,
+          maxHrAlertSettings: const MaxHrAlertSettings(soundEnabled: true),
+        );
+        container.read(_sourceUnderTest);
+
+        hr.emitHeartRate(190);
+        async.flushMicrotasks();
+        expect(received, isEmpty,
+            reason: 'must not speak before the chime has had time to play');
+
+        async.elapse(const Duration(milliseconds: 1499));
+        expect(received, isEmpty);
+
+        async.elapse(const Duration(milliseconds: 1));
+        expect(received, hasLength(1));
+        expect(received.single, isA<HeartRateAboveCap>());
+      });
+    });
+
+    test(
+        'does not delay when the panel is not mounted — the gap-closure '
+        'benefit this feature exists for must not regress', () {
+      fakeAsync((async) {
+        final hr = FakeHeartRateService();
+        final container = buildContainer(
+          heartRateService: hr,
+          panelVisible: false,
+          maxHrAlertSettings: const MaxHrAlertSettings(soundEnabled: true),
+        );
+        container.read(_sourceUnderTest);
+
+        hr.emitHeartRate(190);
+        async.flushMicrotasks();
+
+        expect(received, hasLength(1),
+            reason: 'a cap crossing must still speak immediately when the '
+                'HR panel screen is not on screen — the coach is not gated '
+                'behind that screen');
+        expect(received.single, isA<HeartRateAboveCap>());
+      });
+    });
+
+    test(
+        'does not delay when the panel is visible but its sound alert is '
+        'switched off — there is no chime to land after', () {
+      fakeAsync((async) {
+        final hr = FakeHeartRateService();
+        final container = buildContainer(
+          heartRateService: hr,
+          panelVisible: true,
+          maxHrAlertSettings: const MaxHrAlertSettings(soundEnabled: false),
+        );
+        container.read(_sourceUnderTest);
+
+        hr.emitHeartRate(190);
+        async.flushMicrotasks();
+
+        expect(received, hasLength(1));
+      });
+    });
+
+    test(
+        'only the first emission of a crossing is delayed, never the '
+        'capRepeat-driven re-warnings', () {
+      fakeAsync((async) {
+        // Filtered to cap events specifically: 190bpm also sits in zone 5,
+        // and the 30s spent below crosses the (unrelated) 10s zone dwell —
+        // see the same pattern in the "constructor parameters" group above.
+        List<TrainerEvent> capEvents() =>
+            received.whereType<HeartRateAboveCap>().toList();
+
+        final hr = FakeHeartRateService();
+        final container = buildContainer(
+          heartRateService: hr,
+          panelVisible: true,
+          maxHrAlertSettings: const MaxHrAlertSettings(soundEnabled: true),
+        );
+        container.read(_sourceUnderTest);
+
+        hr.emitHeartRate(190);
+        async.elapse(const Duration(milliseconds: 1500));
+        async.flushMicrotasks();
+        expect(capEvents(), hasLength(1));
+
+        for (var i = 0; i < 31; i++) {
+          async.elapse(const Duration(seconds: 1));
+          hr.emitHeartRate(190);
+          async.flushMicrotasks();
+        }
+
+        // The repeat at ~30s must not itself be delayed by a further 1.5s —
+        // it lands on the same flush as the reading that triggers it.
+        expect(capEvents(), hasLength(2));
+      });
+    });
+
+    test(
+        'a recovery inside the delay window cancels the pending warning '
+        'rather than speaking a stale one', () {
+      fakeAsync((async) {
+        final hr = FakeHeartRateService();
+        final container = buildContainer(
+          heartRateService: hr,
+          panelVisible: true,
+          maxHrAlertSettings: const MaxHrAlertSettings(soundEnabled: true),
+          // A short hysteresis dwell so the recovery can land inside the
+          // 1.5s delay window.
+          create: (ref) => HrEventSource(
+            ref,
+            capHysteresisDwell: const Duration(milliseconds: 200),
+          ),
+        );
+        container.read(_sourceUnderTest);
+
+        hr.emitHeartRate(190);
+        async.flushMicrotasks();
+        expect(received, isEmpty);
+
+        async.elapse(const Duration(milliseconds: 300));
+        hr.emitHeartRate(170); // meaningfully below; dwell starts
+        async.flushMicrotasks();
+        async.elapse(const Duration(milliseconds: 250));
+        hr.emitHeartRate(170); // dwell elapses at ~550ms — before the 1.5s
+        async.flushMicrotasks(); // announce delay — a genuine recovery.
+
+        expect(received, hasLength(1),
+            reason: 'the recovery itself always speaks once the hysteresis '
+                'dwell has elapsed, regardless of the pending announcement');
+        expect(received.single, isA<HeartRateBackBelowCap>());
+
+        // The pending above-cap warning must have been cancelled by the
+        // recovery, not merely delayed further — nothing further arrives
+        // once its original 1.5s delay would have elapsed.
+        async.elapse(const Duration(seconds: 5));
+        async.flushMicrotasks();
+
+        expect(received, hasLength(1),
+            reason: 'the cancelled above-cap warning must never speak late');
+      });
+    });
+  });
+
   group('lifecycle', () {
     test('dispose cancels the subscription and the signal-loss timer', () {
       fakeAsync((async) {
@@ -666,6 +852,9 @@ void main() {
           heartRateServiceProvider.overrideWithValue(hr),
           entitlementServiceProvider.overrideWithValue(_AlwaysEntitled()),
           zoneConfigurationProvider.overrideWithValue(_config()),
+          maxHrAlertProvider.overrideWith(
+            () => _SeededMaxHrAlertNotifier(const MaxHrAlertSettings()),
+          ),
         ]);
         final sub = container.read(trainerEventBusProvider).events.listen(
               received.add,
@@ -686,6 +875,49 @@ void main() {
         expect(received, hasLength(1));
 
         unawaited(sub.cancel());
+      });
+    });
+
+    // Requirement F (carried forward from earlier reviews): phase 1 shipped
+    // a Provider.family that was not autoDispose and leaked a second bridge,
+    // which would have made the coach speak every line twice. The analogous
+    // defect here is a duplicate HrEventSource producing duplicate safety
+    // warnings — this is the test that would catch it.
+    test(
+        'reading hrEventSourceProvider twice returns the same instance and '
+        'does not double-emit', () {
+      fakeAsync((async) {
+        final hr = FakeHeartRateService();
+        final container = ProviderContainer(overrides: [
+          heartRateServiceProvider.overrideWithValue(hr),
+          entitlementServiceProvider.overrideWithValue(_AlwaysEntitled()),
+          zoneConfigurationProvider.overrideWithValue(_config()),
+          maxHrAlertProvider.overrideWith(
+            () => _SeededMaxHrAlertNotifier(const MaxHrAlertSettings()),
+          ),
+        ]);
+        addTearDown(container.dispose);
+        final sub = container.read(trainerEventBusProvider).events.listen(
+              received.add,
+            );
+        addTearDown(sub.cancel);
+
+        // Mirrors how the router shell reads the provider on every rebuild
+        // (see coachBridgeProvider's analogous test and its doc comment).
+        final first = container.read(hrEventSourceProvider);
+        final second = container.read(hrEventSourceProvider);
+
+        expect(identical(first, second), isTrue,
+            reason: 'hrEventSourceProvider must not be recreated on repeat '
+                'reads, or a leaked second source would double-subscribe to '
+                'the heart rate stream');
+
+        hr.emitHeartRate(190);
+        async.flushMicrotasks();
+
+        expect(received, hasLength(1),
+            reason: 'a leaked second source would emit every safety '
+                'warning twice');
       });
     });
   });

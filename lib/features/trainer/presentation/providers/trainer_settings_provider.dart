@@ -9,6 +9,8 @@ class TrainerSettings {
     this.speechRate = 0.5,
     this.disclaimerAccepted = false,
     this.personaId = 'steady',
+    this.hrCalloutsEnabled = true,
+    this.hrSafetyWarningsEnabled = true,
   });
 
   final bool enabled;
@@ -18,6 +20,14 @@ class TrainerSettings {
   final bool disclaimerAccepted;
   final String personaId;
 
+  /// Whether the coach announces heart-rate zone changes.
+  final bool hrCalloutsEnabled;
+
+  /// Whether the coach speaks above/below-cap safety cues. Defaults to
+  /// true and is presented in settings as the one to leave switched on —
+  /// but, as the user's own choice, it must remain switchable off.
+  final bool hrSafetyWarningsEnabled;
+
   TrainerSettings copyWith({
     bool? enabled,
     bool? countdownsEnabled,
@@ -25,6 +35,8 @@ class TrainerSettings {
     double? speechRate,
     bool? disclaimerAccepted,
     String? personaId,
+    bool? hrCalloutsEnabled,
+    bool? hrSafetyWarningsEnabled,
   }) {
     return TrainerSettings(
       enabled: enabled ?? this.enabled,
@@ -33,6 +45,9 @@ class TrainerSettings {
       speechRate: speechRate ?? this.speechRate,
       disclaimerAccepted: disclaimerAccepted ?? this.disclaimerAccepted,
       personaId: personaId ?? this.personaId,
+      hrCalloutsEnabled: hrCalloutsEnabled ?? this.hrCalloutsEnabled,
+      hrSafetyWarningsEnabled:
+          hrSafetyWarningsEnabled ?? this.hrSafetyWarningsEnabled,
     );
   }
 }
@@ -60,6 +75,8 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
       speechRate: prefs.getDouble('trainer_speech_rate') ?? 0.5,
       disclaimerAccepted: prefs.getBool('trainer_disclaimer_accepted') ?? false,
       personaId: prefs.getString('trainer_persona') ?? 'steady',
+      hrCalloutsEnabled: prefs.getBool('trainer_hr_callouts') ?? true,
+      hrSafetyWarningsEnabled: prefs.getBool('trainer_hr_safety') ?? true,
     );
   }
 
@@ -85,6 +102,20 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
     state = state.copyWith(encouragementEnabled: value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('trainer_encouragement', value);
+  }
+
+  Future<void> setHrCallouts(bool value) async {
+    await _loading;
+    state = state.copyWith(hrCalloutsEnabled: value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('trainer_hr_callouts', value);
+  }
+
+  Future<void> setHrSafetyWarnings(bool value) async {
+    await _loading;
+    state = state.copyWith(hrSafetyWarningsEnabled: value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('trainer_hr_safety', value);
   }
 
   Future<void> setSpeechRate(double value) async {

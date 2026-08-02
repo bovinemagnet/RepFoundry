@@ -19,6 +19,7 @@ import '../controllers/heart_rate_panel_controller.dart';
 import '../controllers/heart_rate_panel_state.dart';
 import '../providers/chart_window_provider.dart';
 import '../providers/health_profile_provider.dart';
+import '../providers/heart_rate_panel_visibility_provider.dart';
 import '../providers/max_hr_alert_provider.dart';
 import '../providers/zone_bands_provider.dart';
 import '../providers/zone_configuration_provider.dart';
@@ -43,11 +44,23 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
   AudioPlayer? _alertPlayer;
   DateTime? _lastMaxHrAlert;
 
+  /// Captured in [initState] because `ref`/`context` are no longer usable
+  /// once this widget has disposed, and [dispose] needs to reach the
+  /// container to clear [heartRatePanelVisibleProvider].
+  late final ProviderContainer _providerContainer;
+
   @override
   void initState() {
     super.initState();
     _alertPlayer = AudioPlayer();
+    _providerContainer = ProviderScope.containerOf(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Lets HrEventSource know the panel's own max-HR alert chime may
+      // sound, so it can sequence the coach's cap warning to land after it
+      // rather than talking over it. Deferred to the post-frame callback,
+      // like the rest of this method — Riverpod disallows modifying a
+      // provider synchronously during initState/build.
+      ref.read(heartRatePanelVisibleProvider.notifier).setVisible(true);
       _onFirstVisit();
 
       // If cardio already has HR connected, sync it.
@@ -80,6 +93,22 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
 
   @override
   void dispose() {
+    // Deferred to a microtask: Riverpod disallows modifying a provider
+    // synchronously during dispose, since element unmounting happens inside
+    // Flutter's own build/frame pipeline. Guarded against StateError because
+    // the container itself (e.g. the whole app, or a test's ProviderScope)
+    // can finish tearing down before this microtask runs — `disposed` is an
+    // `@internal` test-only getter, so a disposed read is caught instead of
+    // checked for up front.
+    Future.microtask(() {
+      try {
+        _providerContainer
+            .read(heartRatePanelVisibleProvider.notifier)
+            .setVisible(false);
+      } on StateError {
+        // Container already disposed; nothing left to clear.
+      }
+    });
     _alertPlayer?.dispose();
     super.dispose();
   }

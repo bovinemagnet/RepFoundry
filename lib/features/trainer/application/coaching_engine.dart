@@ -115,7 +115,7 @@ class CoachingEngine {
         _onZoneChanged(zoneNumber, effortLabel, hrCalloutsEnabled, now),
       HeartRateAboveCap(:final bpm, :final cap) =>
         _onAboveCap(bpm, cap, now, hrSafetyWarningsEnabled),
-      HeartRateBackBelowCap() => _onBackBelowCap(now),
+      HeartRateBackBelowCap() => _onBackBelowCap(now, hrSafetyWarningsEnabled),
     };
   }
 
@@ -194,17 +194,18 @@ class CoachingEngine {
   /// repeat timer, so a later cap crossing warns immediately rather than
   /// inheriting a stale cooldown.
   ///
-  /// Deliberately not gated by `hrSafetyWarningsEnabled` yet — that setting
-  /// is unreachable until a caller actually surfaces it (Task 4). Whoever
-  /// wires it in here must clear `_aboveCap`/`_lastCapWarningAt` first and
-  /// only then check the toggle, the same order `_onAboveCap` follows: an
-  /// early return before clearing state would leave encouragement suppressed
-  /// for the rest of the session with no event able to lift it.
-  CoachingCue? _onBackBelowCap(DateTime now) {
+  /// `hrSafetyWarningsEnabled` is checked only *after* the state above is
+  /// cleared, the same order `_onAboveCap` follows: an early return before
+  /// clearing state would leave encouragement suppressed for the rest of the
+  /// session with no event able to lift it. A muted user still gets the
+  /// suppression lifted; they just never hear the "back under" line.
+  CoachingCue? _onBackBelowCap(DateTime now, bool hrSafetyWarningsEnabled) {
     if (!_aboveCap) return null;
 
     _aboveCap = false;
     _lastCapWarningAt = null;
+    if (!hrSafetyWarningsEnabled) return null;
+
     return _speak(
       TrainerEventKind.hrBackBelowCap,
       SpeechPriority.milestone,

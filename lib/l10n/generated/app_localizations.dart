@@ -3834,6 +3834,30 @@ abstract class S {
   /// **'Finished. {totalSets} sets in the bank.'**
   String coachSteadyFinish3(int totalSets);
 
+  /// No description provided for @coachSteadyZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone {zoneNumber} — {effortLabel}.'**
+  String coachSteadyZone(int zoneNumber, String effortLabel);
+
+  /// No description provided for @coachSteadyAboveCap1.
+  ///
+  /// In en, this message translates to:
+  /// **'Your heart rate is above your maximum. Ease off and bring it down.'**
+  String get coachSteadyAboveCap1;
+
+  /// No description provided for @coachSteadyAboveCap2.
+  ///
+  /// In en, this message translates to:
+  /// **'Still above your maximum. Slow down, breathe.'**
+  String get coachSteadyAboveCap2;
+
+  /// No description provided for @coachSteadyBackBelowCap.
+  ///
+  /// In en, this message translates to:
+  /// **'Good — you\'re back under your maximum.'**
+  String get coachSteadyBackBelowCap;
+
   /// No description provided for @trainerDisclaimerTitle.
   ///
   /// In en, this message translates to:
@@ -3929,6 +3953,30 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Encouragement'**
   String get trainerEncouragement;
+
+  /// No description provided for @trainerHrCallouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart rate zone callouts'**
+  String get trainerHrCallouts;
+
+  /// No description provided for @trainerHrCalloutsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Announces your training zone as it changes, when a heart rate monitor is connected.'**
+  String get trainerHrCalloutsSubtitle;
+
+  /// No description provided for @trainerHrSafetyWarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart rate safety warnings'**
+  String get trainerHrSafetyWarnings;
+
+  /// No description provided for @trainerHrSafetyWarningsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaks a calm reminder if your heart rate goes above your safe maximum. Recommended to leave switched on.'**
+  String get trainerHrSafetyWarningsSubtitle;
 
   /// No description provided for @trainerReviewDisclaimer.
   ///

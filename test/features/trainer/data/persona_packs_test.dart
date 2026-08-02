@@ -85,6 +85,39 @@ const _spokenKinds = [
   TrainerEventKind.workoutFinished,
 ];
 
+/// Heart-rate cues (phase 2a). Kept separate from [_spokenKinds] because
+/// their variety-count expectations differ (see the brief's exact phrase
+/// lists — one or two phrases per kind, not the three required elsewhere),
+/// but they still need to pass through the uniqueness, resolver, and
+/// denylist loops below.
+const _hrKinds = [
+  TrainerEventKind.hrZoneChanged,
+  TrainerEventKind.hrAboveCap,
+  TrainerEventKind.hrBackBelowCap,
+];
+
+/// Every kind whose phrases must resolve to text and obey the denylist.
+const _allSpokenKinds = [..._spokenKinds, ..._hrKinds];
+
+/// Every persona the app ships. Steady is the only one in v1; iterating a
+/// list (rather than just `steadyPersona`) means the non-empty-bank
+/// assertion below automatically covers Hype and Sergeant once phase 2 adds
+/// them, instead of silently only ever checking Steady.
+const _allPersonas = [steadyPersona];
+
+/// Mirrors the args CoachingEngine attaches to a CoachingCue for this kind
+/// (see coaching_engine.dart) — invoking with the wrong shape would surface
+/// a cast failure at test time rather than mid-workout.
+Map<String, Object> _argsFor(TrainerEventKind kind) => switch (kind) {
+      TrainerEventKind.restCountdown => const {'secondsLeft': 3},
+      TrainerEventKind.workoutFinished => const {'totalSets': 12},
+      TrainerEventKind.hrZoneChanged => const {
+          'zoneNumber': 3,
+          'effortLabel': 'Moderate',
+        },
+      _ => const <String, Object>{},
+    };
+
 void main() {
   test('steady persona has at least three phrases per spoken kind', () {
     for (final kind in _spokenKinds) {
@@ -97,7 +130,7 @@ void main() {
   });
 
   test('phrase keys are unique across the pack', () {
-    final all = _spokenKinds.expand(steadyPersona.phrasesFor).toList();
+    final all = _allSpokenKinds.expand(steadyPersona.phrasesFor).toList();
 
     expect(all.toSet().length, all.length, reason: 'duplicate phrase key');
   });
@@ -106,21 +139,30 @@ void main() {
       'every phrase key in the steady persona has a resolver that produces '
       'text with the args its event kind actually supplies', () {
     final s = lookupS(const Locale('en'));
-    for (final kind in _spokenKinds) {
-      // Mirrors the args CoachingEngine attaches to a CoachingCue for this
-      // kind (see coaching_engine.dart) — invoking with the wrong shape here
-      // would surface a cast failure at test time rather than mid-workout.
-      final args = switch (kind) {
-        TrainerEventKind.restCountdown => const {'secondsLeft': 3},
-        TrainerEventKind.workoutFinished => const {'totalSets': 12},
-        _ => const <String, Object>{},
-      };
+    for (final kind in _allSpokenKinds) {
+      final args = _argsFor(kind);
       for (final key in steadyPersona.phrasesFor(kind)) {
         final builder = phraseResolvers[key];
         expect(builder, isNotNull, reason: 'no resolver entry for $key');
         final text = builder!(s, args);
         expect(text, isNotEmpty, reason: '$key produced empty text');
       }
+    }
+  });
+
+  // Requirement A (carried forward from earlier reviews): _speak returns
+  // null when a phrase bank is empty, so a persona shipped without
+  // hrAboveCap phrases silently degrades the safety path — no error, just
+  // silence. Iterates every persona so Hype and Sergeant are covered the
+  // moment they land, not just Steady.
+  test('every persona has a non-empty cap-warning bank', () {
+    for (final persona in _allPersonas) {
+      expect(
+        persona.phrasesFor(TrainerEventKind.hrAboveCap),
+        isNotEmpty,
+        reason: '${persona.id} persona has no hrAboveCap phrases — the '
+            'safety warning would silently degrade to no speech at all',
+      );
     }
   });
 
@@ -131,12 +173,8 @@ void main() {
     final s = lookupS(const Locale('en'));
     final offences = <String>[];
 
-    for (final kind in _spokenKinds) {
-      final args = switch (kind) {
-        TrainerEventKind.restCountdown => const {'secondsLeft': 3},
-        TrainerEventKind.workoutFinished => const {'totalSets': 12},
-        _ => const <String, Object>{},
-      };
+    for (final kind in _allSpokenKinds) {
+      final args = _argsFor(kind);
       for (final key in steadyPersona.phrasesFor(kind)) {
         final text = _normalise(phraseResolvers[key]!(s, args));
         for (final entry in _bannedLanguage.entries) {

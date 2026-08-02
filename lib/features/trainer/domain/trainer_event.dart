@@ -77,6 +77,15 @@ class WorkoutFinished extends TrainerEvent {
 }
 
 /// The user has settled into a different training zone.
+///
+/// [descriptiveLabel] (e.g. "Aerobic") is carried for parity with
+/// [CalculatedZone] and potential future display/persona use, but the
+/// steady persona's spoken cue deliberately does not use it — see
+/// `phrase_resolver.dart`'s `coachSteadyZone` entry. [effortLabel] (e.g.
+/// "Moderate") already conveys the zone's intensity in a form that reads
+/// naturally out loud; adding the descriptive label on top would lengthen
+/// the cue without giving the user anything actionable, and the same
+/// information is already visible in the zone legend UI.
 class HeartRateZoneChanged extends TrainerEvent {
   const HeartRateZoneChanged({
     required this.zoneNumber,

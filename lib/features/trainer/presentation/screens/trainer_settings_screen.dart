@@ -97,6 +97,21 @@ class _TrainerSettingsScreenState extends ConsumerState<TrainerSettingsScreen> {
             value: settings.encouragementEnabled,
             onChanged: notifier.setEncouragement,
           ),
+          SwitchListTile(
+            title: Text(s.trainerHrCallouts),
+            subtitle: Text(s.trainerHrCalloutsSubtitle),
+            value: settings.hrCalloutsEnabled,
+            onChanged: notifier.setHrCallouts,
+          ),
+          // Listed last among the toggles and with copy explaining why: this
+          // is the one setting the user should leave alone, but — as their
+          // own choice — it must remain switchable off like every other cue.
+          SwitchListTile(
+            title: Text(s.trainerHrSafetyWarnings),
+            subtitle: Text(s.trainerHrSafetyWarningsSubtitle),
+            value: settings.hrSafetyWarningsEnabled,
+            onChanged: notifier.setHrSafetyWarnings,
+          ),
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text(s.trainerReviewDisclaimer),

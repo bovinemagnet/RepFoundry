@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/entitlements/entitlement.dart';
 import 'package:rep_foundry/core/entitlements/entitlement_provider.dart';
 import 'package:rep_foundry/core/entitlements/entitlement_service.dart';
+import 'package:rep_foundry/features/heart_rate/presentation/providers/zone_configuration_provider.dart';
 import 'package:rep_foundry/features/trainer/domain/trainer_event.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/coach_bridge.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/trainer_event_bus.dart';
@@ -88,6 +89,11 @@ void main() {
       ),
       entitlementServiceProvider
           .overrideWithValue(entitlementService ?? _AlwaysEntitled()),
+      // Overridden directly rather than left to resolve through
+      // healthProfileProvider: that chain needs a real client/database
+      // setup this test file doesn't provide. cautionModeProvider is a
+      // plain Provider, so overriding it sidesteps the chain entirely.
+      cautionModeProvider.overrideWithValue(false),
       _bridgeUnderTest.overrideWith((ref) {
         final bridge = CoachBridge(ref, random: Random(seed));
         ref.onDispose(bridge.dispose);
@@ -181,6 +187,7 @@ void main() {
           ),
         ),
         entitlementServiceProvider.overrideWithValue(_AlwaysEntitled()),
+        cautionModeProvider.overrideWithValue(false),
         _bridgeUnderTest.overrideWith((ref) {
           final bridge = CoachBridge(ref, random: Random(seed));
           ref.onDispose(bridge.dispose);
@@ -401,6 +408,7 @@ void main() {
         ),
       ),
       entitlementServiceProvider.overrideWithValue(_AlwaysEntitled()),
+      cautionModeProvider.overrideWithValue(false),
     ]);
     addTearDown(container.dispose);
 

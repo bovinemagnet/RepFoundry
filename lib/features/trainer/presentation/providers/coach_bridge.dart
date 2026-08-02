@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/entitlements/entitlement.dart';
 import '../../../../core/entitlements/entitlement_provider.dart';
 import '../../../../core/entitlements/entitlement_service.dart';
+import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../application/coaching_engine.dart';
 import '../../data/flutter_tts_speech_service.dart';
 import '../../data/persona_packs.dart';
@@ -96,9 +98,12 @@ class CoachBridge {
     // variety bank nor restart the encouragement cooldown.
     final cue = _engine.onEvent(
       event,
-      now: DateTime.now(),
+      now: clock.now(),
       countdownsEnabled: settings.countdownsEnabled,
       encouragementEnabled: settings.encouragementEnabled,
+      hrCalloutsEnabled: settings.hrCalloutsEnabled,
+      hrSafetyWarningsEnabled: settings.hrSafetyWarningsEnabled,
+      cautionMode: _ref.read(cautionModeProvider),
     );
     if (cue != null) {
       final text = resolvePhrase(strings, cue.phraseKey, cue.args);

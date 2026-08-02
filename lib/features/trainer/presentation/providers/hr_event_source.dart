@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hr_zones/hr_zones.dart';
 
 import '../../../../core/providers.dart';
+import '../../../heart_rate/presentation/providers/heart_rate_panel_visibility_provider.dart';
+import '../../../heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../domain/hr_zone_lookup.dart';
 import '../../domain/trainer_event.dart';
@@ -64,11 +66,19 @@ class HrEventSource {
     // cumulative delay — by that point the outage is genuinely extended and
     // the asymmetry favours erring toward silence over a false all-clear.
     Duration signalLossTimeout = const Duration(seconds: 25),
+    // The panel's own chime (see heart_rate_panel_screen.dart's
+    // _checkMaxHrAlert) is the attention-getter and must be heard first — a
+    // chime cuts through instantly where a spoken line takes ~2s to land.
+    // Only the very first HeartRateAboveCap of a crossing is delayed; the
+    // capRepeat-driven re-warnings below have no accompanying chime moment
+    // to sequence after.
+    Duration aboveCapAnnounceDelay = const Duration(milliseconds: 1500),
   })  : _zoneDwell = zoneDwell,
         _capRepeat = capRepeat,
         _capHysteresisMargin = capHysteresisMargin,
         _capHysteresisDwell = capHysteresisDwell,
-        _signalLossTimeout = signalLossTimeout {
+        _signalLossTimeout = signalLossTimeout,
+        _aboveCapAnnounceDelay = aboveCapAnnounceDelay {
     _subscription = _ref.read(heartRateServiceProvider).heartRateStream.listen(
           _onReading,
           onDone: _onSignalLoss,
@@ -87,9 +97,11 @@ class HrEventSource {
   final int _capHysteresisMargin;
   final Duration _capHysteresisDwell;
   final Duration _signalLossTimeout;
+  final Duration _aboveCapAnnounceDelay;
 
   late final StreamSubscription<int> _subscription;
   Timer? _signalLossTimer;
+  Timer? _pendingAboveCapAnnouncement;
 
   int? _currentZone;
   int? _candidateZone;
@@ -162,7 +174,7 @@ class HrEventSource {
       if (!_aboveCap) {
         _aboveCap = true;
         _lastCapWarningAt = now;
-        _emit(HeartRateAboveCap(bpm: bpm, cap: cap));
+        _announceAboveCap(bpm, cap);
         return;
       }
       // _lastCapWarningAt is always non-null here: it is set in the same
@@ -198,7 +210,34 @@ class HrEventSource {
     _aboveCap = false;
     _lastCapWarningAt = null;
     _belowCapSince = null;
+    _pendingAboveCapAnnouncement?.cancel();
+    _pendingAboveCapAnnouncement = null;
     _emit(const HeartRateBackBelowCap());
+  }
+
+  /// Emits the very first [HeartRateAboveCap] of a crossing — see decision 1
+  /// in the phase 2a HR coaching spec. Delayed by [_aboveCapAnnounceDelay]
+  /// only when the panel's own chime is actually expected to sound (its
+  /// sound toggle is on and the panel is mounted); otherwise there is no
+  /// chime to land after, so speaking immediately is correct.
+  void _announceAboveCap(int bpm, int cap) {
+    final shouldDelay = _ref.read(maxHrAlertProvider).soundEnabled &&
+        _ref.read(heartRatePanelVisibleProvider);
+    if (!shouldDelay) {
+      _emit(HeartRateAboveCap(bpm: bpm, cap: cap));
+      return;
+    }
+
+    _pendingAboveCapAnnouncement?.cancel();
+    _pendingAboveCapAnnouncement = Timer(_aboveCapAnnounceDelay, () {
+      _pendingAboveCapAnnouncement = null;
+      // Guards against a recovery that happened during the delay window —
+      // _handleCap's back-below branch already cancels this timer on that
+      // path, but the check is cheap insurance against emitting a stale
+      // warning if that ever changes.
+      if (!_aboveCap) return;
+      _emit(HeartRateAboveCap(bpm: bpm, cap: cap));
+    });
   }
 
   void _resetSignalLossTimer() {
@@ -222,6 +261,8 @@ class HrEventSource {
     _aboveCap = false;
     _lastCapWarningAt = null;
     _belowCapSince = null;
+    _pendingAboveCapAnnouncement?.cancel();
+    _pendingAboveCapAnnouncement = null;
     _emit(const HeartRateBackBelowCap());
   }
 
@@ -232,6 +273,7 @@ class HrEventSource {
   void dispose() {
     unawaited(_subscription.cancel());
     _signalLossTimer?.cancel();
+    _pendingAboveCapAnnouncement?.cancel();
   }
 }
 
