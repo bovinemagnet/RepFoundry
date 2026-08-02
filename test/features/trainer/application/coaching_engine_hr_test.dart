@@ -169,4 +169,171 @@ void main() {
     expect(cue, isNotNull);
     expect(cue!.priority, SpeechPriority.safety);
   });
+
+  group('milestone cues respect the encouragement gate', () {
+    // Fix round 1, Critical 1: WorkoutFinished (and, defensively, every other
+    // milestone-priority cue) must not congratulate the user while their
+    // heart rate is above the safety cap, in caution mode, or in zone 5 —
+    // the engine must not rely on the caller resetting it at the right time.
+    test('workout finished is suppressed above cap', () {
+      final engine = _engine();
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
+
+      final cue = engine.onEvent(
+        const WorkoutFinished(totalSets: 15),
+        now: t0.add(const Duration(seconds: 5)),
+      );
+
+      expect(cue, isNull);
+    });
+
+    test('workout finished is suppressed in caution mode', () {
+      final engine = _engine();
+
+      final cue = engine.onEvent(
+        const WorkoutFinished(totalSets: 15),
+        now: t0,
+        cautionMode: true,
+      );
+
+      expect(cue, isNull);
+    });
+
+    test('workout finished is suppressed in zone 5', () {
+      final engine = _engine();
+      engine.onEvent(
+        const HeartRateZoneChanged(
+            zoneNumber: 5, effortLabel: 'Maximum', descriptiveLabel: 'VO₂ Max'),
+        now: t0,
+      );
+
+      final cue = engine.onEvent(
+        const WorkoutFinished(totalSets: 15),
+        now: t0.add(const Duration(minutes: 1)),
+      );
+
+      expect(cue, isNull);
+    });
+
+    test('workout started is suppressed above cap', () {
+      // Masked in the original implementation only by the bridge resetting
+      // the engine before this event — the engine itself must not depend on
+      // that caller ordering.
+      final engine = _engine();
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
+
+      final cue = engine.onEvent(
+        const WorkoutStarted(),
+        now: t0.add(const Duration(seconds: 5)),
+      );
+
+      expect(cue, isNull);
+    });
+  });
+
+  group('reset clears the new heart-rate state', () {
+    // Fix round 1, Important 3: without this, reset() runs inside other
+    // tests and its lines count as "covered" while nothing asserts the
+    // fields it clears actually unblock the engine afterwards.
+    test('reset lifts above-cap suppression', () {
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
+
+      engine.reset();
+
+      final cue = engine.onEvent(
+        const SetLogged(setNumber: 1, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 1)),
+      );
+
+      expect(cue, isNotNull);
+      expect(engine.isAboveCap, isFalse);
+    });
+
+    test('reset lifts zone-5 suppression', () {
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+      engine.onEvent(
+        const HeartRateZoneChanged(
+            zoneNumber: 5, effortLabel: 'Maximum', descriptiveLabel: 'VO₂ Max'),
+        now: t0,
+      );
+
+      engine.reset();
+
+      final cue = engine.onEvent(
+        const SetLogged(setNumber: 1, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 1)),
+      );
+
+      expect(cue, isNotNull);
+    });
+  });
+
+  group('back below cap without a genuine crossing', () {
+    // Fix round 1, Important 5: the reassurance cue only makes sense as the
+    // bookend to a warning the user actually heard.
+    test('stays silent when the engine was never above cap', () {
+      final engine = _engine();
+
+      final cue = engine.onEvent(const HeartRateBackBelowCap(), now: t0);
+
+      expect(cue, isNull);
+    });
+
+    test('a genuine departure and a fresh crossing both warn', () {
+      // Fix round 1 ruling: resetting _lastCapWarningAt on a genuine
+      // below-cap departure is correct — pinned here so it cannot regress.
+      final engine = _engine();
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
+      engine.onEvent(const HeartRateBackBelowCap(),
+          now: t0.add(const Duration(seconds: 5)));
+
+      final secondCrossing = engine.onEvent(
+        const HeartRateAboveCap(bpm: 180, cap: 170),
+        now: t0.add(const Duration(seconds: 10)),
+      );
+
+      expect(secondCrossing, isNotNull);
+      expect(secondCrossing!.priority, SpeechPriority.safety);
+    });
+  });
+
+  group('hrSafetyWarningsEnabled', () {
+    test('false silences the cap warning without starting its cooldown', () {
+      final engine = _engine();
+      final silenced = engine.onEvent(
+        const HeartRateAboveCap(bpm: 180, cap: 170),
+        now: t0,
+        hrSafetyWarningsEnabled: false,
+      );
+
+      final reEnabled = engine.onEvent(
+        const HeartRateAboveCap(bpm: 182, cap: 170),
+        now: t0.add(const Duration(seconds: 1)),
+      );
+
+      expect(silenced, isNull);
+      expect(reEnabled, isNotNull);
+    });
+
+    test('false still suppresses encouragement while above cap', () {
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+      engine.onEvent(
+        const HeartRateAboveCap(bpm: 180, cap: 170),
+        now: t0,
+        hrSafetyWarningsEnabled: false,
+      );
+
+      final cue = engine.onEvent(
+        const SetLogged(setNumber: 1, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 5)),
+      );
+
+      expect(cue, isNull);
+      expect(engine.isAboveCap, isTrue);
+    });
+  });
 }

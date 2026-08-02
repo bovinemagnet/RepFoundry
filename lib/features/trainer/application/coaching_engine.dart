@@ -72,55 +72,69 @@ class CoachingEngine {
     bool countdownsEnabled = true,
     bool encouragementEnabled = true,
     bool hrCalloutsEnabled = true,
+    bool hrSafetyWarningsEnabled = true,
     bool cautionMode = false,
   }) {
     return switch (event) {
-      WorkoutStarted() => _speak(event.kind, SpeechPriority.milestone, now),
+      WorkoutStarted() => _speak(event.kind, SpeechPriority.milestone, now,
+          cautionMode: cautionMode),
       WorkoutFinished(:final totalSets) => _speak(
           event.kind,
           SpeechPriority.milestone,
           now,
           args: {'totalSets': totalSets},
+          cautionMode: cautionMode,
         ),
-      SetLogged(isPersonalRecord: true) => _encouragementBlocked(cautionMode)
-          ? null
-          : _speak(event.kind, SpeechPriority.milestone, now),
+      SetLogged(isPersonalRecord: true) => _speak(
+          event.kind,
+          SpeechPriority.milestone,
+          now,
+          cautionMode: cautionMode,
+        ),
       SetLogged(isPersonalRecord: false) =>
-        (encouragementEnabled && !_encouragementBlocked(cautionMode))
-            ? _onSetLogged(now)
-            : null,
+        encouragementEnabled ? _onSetLogged(now, cautionMode) : null,
       RestCountdown(:final secondsLeft) => countdownsEnabled
           ? _speak(
               event.kind,
               SpeechPriority.countdown,
               now,
               args: {'secondsLeft': secondsLeft},
+              encouragement: false,
             )
           : null,
       RestFinished() => countdownsEnabled
-          ? _speak(event.kind, SpeechPriority.countdown, now)
+          ? _speak(event.kind, SpeechPriority.countdown, now,
+              encouragement: false)
           : null,
       RestStarted() => null,
       HeartRateZoneChanged(:final zoneNumber, :final effortLabel) =>
         _onZoneChanged(zoneNumber, effortLabel, hrCalloutsEnabled, now),
-      HeartRateAboveCap(:final bpm, :final cap) => _onAboveCap(bpm, cap, now),
+      HeartRateAboveCap(:final bpm, :final cap) =>
+        _onAboveCap(bpm, cap, now, hrSafetyWarningsEnabled),
       HeartRateBackBelowCap() => _onBackBelowCap(now),
     };
   }
 
-  /// True while no encouragement-type cue — motivational chatter or a
-  /// personal record — may be spoken: above the safety cap, in caution mode,
-  /// or once the user has reached zone 5.
+  /// True while no encouragement-type cue — motivational chatter, a
+  /// personal record, or another milestone announcement — may be spoken:
+  /// above the safety cap, in caution mode, or once the user has reached
+  /// zone 5.
   ///
-  /// Every encouragement-producing branch in [onEvent] routes through this
-  /// single check so a future event kind cannot quietly bypass the rule.
+  /// Checked from exactly one place, [_speak] itself, so every cue the
+  /// engine can produce passes through it by default; a path that must
+  /// bypass the rule (countdowns, zone callouts, the safety cues
+  /// themselves) opts out explicitly with `encouragement: false` rather
+  /// than the rule having to be remembered at each call site.
   bool _encouragementBlocked(bool cautionMode) =>
       _aboveCap || cautionMode || _currentZone == 5;
 
   /// Records the new zone unconditionally — zone 5 must be tracked even when
   /// callouts are switched off — and speaks it unless callouts are disabled
   /// or the reading is above cap (rule: encouragement, including zone
-  /// callouts, is suppressed while above cap).
+  /// callouts, is suppressed while above cap). Exempted from the shared
+  /// encouragement gate because, unlike encouragement, a zone callout must
+  /// still fire in caution mode and in zone 5 (that event is what sets the
+  /// zone to 5 in the first place).
   CoachingCue? _onZoneChanged(
     int zoneNumber,
     String effortLabel,
@@ -134,14 +148,25 @@ class CoachingEngine {
       SpeechPriority.milestone,
       now,
       args: {'zoneNumber': zoneNumber, 'effortLabel': effortLabel},
+      encouragement: false,
     );
   }
 
-  /// Safety path: never gated by [hrCalloutsEnabled] or caution mode, and
-  /// repeats no more often than [_capWarningRepeat] while the reading stays
-  /// above the cap.
-  CoachingCue? _onAboveCap(int bpm, int cap, DateTime now) {
+  /// Safety path: never gated by [hrCalloutsEnabled], caution mode, or zone —
+  /// only by [hrSafetyWarningsEnabled], the setting the user must
+  /// deliberately switch off. The above-cap flag is recorded before that
+  /// check so encouragement suppression still applies even when the audible
+  /// warning itself is silenced. Repeats no more often than
+  /// [_capWarningRepeat] while the reading stays above the cap.
+  CoachingCue? _onAboveCap(
+    int bpm,
+    int cap,
+    DateTime now,
+    bool hrSafetyWarningsEnabled,
+  ) {
     _aboveCap = true;
+    if (!hrSafetyWarningsEnabled) return null;
+
     final lastWarning = _lastCapWarningAt;
     if (lastWarning != null &&
         now.difference(lastWarning) < _capWarningRepeat) {
@@ -153,21 +178,31 @@ class CoachingEngine {
       SpeechPriority.safety,
       now,
       args: {'bpm': bpm, 'cap': cap},
+      encouragement: false,
     );
     if (cue != null) _lastCapWarningAt = now;
     return cue;
   }
 
-  /// Lifts the above-cap suppression and resets the repeat timer, so a later
-  /// cap crossing warns immediately rather than inheriting a stale cooldown.
+  /// The reassurance cue only makes sense as the bookend to a warning the
+  /// user actually heard, so it stays silent unless the engine was actually
+  /// tracking an above-cap episode. Lifts the suppression and resets the
+  /// repeat timer, so a later cap crossing warns immediately rather than
+  /// inheriting a stale cooldown.
   CoachingCue? _onBackBelowCap(DateTime now) {
+    if (!_aboveCap) return null;
+
     _aboveCap = false;
     _lastCapWarningAt = null;
     return _speak(
-        TrainerEventKind.hrBackBelowCap, SpeechPriority.milestone, now);
+      TrainerEventKind.hrBackBelowCap,
+      SpeechPriority.milestone,
+      now,
+      encouragement: false,
+    );
   }
 
-  CoachingCue? _onSetLogged(DateTime now) {
+  CoachingCue? _onSetLogged(DateTime now, bool cautionMode) {
     _setsSinceEncouragement++;
     if (_setsSinceEncouragement < _encouragementQuota) return null;
 
@@ -180,6 +215,7 @@ class CoachingEngine {
       TrainerEventKind.setLogged,
       SpeechPriority.encouragement,
       now,
+      cautionMode: cautionMode,
     );
     if (cue != null) {
       _setsSinceEncouragement = 0;
@@ -201,7 +237,11 @@ class CoachingEngine {
     SpeechPriority priority,
     DateTime now, {
     Map<String, Object> args = const {},
+    bool encouragement = true,
+    bool cautionMode = false,
   }) {
+    if (encouragement && _encouragementBlocked(cautionMode)) return null;
+
     final phrase = _pickPhrase(kind);
     if (phrase == null) return null;
 
