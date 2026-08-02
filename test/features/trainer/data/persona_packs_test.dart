@@ -151,18 +151,26 @@ void main() {
   });
 
   // Requirement A (carried forward from earlier reviews): _speak returns
-  // null when a phrase bank is empty, so a persona shipped without
-  // hrAboveCap phrases silently degrades the safety path — no error, just
-  // silence. Iterates every persona so Hype and Sergeant are covered the
-  // moment they land, not just Steady.
-  test('every persona has a non-empty cap-warning bank', () {
+  // null when a phrase bank is empty, so a persona shipped without phrases
+  // for one of these kinds silently degrades to no speech at all — no
+  // error, just silence. Iterates every persona so Hype and Sergeant are
+  // covered the moment they land, not just Steady.
+  //
+  // Fix round 1: this previously checked hrAboveCap only. The
+  // uniqueness/resolver/denylist loops above iterate `phrasesFor(kind)`,
+  // which passes vacuously on an empty bank — without an explicit
+  // non-empty assertion for every HR kind, hrZoneChanged or hrBackBelowCap
+  // could ship with no phrases and nothing here would catch it.
+  test('every persona has a non-empty bank for every HR cue kind', () {
     for (final persona in _allPersonas) {
-      expect(
-        persona.phrasesFor(TrainerEventKind.hrAboveCap),
-        isNotEmpty,
-        reason: '${persona.id} persona has no hrAboveCap phrases — the '
-            'safety warning would silently degrade to no speech at all',
-      );
+      for (final kind in _hrKinds) {
+        expect(
+          persona.phrasesFor(kind),
+          isNotEmpty,
+          reason: '${persona.id} persona has no $kind phrases — that cue '
+              'would silently degrade to no speech at all',
+        );
+      }
     }
   });
 

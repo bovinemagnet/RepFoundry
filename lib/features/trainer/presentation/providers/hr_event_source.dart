@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hr_zones/hr_zones.dart';
 
 import '../../../../core/providers.dart';
+import '../../../heart_rate/presentation/controllers/heart_rate_panel_controller.dart';
 import '../../../heart_rate/presentation/providers/heart_rate_panel_visibility_provider.dart';
 import '../../../heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
@@ -217,12 +218,29 @@ class HrEventSource {
 
   /// Emits the very first [HeartRateAboveCap] of a crossing — see decision 1
   /// in the phase 2a HR coaching spec. Delayed by [_aboveCapAnnounceDelay]
-  /// only when the panel's own chime is actually expected to sound (its
-  /// sound toggle is on and the panel is mounted); otherwise there is no
-  /// chime to land after, so speaking immediately is correct.
+  /// only when the panel's own chime is actually expected to sound:
+  /// its sound toggle is on, the panel is mounted, *and* it is actively
+  /// monitoring — `_checkMaxHrAlert` in `heart_rate_panel_screen.dart`
+  /// returns immediately if `!panelState.isMonitoring`, before it ever gets
+  /// to the sound toggle, so a panel that is merely open (e.g. connected but
+  /// paused) has no chime coming and must not defer the safety line either.
+  ///
+  /// Two further conditions gate the chime and are **not** mirrored here,
+  /// deliberately: `_checkMaxHrAlert`'s own `currentHr == null` guard is
+  /// moot in this context (a fresh [bpm] reading is exactly what got us
+  /// here), and its 15s alert cooldown (`_lastMaxHrAlert`) is private
+  /// `State` on `_HeartRatePanelScreenState` with no provider exposing it —
+  /// mirroring it would mean promoting that cooldown into shared state
+  /// purely so a second, unrelated consumer could read it, which is a
+  /// bigger change than this file's job. The residual gap: a second
+  /// crossing landing inside the chime's own cooldown window still defers
+  /// the coach's line by 1.5s for a chime that won't actually sound.
+  /// Recorded here rather than silently accepted — no worse than speaking
+  /// slightly late, never a missed or wrong warning.
   void _announceAboveCap(int bpm, int cap) {
     final shouldDelay = _ref.read(maxHrAlertProvider).soundEnabled &&
-        _ref.read(heartRatePanelVisibleProvider);
+        _ref.read(heartRatePanelVisibleProvider) &&
+        _ref.read(heartRatePanelProvider).isMonitoring;
     if (!shouldDelay) {
       _emit(HeartRateAboveCap(bpm: bpm, cap: cap));
       return;

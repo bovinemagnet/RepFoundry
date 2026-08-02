@@ -9,6 +9,8 @@ import 'package:rep_foundry/core/entitlements/entitlement_provider.dart';
 import 'package:rep_foundry/core/entitlements/entitlement_service.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
+import 'package:rep_foundry/features/heart_rate/presentation/controllers/heart_rate_panel_controller.dart';
+import 'package:rep_foundry/features/heart_rate/presentation/controllers/heart_rate_panel_state.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/heart_rate_panel_visibility_provider.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/zone_configuration_provider.dart';
@@ -34,6 +36,22 @@ class _SeededMaxHrAlertNotifier extends MaxHrAlertNotifier {
 
   @override
   MaxHrAlertSettings build() => _seed;
+}
+
+/// Pushes a fixed [HeartRatePanelState] synchronously — used only to control
+/// `isMonitoring` for the sequencing-delay tests below (fix round 1: the
+/// delay predicate now also checks it, since the panel's own chime never
+/// sounds while paused).
+class _SeededPanelNotifier extends HeartRatePanelController {
+  _SeededPanelNotifier(this._seed);
+
+  final HeartRatePanelState _seed;
+
+  @override
+  HeartRatePanelState build() {
+    super.build();
+    return _seed;
+  }
 }
 
 /// A minimal [HeartRateService] whose stream can be made to emit an error,
@@ -158,6 +176,10 @@ void main() {
     // every existing test's timing is unaffected — the sequencing delay only
     // ever activates when a test opts in via [panelVisible].
     bool panelVisible = false,
+    // Defaults true so tests that only pass `panelVisible: true` keep
+    // exercising the delay without also having to seed monitoring — the
+    // dedicated "not monitoring" test below is the one that sets this false.
+    bool panelMonitoring = true,
     MaxHrAlertSettings maxHrAlertSettings = const MaxHrAlertSettings(),
   }) {
     final container = ProviderContainer(overrides: [
@@ -176,6 +198,11 @@ void main() {
       // in-memory only and never touches SharedPreferences.
       maxHrAlertProvider.overrideWith(
         () => _SeededMaxHrAlertNotifier(maxHrAlertSettings),
+      ),
+      heartRatePanelProvider.overrideWith(
+        () => _SeededPanelNotifier(
+          HeartRatePanelState(isMonitoring: panelMonitoring),
+        ),
       ),
       _sourceUnderTest.overrideWith(create ?? (ref) => HrEventSource(ref)),
     ]);
@@ -714,6 +741,32 @@ void main() {
           heartRateService: hr,
           panelVisible: true,
           maxHrAlertSettings: const MaxHrAlertSettings(soundEnabled: false),
+        );
+        container.read(_sourceUnderTest);
+
+        hr.emitHeartRate(190);
+        async.flushMicrotasks();
+
+        expect(received, hasLength(1));
+      });
+    });
+
+    // Fix round 1: the delay predicate was tightened to also check
+    // isMonitoring, since heart_rate_panel_screen.dart's _checkMaxHrAlert
+    // returns before ever consulting the sound toggle when the panel isn't
+    // actively monitoring — a panel that is merely open (e.g. connected but
+    // paused) has no chime coming.
+    test(
+        'does not delay when the panel is visible and its sound alert is on '
+        'but it is not actively monitoring — there is no chime to land '
+        'after either', () {
+      fakeAsync((async) {
+        final hr = FakeHeartRateService();
+        final container = buildContainer(
+          heartRateService: hr,
+          panelVisible: true,
+          panelMonitoring: false,
+          maxHrAlertSettings: const MaxHrAlertSettings(soundEnabled: true),
         );
         container.read(_sourceUnderTest);
 

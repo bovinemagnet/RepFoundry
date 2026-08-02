@@ -186,6 +186,13 @@ void main() {
       expect(speech.spoken, hasLength(2));
       expect(speech.spoken.last, contains('maximum'));
 
+      // Clears the engine's 20s encouragement cooldown, which the cap
+      // crossing's speak just started (via clock.now(), driven by this same
+      // fake clock). Without this, the loop below is blocked by the
+      // cooldown before it ever reaches the above-cap suppression check —
+      // it would pass even with that suppression deleted entirely.
+      async.elapse(const Duration(seconds: 21));
+
       // Encouragement goes silent above cap: push comfortably more than the
       // engine's max encouragement quota (3 sets) — if suppression were
       // broken, at least one of these would speak regardless of the exact
@@ -201,11 +208,20 @@ void main() {
               'the safety cap');
 
       // Back below cap (hysteresis: meaningfully below for the dwell).
+      // 140, not 170: by now the 21s elapse above has left the zone-5
+      // candidate (started by the 190 reading) sitting well past its own
+      // 10s dwell, so a reading that still sits in zone 5 (>=162) would
+      // silently promote it — engine correctly never speaks that (still
+      // above cap), but it would leave `_currentZone == 5` afterwards, and
+      // encouragement never fires in zone 5 by design, permanently
+      // confounding the "resumes below cap" assertion below with an
+      // unrelated suppression rule. 140 matches the zone (3) already
+      // promoted at the top of this test, so no candidate is even pending.
       async.elapse(const Duration(seconds: 1));
-      hr.emitHeartRate(170);
+      hr.emitHeartRate(140);
       async.flushMicrotasks();
       async.elapse(const Duration(seconds: 5));
-      hr.emitHeartRate(170);
+      hr.emitHeartRate(140);
       async.flushMicrotasks();
 
       expect(speech.spoken, hasLength(3));
@@ -278,6 +294,84 @@ void main() {
       expect(speech.spoken, isEmpty,
           reason: 'the user switched safety warnings off — that choice '
               'must be honoured end to end');
+    });
+  });
+
+  // Fix round 1: cautionMode and hrCalloutsEnabled were only exercised at
+  // the engine layer — every bridge/integration test pinned
+  // cautionModeProvider to false and none drove hrCalloutsEnabled: false
+  // through real TrainerSettings, so the suite stayed green even with both
+  // hardcoded in coach_bridge.dart. These two prove the bridge itself
+  // actually reads them, not just that the engine honours them once told.
+  test(
+      'cautionMode true silences encouragement but still speaks a cap '
+      'warning', () {
+    fakeAsync((async) {
+      final hr = FakeHeartRateService();
+      final speech = SilentSpeechService();
+      final container = buildContainer(
+        heartRateService: hr,
+        speechService: speech,
+        cautionMode: true,
+      );
+      mountCoach(container);
+
+      // Over-provisioned past the engine's max encouragement quota (3
+      // sets), same reasoning as the main test above: `_lastSpokenAt` is
+      // null at the start of this test, so nothing here is blocked by the
+      // cooldown gate — a hardcoded `cautionMode: false` in the bridge
+      // would let at least one of these through.
+      for (var setNumber = 1; setNumber <= 5; setNumber++) {
+        container.read(trainerEventBusProvider).emit(
+              SetLogged(setNumber: setNumber, isPersonalRecord: false),
+            );
+        async.flushMicrotasks();
+      }
+      expect(speech.spoken, isEmpty,
+          reason: 'caution mode must suppress encouragement — this has to '
+              'come from the bridge actually reading cautionModeProvider, '
+              'not a hardcoded false');
+
+      hr.emitHeartRate(190);
+      async.flushMicrotasks();
+      expect(speech.spoken, hasLength(1),
+          reason: 'the safety cue is never gated by caution mode');
+      expect(speech.spoken.single, contains('maximum'));
+    });
+  });
+
+  test(
+      'hrCalloutsEnabled false silences the zone callout but still speaks '
+      'a cap warning', () {
+    fakeAsync((async) {
+      final hr = FakeHeartRateService();
+      final speech = SilentSpeechService();
+      final container = buildContainer(
+        heartRateService: hr,
+        speechService: speech,
+        settings: const TrainerSettings(
+          enabled: true,
+          disclaimerAccepted: true,
+          hrCalloutsEnabled: false,
+        ),
+      );
+      mountCoach(container);
+
+      hr.emitHeartRate(130); // zone 3
+      async.flushMicrotasks();
+      async.elapse(const Duration(seconds: 10));
+      hr.emitHeartRate(130);
+      async.flushMicrotasks();
+      expect(speech.spoken, isEmpty,
+          reason: 'hrCalloutsEnabled is off — the zone callout must not '
+              'speak, and this has to come from the bridge actually '
+              'reading the setting, not a hardcoded true');
+
+      hr.emitHeartRate(190);
+      async.flushMicrotasks();
+      expect(speech.spoken, hasLength(1),
+          reason: 'the safety cue is never gated by hrCalloutsEnabled');
+      expect(speech.spoken.single, contains('maximum'));
     });
   });
 }
