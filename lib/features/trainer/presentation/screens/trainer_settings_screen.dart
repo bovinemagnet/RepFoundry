@@ -61,8 +61,8 @@ class _TrainerSettingsScreenState extends ConsumerState<TrainerSettingsScreen> {
           ListTile(title: Text(s.trainerPersona)),
           RadioGroup<String>(
             groupValue: settings.personaId,
-            onChanged: (value) {
-              if (value != null) notifier.setPersona(value);
+            onChanged: (value) async {
+              if (value != null) await notifier.setPersona(value);
             },
             child: Column(
               children: [

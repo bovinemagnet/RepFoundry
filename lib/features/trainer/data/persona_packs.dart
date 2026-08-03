@@ -1,13 +1,24 @@
 import '../domain/persona.dart';
 import '../domain/trainer_event.dart';
 
-/// Shared inspirational quote bank (phase 2, spec §5): spoken at workout
-/// start and after rests of two minutes or longer, regardless of which
-/// persona is selected. Public-domain or long-out-of-copyright sources only
-/// — see the phrase text in `app_en.arb` for attributions. Attached to every
-/// persona's [TrainerEventKind.quote] bank rather than kept as a standalone
-/// list, so the existing per-persona uniqueness/resolver/denylist test loops
-/// cover it automatically instead of needing a parallel set of checks.
+/// Shared inspirational quote bank (spec §5). Public-domain sources only,
+/// each pinned to a specific out-of-copyright edition or translation — see
+/// the sourcing table in the fix-round report for the edition relied on per
+/// entry; a quote whose provenance could not be pinned to a specific PD text
+/// was dropped rather than kept on a general "old author" assumption, since
+/// a translator's own copyright is independent of the original author's.
+///
+/// **Not yet wired to any event.** No `TrainerEvent` currently carries
+/// `TrainerEventKind.quote`, and `CoachingEngine.onEvent` has no case for it,
+/// so nothing in the app speaks these phrases yet — attaching them here is
+/// content preparation only. Spoken-timing behaviour ("workout start and
+/// after rests of two minutes or longer", per spec §5) is tracked as a
+/// follow-up, issue #TBD.
+///
+/// Attached to every persona's [TrainerEventKind.quote] bank rather than
+/// kept as a standalone list, so the existing per-persona
+/// uniqueness/resolver/denylist test loops cover it automatically instead of
+/// needing a parallel set of checks.
 const List<String> _quoteBank = [
   'coachQuote1',
   'coachQuote2',
@@ -33,18 +44,6 @@ const List<String> _quoteBank = [
   'coachQuote22',
   'coachQuote23',
   'coachQuote24',
-  'coachQuote25',
-  'coachQuote26',
-  'coachQuote27',
-  'coachQuote28',
-  'coachQuote29',
-  'coachQuote30',
-  'coachQuote31',
-  'coachQuote32',
-  'coachQuote33',
-  'coachQuote34',
-  'coachQuote35',
-  'coachQuote36',
 ];
 
 /// Calm and measured. The only persona in v1; Hype and Sergeant follow in
@@ -107,8 +106,14 @@ const Persona steadyPersona = Persona(
 
 /// Energetic and celebratory (phase 2, spec §5). Excitement is aimed at
 /// completion and consistency only — never at lifting more or lifting
-/// heavier, and heart-rate safety cues stay calm rather than hyped (see
-/// `coachHypeAboveCap*`/`coachHypeBackBelowCap`).
+/// heavier, and every heart-rate cue stays calm and informational rather
+/// than hyped (see `coachHypeZone`, `coachHypeAboveCap*`,
+/// `coachHypeBackBelowCap`). This matters most for `coachHypeZone`: unlike
+/// the encouragement bank, `_onZoneChanged` exempts zone callouts from the
+/// encouragement-suppression gate (`encouragement: false`), so this line is
+/// spoken even in caution mode and at Zone 5 — praising the intensity there
+/// would land on exactly the user it must never land on. Fix round 1:
+/// `coachHypeZone` previously read "…Nice work getting there!"
 const Persona hypePersona = Persona(
   id: 'hype',
   phrasesByKind: {

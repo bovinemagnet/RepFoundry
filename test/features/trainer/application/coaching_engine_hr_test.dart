@@ -21,6 +21,24 @@ const _testPersona = Persona(
   },
 );
 
+/// A second, distinctly-keyed persona for the `persona` setter group below —
+/// switching to this and back proves which bank an engine actually draws
+/// from, the same way `_testPersona` alone could not.
+const _otherPersona = Persona(
+  id: 'other',
+  phrasesByKind: {
+    TrainerEventKind.workoutStarted: ['other-start1'],
+    TrainerEventKind.setLogged: ['other-set1'],
+    TrainerEventKind.personalRecord: ['other-pr1'],
+    TrainerEventKind.restCountdown: ['other-count1'],
+    TrainerEventKind.restFinished: ['other-go1'],
+    TrainerEventKind.workoutFinished: ['other-done1'],
+    TrainerEventKind.hrZoneChanged: ['other-zone1'],
+    TrainerEventKind.hrAboveCap: ['other-abovecap1'],
+    TrainerEventKind.hrBackBelowCap: ['other-backbelow1'],
+  },
+);
+
 /// Fixed cadence by default so tests stay deterministic.
 CoachingEngine _engine({
   int encouragementEverySets = 2,
@@ -410,6 +428,85 @@ void main() {
       expect(cue, isNotNull,
           reason: 'encouragement must resume once genuinely back below cap, '
               'even though the toggle kept the bookend line silent');
+    });
+  });
+
+  group('persona setter', () {
+    // Fix round 1: CoachBridge used to react to a persona change by
+    // discarding the CoachingEngine and building a fresh one, which reset
+    // every piece of session state — including `_aboveCap` — along with the
+    // phrase bank. `CoachingEngine.persona` exists so the bridge (or any
+    // other caller) can swap the phrase bank in place instead, leaving live
+    // heart-rate safety state untouched.
+    test('above cap, then a persona switch, then SetLogged produces no cue',
+        () {
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
+      expect(engine.isAboveCap, isTrue);
+
+      engine.persona = _otherPersona;
+
+      final cue = engine.onEvent(
+        const SetLogged(setNumber: 1, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 1)),
+      );
+
+      expect(cue, isNull,
+          reason: 'still above cap after the switch — a rebuilt engine that '
+              'reset _aboveCap to false would let this speak');
+      expect(engine.isAboveCap, isTrue,
+          reason: 'the switch must not have touched the safety state');
+    });
+
+    test(
+        'zone stays tracked across a persona switch, so the Zone 5 '
+        'encouragement ceiling still holds', () {
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+      engine.onEvent(
+        const HeartRateZoneChanged(
+          zoneNumber: 5,
+          effortLabel: 'Maximum',
+          descriptiveLabel: 'Maximum',
+        ),
+        now: t0,
+      );
+
+      engine.persona = _otherPersona;
+
+      final cue = engine.onEvent(
+        const SetLogged(setNumber: 1, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 1)),
+      );
+
+      expect(cue, isNull,
+          reason: 'a rebuilt engine that reset _currentZone to null would '
+              'have lifted the Zone 5 encouragement ceiling for the rest of '
+              'the session, with no later event able to restore it');
+    });
+
+    test(
+        'once safety allows speech again, the new persona\'s bank is what '
+        'actually speaks', () {
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
+
+      engine.persona = _otherPersona;
+
+      engine.onEvent(
+        const HeartRateBackBelowCap(),
+        now: t0.add(const Duration(seconds: 1)),
+      );
+      final cue = engine.onEvent(
+        const SetLogged(setNumber: 1, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 2)),
+      );
+
+      expect(cue, isNotNull);
+      expect(_otherPersona.phrasesFor(TrainerEventKind.setLogged),
+          contains(cue!.phraseKey));
     });
   });
 }

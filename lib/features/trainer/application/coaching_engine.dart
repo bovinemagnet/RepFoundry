@@ -20,8 +20,29 @@ class CoachingEngine {
     _encouragementQuota = _pickEncouragementQuota();
   }
 
-  final Persona _persona;
+  Persona _persona;
   final Random _random;
+
+  /// Swaps the persona in place, rather than requiring the caller to
+  /// construct a new engine.
+  ///
+  /// Fix round 1: `CoachBridge` used to react to a persona change by
+  /// throwing away the whole engine and building a fresh one. That silently
+  /// discarded live heart-rate safety state — `_aboveCap`, `_currentZone`,
+  /// `_lastCapWarningAt`, the cap-warning repeat cooldown — along with it.
+  /// Losing `_currentZone` is the sharpest edge: [HeartRateZoneChanged] only
+  /// fires on a zone *change*, so a user sitting in Zone 5 who then switches
+  /// voice would get the Zone-5 encouragement ceiling lifted for the rest of
+  /// the session, with no later event able to restore it. Losing `_aboveCap`
+  /// lifts above-cap suppression for up to [_capWarningRepeat], long enough
+  /// for a milestone cue to slip through in exactly the window it exists to
+  /// block. Setting `_persona` in place keeps all of that session state
+  /// intact; only which phrase bank [_pickPhrase] draws from changes. A
+  /// persona key already spoken this session but absent from the new
+  /// persona's bank simply never matches anything in [_spokenPhrases] again
+  /// — harmless, since [_pickPhrase] only ever reads keys out of the
+  /// *current* persona's own bank.
+  set persona(Persona value) => _persona = value;
 
   /// Minimum quiet period between encouragement cues. Countdown, milestone,
   /// and safety cues are exempt — constant chatter is the commonest complaint

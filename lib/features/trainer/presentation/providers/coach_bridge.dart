@@ -36,10 +36,10 @@ final speechServiceProvider = Provider<SpeechService>((ref) {
 /// instance in via [strings] on every build, so a locale change updates the
 /// existing subscription in place instead of leaking a second one.
 class CoachBridge {
-  CoachBridge(this._ref, {Random? random}) : _random = random {
+  CoachBridge(this._ref, {Random? random}) {
     _engine = CoachingEngine(
       persona: personaForId(_ref.read(trainerSettingsProvider).personaId),
-      random: _random,
+      random: random,
     );
     _subscription = _ref.read(trainerEventBusProvider).events.listen(_onEvent);
     // The master switch must cut off in-flight speech immediately, rather
@@ -49,16 +49,17 @@ class CoachBridge {
       if ((previous?.enabled ?? false) && !next.enabled) {
         unawaited(_ref.read(speechServiceProvider).stop());
       }
-      // A persona switch takes effect from the next cue onward: the engine
-      // is rebuilt around the newly selected pack, reusing the same random
-      // source so seeded tests stay reproducible across the switch. Without
-      // this, `TrainerSettings.personaId` would persist but the bridge would
-      // keep speaking Steady's bank regardless of what the user picked.
+      // A persona switch takes effect from the next cue onward. Fix round 1:
+      // this used to discard the whole engine and build a fresh one, which
+      // silently threw away live heart-rate safety state (`_aboveCap`,
+      // `_currentZone`, the cap-warning cooldown) along with it — see
+      // `CoachingEngine.persona`'s doc comment for why that mattered. Setting
+      // the persona in place instead keeps that state intact; only the
+      // phrase bank changes. Without reacting to the change at all,
+      // `TrainerSettings.personaId` would persist but the bridge would keep
+      // speaking Steady's bank regardless of what the user picked.
       if (previous != null && previous.personaId != next.personaId) {
-        _engine = CoachingEngine(
-          persona: personaForId(next.personaId),
-          random: _random,
-        );
+        _engine.persona = personaForId(next.personaId);
       }
     });
     // Losing the entitlement mid-utterance must silence the coach for the
@@ -89,8 +90,7 @@ class CoachBridge {
   /// dropped rather than crashing.
   S? strings;
 
-  final Random? _random;
-  late CoachingEngine _engine;
+  late final CoachingEngine _engine;
   late final StreamSubscription<TrainerEvent> _subscription;
   late final ProviderSubscription<EntitlementService> _entitlementSubscription;
 

@@ -151,12 +151,19 @@ void main() {
   });
 
   test('the shared quote bank has a healthy number of entries', () {
-    // "~40" per spec §5; the brief allows shipping fewer if that keeps every
-    // entry clean rather than padding the count with a risky attribution.
+    // "~40" per spec §5, but fix round 1 traced a licensing problem back to
+    // this bank (a copyrighted song lyric with a false author credit, a
+    // copyrighted translation presented as public-domain antiquity, and
+    // several misattributed/apocryphal "quotes") to a licensing method that
+    // checked the original author's death date but not the translator's or
+    // the attribution's accuracy. Re-auditing every entry against a named
+    // pre-1929 edition or translation — dropping anything that couldn't be
+    // pinned down — took the count from 36 to 24. Fewer, individually
+    // verified entries beat a rounder number with an unverified one in it.
     for (final persona in _allPersonas) {
       expect(
         persona.phrasesFor(TrainerEventKind.quote).length,
-        greaterThanOrEqualTo(30),
+        greaterThanOrEqualTo(20),
         reason: '${persona.id} persona has too thin a quote bank',
       );
     }

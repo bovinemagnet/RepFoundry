@@ -134,18 +134,6 @@ final Map<String, PhraseBuilder> phraseResolvers = {
   'coachQuote22': (s, _) => s.coachQuote22,
   'coachQuote23': (s, _) => s.coachQuote23,
   'coachQuote24': (s, _) => s.coachQuote24,
-  'coachQuote25': (s, _) => s.coachQuote25,
-  'coachQuote26': (s, _) => s.coachQuote26,
-  'coachQuote27': (s, _) => s.coachQuote27,
-  'coachQuote28': (s, _) => s.coachQuote28,
-  'coachQuote29': (s, _) => s.coachQuote29,
-  'coachQuote30': (s, _) => s.coachQuote30,
-  'coachQuote31': (s, _) => s.coachQuote31,
-  'coachQuote32': (s, _) => s.coachQuote32,
-  'coachQuote33': (s, _) => s.coachQuote33,
-  'coachQuote34': (s, _) => s.coachQuote34,
-  'coachQuote35': (s, _) => s.coachQuote35,
-  'coachQuote36': (s, _) => s.coachQuote36,
 };
 
 String? resolvePhrase(S s, String key, Map<String, Object> args) {

@@ -2214,7 +2214,7 @@ class SEn extends S {
 
   @override
   String coachHypeZone(int zoneNumber, String effortLabel) {
-    return 'Zone $zoneNumber — $effortLabel. Nice work getting there!';
+    return 'Zone $zoneNumber — $effortLabel.';
   }
 
   @override
@@ -2312,144 +2312,95 @@ class SEn extends S {
 
   @override
   String get coachQuote1 =>
-      'You have power over your mind, not outside events. Realise this, and you will find strength. — Marcus Aurelius';
+      'No longer talk at all about the kind of man that a good man ought to be, but be such. — Marcus Aurelius';
 
   @override
   String get coachQuote2 =>
-      'Waste no more time arguing about what a good man should be. Be one. — Marcus Aurelius';
-
-  @override
-  String get coachQuote3 =>
-      'The impediment to action advances action. What stands in the way becomes the way. — Marcus Aurelius';
-
-  @override
-  String get coachQuote4 =>
       'If it is not right, do not do it. If it is not true, do not say it. — Marcus Aurelius';
 
   @override
+  String get coachQuote3 =>
+      'We do not receive a short life, but we make it a short one, and we are not poor in days, but wasteful of them. — Seneca';
+
+  @override
+  String get coachQuote4 => 'While we are postponing, life speeds by. — Seneca';
+
+  @override
   String get coachQuote5 =>
-      'Confine yourself to the present. — Marcus Aurelius';
+      'It is not the things themselves that disturb men, but their judgements about these things. — Epictetus';
 
   @override
   String get coachQuote6 =>
-      'Every new beginning comes from some other beginning\'s end. — Seneca';
+      'First say to yourself who you wish to be: then do accordingly what you are doing. — Epictetus';
 
   @override
   String get coachQuote7 =>
-      'It is not that we have a short time to live, but that we waste a lot of it. — Seneca';
+      'The journey of a thousand li commenced with a single step. — Lao Tzu';
 
   @override
   String get coachQuote8 =>
-      'Difficulties strengthen the mind, as labour does the body. — Seneca';
+      'The unexamined life is not worth living. — Socrates';
 
   @override
-  String get coachQuote9 => 'While we wait for life, life passes. — Seneca';
+  String get coachQuote9 => 'I neither know nor think that I know. — Socrates';
 
   @override
-  String get coachQuote10 =>
-      'It\'s not what happens to you, but how you react to it that matters. — Epictetus';
+  String get coachQuote10 => 'Well begun is half done. — Aristotle';
 
   @override
   String get coachQuote11 =>
-      'First say to yourself what you would be, and then do what you have to do. — Epictetus';
+      'I will not follow where the path may lead, but I will go where there is no path, and I will leave a trail. — Muriel Strode';
 
   @override
   String get coachQuote12 =>
-      'No man is free who is not master of himself. — Epictetus';
-
-  @override
-  String get coachQuote13 =>
-      'It does not matter how slowly you go, as long as you do not stop. — Confucius';
-
-  @override
-  String get coachQuote14 =>
-      'The man who moves a mountain begins by carrying away small stones. — Confucius';
-
-  @override
-  String get coachQuote15 =>
-      'Our greatest glory is not in never falling, but in rising every time we fall. — Confucius';
-
-  @override
-  String get coachQuote16 =>
-      'A journey of a thousand miles begins with a single step. — Lao Tzu';
-
-  @override
-  String get coachQuote17 =>
-      'Nature does not hurry, yet everything is accomplished. — Lao Tzu';
-
-  @override
-  String get coachQuote18 =>
-      'An unexamined life is not worth living. — Socrates';
-
-  @override
-  String get coachQuote19 =>
-      'The only true wisdom is in knowing you know nothing. — Socrates';
-
-  @override
-  String get coachQuote20 => 'Well begun is half done. — Aristotle';
-
-  @override
-  String get coachQuote21 =>
-      'Do not go where the path may lead; go instead where there is no path and leave a trail. — Ralph Waldo Emerson';
-
-  @override
-  String get coachQuote22 =>
       'Nothing great was ever achieved without enthusiasm. — Ralph Waldo Emerson';
 
   @override
-  String get coachQuote23 =>
-      'Adopt the pace of nature: her secret is patience. — Ralph Waldo Emerson';
+  String get coachQuote13 =>
+      'Adopt the pace of Nature. Her secret is patience. — Ralph Waldo Emerson';
 
   @override
-  String get coachQuote24 =>
-      'Go confidently in the direction of your dreams. Live the life you have imagined. — Henry David Thoreau';
+  String get coachQuote14 =>
+      'If one advances confidently in the direction of his dreams, and endeavors to live the life which he has imagined, he will meet with a success unexpected in common hours. — Henry David Thoreau';
 
   @override
-  String get coachQuote25 =>
-      'It\'s not what you look at that matters, it\'s what you see. — Henry David Thoreau';
+  String get coachQuote15 =>
+      'The question is not what you look at, but what you see. — Henry David Thoreau';
 
   @override
-  String get coachQuote26 =>
+  String get coachQuote16 =>
       'Energy and persistence conquer all things. — Benjamin Franklin';
 
   @override
-  String get coachQuote27 =>
-      'By failing to prepare, you are preparing to fail. — Benjamin Franklin';
-
-  @override
-  String get coachQuote28 =>
+  String get coachQuote17 =>
       'Well done is better than well said. — Benjamin Franklin';
 
   @override
-  String get coachQuote29 =>
-      'The credit belongs to the one who is actually in the arena. — Theodore Roosevelt';
+  String get coachQuote18 =>
+      'Our greatest glory is not in never falling, but in rising every time we fall. — Oliver Goldsmith';
 
   @override
-  String get coachQuote30 =>
-      'Do what you can, with what you have, where you are. — Theodore Roosevelt';
+  String get coachQuote19 =>
+      'The credit belongs to the man who is actually in the arena. — Theodore Roosevelt';
 
   @override
-  String get coachQuote31 =>
-      'In the midst of chaos, there is also opportunity. — Sun Tzu';
+  String get coachQuote20 =>
+      'Do what you can, with what you\'ve got, where you are. — Theodore Roosevelt';
 
   @override
-  String get coachQuote32 => 'Action is eloquence. — William Shakespeare';
+  String get coachQuote21 => 'Action is eloquence. — William Shakespeare';
 
   @override
-  String get coachQuote33 =>
+  String get coachQuote22 =>
       'Diligence is the mother of good fortune. — Miguel de Cervantes';
 
   @override
-  String get coachQuote34 =>
-      'Obstacles cannot crush me; every obstacle yields to stern resolve. — Leonardo da Vinci';
+  String get coachQuote23 =>
+      'Obstacles cannot crush me. Every obstacle yields to stern resolve. — Leonardo da Vinci';
 
   @override
-  String get coachQuote35 =>
-      'Although the world is full of suffering, it is also full of the overcoming of it. — Helen Keller';
-
-  @override
-  String get coachQuote36 =>
-      'The greatest thing in the world is to know how to belong to oneself. — Michel de Montaigne';
+  String get coachQuote24 =>
+      'Although the world is full of suffering, it is full also of the overcoming of it. — Helen Keller';
 
   @override
   String get trainerDisclaimerTitle => 'Before your coach speaks';
