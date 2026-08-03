@@ -1007,6 +1007,137 @@
   "coachSteadyAboveCap2": "Still above your maximum. Slow down, breathe.",
   "coachSteadyBackBelowCap": "Good — you're back under your maximum.",
 
+  "coachHypeStart1": "Let's go! Great to have you here.",
+  "coachHypeStart2": "Session's live — let's make it count.",
+  "coachHypeStart3": "Here we go! Loving the energy already.",
+  "coachHypeSet1": "Yes! That's another one in the books.",
+  "coachHypeSet2": "Nice work — that's logged and done.",
+  "coachHypeSet3": "Love it! On to the next when you're ready.",
+  "coachHypePr1": "New personal record! That is brilliant.",
+  "coachHypePr2": "PR alert! All that consistency just paid off.",
+  "coachHypePr3": "Personal best! Take a second to enjoy that.",
+  "coachHypeCountdown1": "{secondsLeft}!",
+  "@coachHypeCountdown1": {
+    "placeholders": { "secondsLeft": { "type": "int" } }
+  },
+  "coachHypeCountdown2": "{secondsLeft} — nearly there!",
+  "@coachHypeCountdown2": {
+    "placeholders": { "secondsLeft": { "type": "int" } }
+  },
+  "coachHypeCountdown3": "{secondsLeft}, let's go!",
+  "@coachHypeCountdown3": {
+    "placeholders": { "secondsLeft": { "type": "int" } }
+  },
+  "coachHypeRestDone1": "Rest's done — let's get back to it!",
+  "coachHypeRestDone2": "Time's up! Whenever you're ready.",
+  "coachHypeRestDone3": "Back at it! Great pace so far.",
+  "coachHypeFinish1": "That's a wrap! {totalSets} sets — brilliant session.",
+  "@coachHypeFinish1": {
+    "placeholders": { "totalSets": { "type": "int" } }
+  },
+  "coachHypeFinish2": "Session complete! {totalSets} sets down. Well done, seriously.",
+  "@coachHypeFinish2": {
+    "placeholders": { "totalSets": { "type": "int" } }
+  },
+  "coachHypeFinish3": "All done! {totalSets} sets logged — great consistency.",
+  "@coachHypeFinish3": {
+    "placeholders": { "totalSets": { "type": "int" } }
+  },
+  "coachHypeZone": "Zone {zoneNumber} — {effortLabel}. Nice work getting there!",
+  "@coachHypeZone": {
+    "placeholders": {
+      "zoneNumber": { "type": "int" },
+      "effortLabel": { "type": "String" }
+    }
+  },
+  "coachHypeAboveCap1": "Your heart rate is above your max. Let's ease off and bring it down.",
+  "coachHypeAboveCap2": "Still above your max — slow it down, breathe.",
+  "coachHypeBackBelowCap": "Good — you're back under your max.",
+
+  "coachSergeantStart1": "Time to work. Let's move.",
+  "coachSergeantStart2": "Session's on. Get set.",
+  "coachSergeantStart3": "Eyes up. Let's begin.",
+  "coachSergeantSet1": "Set logged. Next.",
+  "coachSergeantSet2": "Good. Reset and go again.",
+  "coachSergeantSet3": "Done. Keep moving.",
+  "coachSergeantPr1": "Personal record. Well earned.",
+  "coachSergeantPr2": "New best. Good work.",
+  "coachSergeantPr3": "That's a PR. Earned, noted.",
+  "coachSergeantCountdown1": "{secondsLeft}.",
+  "@coachSergeantCountdown1": {
+    "placeholders": { "secondsLeft": { "type": "int" } }
+  },
+  "coachSergeantCountdown2": "{secondsLeft}. Get ready.",
+  "@coachSergeantCountdown2": {
+    "placeholders": { "secondsLeft": { "type": "int" } }
+  },
+  "coachSergeantCountdown3": "{secondsLeft}. Stand by.",
+  "@coachSergeantCountdown3": {
+    "placeholders": { "secondsLeft": { "type": "int" } }
+  },
+  "coachSergeantRestDone1": "Rest's over. Bar's waiting. Move.",
+  "coachSergeantRestDone2": "Time's up. Back to it.",
+  "coachSergeantRestDone3": "Rest done. Take your position.",
+  "coachSergeantFinish1": "Session complete. {totalSets} sets. Good work.",
+  "@coachSergeantFinish1": {
+    "placeholders": { "totalSets": { "type": "int" } }
+  },
+  "coachSergeantFinish2": "That's {totalSets} sets done. Solid session.",
+  "@coachSergeantFinish2": {
+    "placeholders": { "totalSets": { "type": "int" } }
+  },
+  "coachSergeantFinish3": "Finished. {totalSets} sets logged. Well earned.",
+  "@coachSergeantFinish3": {
+    "placeholders": { "totalSets": { "type": "int" } }
+  },
+  "coachSergeantZone": "Zone {zoneNumber}. {effortLabel}.",
+  "@coachSergeantZone": {
+    "placeholders": {
+      "zoneNumber": { "type": "int" },
+      "effortLabel": { "type": "String" }
+    }
+  },
+  "coachSergeantAboveCap1": "Heart rate's above your max. Ease off now.",
+  "coachSergeantAboveCap2": "Still above your max. Slow down and breathe.",
+  "coachSergeantBackBelowCap": "Good. Back under your max.",
+
+  "coachQuote1": "You have power over your mind, not outside events. Realise this, and you will find strength. — Marcus Aurelius",
+  "coachQuote2": "Waste no more time arguing about what a good man should be. Be one. — Marcus Aurelius",
+  "coachQuote3": "The impediment to action advances action. What stands in the way becomes the way. — Marcus Aurelius",
+  "coachQuote4": "If it is not right, do not do it. If it is not true, do not say it. — Marcus Aurelius",
+  "coachQuote5": "Confine yourself to the present. — Marcus Aurelius",
+  "coachQuote6": "Every new beginning comes from some other beginning's end. — Seneca",
+  "coachQuote7": "It is not that we have a short time to live, but that we waste a lot of it. — Seneca",
+  "coachQuote8": "Difficulties strengthen the mind, as labour does the body. — Seneca",
+  "coachQuote9": "While we wait for life, life passes. — Seneca",
+  "coachQuote10": "It's not what happens to you, but how you react to it that matters. — Epictetus",
+  "coachQuote11": "First say to yourself what you would be, and then do what you have to do. — Epictetus",
+  "coachQuote12": "No man is free who is not master of himself. — Epictetus",
+  "coachQuote13": "It does not matter how slowly you go, as long as you do not stop. — Confucius",
+  "coachQuote14": "The man who moves a mountain begins by carrying away small stones. — Confucius",
+  "coachQuote15": "Our greatest glory is not in never falling, but in rising every time we fall. — Confucius",
+  "coachQuote16": "A journey of a thousand miles begins with a single step. — Lao Tzu",
+  "coachQuote17": "Nature does not hurry, yet everything is accomplished. — Lao Tzu",
+  "coachQuote18": "An unexamined life is not worth living. — Socrates",
+  "coachQuote19": "The only true wisdom is in knowing you know nothing. — Socrates",
+  "coachQuote20": "Well begun is half done. — Aristotle",
+  "coachQuote21": "Do not go where the path may lead; go instead where there is no path and leave a trail. — Ralph Waldo Emerson",
+  "coachQuote22": "Nothing great was ever achieved without enthusiasm. — Ralph Waldo Emerson",
+  "coachQuote23": "Adopt the pace of nature: her secret is patience. — Ralph Waldo Emerson",
+  "coachQuote24": "Go confidently in the direction of your dreams. Live the life you have imagined. — Henry David Thoreau",
+  "coachQuote25": "It's not what you look at that matters, it's what you see. — Henry David Thoreau",
+  "coachQuote26": "Energy and persistence conquer all things. — Benjamin Franklin",
+  "coachQuote27": "By failing to prepare, you are preparing to fail. — Benjamin Franklin",
+  "coachQuote28": "Well done is better than well said. — Benjamin Franklin",
+  "coachQuote29": "The credit belongs to the one who is actually in the arena. — Theodore Roosevelt",
+  "coachQuote30": "Do what you can, with what you have, where you are. — Theodore Roosevelt",
+  "coachQuote31": "In the midst of chaos, there is also opportunity. — Sun Tzu",
+  "coachQuote32": "Action is eloquence. — William Shakespeare",
+  "coachQuote33": "Diligence is the mother of good fortune. — Miguel de Cervantes",
+  "coachQuote34": "Obstacles cannot crush me; every obstacle yields to stern resolve. — Leonardo da Vinci",
+  "coachQuote35": "Although the world is full of suffering, it is also full of the overcoming of it. — Helen Keller",
+  "coachQuote36": "The greatest thing in the world is to know how to belong to oneself. — Michel de Montaigne",
+
   "trainerDisclaimerTitle": "Before your coach speaks",
   "trainerDisclaimerBody": "The coach is a companion to help you stay on track — not a personal trainer, and not medical advice. It does not know your form, your injuries, or your limits. Stop exercising and seek medical help if you feel pain, dizziness, or chest discomfort.",
   "trainerDisclaimerAccept": "I understand",
@@ -1018,7 +1149,10 @@
   "trainerPersona": "Coaching voice",
   "trainerPersonaSteady": "Steady",
   "trainerPersonaSteadyDescription": "Calm and measured",
-  "trainerMoreVoicesComing": "More voices are on the way.",
+  "trainerPersonaHype": "Hype",
+  "trainerPersonaHypeDescription": "Energetic and celebratory",
+  "trainerPersonaSergeant": "Sergeant",
+  "trainerPersonaSergeantDescription": "Firm and to the point",
   "trainerSpeechRate": "Speech rate",
   "trainerTestVoice": "Test voice",
   "trainerTestPhrase": "This is your coach. Good set — take your rest.",

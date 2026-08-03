@@ -202,6 +202,46 @@ void main() {
   }
 
   testWidgets(
+      'defaults to Steady and offers all three voices as a real '
+      'choice, not a single non-choice with "more voices" copy',
+      (tester) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hype'), findsOneWidget);
+    expect(find.text('Sergeant'), findsOneWidget);
+    expect(find.text('More voices are on the way.'), findsNothing);
+
+    final radios = tester.widgetList<RadioListTile<String>>(
+      find.byType(RadioListTile<String>),
+    );
+    expect(radios.map((r) => r.value), ['steady', 'hype', 'sergeant']);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TrainerSettingsScreen)),
+    );
+    expect(container.read(trainerSettingsProvider).personaId, 'steady');
+  });
+
+  testWidgets('picking Sergeant persists the choice', (tester) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Sergeant'));
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TrainerSettingsScreen)),
+    );
+    expect(container.read(trainerSettingsProvider).personaId, 'sergeant');
+
+    final sergeantTile = tester.widget<RadioListTile<String>>(
+      find.widgetWithText(RadioListTile<String>, 'Sergeant'),
+    );
+    expect(sergeantTile.value, 'sergeant');
+  });
+
+  testWidgets(
       'dismissing the review sheet with "Not now" leaves consent and the '
       'master switch untouched', (tester) async {
     // Regression: reviewing the notice just to re-read it must never have a
@@ -214,8 +254,11 @@ void main() {
     await enableViaMasterSwitch(tester);
     expect(findEnableSwitch(tester).value, isTrue);
 
-    await tester.ensureVisible(find.text('Review safety notice'));
-    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Review safety notice'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.text('Review safety notice'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Not now'));
@@ -269,6 +312,14 @@ void main() {
     final settings = container.read(trainerSettingsProvider);
     expect(settings.disclaimerAccepted, isFalse);
     expect(settings.enabled, isFalse);
+
+    // Scroll back up: the earlier scroll to "Withdraw consent" left "Enable
+    // coach" outside the lazily-built ListView's built extent.
+    tester
+        .state<ScrollableState>(find.byType(Scrollable).first)
+        .position
+        .jumpTo(0);
+    await tester.pumpAndSettle();
     expect(findEnableSwitch(tester).value, isFalse);
   });
 
@@ -313,6 +364,12 @@ void main() {
       await tester.pumpWidget(buildScreen());
       await tester.pumpAndSettle();
 
+      await tester.scrollUntilVisible(
+        find.text('Heart rate safety warnings'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+
       final calloutsSwitch = tester.widget<SwitchListTile>(
         find.widgetWithText(SwitchListTile, 'Heart rate zone callouts'),
       );
@@ -335,6 +392,11 @@ void main() {
       await tester.pumpWidget(buildScreen());
       await tester.pumpAndSettle();
 
+      await tester.scrollUntilVisible(
+        find.text('Heart rate zone callouts'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.tap(
         find.widgetWithText(SwitchListTile, 'Heart rate zone callouts'),
       );
@@ -354,6 +416,11 @@ void main() {
       await tester.pumpWidget(buildScreen());
       await tester.pumpAndSettle();
 
+      await tester.scrollUntilVisible(
+        find.text('Heart rate safety warnings'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.tap(
         find.widgetWithText(SwitchListTile, 'Heart rate safety warnings'),
       );

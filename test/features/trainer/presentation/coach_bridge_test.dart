@@ -7,8 +7,10 @@ import 'package:rep_foundry/core/entitlements/entitlement.dart';
 import 'package:rep_foundry/core/entitlements/entitlement_provider.dart';
 import 'package:rep_foundry/core/entitlements/entitlement_service.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/zone_configuration_provider.dart';
+import 'package:rep_foundry/features/trainer/data/persona_packs.dart';
 import 'package:rep_foundry/features/trainer/domain/trainer_event.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/coach_bridge.dart';
+import 'package:rep_foundry/features/trainer/presentation/providers/phrase_resolver.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/trainer_event_bus.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/trainer_settings_provider.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
@@ -460,6 +462,63 @@ void main() {
       isTrue,
       reason: 'toggling an unrelated setting must not tear down and '
           'recreate the TTS engine mid-session',
+    );
+  });
+
+  test(
+      'switching persona changes which phrase bank the bridge actually '
+      'draws its next cue from', () async {
+    // The bug this guards against is CoachBridge going on speaking Steady's
+    // bank regardless of TrainerSettings.personaId — a test that only checks
+    // the setting persisted would not catch that. This asserts the spoken
+    // text itself moves from one persona's bank to the other's.
+    final container = buildContainer();
+    final bridge = container.read(_bridgeUnderTest);
+    final s = lookupS(const Locale('en'));
+    bridge.strings = s;
+
+    String? resolve(String key) => resolvePhrase(s, key, const {});
+    final steadyTexts = steadyPersona
+        .phrasesFor(TrainerEventKind.workoutStarted)
+        .map(resolve)
+        .toSet();
+    final sergeantTexts = sergeantPersona
+        .phrasesFor(TrainerEventKind.workoutStarted)
+        .map(resolve)
+        .toSet();
+    expect(
+      steadyTexts.intersection(sergeantTexts),
+      isEmpty,
+      reason: 'the two banks must not overlap or this test proves nothing',
+    );
+
+    final bus = container.read(trainerEventBusProvider);
+    bus.emit(const WorkoutStarted());
+    await Future<void>.delayed(Duration.zero);
+    expect(steadyTexts, contains(speechService.spoken.single),
+        reason: 'default persona is steady');
+
+    final notifier = container.read(trainerSettingsProvider.notifier)
+        as _SeededTrainerSettingsNotifier;
+    notifier.forceUpdate(
+      container.read(trainerSettingsProvider).copyWith(personaId: 'sergeant'),
+    );
+
+    bus.emit(const WorkoutStarted());
+    await Future<void>.delayed(Duration.zero);
+
+    expect(speechService.spoken, hasLength(2));
+    expect(
+      sergeantTexts,
+      contains(speechService.spoken.last),
+      reason: 'switching persona must change which bank the bridge draws '
+          'its cues from',
+    );
+    expect(
+      steadyTexts,
+      isNot(contains(speechService.spoken.last)),
+      reason: 'the phrase spoken after the switch must not be one that '
+          'could also have come from the old persona',
     );
   });
 }
