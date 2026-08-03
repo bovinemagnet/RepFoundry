@@ -2276,9 +2276,6 @@ class SJa extends S {
       'We do not receive a short life, but we make it a short one, and we are not poor in days, but wasteful of them. — Seneca';
 
   @override
-  String get coachQuote4 => 'While we are postponing, life speeds by. — Seneca';
-
-  @override
   String get coachQuote5 =>
       'It is not the things themselves that disturb men, but their judgements about these things. — Epictetus';
 
@@ -2292,7 +2289,7 @@ class SJa extends S {
 
   @override
   String get coachQuote8 =>
-      'The unexamined life is not worth living. — Socrates';
+      'The life which is unexamined is not worth living. — Socrates';
 
   @override
   String get coachQuote9 => 'I neither know nor think that I know. — Socrates';

@@ -158,11 +158,15 @@ void main() {
     // checked the original author's death date but not the translator's or
     // the attribution's accuracy. Re-auditing every entry against a named
     // pre-1929 edition or translation — dropping anything that couldn't be
-    // pinned down — took the count from 36 to 23 (24 after the first re-audit,
-    // then the Helen Keller entry was dropped on a second pass: US
-    // publication-date public domain does not hold under UK/EU life+70 terms,
-    // and this project is not US-based). Fewer, individually
-    // verified entries beat a rounder number with an unverified one in it.
+    // pinned down — took the count from 36 to 22 across three passes: 24
+    // after the first re-audit; 23 once the Helen Keller entry was dropped
+    // (US publication-date public domain does not hold under UK/EU life+70
+    // terms, and this project is not US-based); 22 once that same UK/EU
+    // life+70 test was swept across every remaining translator and caught a
+    // Loeb translation (Gummere, d. 1969) that had been pinned as public
+    // domain on the same US-only basis the Keller drop had just rejected.
+    // Fewer, individually verified entries beat a rounder number with an
+    // unverified one in it.
     for (final persona in _allPersonas) {
       expect(
         persona.phrasesFor(TrainerEventKind.quote).length,

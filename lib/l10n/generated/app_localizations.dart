@@ -4140,12 +4140,6 @@ abstract class S {
   /// **'We do not receive a short life, but we make it a short one, and we are not poor in days, but wasteful of them. — Seneca'**
   String get coachQuote3;
 
-  /// No description provided for @coachQuote4.
-  ///
-  /// In en, this message translates to:
-  /// **'While we are postponing, life speeds by. — Seneca'**
-  String get coachQuote4;
-
   /// No description provided for @coachQuote5.
   ///
   /// In en, this message translates to:
@@ -4167,7 +4161,7 @@ abstract class S {
   /// No description provided for @coachQuote8.
   ///
   /// In en, this message translates to:
-  /// **'The unexamined life is not worth living. — Socrates'**
+  /// **'The life which is unexamined is not worth living. — Socrates'**
   String get coachQuote8;
 
   /// No description provided for @coachQuote9.
