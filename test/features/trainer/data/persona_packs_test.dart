@@ -11,11 +11,12 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 /// pain", or ego-lifting; praise completion and consistency, never intensity
 /// escalation; no body-shaming, no guilt framing.
 ///
-/// Deliberately a blunt substring denylist rather than anything clever — its
-/// job is to catch a phrase that drifts across the line when the Hype and
-/// Sergeant packs land in phase 2, not to judge tone. Matching is
+/// Deliberately a blunt denylist rather than anything clever — its job is to
+/// catch a phrase that drifts across the line, not to judge tone. Matching is
 /// case-insensitive over the resolved English text with typographic
-/// apostrophes normalised, so "don't" and "don’t" both match.
+/// apostrophes normalised, so "don't" and "don’t" both match, and is done on
+/// whole-word/whole-phrase boundaries (see [_matchesBanned]) rather than bare
+/// substrings, so an entry like "fat" does not false-positive on "fatigue".
 const Map<String, List<String>> _bannedLanguage = {
   'urging a load increase': [
     'add weight',
@@ -76,6 +77,17 @@ const Map<String, List<String>> _bannedLanguage = {
 String _normalise(String text) =>
     text.toLowerCase().replaceAll('’', "'").replaceAll('‘', "'");
 
+/// Whole-word/whole-phrase match: `\b` on each side of the (escaped) banned
+/// text. Plain `String.contains` previously flagged "fatigue" for containing
+/// "fat", "auto failure" for containing "to failure", and so on — this stays
+/// exact for multi-word entries (the boundary only has to hold at the two
+/// outer edges) while no longer matching a banned word as a mere substring of
+/// a longer, innocuous one.
+bool _matchesBanned(String text, String banned) {
+  final pattern = RegExp('\\b${RegExp.escape(banned)}\\b');
+  return pattern.hasMatch(text);
+}
+
 const _spokenKinds = [
   TrainerEventKind.workoutStarted,
   TrainerEventKind.setLogged,
@@ -96,14 +108,21 @@ const _hrKinds = [
   TrainerEventKind.hrBackBelowCap,
 ];
 
-/// Every kind whose phrases must resolve to text and obey the denylist.
-const _allSpokenKinds = [..._spokenKinds, ..._hrKinds];
+/// The shared quote bank (phase 2, spec §5). Kept separate from
+/// [_spokenKinds] for the same reason as [_hrKinds] — its size (~40) is not
+/// the "at least three" rule that applies to the six coaching-moment kinds —
+/// but it still needs uniqueness, resolver, and denylist coverage.
+const _quoteKinds = [TrainerEventKind.quote];
 
-/// Every persona the app ships. Steady is the only one in v1; iterating a
-/// list (rather than just `steadyPersona`) means the non-empty-bank
-/// assertion below automatically covers Hype and Sergeant once phase 2 adds
-/// them, instead of silently only ever checking Steady.
-const _allPersonas = [steadyPersona];
+/// Every kind whose phrases must resolve to text and obey the denylist.
+const _allSpokenKinds = [..._spokenKinds, ..._hrKinds, ..._quoteKinds];
+
+/// Every persona the app ships. Adding a new persona here is what brings it
+/// under every loop below (count, uniqueness, resolver completeness,
+/// non-empty HR bank, denylist) — it is deliberately manual rather than
+/// discovered by reflection, so a new pack cannot land without a reviewer
+/// having to touch this line.
+const _allPersonas = [steadyPersona, hypePersona, sergeantPersona];
 
 /// Mirrors the args CoachingEngine attaches to a CoachingCue for this kind
 /// (see coaching_engine.dart) — invoking with the wrong shape would surface
@@ -119,33 +138,74 @@ Map<String, Object> _argsFor(TrainerEventKind kind) => switch (kind) {
     };
 
 void main() {
-  test('steady persona has at least three phrases per spoken kind', () {
-    for (final kind in _spokenKinds) {
+  test('every persona has at least three phrases per spoken kind', () {
+    for (final persona in _allPersonas) {
+      for (final kind in _spokenKinds) {
+        expect(
+          persona.phrasesFor(kind).length,
+          greaterThanOrEqualTo(3),
+          reason: '${persona.id} persona is thin on $kind',
+        );
+      }
+    }
+  });
+
+  test('the shared quote bank has a healthy number of entries', () {
+    // "~40" per spec §5, but fix round 1 traced a licensing problem back to
+    // this bank (a copyrighted song lyric with a false author credit, a
+    // copyrighted translation presented as public-domain antiquity, and
+    // several misattributed/apocryphal "quotes") to a licensing method that
+    // checked the original author's death date but not the translator's or
+    // the attribution's accuracy. Re-auditing every entry against a named
+    // pre-1929 edition or translation — dropping anything that couldn't be
+    // pinned down — took the count from 36 to 21 across four passes: 24
+    // after the first re-audit; 23 once the Helen Keller entry was dropped;
+    // 22 once that same test was swept across every remaining translator and
+    // caught a Loeb translation (Gummere, d. 1969); 21 once the sweep was
+    // extended from translators to original-language authors too and caught
+    // Muriel Strode (d. 1964) — ironically the quote that had just been
+    // *recredited* to her from a false Emerson attribution, which is what
+    // exposed the copyright problem in the first place. The rule this whole
+    // exercise converged on, stated once and generally: every named person
+    // whose words are shipped, author or translator, must be dead more than
+    // 70 years — publication date alone is never sufficient. Fewer,
+    // individually verified entries beat a rounder number with an unverified
+    // one in it.
+    for (final persona in _allPersonas) {
       expect(
-        steadyPersona.phrasesFor(kind).length,
-        greaterThanOrEqualTo(3),
-        reason: 'steady persona is thin on $kind',
+        persona.phrasesFor(TrainerEventKind.quote).length,
+        greaterThanOrEqualTo(20),
+        reason: '${persona.id} persona has too thin a quote bank',
       );
     }
   });
 
-  test('phrase keys are unique across the pack', () {
-    final all = _allSpokenKinds.expand(steadyPersona.phrasesFor).toList();
-
-    expect(all.toSet().length, all.length, reason: 'duplicate phrase key');
+  test('phrase keys are unique within each persona\'s pack', () {
+    for (final persona in _allPersonas) {
+      final all = _allSpokenKinds.expand(persona.phrasesFor).toList();
+      expect(
+        all.toSet().length,
+        all.length,
+        reason: '${persona.id} persona has a duplicate phrase key',
+      );
+    }
   });
 
   test(
-      'every phrase key in the steady persona has a resolver that produces '
+      'every phrase key in every persona has a resolver that produces '
       'text with the args its event kind actually supplies', () {
     final s = lookupS(const Locale('en'));
-    for (final kind in _allSpokenKinds) {
-      final args = _argsFor(kind);
-      for (final key in steadyPersona.phrasesFor(kind)) {
-        final builder = phraseResolvers[key];
-        expect(builder, isNotNull, reason: 'no resolver entry for $key');
-        final text = builder!(s, args);
-        expect(text, isNotEmpty, reason: '$key produced empty text');
+    for (final persona in _allPersonas) {
+      for (final kind in _allSpokenKinds) {
+        final args = _argsFor(kind);
+        for (final key in persona.phrasesFor(kind)) {
+          final builder = phraseResolvers[key];
+          expect(builder, isNotNull,
+              reason: 'no resolver entry for $key (${persona.id})');
+          final text = builder!(s, args);
+          expect(text, isNotEmpty,
+              reason: '$key (${persona.id}) produced empty text');
+        }
       }
     }
   });
@@ -176,19 +236,23 @@ void main() {
 
   test('no persona phrase uses banned language', () {
     // Spec §9: "no banned-language regressions (simple denylist check)".
-    // Steady is clean today; the value is the guard rail under the Hype and
-    // Sergeant packs arriving in phase 2.
+    // Hype and Sergeant are exactly where this is easiest to breach —
+    // celebratory energy drifting into ego-lifting, or firmness drifting
+    // into something demeaning — so every persona is checked, not just
+    // Steady.
     final s = lookupS(const Locale('en'));
     final offences = <String>[];
 
-    for (final kind in _allSpokenKinds) {
-      final args = _argsFor(kind);
-      for (final key in steadyPersona.phrasesFor(kind)) {
-        final text = _normalise(phraseResolvers[key]!(s, args));
-        for (final entry in _bannedLanguage.entries) {
-          for (final banned in entry.value) {
-            if (text.contains(banned)) {
-              offences.add('$key ("${entry.key}"): "$banned"');
+    for (final persona in _allPersonas) {
+      for (final kind in _allSpokenKinds) {
+        final args = _argsFor(kind);
+        for (final key in persona.phrasesFor(kind)) {
+          final text = _normalise(phraseResolvers[key]!(s, args));
+          for (final entry in _bannedLanguage.entries) {
+            for (final banned in entry.value) {
+              if (_matchesBanned(text, banned)) {
+                offences.add('${persona.id}/$key ("${entry.key}"): "$banned"');
+              }
             }
           }
         }
@@ -213,10 +277,38 @@ void main() {
     for (final sample in offending) {
       final text = _normalise(sample);
       expect(
-        _bannedLanguage.values.expand((l) => l).any(text.contains),
+        _bannedLanguage.values
+            .expand((l) => l)
+            .any((b) => _matchesBanned(text, b)),
         isTrue,
         reason: 'the denylist failed to flag: $sample',
       );
+    }
+  });
+
+  test(
+      'the denylist does not false-positive on words that merely contain a '
+      'banned word as a substring', () {
+    // Regression: a plain substring check flagged "fatigue" for containing
+    // "fat", "auto failure" for containing "to failure", and so on. Fixed by
+    // matching on word boundaries rather than by deleting or weakening any
+    // entry — every sample below still contains one of the exact substrings
+    // above, just not as a standalone word/phrase.
+    const safe = [
+      'Fatigue is a normal part of training — rest well tonight.',
+      'Please reload uploaded content before your next session.',
+      "Auto failure detection isn't part of this app.",
+      'Softly does it on the way down.',
+      'The bearing showed weakness after the stress test.',
+    ];
+
+    for (final sample in safe) {
+      final text = _normalise(sample);
+      final hit = _bannedLanguage.entries
+          .expand((e) => e.value.map((b) => MapEntry(e.key, b)))
+          .where((e) => _matchesBanned(text, e.value))
+          .toList();
+      expect(hit, isEmpty, reason: 'false positive on "$sample": $hit');
     }
   });
 }

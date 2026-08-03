@@ -7,8 +7,10 @@ import 'package:rep_foundry/core/entitlements/entitlement.dart';
 import 'package:rep_foundry/core/entitlements/entitlement_provider.dart';
 import 'package:rep_foundry/core/entitlements/entitlement_service.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/zone_configuration_provider.dart';
+import 'package:rep_foundry/features/trainer/data/persona_packs.dart';
 import 'package:rep_foundry/features/trainer/domain/trainer_event.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/coach_bridge.dart';
+import 'package:rep_foundry/features/trainer/presentation/providers/phrase_resolver.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/trainer_event_bus.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/trainer_settings_provider.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
@@ -461,5 +463,145 @@ void main() {
       reason: 'toggling an unrelated setting must not tear down and '
           'recreate the TTS engine mid-session',
     );
+  });
+
+  test(
+      'switching persona changes which phrase bank the bridge actually '
+      'draws its next cue from', () async {
+    // The bug this guards against is CoachBridge going on speaking Steady's
+    // bank regardless of TrainerSettings.personaId — a test that only checks
+    // the setting persisted would not catch that. This asserts the spoken
+    // text itself moves from one persona's bank to the other's.
+    final container = buildContainer();
+    final bridge = container.read(_bridgeUnderTest);
+    final s = lookupS(const Locale('en'));
+    bridge.strings = s;
+
+    String? resolve(String key) => resolvePhrase(s, key, const {});
+    final steadyTexts = steadyPersona
+        .phrasesFor(TrainerEventKind.workoutStarted)
+        .map(resolve)
+        .toSet();
+    final sergeantTexts = sergeantPersona
+        .phrasesFor(TrainerEventKind.workoutStarted)
+        .map(resolve)
+        .toSet();
+    expect(
+      steadyTexts.intersection(sergeantTexts),
+      isEmpty,
+      reason: 'the two banks must not overlap or this test proves nothing',
+    );
+
+    final bus = container.read(trainerEventBusProvider);
+    bus.emit(const WorkoutStarted());
+    await Future<void>.delayed(Duration.zero);
+    expect(steadyTexts, contains(speechService.spoken.single),
+        reason: 'default persona is steady');
+
+    final notifier = container.read(trainerSettingsProvider.notifier)
+        as _SeededTrainerSettingsNotifier;
+    notifier.forceUpdate(
+      container.read(trainerSettingsProvider).copyWith(personaId: 'sergeant'),
+    );
+
+    bus.emit(const WorkoutStarted());
+    await Future<void>.delayed(Duration.zero);
+
+    expect(speechService.spoken, hasLength(2));
+    expect(
+      sergeantTexts,
+      contains(speechService.spoken.last),
+      reason: 'switching persona must change which bank the bridge draws '
+          'its cues from',
+    );
+    expect(
+      steadyTexts,
+      isNot(contains(speechService.spoken.last)),
+      reason: 'the phrase spoken after the switch must not be one that '
+          'could also have come from the old persona',
+    );
+  });
+
+  test(
+      'constructing the bridge after preferences already say a non-default '
+      'persona speaks that persona from the very first cue', () async {
+    // Mirrors the runtime-switch test above but exercises the *constructor*
+    // read (coach_bridge.dart's `personaForId(_ref.read(...).personaId)`
+    // passed into CoachingEngine) rather than the settings listener.
+    // Fix round 1: the previous test switched persona at runtime, which
+    // covers the listener but starts from the Steady default — reverting
+    // the constructor read back to a hardcoded `steadyPersona` would have
+    // left that test green. This test seeds `personaId: 'sergeant'` before
+    // the bridge is ever built, so only a correct constructor read passes
+    // it.
+    final container = buildContainer(
+      settings: const TrainerSettings(
+        enabled: true,
+        disclaimerAccepted: true,
+        personaId: 'sergeant',
+      ),
+    );
+    final bridge = container.read(_bridgeUnderTest);
+    final s = lookupS(const Locale('en'));
+    bridge.strings = s;
+
+    String? resolve(String key) => resolvePhrase(s, key, const {});
+    final sergeantTexts = sergeantPersona
+        .phrasesFor(TrainerEventKind.workoutStarted)
+        .map(resolve)
+        .toSet();
+    final steadyTexts = steadyPersona
+        .phrasesFor(TrainerEventKind.workoutStarted)
+        .map(resolve)
+        .toSet();
+
+    container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+    await Future<void>.delayed(Duration.zero);
+
+    expect(speechService.spoken, hasLength(1));
+    expect(sergeantTexts, contains(speechService.spoken.single),
+        reason: 'the very first cue must already be Sergeant\'s — the '
+            'preference was set before the bridge was built');
+    expect(steadyTexts, isNot(contains(speechService.spoken.single)));
+  });
+
+  test(
+      'switching persona mid-session does not lift heart-rate safety '
+      'suppression', () async {
+    // Fix round 1 regression: CoachBridge used to react to a persona change
+    // by discarding the whole CoachingEngine and building a fresh one, which
+    // silently reset `_aboveCap` to false along with every other piece of
+    // session state. That lifted above-cap encouragement suppression for up
+    // to the cap-warning repeat window, long enough for an encouragement cue
+    // to slip through in exactly the window it exists to block. Setting
+    // `CoachingEngine.persona` in place (rather than reconstructing) keeps
+    // `_aboveCap` — and `_currentZone`, and the cap-warning cooldown — intact
+    // across the switch.
+    final container = buildContainer();
+    final bridge = container.read(_bridgeUnderTest);
+    bridge.strings = lookupS(const Locale('en'));
+
+    final bus = container.read(trainerEventBusProvider);
+    bus.emit(const HeartRateAboveCap(bpm: 180, cap: 170));
+    await Future<void>.delayed(Duration.zero);
+    expect(speechService.spoken, hasLength(1),
+        reason: 'the above-cap warning itself is expected to speak once');
+
+    final notifier = container.read(trainerSettingsProvider.notifier)
+        as _SeededTrainerSettingsNotifier;
+    notifier.forceUpdate(
+      container.read(trainerSettingsProvider).copyWith(personaId: 'sergeant'),
+    );
+
+    // The encouragement quota is at most three sets, so this guarantees a
+    // cue would fire if suppression had been lifted.
+    for (var setNumber = 1; setNumber <= 3; setNumber++) {
+      bus.emit(SetLogged(setNumber: setNumber, isPersonalRecord: false));
+      await Future<void>.delayed(Duration.zero);
+    }
+
+    expect(speechService.spoken, hasLength(1),
+        reason: 'still above cap after the persona switch — no encouragement '
+            'cue should have been able to speak');
   });
 }

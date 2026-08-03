@@ -104,6 +104,13 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
     await prefs.setBool('trainer_encouragement', value);
   }
 
+  Future<void> setPersona(String value) async {
+    await _loading;
+    state = state.copyWith(personaId: value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('trainer_persona', value);
+  }
+
   Future<void> setHrCallouts(bool value) async {
     await _loading;
     state = state.copyWith(hrCalloutsEnabled: value);

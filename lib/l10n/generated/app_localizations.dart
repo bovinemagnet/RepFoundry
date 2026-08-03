@@ -3858,6 +3858,396 @@ abstract class S {
   /// **'Good — you\'re back under your maximum.'**
   String get coachSteadyBackBelowCap;
 
+  /// No description provided for @coachHypeStart1.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s go! Great to have you here.'**
+  String get coachHypeStart1;
+
+  /// No description provided for @coachHypeStart2.
+  ///
+  /// In en, this message translates to:
+  /// **'Session\'s live — let\'s make it count.'**
+  String get coachHypeStart2;
+
+  /// No description provided for @coachHypeStart3.
+  ///
+  /// In en, this message translates to:
+  /// **'Here we go! Loving the energy already.'**
+  String get coachHypeStart3;
+
+  /// No description provided for @coachHypeSet1.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes! That\'s another one in the books.'**
+  String get coachHypeSet1;
+
+  /// No description provided for @coachHypeSet2.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice work — that\'s logged and done.'**
+  String get coachHypeSet2;
+
+  /// No description provided for @coachHypeSet3.
+  ///
+  /// In en, this message translates to:
+  /// **'Love it! On to the next when you\'re ready.'**
+  String get coachHypeSet3;
+
+  /// No description provided for @coachHypePr1.
+  ///
+  /// In en, this message translates to:
+  /// **'New personal record! That is brilliant.'**
+  String get coachHypePr1;
+
+  /// No description provided for @coachHypePr2.
+  ///
+  /// In en, this message translates to:
+  /// **'PR alert! All that consistency just paid off.'**
+  String get coachHypePr2;
+
+  /// No description provided for @coachHypePr3.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal best! Take a second to enjoy that.'**
+  String get coachHypePr3;
+
+  /// No description provided for @coachHypeCountdown1.
+  ///
+  /// In en, this message translates to:
+  /// **'{secondsLeft}!'**
+  String coachHypeCountdown1(int secondsLeft);
+
+  /// No description provided for @coachHypeCountdown2.
+  ///
+  /// In en, this message translates to:
+  /// **'{secondsLeft} — nearly there!'**
+  String coachHypeCountdown2(int secondsLeft);
+
+  /// No description provided for @coachHypeCountdown3.
+  ///
+  /// In en, this message translates to:
+  /// **'{secondsLeft}, let\'s go!'**
+  String coachHypeCountdown3(int secondsLeft);
+
+  /// No description provided for @coachHypeRestDone1.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest\'s done — let\'s get back to it!'**
+  String get coachHypeRestDone1;
+
+  /// No description provided for @coachHypeRestDone2.
+  ///
+  /// In en, this message translates to:
+  /// **'Time\'s up! Whenever you\'re ready.'**
+  String get coachHypeRestDone2;
+
+  /// No description provided for @coachHypeRestDone3.
+  ///
+  /// In en, this message translates to:
+  /// **'Back at it! Great pace so far.'**
+  String get coachHypeRestDone3;
+
+  /// No description provided for @coachHypeFinish1.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s a wrap! {totalSets} sets — brilliant session.'**
+  String coachHypeFinish1(int totalSets);
+
+  /// No description provided for @coachHypeFinish2.
+  ///
+  /// In en, this message translates to:
+  /// **'Session complete! {totalSets} sets down. Well done, seriously.'**
+  String coachHypeFinish2(int totalSets);
+
+  /// No description provided for @coachHypeFinish3.
+  ///
+  /// In en, this message translates to:
+  /// **'All done! {totalSets} sets logged — great consistency.'**
+  String coachHypeFinish3(int totalSets);
+
+  /// No description provided for @coachHypeZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone {zoneNumber} — {effortLabel}.'**
+  String coachHypeZone(int zoneNumber, String effortLabel);
+
+  /// No description provided for @coachHypeAboveCap1.
+  ///
+  /// In en, this message translates to:
+  /// **'Your heart rate is above your max. Let\'s ease off and bring it down.'**
+  String get coachHypeAboveCap1;
+
+  /// No description provided for @coachHypeAboveCap2.
+  ///
+  /// In en, this message translates to:
+  /// **'Still above your max — slow it down, breathe.'**
+  String get coachHypeAboveCap2;
+
+  /// No description provided for @coachHypeBackBelowCap.
+  ///
+  /// In en, this message translates to:
+  /// **'Good — you\'re back under your max.'**
+  String get coachHypeBackBelowCap;
+
+  /// No description provided for @coachSergeantStart1.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to work. Let\'s move.'**
+  String get coachSergeantStart1;
+
+  /// No description provided for @coachSergeantStart2.
+  ///
+  /// In en, this message translates to:
+  /// **'Session\'s on. Get set.'**
+  String get coachSergeantStart2;
+
+  /// No description provided for @coachSergeantStart3.
+  ///
+  /// In en, this message translates to:
+  /// **'Eyes up. Let\'s begin.'**
+  String get coachSergeantStart3;
+
+  /// No description provided for @coachSergeantSet1.
+  ///
+  /// In en, this message translates to:
+  /// **'Set logged. Next.'**
+  String get coachSergeantSet1;
+
+  /// No description provided for @coachSergeantSet2.
+  ///
+  /// In en, this message translates to:
+  /// **'Good. Reset and go again.'**
+  String get coachSergeantSet2;
+
+  /// No description provided for @coachSergeantSet3.
+  ///
+  /// In en, this message translates to:
+  /// **'Done. Keep moving.'**
+  String get coachSergeantSet3;
+
+  /// No description provided for @coachSergeantPr1.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal record. Well earned.'**
+  String get coachSergeantPr1;
+
+  /// No description provided for @coachSergeantPr2.
+  ///
+  /// In en, this message translates to:
+  /// **'New best. Good work.'**
+  String get coachSergeantPr2;
+
+  /// No description provided for @coachSergeantPr3.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s a PR. Earned, noted.'**
+  String get coachSergeantPr3;
+
+  /// No description provided for @coachSergeantCountdown1.
+  ///
+  /// In en, this message translates to:
+  /// **'{secondsLeft}.'**
+  String coachSergeantCountdown1(int secondsLeft);
+
+  /// No description provided for @coachSergeantCountdown2.
+  ///
+  /// In en, this message translates to:
+  /// **'{secondsLeft}. Get ready.'**
+  String coachSergeantCountdown2(int secondsLeft);
+
+  /// No description provided for @coachSergeantCountdown3.
+  ///
+  /// In en, this message translates to:
+  /// **'{secondsLeft}. Stand by.'**
+  String coachSergeantCountdown3(int secondsLeft);
+
+  /// No description provided for @coachSergeantRestDone1.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest\'s over. Bar\'s waiting. Move.'**
+  String get coachSergeantRestDone1;
+
+  /// No description provided for @coachSergeantRestDone2.
+  ///
+  /// In en, this message translates to:
+  /// **'Time\'s up. Back to it.'**
+  String get coachSergeantRestDone2;
+
+  /// No description provided for @coachSergeantRestDone3.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest done. Take your position.'**
+  String get coachSergeantRestDone3;
+
+  /// No description provided for @coachSergeantFinish1.
+  ///
+  /// In en, this message translates to:
+  /// **'Session complete. {totalSets} sets. Good work.'**
+  String coachSergeantFinish1(int totalSets);
+
+  /// No description provided for @coachSergeantFinish2.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s {totalSets} sets done. Solid session.'**
+  String coachSergeantFinish2(int totalSets);
+
+  /// No description provided for @coachSergeantFinish3.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished. {totalSets} sets logged. Well earned.'**
+  String coachSergeantFinish3(int totalSets);
+
+  /// No description provided for @coachSergeantZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone {zoneNumber}. {effortLabel}.'**
+  String coachSergeantZone(int zoneNumber, String effortLabel);
+
+  /// No description provided for @coachSergeantAboveCap1.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart rate\'s above your max. Ease off now.'**
+  String get coachSergeantAboveCap1;
+
+  /// No description provided for @coachSergeantAboveCap2.
+  ///
+  /// In en, this message translates to:
+  /// **'Still above your max. Slow down and breathe.'**
+  String get coachSergeantAboveCap2;
+
+  /// No description provided for @coachSergeantBackBelowCap.
+  ///
+  /// In en, this message translates to:
+  /// **'Good. Back under your max.'**
+  String get coachSergeantBackBelowCap;
+
+  /// No description provided for @coachQuote1.
+  ///
+  /// In en, this message translates to:
+  /// **'No longer talk at all about the kind of man that a good man ought to be, but be such. — Marcus Aurelius'**
+  String get coachQuote1;
+
+  /// No description provided for @coachQuote2.
+  ///
+  /// In en, this message translates to:
+  /// **'If it is not right, do not do it. If it is not true, do not say it. — Marcus Aurelius'**
+  String get coachQuote2;
+
+  /// No description provided for @coachQuote3.
+  ///
+  /// In en, this message translates to:
+  /// **'We do not receive a short life, but we make it a short one, and we are not poor in days, but wasteful of them. — Seneca'**
+  String get coachQuote3;
+
+  /// No description provided for @coachQuote5.
+  ///
+  /// In en, this message translates to:
+  /// **'It is not the things themselves that disturb men, but their judgements about these things. — Epictetus'**
+  String get coachQuote5;
+
+  /// No description provided for @coachQuote6.
+  ///
+  /// In en, this message translates to:
+  /// **'First say to yourself who you wish to be: then do accordingly what you are doing. — Epictetus'**
+  String get coachQuote6;
+
+  /// No description provided for @coachQuote7.
+  ///
+  /// In en, this message translates to:
+  /// **'The journey of a thousand li commenced with a single step. — Lao Tzu'**
+  String get coachQuote7;
+
+  /// No description provided for @coachQuote8.
+  ///
+  /// In en, this message translates to:
+  /// **'The life which is unexamined is not worth living. — Socrates'**
+  String get coachQuote8;
+
+  /// No description provided for @coachQuote9.
+  ///
+  /// In en, this message translates to:
+  /// **'I neither know nor think that I know. — Socrates'**
+  String get coachQuote9;
+
+  /// No description provided for @coachQuote10.
+  ///
+  /// In en, this message translates to:
+  /// **'Well begun is half done. — Aristotle'**
+  String get coachQuote10;
+
+  /// No description provided for @coachQuote12.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing great was ever achieved without enthusiasm. — Ralph Waldo Emerson'**
+  String get coachQuote12;
+
+  /// No description provided for @coachQuote13.
+  ///
+  /// In en, this message translates to:
+  /// **'Adopt the pace of Nature. Her secret is patience. — Ralph Waldo Emerson'**
+  String get coachQuote13;
+
+  /// No description provided for @coachQuote14.
+  ///
+  /// In en, this message translates to:
+  /// **'If one advances confidently in the direction of his dreams, and endeavors to live the life which he has imagined, he will meet with a success unexpected in common hours. — Henry David Thoreau'**
+  String get coachQuote14;
+
+  /// No description provided for @coachQuote15.
+  ///
+  /// In en, this message translates to:
+  /// **'The question is not what you look at, but what you see. — Henry David Thoreau'**
+  String get coachQuote15;
+
+  /// No description provided for @coachQuote16.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy and persistence conquer all things. — Benjamin Franklin'**
+  String get coachQuote16;
+
+  /// No description provided for @coachQuote17.
+  ///
+  /// In en, this message translates to:
+  /// **'Well done is better than well said. — Benjamin Franklin'**
+  String get coachQuote17;
+
+  /// No description provided for @coachQuote18.
+  ///
+  /// In en, this message translates to:
+  /// **'Our greatest glory is not in never falling, but in rising every time we fall. — Oliver Goldsmith'**
+  String get coachQuote18;
+
+  /// No description provided for @coachQuote19.
+  ///
+  /// In en, this message translates to:
+  /// **'The credit belongs to the man who is actually in the arena. — Theodore Roosevelt'**
+  String get coachQuote19;
+
+  /// No description provided for @coachQuote20.
+  ///
+  /// In en, this message translates to:
+  /// **'Do what you can, with what you\'ve got, where you are. — Theodore Roosevelt'**
+  String get coachQuote20;
+
+  /// No description provided for @coachQuote21.
+  ///
+  /// In en, this message translates to:
+  /// **'Action is eloquence. — William Shakespeare'**
+  String get coachQuote21;
+
+  /// No description provided for @coachQuote22.
+  ///
+  /// In en, this message translates to:
+  /// **'Diligence is the mother of good fortune. — Miguel de Cervantes'**
+  String get coachQuote22;
+
+  /// No description provided for @coachQuote23.
+  ///
+  /// In en, this message translates to:
+  /// **'Obstacles cannot crush me. Every obstacle yields to stern resolve. — Leonardo da Vinci'**
+  String get coachQuote23;
+
   /// No description provided for @trainerDisclaimerTitle.
   ///
   /// In en, this message translates to:
@@ -3918,11 +4308,29 @@ abstract class S {
   /// **'Calm and measured'**
   String get trainerPersonaSteadyDescription;
 
-  /// No description provided for @trainerMoreVoicesComing.
+  /// No description provided for @trainerPersonaHype.
   ///
   /// In en, this message translates to:
-  /// **'More voices are on the way.'**
-  String get trainerMoreVoicesComing;
+  /// **'Hype'**
+  String get trainerPersonaHype;
+
+  /// No description provided for @trainerPersonaHypeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Energetic and celebratory'**
+  String get trainerPersonaHypeDescription;
+
+  /// No description provided for @trainerPersonaSergeant.
+  ///
+  /// In en, this message translates to:
+  /// **'Sergeant'**
+  String get trainerPersonaSergeant;
+
+  /// No description provided for @trainerPersonaSergeantDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Firm and to the point'**
+  String get trainerPersonaSergeantDescription;
 
   /// No description provided for @trainerSpeechRate.
   ///

@@ -2093,6 +2093,251 @@ class SZh extends S {
       'Good — you\'re back under your maximum.';
 
   @override
+  String get coachHypeStart1 => 'Let\'s go! Great to have you here.';
+
+  @override
+  String get coachHypeStart2 => 'Session\'s live — let\'s make it count.';
+
+  @override
+  String get coachHypeStart3 => 'Here we go! Loving the energy already.';
+
+  @override
+  String get coachHypeSet1 => 'Yes! That\'s another one in the books.';
+
+  @override
+  String get coachHypeSet2 => 'Nice work — that\'s logged and done.';
+
+  @override
+  String get coachHypeSet3 => 'Love it! On to the next when you\'re ready.';
+
+  @override
+  String get coachHypePr1 => 'New personal record! That is brilliant.';
+
+  @override
+  String get coachHypePr2 => 'PR alert! All that consistency just paid off.';
+
+  @override
+  String get coachHypePr3 => 'Personal best! Take a second to enjoy that.';
+
+  @override
+  String coachHypeCountdown1(int secondsLeft) {
+    return '$secondsLeft!';
+  }
+
+  @override
+  String coachHypeCountdown2(int secondsLeft) {
+    return '$secondsLeft — nearly there!';
+  }
+
+  @override
+  String coachHypeCountdown3(int secondsLeft) {
+    return '$secondsLeft, let\'s go!';
+  }
+
+  @override
+  String get coachHypeRestDone1 => 'Rest\'s done — let\'s get back to it!';
+
+  @override
+  String get coachHypeRestDone2 => 'Time\'s up! Whenever you\'re ready.';
+
+  @override
+  String get coachHypeRestDone3 => 'Back at it! Great pace so far.';
+
+  @override
+  String coachHypeFinish1(int totalSets) {
+    return 'That\'s a wrap! $totalSets sets — brilliant session.';
+  }
+
+  @override
+  String coachHypeFinish2(int totalSets) {
+    return 'Session complete! $totalSets sets down. Well done, seriously.';
+  }
+
+  @override
+  String coachHypeFinish3(int totalSets) {
+    return 'All done! $totalSets sets logged — great consistency.';
+  }
+
+  @override
+  String coachHypeZone(int zoneNumber, String effortLabel) {
+    return 'Zone $zoneNumber — $effortLabel.';
+  }
+
+  @override
+  String get coachHypeAboveCap1 =>
+      'Your heart rate is above your max. Let\'s ease off and bring it down.';
+
+  @override
+  String get coachHypeAboveCap2 =>
+      'Still above your max — slow it down, breathe.';
+
+  @override
+  String get coachHypeBackBelowCap => 'Good — you\'re back under your max.';
+
+  @override
+  String get coachSergeantStart1 => 'Time to work. Let\'s move.';
+
+  @override
+  String get coachSergeantStart2 => 'Session\'s on. Get set.';
+
+  @override
+  String get coachSergeantStart3 => 'Eyes up. Let\'s begin.';
+
+  @override
+  String get coachSergeantSet1 => 'Set logged. Next.';
+
+  @override
+  String get coachSergeantSet2 => 'Good. Reset and go again.';
+
+  @override
+  String get coachSergeantSet3 => 'Done. Keep moving.';
+
+  @override
+  String get coachSergeantPr1 => 'Personal record. Well earned.';
+
+  @override
+  String get coachSergeantPr2 => 'New best. Good work.';
+
+  @override
+  String get coachSergeantPr3 => 'That\'s a PR. Earned, noted.';
+
+  @override
+  String coachSergeantCountdown1(int secondsLeft) {
+    return '$secondsLeft.';
+  }
+
+  @override
+  String coachSergeantCountdown2(int secondsLeft) {
+    return '$secondsLeft. Get ready.';
+  }
+
+  @override
+  String coachSergeantCountdown3(int secondsLeft) {
+    return '$secondsLeft. Stand by.';
+  }
+
+  @override
+  String get coachSergeantRestDone1 => 'Rest\'s over. Bar\'s waiting. Move.';
+
+  @override
+  String get coachSergeantRestDone2 => 'Time\'s up. Back to it.';
+
+  @override
+  String get coachSergeantRestDone3 => 'Rest done. Take your position.';
+
+  @override
+  String coachSergeantFinish1(int totalSets) {
+    return 'Session complete. $totalSets sets. Good work.';
+  }
+
+  @override
+  String coachSergeantFinish2(int totalSets) {
+    return 'That\'s $totalSets sets done. Solid session.';
+  }
+
+  @override
+  String coachSergeantFinish3(int totalSets) {
+    return 'Finished. $totalSets sets logged. Well earned.';
+  }
+
+  @override
+  String coachSergeantZone(int zoneNumber, String effortLabel) {
+    return 'Zone $zoneNumber. $effortLabel.';
+  }
+
+  @override
+  String get coachSergeantAboveCap1 =>
+      'Heart rate\'s above your max. Ease off now.';
+
+  @override
+  String get coachSergeantAboveCap2 =>
+      'Still above your max. Slow down and breathe.';
+
+  @override
+  String get coachSergeantBackBelowCap => 'Good. Back under your max.';
+
+  @override
+  String get coachQuote1 =>
+      'No longer talk at all about the kind of man that a good man ought to be, but be such. — Marcus Aurelius';
+
+  @override
+  String get coachQuote2 =>
+      'If it is not right, do not do it. If it is not true, do not say it. — Marcus Aurelius';
+
+  @override
+  String get coachQuote3 =>
+      'We do not receive a short life, but we make it a short one, and we are not poor in days, but wasteful of them. — Seneca';
+
+  @override
+  String get coachQuote5 =>
+      'It is not the things themselves that disturb men, but their judgements about these things. — Epictetus';
+
+  @override
+  String get coachQuote6 =>
+      'First say to yourself who you wish to be: then do accordingly what you are doing. — Epictetus';
+
+  @override
+  String get coachQuote7 =>
+      'The journey of a thousand li commenced with a single step. — Lao Tzu';
+
+  @override
+  String get coachQuote8 =>
+      'The life which is unexamined is not worth living. — Socrates';
+
+  @override
+  String get coachQuote9 => 'I neither know nor think that I know. — Socrates';
+
+  @override
+  String get coachQuote10 => 'Well begun is half done. — Aristotle';
+
+  @override
+  String get coachQuote12 =>
+      'Nothing great was ever achieved without enthusiasm. — Ralph Waldo Emerson';
+
+  @override
+  String get coachQuote13 =>
+      'Adopt the pace of Nature. Her secret is patience. — Ralph Waldo Emerson';
+
+  @override
+  String get coachQuote14 =>
+      'If one advances confidently in the direction of his dreams, and endeavors to live the life which he has imagined, he will meet with a success unexpected in common hours. — Henry David Thoreau';
+
+  @override
+  String get coachQuote15 =>
+      'The question is not what you look at, but what you see. — Henry David Thoreau';
+
+  @override
+  String get coachQuote16 =>
+      'Energy and persistence conquer all things. — Benjamin Franklin';
+
+  @override
+  String get coachQuote17 =>
+      'Well done is better than well said. — Benjamin Franklin';
+
+  @override
+  String get coachQuote18 =>
+      'Our greatest glory is not in never falling, but in rising every time we fall. — Oliver Goldsmith';
+
+  @override
+  String get coachQuote19 =>
+      'The credit belongs to the man who is actually in the arena. — Theodore Roosevelt';
+
+  @override
+  String get coachQuote20 =>
+      'Do what you can, with what you\'ve got, where you are. — Theodore Roosevelt';
+
+  @override
+  String get coachQuote21 => 'Action is eloquence. — William Shakespeare';
+
+  @override
+  String get coachQuote22 =>
+      'Diligence is the mother of good fortune. — Miguel de Cervantes';
+
+  @override
+  String get coachQuote23 =>
+      'Obstacles cannot crush me. Every obstacle yields to stern resolve. — Leonardo da Vinci';
+
+  @override
   String get trainerDisclaimerTitle => 'Before your coach speaks';
 
   @override
@@ -2125,7 +2370,16 @@ class SZh extends S {
   String get trainerPersonaSteadyDescription => 'Calm and measured';
 
   @override
-  String get trainerMoreVoicesComing => 'More voices are on the way.';
+  String get trainerPersonaHype => 'Hype';
+
+  @override
+  String get trainerPersonaHypeDescription => 'Energetic and celebratory';
+
+  @override
+  String get trainerPersonaSergeant => 'Sergeant';
+
+  @override
+  String get trainerPersonaSergeantDescription => 'Firm and to the point';
 
   @override
   String get trainerSpeechRate => 'Speech rate';

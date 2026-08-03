@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
+import '../../data/persona_packs.dart';
 import '../providers/coach_bridge.dart';
 import '../providers/trainer_settings_provider.dart';
 import '../widgets/trainer_disclaimer_sheet.dart';
@@ -57,11 +58,30 @@ class _TrainerSettingsScreenState extends ConsumerState<TrainerSettingsScreen> {
               await notifier.setEnabled(value);
             },
           ),
-          ListTile(
-            title: Text(s.trainerPersona),
-            subtitle: Text(
-              '${s.trainerPersonaSteady} — ${s.trainerPersonaSteadyDescription}'
-              '\n${s.trainerMoreVoicesComing}',
+          ListTile(title: Text(s.trainerPersona)),
+          RadioGroup<String>(
+            groupValue: settings.personaId,
+            onChanged: (value) async {
+              if (value != null) await notifier.setPersona(value);
+            },
+            child: Column(
+              children: [
+                RadioListTile<String>(
+                  title: Text(s.trainerPersonaSteady),
+                  subtitle: Text(s.trainerPersonaSteadyDescription),
+                  value: steadyPersona.id,
+                ),
+                RadioListTile<String>(
+                  title: Text(s.trainerPersonaHype),
+                  subtitle: Text(s.trainerPersonaHypeDescription),
+                  value: hypePersona.id,
+                ),
+                RadioListTile<String>(
+                  title: Text(s.trainerPersonaSergeant),
+                  subtitle: Text(s.trainerPersonaSergeantDescription),
+                  value: sergeantPersona.id,
+                ),
+              ],
             ),
           ),
           ListTile(

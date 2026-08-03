@@ -37,7 +37,10 @@ final speechServiceProvider = Provider<SpeechService>((ref) {
 /// existing subscription in place instead of leaking a second one.
 class CoachBridge {
   CoachBridge(this._ref, {Random? random}) {
-    _engine = CoachingEngine(persona: steadyPersona, random: random);
+    _engine = CoachingEngine(
+      persona: personaForId(_ref.read(trainerSettingsProvider).personaId),
+      random: random,
+    );
     _subscription = _ref.read(trainerEventBusProvider).events.listen(_onEvent);
     // The master switch must cut off in-flight speech immediately, rather
     // than only preventing the next cue — `_onEvent`'s early return alone
@@ -45,6 +48,18 @@ class CoachBridge {
     _ref.listen<TrainerSettings>(trainerSettingsProvider, (previous, next) {
       if ((previous?.enabled ?? false) && !next.enabled) {
         unawaited(_ref.read(speechServiceProvider).stop());
+      }
+      // A persona switch takes effect from the next cue onward. Fix round 1:
+      // this used to discard the whole engine and build a fresh one, which
+      // silently threw away live heart-rate safety state (`_aboveCap`,
+      // `_currentZone`, the cap-warning cooldown) along with it — see
+      // `CoachingEngine.persona`'s doc comment for why that mattered. Setting
+      // the persona in place instead keeps that state intact; only the
+      // phrase bank changes. Without reacting to the change at all,
+      // `TrainerSettings.personaId` would persist but the bridge would keep
+      // speaking Steady's bank regardless of what the user picked.
+      if (previous != null && previous.personaId != next.personaId) {
+        _engine.persona = personaForId(next.personaId);
       }
     });
     // Losing the entitlement mid-utterance must silence the coach for the
