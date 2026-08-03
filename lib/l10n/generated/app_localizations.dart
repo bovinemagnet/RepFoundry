@@ -4260,12 +4260,6 @@ abstract class S {
   /// **'Obstacles cannot crush me. Every obstacle yields to stern resolve. — Leonardo da Vinci'**
   String get coachQuote23;
 
-  /// No description provided for @coachQuote24.
-  ///
-  /// In en, this message translates to:
-  /// **'Although the world is full of suffering, it is full also of the overcoming of it. — Helen Keller'**
-  String get coachQuote24;
-
   /// No description provided for @trainerDisclaimerTitle.
   ///
   /// In en, this message translates to:

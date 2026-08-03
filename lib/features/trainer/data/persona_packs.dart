@@ -13,7 +13,7 @@ import '../domain/trainer_event.dart';
 /// so nothing in the app speaks these phrases yet — attaching them here is
 /// content preparation only. Spoken-timing behaviour ("workout start and
 /// after rests of two minutes or longer", per spec §5) is tracked as a
-/// follow-up, issue #TBD.
+/// follow-up, issue #102.
 ///
 /// Attached to every persona's [TrainerEventKind.quote] bank rather than
 /// kept as a standalone list, so the existing per-persona
@@ -43,7 +43,6 @@ const List<String> _quoteBank = [
   'coachQuote21',
   'coachQuote22',
   'coachQuote23',
-  'coachQuote24',
 ];
 
 /// Calm and measured. The only persona in v1; Hype and Sergeant follow in

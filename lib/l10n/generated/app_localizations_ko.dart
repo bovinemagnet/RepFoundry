@@ -2351,10 +2351,6 @@ class SKo extends S {
       'Obstacles cannot crush me. Every obstacle yields to stern resolve. — Leonardo da Vinci';
 
   @override
-  String get coachQuote24 =>
-      'Although the world is full of suffering, it is full also of the overcoming of it. — Helen Keller';
-
-  @override
   String get trainerDisclaimerTitle => 'Before your coach speaks';
 
   @override
