@@ -2298,10 +2298,6 @@ class SJa extends S {
   String get coachQuote10 => 'Well begun is half done. — Aristotle';
 
   @override
-  String get coachQuote11 =>
-      'I will not follow where the path may lead, but I will go where there is no path, and I will leave a trail. — Muriel Strode';
-
-  @override
   String get coachQuote12 =>
       'Nothing great was ever achieved without enthusiasm. — Ralph Waldo Emerson';
 

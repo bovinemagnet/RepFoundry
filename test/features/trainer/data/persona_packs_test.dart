@@ -158,15 +158,19 @@ void main() {
     // checked the original author's death date but not the translator's or
     // the attribution's accuracy. Re-auditing every entry against a named
     // pre-1929 edition or translation — dropping anything that couldn't be
-    // pinned down — took the count from 36 to 22 across three passes: 24
-    // after the first re-audit; 23 once the Helen Keller entry was dropped
-    // (US publication-date public domain does not hold under UK/EU life+70
-    // terms, and this project is not US-based); 22 once that same UK/EU
-    // life+70 test was swept across every remaining translator and caught a
-    // Loeb translation (Gummere, d. 1969) that had been pinned as public
-    // domain on the same US-only basis the Keller drop had just rejected.
-    // Fewer, individually verified entries beat a rounder number with an
-    // unverified one in it.
+    // pinned down — took the count from 36 to 21 across four passes: 24
+    // after the first re-audit; 23 once the Helen Keller entry was dropped;
+    // 22 once that same test was swept across every remaining translator and
+    // caught a Loeb translation (Gummere, d. 1969); 21 once the sweep was
+    // extended from translators to original-language authors too and caught
+    // Muriel Strode (d. 1964) — ironically the quote that had just been
+    // *recredited* to her from a false Emerson attribution, which is what
+    // exposed the copyright problem in the first place. The rule this whole
+    // exercise converged on, stated once and generally: every named person
+    // whose words are shipped, author or translator, must be dead more than
+    // 70 years — publication date alone is never sufficient. Fewer,
+    // individually verified entries beat a rounder number with an unverified
+    // one in it.
     for (final persona in _allPersonas) {
       expect(
         persona.phrasesFor(TrainerEventKind.quote).length,

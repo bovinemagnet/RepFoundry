@@ -4176,12 +4176,6 @@ abstract class S {
   /// **'Well begun is half done. — Aristotle'**
   String get coachQuote10;
 
-  /// No description provided for @coachQuote11.
-  ///
-  /// In en, this message translates to:
-  /// **'I will not follow where the path may lead, but I will go where there is no path, and I will leave a trail. — Muriel Strode'**
-  String get coachQuote11;
-
   /// No description provided for @coachQuote12.
   ///
   /// In en, this message translates to:

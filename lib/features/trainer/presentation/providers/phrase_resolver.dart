@@ -119,7 +119,6 @@ final Map<String, PhraseBuilder> phraseResolvers = {
   'coachQuote8': (s, _) => s.coachQuote8,
   'coachQuote9': (s, _) => s.coachQuote9,
   'coachQuote10': (s, _) => s.coachQuote10,
-  'coachQuote11': (s, _) => s.coachQuote11,
   'coachQuote12': (s, _) => s.coachQuote12,
   'coachQuote13': (s, _) => s.coachQuote13,
   'coachQuote14': (s, _) => s.coachQuote14,

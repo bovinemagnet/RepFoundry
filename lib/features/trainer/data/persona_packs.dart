@@ -29,7 +29,6 @@ const List<String> _quoteBank = [
   'coachQuote8',
   'coachQuote9',
   'coachQuote10',
-  'coachQuote11',
   'coachQuote12',
   'coachQuote13',
   'coachQuote14',
