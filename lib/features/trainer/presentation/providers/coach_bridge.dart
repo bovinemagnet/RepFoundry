@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/entitlements/entitlement.dart';
 import '../../../../core/entitlements/entitlement_provider.dart';
 import '../../../../core/entitlements/entitlement_service.dart';
+import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../application/coaching_engine.dart';
 import '../../data/flutter_tts_speech_service.dart';
 import '../../data/persona_packs.dart';
@@ -96,9 +98,12 @@ class CoachBridge {
     // variety bank nor restart the encouragement cooldown.
     final cue = _engine.onEvent(
       event,
-      now: DateTime.now(),
+      now: clock.now(),
       countdownsEnabled: settings.countdownsEnabled,
       encouragementEnabled: settings.encouragementEnabled,
+      hrCalloutsEnabled: settings.hrCalloutsEnabled,
+      hrSafetyWarningsEnabled: settings.hrSafetyWarningsEnabled,
+      cautionMode: _ref.read(cautionModeProvider),
     );
     if (cue != null) {
       final text = resolvePhrase(strings, cue.phraseKey, cue.args);
@@ -110,10 +115,19 @@ class CoachBridge {
     }
 
     // Reset for the next session, but never cut off the sign-off line we just
-    // started speaking.
+    // started speaking. A null cue here can now mean two different things:
+    // no phrase was available (safe to stop), or the finish cue was
+    // suppressed because the reading is still above the safety cap — in
+    // which case a SpeechPriority.safety warning is the most likely thing
+    // still playing, and cutting it off mid-sentence is the one truncation
+    // this feature must never produce. Read isAboveCap before reset() clears
+    // it.
     if (event is WorkoutFinished) {
+      final aboveCapAtFinish = _engine.isAboveCap;
       _engine.reset();
-      if (cue == null) unawaited(_ref.read(speechServiceProvider).stop());
+      if (cue == null && !aboveCapAtFinish) {
+        unawaited(_ref.read(speechServiceProvider).stop());
+      }
     }
   }
 

@@ -214,6 +214,8 @@ void main() {
     await enableViaMasterSwitch(tester);
     expect(findEnableSwitch(tester).value, isTrue);
 
+    await tester.ensureVisible(find.text('Review safety notice'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Review safety notice'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Not now'));
@@ -225,6 +227,15 @@ void main() {
     final settings = container.read(trainerSettingsProvider);
     expect(settings.disclaimerAccepted, isTrue);
     expect(settings.enabled, isTrue);
+
+    // Scroll back up: the earlier ensureVisible() left "Enable coach" outside
+    // the lazily-built ListView's built extent, so ensureVisible (which only
+    // scrolls an already-built element into view) can't reach it directly.
+    tester
+        .state<ScrollableState>(find.byType(Scrollable).first)
+        .position
+        .jumpTo(0);
+    await tester.pumpAndSettle();
     expect(findEnableSwitch(tester).value, isTrue);
   });
 
@@ -293,6 +304,69 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Withdraw consent'), findsNothing);
+  });
+
+  group('heart-rate settings', () {
+    testWidgets(
+        'both HR switches default on and are listed with HR safety '
+        'warnings last', (tester) async {
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+
+      final calloutsSwitch = tester.widget<SwitchListTile>(
+        find.widgetWithText(SwitchListTile, 'Heart rate zone callouts'),
+      );
+      final safetySwitch = tester.widget<SwitchListTile>(
+        find.widgetWithText(SwitchListTile, 'Heart rate safety warnings'),
+      );
+      expect(calloutsSwitch.value, isTrue);
+      expect(safetySwitch.value, isTrue);
+
+      // "Listed last" among the toggles: HR safety warnings sits below HR
+      // callouts on screen.
+      final calloutsY = tester.getTopLeft(find.byWidget(calloutsSwitch)).dy;
+      final safetyY = tester.getTopLeft(find.byWidget(safetySwitch)).dy;
+      expect(safetyY, greaterThan(calloutsY));
+    });
+
+    testWidgets(
+        'toggling HR callouts off persists independently of HR '
+        'safety warnings', (tester) async {
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.widgetWithText(SwitchListTile, 'Heart rate zone callouts'),
+      );
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TrainerSettingsScreen)),
+      );
+      final settings = container.read(trainerSettingsProvider);
+      expect(settings.hrCalloutsEnabled, isFalse);
+      expect(settings.hrSafetyWarningsEnabled, isTrue);
+    });
+
+    testWidgets(
+        'toggling HR safety warnings off is the user\'s own choice '
+        'to make, and it takes effect', (tester) async {
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.widgetWithText(SwitchListTile, 'Heart rate safety warnings'),
+      );
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TrainerSettingsScreen)),
+      );
+      expect(
+        container.read(trainerSettingsProvider).hrSafetyWarningsEnabled,
+        isFalse,
+      );
+    });
   });
 
   group('SettingsScreen entitlement gate', () {

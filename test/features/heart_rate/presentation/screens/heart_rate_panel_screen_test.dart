@@ -15,6 +15,7 @@ import 'package:hr_zones/hr_zones.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/controllers/heart_rate_panel_controller.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/controllers/heart_rate_panel_state.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/health_profile_provider.dart';
+import 'package:rep_foundry/features/heart_rate/presentation/providers/heart_rate_panel_visibility_provider.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/screens/heart_rate_panel_screen.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
@@ -235,6 +236,57 @@ void main() {
         find.text('Waiting for heart rate data...'),
         findsOneWidget,
       );
+    });
+
+    testWidgets(
+        'marks heartRatePanelVisibleProvider true while mounted and false '
+        'once disposed', (tester) async {
+      // This is the signal HrEventSource reads to decide whether to delay
+      // the coach's cap warning behind the panel's own chime (decision 1) —
+      // wrong in either direction either mis-sequences the warning or
+      // silently drops the delay for a screen that is actually on-screen.
+      final container = ProviderContainer(overrides: [
+        databaseProvider.overrideWithValue(database),
+        cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
+        saveCardioSessionUseCaseProvider.overrideWithValue(
+          SaveCardioSessionUseCase(
+            cardioRepository: cardioRepo,
+            workoutRepository: workoutRepo,
+          ),
+        ),
+        locationServiceProvider.overrideWithValue(locationService),
+        heartRateServiceProvider.overrideWithValue(heartRateService),
+        healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+        healthSyncSettingsProvider
+            .overrideWith(() => HealthSyncSettingsNotifier()),
+      ]);
+      addTearDown(container.dispose);
+
+      expect(container.read(heartRatePanelVisibleProvider), isFalse,
+          reason: 'false before the screen ever mounts');
+
+      await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: HeartRatePanelScreen(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(container.read(heartRatePanelVisibleProvider), isTrue);
+
+      await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: SizedBox()),
+      ));
+      // The flag is cleared via a microtask (dispose() cannot modify a
+      // provider synchronously) — a couple of empty pumps flush it.
+      await tester.pump();
+      await tester.pump();
+
+      expect(container.read(heartRatePanelVisibleProvider), isFalse);
     });
   });
 

@@ -11,6 +11,9 @@ enum TrainerEventKind {
   restFinished,
   workoutFinished,
   quote,
+  hrZoneChanged,
+  hrAboveCap,
+  hrBackBelowCap,
 }
 
 /// Something that happened in the workout that the coach may react to.
@@ -71,4 +74,48 @@ class WorkoutFinished extends TrainerEvent {
 
   @override
   TrainerEventKind get kind => TrainerEventKind.workoutFinished;
+}
+
+/// The user has settled into a different training zone.
+///
+/// [descriptiveLabel] (e.g. "Aerobic") is carried for parity with
+/// [CalculatedZone] and potential future display/persona use, but the
+/// steady persona's spoken cue deliberately does not use it — see
+/// `phrase_resolver.dart`'s `coachSteadyZone` entry. [effortLabel] (e.g.
+/// "Moderate") already conveys the zone's intensity in a form that reads
+/// naturally out loud; adding the descriptive label on top would lengthen
+/// the cue without giving the user anything actionable, and the same
+/// information is already visible in the zone legend UI.
+class HeartRateZoneChanged extends TrainerEvent {
+  const HeartRateZoneChanged({
+    required this.zoneNumber,
+    required this.effortLabel,
+    required this.descriptiveLabel,
+  });
+
+  final int zoneNumber;
+  final String effortLabel;
+  final String descriptiveLabel;
+
+  @override
+  TrainerEventKind get kind => TrainerEventKind.hrZoneChanged;
+}
+
+/// The heart rate has crossed the user's safe maximum. Re-emitted while it
+/// stays there so the coach can repeat its warning.
+class HeartRateAboveCap extends TrainerEvent {
+  const HeartRateAboveCap({required this.bpm, required this.cap});
+
+  final int bpm;
+  final int cap;
+
+  @override
+  TrainerEventKind get kind => TrainerEventKind.hrAboveCap;
+}
+
+class HeartRateBackBelowCap extends TrainerEvent {
+  const HeartRateBackBelowCap();
+
+  @override
+  TrainerEventKind get kind => TrainerEventKind.hrBackBelowCap;
 }

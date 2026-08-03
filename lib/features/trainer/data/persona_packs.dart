@@ -40,5 +40,19 @@ const Persona steadyPersona = Persona(
       'coachSteadyFinish2',
       'coachSteadyFinish3',
     ],
+    // Heart-rate cues (phase 2a). hrAboveCap is the safety path: a persona
+    // shipped without a phrase here degrades to silence with no error (see
+    // CoachingEngine._speak), so it must never be empty — enforced in
+    // persona_packs_test.dart across every persona, not just this one.
+    TrainerEventKind.hrZoneChanged: [
+      'coachSteadyZone',
+    ],
+    TrainerEventKind.hrAboveCap: [
+      'coachSteadyAboveCap1',
+      'coachSteadyAboveCap2',
+    ],
+    TrainerEventKind.hrBackBelowCap: [
+      'coachSteadyBackBelowCap',
+    ],
   },
 );

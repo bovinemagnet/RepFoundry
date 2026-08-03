@@ -2083,6 +2083,23 @@ class SJa extends S {
   }
 
   @override
+  String coachSteadyZone(int zoneNumber, String effortLabel) {
+    return 'Zone $zoneNumber — $effortLabel.';
+  }
+
+  @override
+  String get coachSteadyAboveCap1 =>
+      'Your heart rate is above your maximum. Ease off and bring it down.';
+
+  @override
+  String get coachSteadyAboveCap2 =>
+      'Still above your maximum. Slow down, breathe.';
+
+  @override
+  String get coachSteadyBackBelowCap =>
+      'Good — you\'re back under your maximum.';
+
+  @override
   String get trainerDisclaimerTitle => 'Before your coach speaks';
 
   @override
@@ -2132,6 +2149,20 @@ class SJa extends S {
 
   @override
   String get trainerEncouragement => 'Encouragement';
+
+  @override
+  String get trainerHrCallouts => 'Heart rate zone callouts';
+
+  @override
+  String get trainerHrCalloutsSubtitle =>
+      'Announces your training zone as it changes, when a heart rate monitor is connected.';
+
+  @override
+  String get trainerHrSafetyWarnings => 'Heart rate safety warnings';
+
+  @override
+  String get trainerHrSafetyWarningsSubtitle =>
+      'Speaks a calm reminder if your heart rate goes above your safe maximum. Recommended to leave switched on.';
 
   @override
   String get trainerReviewDisclaimer => 'Review safety notice';

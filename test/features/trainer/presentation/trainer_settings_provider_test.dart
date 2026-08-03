@@ -64,4 +64,69 @@ void main() {
     // The value the load would have applied must still land correctly.
     expect(container.read(trainerSettingsProvider).countdownsEnabled, isFalse);
   });
+
+  group('heart-rate settings', () {
+    test('hrCalloutsEnabled and hrSafetyWarningsEnabled default to true',
+        () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final settings = container.read(trainerSettingsProvider);
+      expect(settings.hrCalloutsEnabled, isTrue);
+      expect(settings.hrSafetyWarningsEnabled, isTrue);
+    });
+
+    test('setHrCallouts persists under its own preference key', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container.read(trainerSettingsProvider.notifier).setHrCallouts(
+            false,
+          );
+
+      expect(
+          container.read(trainerSettingsProvider).hrCalloutsEnabled, isFalse);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('trainer_hr_callouts'), isFalse);
+    });
+
+    test(
+        'setHrSafetyWarnings persists under its own preference key,'
+        ' distinct from hrCallouts', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(trainerSettingsProvider.notifier)
+          .setHrSafetyWarnings(false);
+
+      final settings = container.read(trainerSettingsProvider);
+      expect(settings.hrSafetyWarningsEnabled, isFalse);
+      expect(settings.hrCalloutsEnabled, isTrue,
+          reason: 'the two toggles must be independent');
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('trainer_hr_safety'), isFalse);
+    });
+
+    test('a stored false value for either toggle is honoured on load',
+        () async {
+      SharedPreferences.setMockInitialValues({
+        'trainer_hr_callouts': false,
+        'trainer_hr_safety': false,
+      });
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      // Awaiting any mutator forces the notifier to wait on its own
+      // in-flight load first (see `_loading` in the notifier), which is the
+      // reliable way to know the load has resolved — an arbitrary
+      // `Future.delayed` is not guaranteed to flush every microtask the
+      // real SharedPreferences plugin channel involves.
+      await container.read(trainerSettingsProvider.notifier).acceptDisclaimer();
+
+      final settings = container.read(trainerSettingsProvider);
+      expect(settings.hrCalloutsEnabled, isFalse);
+      expect(settings.hrSafetyWarningsEnabled, isFalse);
+    });
+  });
 }

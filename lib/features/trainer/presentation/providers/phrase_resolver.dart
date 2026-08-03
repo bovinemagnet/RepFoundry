@@ -36,6 +36,16 @@ final Map<String, PhraseBuilder> phraseResolvers = {
       s.coachSteadyFinish2(a['totalSets'] as int? ?? 0),
   'coachSteadyFinish3': (s, a) =>
       s.coachSteadyFinish3(a['totalSets'] as int? ?? 0),
+  // descriptiveLabel is deliberately not threaded through here — see
+  // HeartRateZoneChanged's doc comment for the decision. The spoken cue
+  // stays to zone number + effortLabel only.
+  'coachSteadyZone': (s, a) => s.coachSteadyZone(
+        a['zoneNumber'] as int? ?? 0,
+        a['effortLabel'] as String? ?? '',
+      ),
+  'coachSteadyAboveCap1': (s, _) => s.coachSteadyAboveCap1,
+  'coachSteadyAboveCap2': (s, _) => s.coachSteadyAboveCap2,
+  'coachSteadyBackBelowCap': (s, _) => s.coachSteadyBackBelowCap,
 };
 
 String? resolvePhrase(S s, String key, Map<String, Object> args) {

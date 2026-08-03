@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/entitlements/entitlement.dart';
 import 'package:rep_foundry/core/entitlements/entitlement_provider.dart';
 import 'package:rep_foundry/core/entitlements/entitlement_service.dart';
+import 'package:rep_foundry/features/heart_rate/presentation/providers/zone_configuration_provider.dart';
 import 'package:rep_foundry/features/trainer/domain/trainer_event.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/coach_bridge.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/trainer_event_bus.dart';
@@ -88,6 +89,11 @@ void main() {
       ),
       entitlementServiceProvider
           .overrideWithValue(entitlementService ?? _AlwaysEntitled()),
+      // Overridden directly rather than left to resolve through
+      // healthProfileProvider: that chain needs a real client/database
+      // setup this test file doesn't provide. cautionModeProvider is a
+      // plain Provider, so overriding it sidesteps the chain entirely.
+      cautionModeProvider.overrideWithValue(false),
       _bridgeUnderTest.overrideWith((ref) {
         final bridge = CoachBridge(ref, random: Random(seed));
         ref.onDispose(bridge.dispose);
@@ -181,6 +187,7 @@ void main() {
           ),
         ),
         entitlementServiceProvider.overrideWithValue(_AlwaysEntitled()),
+        cautionModeProvider.overrideWithValue(false),
         _bridgeUnderTest.overrideWith((ref) {
           final bridge = CoachBridge(ref, random: Random(seed));
           ref.onDispose(bridge.dispose);
@@ -366,6 +373,31 @@ void main() {
   });
 
   test(
+      'WorkoutFinished above cap does not cut off an in-flight safety '
+      'warning', () async {
+    // Regression: the finish cue is suppressed while above cap, which makes
+    // the bridge's null-cue branch reachable for the first time in exactly
+    // this state — the one state where a SpeechPriority.safety warning is
+    // most likely still playing. The old code called stop() unconditionally
+    // on a null cue, so it would cut that warning off mid-sentence.
+    final container = buildContainer();
+    final bridge = container.read(_bridgeUnderTest);
+    bridge.strings = lookupS(const Locale('en'));
+
+    final bus = container.read(trainerEventBusProvider);
+    bus.emit(const HeartRateAboveCap(bpm: 180, cap: 170));
+    await Future<void>.delayed(Duration.zero);
+    expect(speechService.stopCount, 0);
+
+    bus.emit(const WorkoutFinished(totalSets: 5));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(speechService.stopCount, 0,
+        reason: 'the finish cue is suppressed above cap, but the safety '
+            'warning must be left to finish, not cut off');
+  });
+
+  test(
       'reading coachBridgeProvider again after a locale change reuses the '
       'same bridge instead of leaking a duplicate subscription', () async {
     final container = ProviderContainer(overrides: [
@@ -376,6 +408,7 @@ void main() {
         ),
       ),
       entitlementServiceProvider.overrideWithValue(_AlwaysEntitled()),
+      cautionModeProvider.overrideWithValue(false),
     ]);
     addTearDown(container.dispose);
 

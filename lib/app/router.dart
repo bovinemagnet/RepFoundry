@@ -22,6 +22,7 @@ import '../features/clients/presentation/screens/client_roster_screen.dart';
 import '../features/clients/presentation/widgets/client_switcher.dart';
 import '../features/clients/presentation/screens/client_detail_screen.dart';
 import '../features/trainer/presentation/providers/coach_bridge.dart';
+import '../features/trainer/presentation/providers/hr_event_source.dart';
 import '../features/trainer/presentation/screens/trainer_settings_screen.dart';
 import '../core/entitlements/entitlement.dart';
 import '../core/entitlements/entitlement_provider.dart';
@@ -46,6 +47,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             // updates the existing subscription instead of leaking a second,
             // still-listening bridge.
             ref.read(coachBridgeProvider).strings = S.of(context)!;
+            // Mounted alongside the bridge, for the same reason and with
+            // the same non-family Provider shape: it turns heart-rate
+            // readings into trainer events for the life of the app shell,
+            // regardless of which tab is active, and reading it again on
+            // rebuild returns the same instance rather than leaking a
+            // second, still-subscribed source (see hrEventSourceProvider's
+            // lifecycle tests).
+            ref.read(hrEventSourceProvider);
             return ScaffoldWithNavBar(
               railFooter: const ClientSwitcher(),
               child: child,
