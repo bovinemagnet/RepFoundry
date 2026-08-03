@@ -1,12 +1,21 @@
 import '../domain/persona.dart';
 import '../domain/trainer_event.dart';
 
-/// Shared inspirational quote bank (spec §5). Public-domain sources only,
-/// each pinned to a specific out-of-copyright edition or translation — see
-/// the sourcing table in the fix-round report for the edition relied on per
-/// entry; a quote whose provenance could not be pinned to a specific PD text
-/// was dropped rather than kept on a general "old author" assumption, since
-/// a translator's own copyright is independent of the original author's.
+/// Shared inspirational quote bank (spec §5).
+///
+/// **Licensing rule for anyone adding a quote:** every named person whose
+/// words we ship — original author *and* translator — must have died more
+/// than 70 years ago. Publication date alone is not sufficient. The
+/// translator clause matters just as much as the author clause: a
+/// public-domain author can still have an in-copyright translation, which is
+/// how Gregory Hays' 2002 rendering of Marcus Aurelius nearly shipped under
+/// Marcus Aurelius' own (long-expired) name. Check both death dates before
+/// adding an entry, and drop it rather than guess if either is unclear.
+///
+/// The per-quote sourcing table (author, work, translation/edition relied on)
+/// currently lives only in issue #99's fix-round report, which is not a
+/// durable record. It should move into this repo — e.g. a doc block here, or
+/// a checked-in file alongside this one — when #102 wires the bank up.
 ///
 /// **Not yet wired to any event.** No `TrainerEvent` currently carries
 /// `TrainerEventKind.quote`, and `CoachingEngine.onEvent` has no case for it,
