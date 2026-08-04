@@ -178,7 +178,40 @@ If either key fails to resolve, the bridge speaks whatever did resolve rather th
 falling silent; `resolvePhrase` already returns null for an unknown key, and speech time
 is the wrong place to lose a cue.
 
-### 5.2 Settings
+### 5.2 Rest-timer chime suppression
+
+`coachAnnouncesRestEndProvider` exists so the rest-timer chime stands down when the
+coach will speak at rest end: on Android the chime takes exclusive audio focus
+(`AUDIOFOCUS_GAIN`) while the coach only asks to duck, so the two together cut the coach
+off mid-sentence (issue #98). It currently returns `false` when countdowns are off,
+because that was the only thing that could speak at rest end.
+
+The standalone quote (§4, countdowns-off row) breaks that assumption: the coach now
+speaks at rest end with countdowns off, and would be cut off by the chime.
+
+The provider becomes a `Provider.family<bool, Duration>` keyed on the rest that just
+finished:
+
+```dart
+if (!settings.enabled || !settings.disclaimerAccepted) return false;
+if (!entitled) return false;
+if (settings.countdownsEnabled) return true;
+return settings.quotesEnabled && restDuration >= CoachingEngine.longRestThreshold;
+```
+
+`longRestThreshold` is promoted to a public `static const` on `CoachingEngine` so the
+two-minute rule has exactly one definition; the widget must not carry its own copy.
+`RestTimerNotifier` gains a `lastRestDuration` getter — needed anyway to emit
+`RestFinished(restDuration:)` — so the widget can key the family.
+
+**Accepted trade-off:** the provider cannot see the engine's `_encouragementBlocked`
+state, so with countdowns off, quotes on, and a long rest ending while the user is above
+their safety cap, the chime is suppressed but the quote is also suppressed — the user
+gets vibration and silence. This is the right failure direction: above the cap a
+`safety`-priority warning is the most likely thing playing, and a chime taking exclusive
+audio focus is precisely what must not happen then.
+
+### 5.3 Settings
 
 `TrainerSettings` gains `quotesEnabled` (default `true`), pref key `trainer_quotes`,
 mutator `setQuotes`, threaded through `copyWith` and `_load` like its five siblings.
@@ -220,8 +253,12 @@ it is the test that would have failed against `main` today.
 (§4.3): exhaust part of the bank under Steady, switch to Hype, assert no already-heard
 quote returns.
 
-**Emitter** (`rest_timer_widget` test) — `RestFinished` now carries the duration the
+**Emitter** (`rest_timer_widget_test.dart`) — `RestFinished` now carries the duration the
 timer ran for.
+
+**Chime suppression** (`coach_announces_rest_end_test.dart`) — the existing cases
+re-expressed against the family, plus the new one: countdowns off, quotes on, a ≥2min
+rest suppresses the chime; the same with a <2min rest does not.
 
 **Settings** — `quotesEnabled` persists and restores; the switch renders and toggles.
 
