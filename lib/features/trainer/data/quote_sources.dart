@@ -48,12 +48,14 @@ class QuoteSource {
 
 /// A quote dropped for licensing, kept so it cannot come back by accident.
 ///
-/// Five entries, two failure modes. Three (Keller, Gummere's Seneca, and
-/// Strode) were reasoned about from publication date rather than death
-/// date. The other two shipped under a credit that was simply false: the
-/// Semisonic lyric under Seneca's name, and Strode's own entry, which read
-/// as entirely safe until its false Emerson credit was corrected — the
-/// correction is what exposed the copyright problem. Without this list the
+/// Every one of these was reasoned about from a publication date rather
+/// than a death date. For Hays and Gummere that meant missing the
+/// translator — a public-domain author can still carry an in-copyright
+/// translation. Keller is the plain case: wrong date, no translator, no
+/// misattribution. The other two hid behind a false credit instead: the
+/// Semisonic lyric under a fabricated Seneca name, and Strode's own
+/// entry, safe-looking until its false Emerson credit was corrected —
+/// the correction is what exposed the problem. Without this list the
 /// only defence is that someone remembers.
 class RejectedQuote {
   const RejectedQuote({
