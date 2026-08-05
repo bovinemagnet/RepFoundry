@@ -1,7 +1,10 @@
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/trainer/domain/trainer_event.dart';
+import 'package:rep_foundry/features/trainer/presentation/providers/trainer_event_bus.dart';
 import 'package:rep_foundry/features/workout/presentation/widgets/rest_timer_widget.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -87,6 +90,27 @@ void main() {
 
       await tester.pump(const Duration(seconds: 1));
       expect(container.read(restTimerProvider), isNull);
+    });
+
+    test('RestFinished carries the duration the timer ran for', () async {
+      final bus = TrainerEventBus(() => true);
+      final events = <TrainerEvent>[];
+      final sub = bus.events.listen(events.add);
+      addTearDown(sub.cancel);
+
+      final container = ProviderContainer(
+        overrides: [trainerEventBusProvider.overrideWithValue(bus)],
+      );
+      addTearDown(container.dispose);
+
+      fakeAsync((async) {
+        container.read(restTimerProvider.notifier).start(2);
+        async.elapse(const Duration(seconds: 4));
+      });
+      await Future<void>.delayed(Duration.zero);
+
+      final finished = events.whereType<RestFinished>().single;
+      expect(finished.restDuration, const Duration(seconds: 2));
     });
   });
 

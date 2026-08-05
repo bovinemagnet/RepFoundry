@@ -48,7 +48,9 @@ class RestTimerNotifier extends Notifier<int?> {
         t.cancel();
         _completedNaturally = true;
         state = null;
-        ref.read(trainerEventBusProvider).emit(const RestFinished());
+        ref
+            .read(trainerEventBusProvider)
+            .emit(RestFinished(restDuration: _lastRestDuration));
       } else {
         state = state! - 1;
         final remaining = state!;
