@@ -110,8 +110,19 @@ present.
 4. **Attribution matches.** The name after the em dash in each ARB quote string
    equals the row's `author`. A corrected attribution that is not carried into
    the table — the exact mistake that exposed the Strode problem — fails here.
-5. **Rejected entries stay rejected.** No key or attribution in the rejected
-   list appears in the live bank.
+5. **Rejected entries stay rejected.** No rejected `fingerprint` — a
+   distinctive, lowercase, apostrophe-free fragment of the dropped wording —
+   appears in any live quote string. The keys are deliberately not checked:
+   `coachQuote4`, `coachQuote11` and `coachQuote24` are gaps in the numbering,
+   so a key assertion passes trivially while the wording walks back in under a
+   new number. The `attribution` is deliberately not checked either: "Seneca"
+   and "Marcus Aurelius" are live credits carried by quotes that passed the
+   audit, so asserting on it would fail on every one of them. It is recorded
+   for the reader, who needs to know which name the wording travelled under.
+
+6. **No empty row.** `author`, `work` and `edition` are all non-empty.
+   Assertion 1 stops an absent row but not a hollow one, and `work: 'TODO'`
+   turns a red bijection green without recording anything.
 
 `_quoteBank` is currently private to `persona_packs.dart`. The test reaches it
 through `steadyPersona.phrasesFor(TrainerEventKind.quote)`, which is the same
@@ -131,7 +142,12 @@ care because they can pass without ever reaching the behaviour they describe:
   historical failure) and confirm it is caught.
 - **Rejected entries** is a negative assertion — "Keller does not appear" reads
   identically whether the guard works or the loop never runs. Positive control:
-  add a Keller entry to the bank and confirm the test fails.
+  add a Keller entry to the bank and confirm the test fails. It is also blind to
+  a fingerprint that matches nothing at all, so the suite separately asserts
+  that every dropped wording, verbatim from the audit, is caught by some
+  fingerprint.
+- **No empty row** is proved by blanking one field and confirming the bijection
+  stays green while this assertion goes red — the whole reason it exists.
 
 ## 5. The audit
 
@@ -171,5 +187,5 @@ where this has already bitten twice.
 - [ ] Every translated entry names a translator dead more than 70 years.
 - [ ] Every shipped wording matches its named edition verbatim.
 - [ ] The three previously dropped quotes are recorded as rejected, with reasons.
-- [ ] All five enforcement assertions are mutation-proved red before green.
+- [ ] All six enforcement assertions are mutation-proved red before green.
 - [ ] `dart analyze` clean, `dart format` clean, full suite passing.

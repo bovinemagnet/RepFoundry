@@ -14,6 +14,16 @@
 /// thing to keep true, and an inaccurate sourcing table is worse than none:
 /// it invites exactly the confidence that let a 2002 Gregory Hays
 /// translation ship under Marcus Aurelius' long-expired name.
+///
+/// What a green suite here does not prove: [translator] `null` is
+/// self-declared, so a translated quote filed as an English original is
+/// checked against its author's death year alone — the Hays failure in its
+/// exact original shape; editors named inside [edition] (Torrey d. 1912,
+/// Ford d. 1902) have death years no test reads; and
+/// [RejectedQuote.attribution] is never asserted on, deliberately, because
+/// "Seneca" and "Marcus Aurelius" are live credits and the check would fire
+/// on the quotes that legitimately carry them. These rows are evidence a
+/// reader has to read, not coverage.
 class QuoteSource {
   const QuoteSource({
     required this.author,
@@ -48,15 +58,16 @@ class QuoteSource {
 
 /// A quote dropped for licensing, kept so it cannot come back by accident.
 ///
-/// Every one of these was reasoned about from a publication date rather
-/// than a death date. For Hays and Gummere that meant missing the
-/// translator — a public-domain author can still carry an in-copyright
-/// translation. Keller is the plain case: wrong date, no translator, no
-/// misattribution. The other two hid behind a false credit instead: the
-/// Semisonic lyric under a fabricated Seneca name, and Strode's own
-/// entry, safe-looking until its false Emerson credit was corrected —
-/// the correction is what exposed the problem. Without this list the
-/// only defence is that someone remembers.
+/// Each of these got through because something other than a death date was
+/// doing the reasoning. For Keller it was a publication date. For Hays and
+/// Gummere it was the author's dates standing in for the translator's — a
+/// public-domain author can still carry an in-copyright translation. For the
+/// Semisonic lyric and for Strode it was a credit nobody had checked: a
+/// fabricated Seneca name over a 1998 song, a false Emerson one over a
+/// writer who died in 1964. For Aristotle, Emerson and Franklin it was an
+/// attribution no named pre-1929 edition carries, and for Roosevelt one that
+/// the very page the words come from hands to another man. Without this list
+/// the only defence is that someone remembers.
 class RejectedQuote {
   const RejectedQuote({
     required this.fingerprint,
@@ -65,7 +76,10 @@ class RejectedQuote {
   });
 
   /// A distinctive fragment of the dropped wording, lowercase, searched for
-  /// in every live quote.
+  /// in every live quote. Kept free of apostrophes and other characters with
+  /// look-alike variants, and short enough to survive the rewordings the
+  /// saying actually circulates in — a fragment that only matches one
+  /// variant lets the others walk back in.
   final String fingerprint;
 
   /// The name it was credited to when it shipped or was proposed.
@@ -76,7 +90,7 @@ class RejectedQuote {
 
 const List<RejectedQuote> rejectedQuotes = [
   RejectedQuote(
-    fingerprint: "other beginning's end",
+    fingerprint: 'comes from some other beginning',
     attribution: 'Seneca',
     reason: "the hook of Semisonic's Closing Time (1998), verbatim; shipped "
         'under a fabricated Seneca credit',
@@ -101,11 +115,47 @@ const List<RejectedQuote> rejectedQuotes = [
         'died in 1969, so the translation is in copyright until 2039',
   ),
   RejectedQuote(
-    fingerprint: 'follow where the path may lead',
+    // Keyed on the span the circulating variants share rather than on any
+    // one of them. This saying travels in more than one wording and under
+    // more than one credit; a fingerprint tied to a single variant lets the
+    // others walk straight back in.
+    fingerprint: 'where the path may lead',
     attribution: 'Muriel Strode',
     reason: 'Strode died in 1964; in copyright until 2034. Long shipped '
         'under a false Emerson credit, which is what made it look safe — '
         'correcting the attribution is what exposed the problem.',
+  ),
+  RejectedQuote(
+    fingerprint: 'well begun is half done',
+    attribution: 'Aristotle',
+    reason: 'an English proverb, not Aristotle: the wording is in neither '
+        "pre-1929 translation checked (Chase's Nicomachean Ethics, Ellis's "
+        'Politics). Aristotle is safely dead; that was never the question.',
+  ),
+  RejectedQuote(
+    fingerprint: 'pace of nature',
+    attribution: 'Ralph Waldo Emerson',
+    reason: "found nowhere in Emerson's collected prose or verse — not in "
+        'the Centenary Edition, not in Wikiquote, only on quotation '
+        'aggregators. A correct-looking credit to a public-domain author is '
+        'what the death-date check cannot see.',
+  ),
+  RejectedQuote(
+    fingerprint: 'persistence conquer all things',
+    attribution: 'Benjamin Franklin',
+    reason: 'in no Franklin primary text searched (Poor Richard, the '
+        'Complete Works, the Autobiography); carried only by quotation '
+        'aggregators, under a credit that looks entirely safe.',
+  ),
+  RejectedQuote(
+    // Stops short of "you've got": a re-add typed with a typographic
+    // apostrophe would not match a fingerprint carrying a straight one.
+    fingerprint: 'do what you can',
+    attribution: 'Theodore Roosevelt',
+    reason: "Roosevelt's Autobiography (1913, ch. IX) credits it to Squire "
+        "Bill Widener of Widener's Valley, Virginia — the credit is "
+        'contradicted by the very page the words come from, and no reliable '
+        "source gives Widener's death year.",
   ),
 ];
 
@@ -143,7 +193,10 @@ const Map<String, QuoteSource> quoteSources = {
     author: 'Epictetus',
     authorDied: 135,
     work: 'Enchiridion, 5',
-    edition: 'The Discourses as Reported by Arrian, Loeb, 1928',
+    edition: 'Epictetus: The Discourses as Reported by Arrian, the Manual, '
+        'and Fragments, Loeb Classical Library vol. II, trans. W. A. '
+        'Oldfather, London: Heinemann / Cambridge MA: Harvard UP, first '
+        'printed 1928 (the line is in the Manual, not the Discourses)',
     translator: 'W. A. Oldfather',
     translatorDied: 1945,
   ),
@@ -166,7 +219,7 @@ const Map<String, QuoteSource> quoteSources = {
   'coachQuote7': QuoteSource(
     author: 'Lao Tzu',
     authorDied: -400,
-    work: 'Tâo Teh King, ch. 64',
+    work: 'Tâo Teh King, ch. 64 §2',
     edition: 'The Sacred Books of China: The Texts of Tâoism, Part I (Sacred '
         'Books of the East vol. XXXIX), trans. James Legge, Oxford: '
         'Clarendon Press, 1891',

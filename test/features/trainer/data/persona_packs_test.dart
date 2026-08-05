@@ -182,14 +182,18 @@ void main() {
     // quotation aggregators — the same mechanism that put the Semisonic
     // lyric under Seneca's name in round one, just without a living
     // copyright holder to trip the death-date check. A third (Aristotle's
-    // "Well begun is half done.") is an English proverb no translation of
-    // Aristotle contains, and a fourth (Roosevelt's "Do what you can, with
-    // what you've got, where you are.") was Roosevelt quoting someone else,
-    // whose death year no source could establish. The rule this pass
-    // converged on: a paraphrase matching no identified edition cannot be
-    // shown *not* to be tracking a modern in-copyright translation — the
-    // Hays failure in a subtler form, since nothing here proves the wording
-    // is old rather than merely untraceable.
+    // "Well begun is half done.") is an English proverb absent from both
+    // pre-1929 Aristotle translations checked — Chase's *Nicomachean
+    // Ethics* and Ellis's *Politics* — and a fourth (Roosevelt's "Do what
+    // you can, with what you've got, where you are.") was Roosevelt quoting
+    // someone else, whose death year no source could establish. The rule
+    // this pass converged on: wording that matches no identified edition
+    // cannot be shown *not* to be someone else's in-copyright words. In a
+    // translated author that is the Hays shape — a modern rendering under a
+    // public-domain name. In an English original, where no translator
+    // exists to check, it is the Semisonic shape — a modern text under a
+    // long-dead author's name. Either way nothing here proves the wording is
+    // old rather than merely untraceable.
     for (final persona in _allPersonas) {
       expect(
         persona.phrasesFor(TrainerEventKind.quote).length,

@@ -40,6 +40,17 @@ void main() {
     }
   });
 
+  // The bijection only stops an *absent* row. Without this, a red bijection
+  // is satisfiable with `work: 'TODO', edition: 'public domain'` — a row that
+  // records nothing, ships green, and reads as evidence.
+  test('every row carries an author, a work and an edition', () {
+    quoteSources.forEach((key, source) {
+      expect(source.author, isNotEmpty, reason: '$key names no author');
+      expect(source.work, isNotEmpty, reason: '$key names no work or locus');
+      expect(source.edition, isNotEmpty, reason: '$key names no edition');
+    });
+  });
+
   test('a row gives a translator and a translator death year, or neither', () {
     quoteSources.forEach((key, source) {
       expect(
@@ -110,6 +121,39 @@ void main() {
           reason: 'this was dropped: ${rejected.reason}',
         );
       }
+    }
+  });
+
+  // The guard above asserts the fingerprints match *nothing*, which reads
+  // identically whether they are well chosen or useless. These are the
+  // dropped wordings as they shipped, from the audit; each must be caught by
+  // some fingerprint. A fingerprint keyed on a span the real wording does
+  // not contain passes the guard and blocks nothing.
+  test('every dropped wording is caught by some fingerprint', () {
+    const dropped = [
+      "Every new beginning comes from some other beginning's end. — Seneca",
+      'The impediment to action advances action. What stands in the way '
+          'becomes the way. — Marcus Aurelius',
+      'Although the world is full of suffering, it is full also of the '
+          'overcoming of it. — Helen Keller',
+      'While we are postponing, life speeds by. — Seneca',
+      'I will not follow where the path may lead, but I will go where there '
+          'is no path, and I will leave a trail. — Muriel Strode',
+      'Well begun is half done. — Aristotle',
+      'Adopt the pace of Nature. Her secret is patience. '
+          '— Ralph Waldo Emerson',
+      'Energy and persistence conquer all things. — Benjamin Franklin',
+      "Do what you can, with what you've got, where you are. "
+          '— Theodore Roosevelt',
+    ];
+    expect(dropped.length, rejectedQuotes.length);
+    for (final text in dropped) {
+      final lower = text.toLowerCase();
+      expect(
+        rejectedQuotes.any((r) => lower.contains(r.fingerprint)),
+        isTrue,
+        reason: 'no fingerprint would block this coming back: $text',
+      );
     }
   });
 }
