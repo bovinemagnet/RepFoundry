@@ -15,6 +15,7 @@ const _testPersona = Persona(
     TrainerEventKind.restCountdown: ['count1'],
     TrainerEventKind.restFinished: ['go1', 'go2', 'go3'],
     TrainerEventKind.workoutFinished: ['done1', 'done2', 'done3'],
+    TrainerEventKind.quote: ['quote1', 'quote2', 'quote3'],
   },
 );
 
@@ -34,6 +35,7 @@ CoachingEngine _engine({
 
 void main() {
   final t0 = DateTime.utc(2026, 1, 1, 12);
+  const min5 = Duration(minutes: 5);
 
   group('countdown', () {
     test('always speaks, ignoring the encouragement cooldown', () {
@@ -384,6 +386,180 @@ void main() {
       final cue = engine.onEvent(const WorkoutStarted(), now: t0);
 
       expect(cue, isNotNull);
+    });
+  });
+
+  group('quotes', () {
+    const longRest = RestFinished(restDuration: Duration(minutes: 2));
+    const shortRest = RestFinished(restDuration: Duration(seconds: 90));
+
+    test('attaches a quote to the workout-start greeting', () {
+      final cue = _engine().onEvent(const WorkoutStarted(), now: t0);
+
+      expect(cue!.phraseKey, startsWith('start'));
+      expect(cue.quotePhraseKey, startsWith('quote'));
+      expect(cue.priority, SpeechPriority.milestone);
+    });
+
+    test('attaches no quote at workout start when quotes are switched off', () {
+      final cue = _engine()
+          .onEvent(const WorkoutStarted(), now: t0, quotesEnabled: false);
+
+      expect(cue!.phraseKey, startsWith('start'));
+      expect(cue.quotePhraseKey, isNull);
+    });
+
+    test('attaches a quote to the countdown cue after a rest of two minutes',
+        () {
+      final engine = _engine();
+      engine.onEvent(const WorkoutStarted(), now: t0);
+
+      final cue = engine.onEvent(longRest, now: t0.add(min5));
+
+      expect(cue!.phraseKey, startsWith('go'));
+      expect(cue.quotePhraseKey, startsWith('quote'));
+      expect(cue.priority, SpeechPriority.countdown);
+    });
+
+    test('attaches no quote after a rest shorter than two minutes', () {
+      final engine = _engine();
+      engine.onEvent(const WorkoutStarted(), now: t0);
+
+      final cue = engine.onEvent(shortRest, now: t0.add(min5));
+
+      expect(cue!.phraseKey, startsWith('go'));
+      expect(cue.quotePhraseKey, isNull);
+    });
+
+    test('attaches no quote when the rest duration is unknown', () {
+      final engine = _engine();
+      engine.onEvent(const WorkoutStarted(), now: t0);
+
+      final cue = engine.onEvent(const RestFinished(), now: t0.add(min5));
+
+      expect(cue!.phraseKey, startsWith('go'));
+      expect(cue.quotePhraseKey, isNull);
+    });
+
+    test(
+        'speaks the quote alone after a long rest when countdowns are off, so '
+        'the countdown toggle is not a second mute for quotes', () {
+      final engine = _engine();
+      engine.onEvent(const WorkoutStarted(), now: t0);
+
+      final cue = engine.onEvent(
+        longRest,
+        now: t0.add(min5),
+        countdownsEnabled: false,
+      );
+
+      expect(cue!.phraseKey, startsWith('quote'));
+      expect(cue.quotePhraseKey, isNull);
+      expect(cue.priority, SpeechPriority.milestone);
+    });
+
+    test('says nothing at rest end when both countdowns and quotes are off',
+        () {
+      final engine = _engine();
+      engine.onEvent(const WorkoutStarted(), now: t0);
+
+      final cue = engine.onEvent(
+        longRest,
+        now: t0.add(min5),
+        countdownsEnabled: false,
+        quotesEnabled: false,
+      );
+
+      expect(cue, isNull);
+    });
+
+    test('does not attach a quote while the reading is above the safety cap',
+        () {
+      final engine = _engine();
+      engine.onEvent(const WorkoutStarted(), now: t0);
+      engine.onEvent(
+        const HeartRateAboveCap(bpm: 190, cap: 175),
+        now: t0.add(const Duration(seconds: 10)),
+      );
+
+      final cue = engine.onEvent(longRest, now: t0.add(min5));
+
+      // The countdown cue itself is exempt from the encouragement gate — a
+      // missed countdown makes the feature useless — but the quote must not
+      // ride along on that exemption.
+      expect(cue!.phraseKey, startsWith('go'));
+      expect(cue.quotePhraseKey, isNull);
+    });
+
+    test('does not attach a quote in caution mode', () {
+      final engine = _engine();
+      engine.onEvent(const WorkoutStarted(), now: t0);
+
+      final cue = engine.onEvent(
+        longRest,
+        now: t0.add(min5),
+        cautionMode: true,
+      );
+
+      expect(cue!.quotePhraseKey, isNull);
+    });
+
+    test('does not attach a quote once the user has reached zone 5', () {
+      final engine = _engine();
+      engine.onEvent(const WorkoutStarted(), now: t0);
+      engine.onEvent(
+        const HeartRateZoneChanged(
+          zoneNumber: 5,
+          effortLabel: 'Maximum',
+          descriptiveLabel: 'Anaerobic',
+        ),
+        now: t0.add(const Duration(seconds: 10)),
+      );
+
+      final cue = engine.onEvent(longRest, now: t0.add(min5));
+
+      expect(cue!.quotePhraseKey, isNull);
+    });
+
+    test('exhausts the bank before repeating a quote', () {
+      final engine = _engine();
+      final bank = _testPersona.phrasesFor(TrainerEventKind.quote);
+      final heard = <String>{};
+
+      var at = t0;
+      for (var i = 0; i < bank.length; i++) {
+        final cue = engine.onEvent(longRest, now: at, countdownsEnabled: false);
+        heard.add(cue!.phraseKey);
+        at = at.add(min5);
+      }
+
+      expect(heard, hasLength(bank.length));
+    });
+
+    test(
+        'a suppressed quote does not consume the bank — switching quotes back '
+        'on still offers every quote', () {
+      final engine = _engine();
+      var at = t0;
+      for (var i = 0; i < 10; i++) {
+        engine.onEvent(
+          longRest,
+          now: at,
+          countdownsEnabled: false,
+          quotesEnabled: false,
+        );
+        at = at.add(min5);
+      }
+
+      final bank = _testPersona.phrasesFor(TrainerEventKind.quote);
+      final heard = <String>{};
+      for (var i = 0; i < bank.length; i++) {
+        final cue = engine.onEvent(longRest, now: at, countdownsEnabled: false);
+        heard.add(cue!.phraseKey);
+        at = at.add(min5);
+      }
+
+      expect(heard, hasLength(bank.length));
     });
   });
 }
