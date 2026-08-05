@@ -521,6 +521,63 @@ void main() {
       expect(cue!.quotePhraseKey, isNull);
     });
 
+    test(
+        'says nothing on the standalone path while above the safety cap, '
+        'countdowns off', () {
+      final engine = _engine();
+      engine.onEvent(const WorkoutStarted(), now: t0);
+      engine.onEvent(
+        const HeartRateAboveCap(bpm: 190, cap: 175),
+        now: t0.add(const Duration(seconds: 10)),
+      );
+
+      final cue = engine.onEvent(
+        longRest,
+        now: t0.add(min5),
+        countdownsEnabled: false,
+      );
+
+      expect(cue, isNull);
+    });
+
+    test('says nothing on the standalone path in caution mode, countdowns off',
+        () {
+      final engine = _engine();
+      engine.onEvent(const WorkoutStarted(), now: t0);
+
+      final cue = engine.onEvent(
+        longRest,
+        now: t0.add(min5),
+        countdownsEnabled: false,
+        cautionMode: true,
+      );
+
+      expect(cue, isNull);
+    });
+
+    test(
+        'says nothing on the standalone path once the user has reached zone '
+        '5, countdowns off', () {
+      final engine = _engine();
+      engine.onEvent(const WorkoutStarted(), now: t0);
+      engine.onEvent(
+        const HeartRateZoneChanged(
+          zoneNumber: 5,
+          effortLabel: 'Maximum',
+          descriptiveLabel: 'Anaerobic',
+        ),
+        now: t0.add(const Duration(seconds: 10)),
+      );
+
+      final cue = engine.onEvent(
+        longRest,
+        now: t0.add(min5),
+        countdownsEnabled: false,
+      );
+
+      expect(cue, isNull);
+    });
+
     test('exhausts the bank before repeating a quote', () {
       final engine = _engine();
       final bank = _testPersona.phrasesFor(TrainerEventKind.quote);

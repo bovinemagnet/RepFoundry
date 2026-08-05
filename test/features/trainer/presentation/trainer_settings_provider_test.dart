@@ -152,8 +152,12 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container.read(trainerSettingsProvider);
-      await Future<void>.delayed(Duration.zero);
+      // Awaiting any mutator forces the notifier to wait on its own
+      // in-flight load first (see `_loading` in the notifier), which is the
+      // reliable way to know the load has resolved — an arbitrary
+      // `Future.delayed` is not guaranteed to flush every microtask the
+      // real SharedPreferences plugin channel involves.
+      await container.read(trainerSettingsProvider.notifier).acceptDisclaimer();
 
       expect(container.read(trainerSettingsProvider).quotesEnabled, isFalse);
     });

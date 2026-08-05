@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - **British spelling** in all comments, docs, and user-facing copy.
-- **Author:** Paul Snow. No AI-tool references anywhere — code, comments, docs, **commit message bodies and trailers**, issues, or PR bodies. Specifically: no `Co-Authored-By:` naming an AI, no `Claude-Session:` trailer, no "Generated with" footer, no `claude.ai` URLs. A commit message is a subject line plus prose body, nothing else.
+- **Author:** Paul Snow. No AI-tool references anywhere — code, comments, docs, **commit message bodies and trailers**, issues, or PR bodies. Specifically: no `Co-Authored-By:` naming an AI, no AI-attribution or assistant session-link trailers, no "Generated with" footers, no assistant session URLs. A commit message is a subject line plus prose body, nothing else.
 - **All user-facing text goes through ARB.** Never concatenate speakable text with a hardcoded separator — `app_en.arb` has ja/ko/zh siblings.
 - **Run `flutter gen-l10n` after every `.arb` edit**, before running tests.
 - **`dart analyze` must report zero issues**; CI enforces it. `dart format --set-exit-if-changed .` must pass.
