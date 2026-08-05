@@ -17,11 +17,15 @@ class _NotEntitled implements EntitlementService {
   bool has(Entitlement entitlement) => false;
 }
 
+const _short = Duration(seconds: 60);
+const _long = Duration(minutes: 2);
+
 ProviderContainer _container({
   bool entitled = true,
   bool enabled = true,
   bool disclaimerAccepted = true,
   bool countdownsEnabled = true,
+  bool quotesEnabled = true,
 }) {
   final container = ProviderContainer(
     overrides: [
@@ -37,6 +41,7 @@ ProviderContainer _container({
     enabled: enabled,
     disclaimerAccepted: disclaimerAccepted,
     countdownsEnabled: countdownsEnabled,
+    quotesEnabled: quotesEnabled,
   );
   return container;
 }
@@ -48,19 +53,19 @@ void main() {
     test(
         'true when the coach is entitled, enabled, consented, and counting '
         'down', () {
-      expect(_container().read(coachAnnouncesRestEndProvider), isTrue);
+      expect(_container().read(coachAnnouncesRestEndProvider(_short)), isTrue);
     });
 
     test('false without the entitlement', () {
       expect(
-        _container(entitled: false).read(coachAnnouncesRestEndProvider),
+        _container(entitled: false).read(coachAnnouncesRestEndProvider(_short)),
         isFalse,
       );
     });
 
     test('false when the coach is switched off', () {
       expect(
-        _container(enabled: false).read(coachAnnouncesRestEndProvider),
+        _container(enabled: false).read(coachAnnouncesRestEndProvider(_short)),
         isFalse,
       );
     });
@@ -68,7 +73,7 @@ void main() {
     test('false when the safety disclaimer has not been accepted', () {
       expect(
         _container(disclaimerAccepted: false)
-            .read(coachAnnouncesRestEndProvider),
+            .read(coachAnnouncesRestEndProvider(_short)),
         isFalse,
       );
     });
@@ -78,14 +83,14 @@ void main() {
       // and the chime must come back.
       expect(
         _container(countdownsEnabled: false)
-            .read(coachAnnouncesRestEndProvider),
+            .read(coachAnnouncesRestEndProvider(_short)),
         isFalse,
       );
     });
 
     test('follows the settings as they change', () {
       final container = _container();
-      expect(container.read(coachAnnouncesRestEndProvider), isTrue);
+      expect(container.read(coachAnnouncesRestEndProvider(_short)), isTrue);
 
       container.read(trainerSettingsProvider.notifier).state =
           const TrainerSettings(
@@ -94,7 +99,28 @@ void main() {
         countdownsEnabled: false,
       );
 
-      expect(container.read(coachAnnouncesRestEndProvider), isFalse);
+      expect(container.read(coachAnnouncesRestEndProvider(_short)), isFalse);
+    });
+
+    test(
+        'with countdowns off, a long rest still silences the chime — the '
+        'coach speaks a standalone quote there', () {
+      final container = _container(countdownsEnabled: false);
+
+      expect(container.read(coachAnnouncesRestEndProvider(_long)), isTrue);
+    });
+
+    test('with countdowns off, a short rest lets the chime through', () {
+      final container = _container(countdownsEnabled: false);
+
+      expect(container.read(coachAnnouncesRestEndProvider(_short)), isFalse);
+    });
+
+    test('with countdowns and quotes both off, the chime always plays', () {
+      final container =
+          _container(countdownsEnabled: false, quotesEnabled: false);
+
+      expect(container.read(coachAnnouncesRestEndProvider(_long)), isFalse);
     });
   });
 }
