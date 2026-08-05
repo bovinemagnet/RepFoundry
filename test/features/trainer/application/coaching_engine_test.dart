@@ -561,5 +561,37 @@ void main() {
 
       expect(heard, hasLength(bank.length));
     });
+
+    test(
+        'attaches a distinct quote to each merged countdown cue until the '
+        'bank is exhausted, not just on the standalone path', () {
+      final engine = _engine();
+      final bank = _testPersona.phrasesFor(TrainerEventKind.quote);
+      final heard = <String>{};
+
+      var at = t0;
+      for (var i = 0; i < bank.length; i++) {
+        final cue = engine.onEvent(longRest, now: at);
+        heard.add(cue!.quotePhraseKey!);
+        at = at.add(min5);
+      }
+
+      expect(heard, hasLength(bank.length));
+    });
+
+    test('attaches no quote to the countdown cue when quotes are switched off',
+        () {
+      final engine = _engine();
+      engine.onEvent(const WorkoutStarted(), now: t0);
+
+      final cue = engine.onEvent(
+        longRest,
+        now: t0.add(min5),
+        quotesEnabled: false,
+      );
+
+      expect(cue!.phraseKey, startsWith('go'));
+      expect(cue.quotePhraseKey, isNull);
+    });
   });
 }

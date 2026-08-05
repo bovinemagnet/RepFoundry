@@ -58,7 +58,7 @@ class CoachingEngine {
   /// Minimum gap between repeats of the above-cap warning while it holds.
   static const Duration _capWarningRepeat = Duration(seconds: 30);
 
-  /// Rests at or beyond this length earn an inspirational quote (spec §5).
+  /// Rests at or beyond this length earn an inspirational quote (spec §4).
   ///
   /// Public and `static` because the rest-timer chime suppression
   /// (`coachAnnouncesRestEndProvider`) has to apply the same rule to decide

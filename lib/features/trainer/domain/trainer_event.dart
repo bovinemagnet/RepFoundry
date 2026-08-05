@@ -63,7 +63,7 @@ class RestCountdown extends TrainerEvent {
 /// A rest period ended.
 ///
 /// [restDuration] is what the timer was set to run for, carried so the engine
-/// can apply the "quote after rests of two minutes or longer" rule (spec §5)
+/// can apply the "quote after rests of two minutes or longer" rule (spec §4)
 /// without keeping its own memory of the matching [RestStarted] — which would
 /// be wrong whenever a rest began before the coach was switched on.
 ///
