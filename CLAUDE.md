@@ -108,6 +108,40 @@ Tests live in `test/` mirroring `lib/` structure. Uses `flutter_test` + `mockito
 
 **No known test failures** — all tests should pass cleanly.
 
+### Prove a new test can fail
+
+Before considering a test done, break the line it is meant to protect and confirm
+the test goes red. A passing test is not evidence; a test that fails for the right
+reason is.
+
+This is not a general style preference — it is the failure mode this codebase
+actually has. The coach quote bank (#99) shipped 21 quotes wired into the ARB, the
+phrase resolver and all three persona packs, with a green suite and a clean
+analyser, while nothing in the app could ever speak them. Wiring it up (#102) then
+hit the same class of defect four more times, each caught only because someone
+mutated the code and watched what happened:
+
+- Deleting the merged path's `_spokenPhrases.add(quote)` left 12 engine tests green.
+- Making `CoachBridge._resolveCue` return only the quote — so the coach speaks a
+  bare quote with no greeting — left the **entire suite** green.
+- Letting a quote bypass `_encouragementBlocked` on the standalone rest-end path
+  left 1302 tests green while speaking motivational quotes to a user above their
+  clinician cap.
+- Hardcoding the rest duration at the chime call site left the suite green and
+  silently reinstated #98, where the chime cuts the coach off mid-sentence.
+
+None of those was wrong code. Each was correct code that no test could see, which
+is exactly what survives review.
+
+Two cases deserve extra care:
+
+- **Negative assertions** (`expect(x, isEmpty)`, "no quote was spoken", "the chime
+  did not play"). These pass identically when the behaviour works and when the test
+  never reaches the code at all. Add a positive control: force the opposite
+  condition and confirm the assertion fails.
+- **Behaviour at a seam between two components**, where each side has its own tests
+  and neither owns the join. Both #102 gaps above were seams.
+
 ## CI/CD
 
 GitHub Actions workflow (`.github/workflows/release.yml`) builds a signed Android APK on `v*` tag pushes and creates a GitHub Release with the APK attached. Tags ending in `-SNAPSHOT` are marked as pre-release. iOS build is not yet automated.
