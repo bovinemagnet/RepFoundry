@@ -48,10 +48,13 @@ class QuoteSource {
 
 /// A quote dropped for licensing, kept so it cannot come back by accident.
 ///
-/// Three of these are the same mistake — reasoning from publication date
-/// rather than death date — and one of them, the Strode entry, reads as
-/// entirely safe under the false Emerson credit it originally shipped with.
-/// Without this list the only defence is that someone remembers.
+/// Five entries, two failure modes. Three (Keller, Gummere's Seneca, and
+/// Strode) were reasoned about from publication date rather than death
+/// date. The other two shipped under a credit that was simply false: the
+/// Semisonic lyric under Seneca's name, and Strode's own entry, which read
+/// as entirely safe until its false Emerson credit was corrected — the
+/// correction is what exposed the copyright problem. Without this list the
+/// only defence is that someone remembers.
 class RejectedQuote {
   const RejectedQuote({
     required this.fingerprint,
