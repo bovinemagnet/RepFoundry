@@ -13,21 +13,18 @@ import '../domain/trainer_event.dart';
 /// adding an entry, and drop it rather than guess if either is unclear.
 ///
 /// The per-quote sourcing table (author, work, translation/edition relied on)
-/// currently lives only in issue #99's fix-round report, which is not a
-/// durable record. It should move into this repo — e.g. a doc block here, or
-/// a checked-in file alongside this one — when #102 wires the bank up.
+/// is not yet in this repo — see issue #104.
 ///
-/// **Not yet wired to any event.** No `TrainerEvent` currently carries
-/// `TrainerEventKind.quote`, and `CoachingEngine.onEvent` has no case for it,
-/// so nothing in the app speaks these phrases yet — attaching them here is
-/// content preparation only. Spoken-timing behaviour ("workout start and
-/// after rests of two minutes or longer", per spec §5) is tracked as a
-/// follow-up, issue #102.
+/// Spoken at workout start and after rests of
+/// `CoachingEngine.longRestThreshold` or longer, merged into the cue for that
+/// moment rather than spoken as a separate one — see `CoachingCue`'s
+/// `quotePhraseKey`.
 ///
 /// Attached to every persona's [TrainerEventKind.quote] bank rather than
 /// kept as a standalone list, so the existing per-persona
 /// uniqueness/resolver/denylist test loops cover it automatically instead of
-/// needing a parallel set of checks.
+/// needing a parallel set of checks. That sharing is also what lets quote
+/// memory survive a persona switch.
 const List<String> _quoteBank = [
   'coachQuote1',
   'coachQuote2',
