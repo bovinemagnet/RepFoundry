@@ -11,6 +11,7 @@ class TrainerSettings {
     this.personaId = 'steady',
     this.hrCalloutsEnabled = true,
     this.hrSafetyWarningsEnabled = true,
+    this.quotesEnabled = true,
   });
 
   final bool enabled;
@@ -28,6 +29,11 @@ class TrainerSettings {
   /// but, as the user's own choice, it must remain switchable off.
   final bool hrSafetyWarningsEnabled;
 
+  /// Whether the coach speaks an inspirational quote at workout start and
+  /// after rests of two minutes or longer. Independent of the countdown
+  /// toggle: switching countdowns off must not silently mute quotes too.
+  final bool quotesEnabled;
+
   TrainerSettings copyWith({
     bool? enabled,
     bool? countdownsEnabled,
@@ -37,6 +43,7 @@ class TrainerSettings {
     String? personaId,
     bool? hrCalloutsEnabled,
     bool? hrSafetyWarningsEnabled,
+    bool? quotesEnabled,
   }) {
     return TrainerSettings(
       enabled: enabled ?? this.enabled,
@@ -48,6 +55,7 @@ class TrainerSettings {
       hrCalloutsEnabled: hrCalloutsEnabled ?? this.hrCalloutsEnabled,
       hrSafetyWarningsEnabled:
           hrSafetyWarningsEnabled ?? this.hrSafetyWarningsEnabled,
+      quotesEnabled: quotesEnabled ?? this.quotesEnabled,
     );
   }
 }
@@ -77,6 +85,7 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
       personaId: prefs.getString('trainer_persona') ?? 'steady',
       hrCalloutsEnabled: prefs.getBool('trainer_hr_callouts') ?? true,
       hrSafetyWarningsEnabled: prefs.getBool('trainer_hr_safety') ?? true,
+      quotesEnabled: prefs.getBool('trainer_quotes') ?? true,
     );
   }
 
@@ -123,6 +132,13 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
     state = state.copyWith(hrSafetyWarningsEnabled: value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('trainer_hr_safety', value);
+  }
+
+  Future<void> setQuotes(bool value) async {
+    await _loading;
+    state = state.copyWith(quotesEnabled: value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('trainer_quotes', value);
   }
 
   Future<void> setSpeechRate(double value) async {

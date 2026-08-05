@@ -2338,6 +2338,11 @@ class SZh extends S {
       'Obstacles cannot crush me. Every obstacle yields to stern resolve. — Leonardo da Vinci';
 
   @override
+  String coachCueWithQuote(String cue, String quote) {
+    return '$cue $quote';
+  }
+
+  @override
   String get trainerDisclaimerTitle => 'Before your coach speaks';
 
   @override
@@ -2396,6 +2401,13 @@ class SZh extends S {
 
   @override
   String get trainerEncouragement => 'Encouragement';
+
+  @override
+  String get trainerQuotes => 'Inspirational quotes';
+
+  @override
+  String get trainerQuotesSubtitle =>
+      'Speaks a short quote when a workout starts and after rests of two minutes or longer.';
 
   @override
   String get trainerHrCallouts => 'Heart rate zone callouts';

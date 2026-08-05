@@ -4248,6 +4248,12 @@ abstract class S {
   /// **'Obstacles cannot crush me. Every obstacle yields to stern resolve. — Leonardo da Vinci'**
   String get coachQuote23;
 
+  /// Joins a spoken coaching cue to an inspirational quote in a single utterance. Localise the separator: a bare space is wrong for ja/ko/zh.
+  ///
+  /// In en, this message translates to:
+  /// **'{cue} {quote}'**
+  String coachCueWithQuote(String cue, String quote);
+
   /// No description provided for @trainerDisclaimerTitle.
   ///
   /// In en, this message translates to:
@@ -4361,6 +4367,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Encouragement'**
   String get trainerEncouragement;
+
+  /// No description provided for @trainerQuotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspirational quotes'**
+  String get trainerQuotes;
+
+  /// No description provided for @trainerQuotesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaks a short quote when a workout starts and after rests of two minutes or longer.'**
+  String get trainerQuotesSubtitle;
 
   /// No description provided for @trainerHrCallouts.
   ///

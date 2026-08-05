@@ -58,6 +58,14 @@ class CoachingEngine {
   /// Minimum gap between repeats of the above-cap warning while it holds.
   static const Duration _capWarningRepeat = Duration(seconds: 30);
 
+  /// Rests at or beyond this length earn an inspirational quote (spec §4).
+  ///
+  /// Public and `static` because the rest-timer chime suppression
+  /// (`coachAnnouncesRestEndProvider`) has to apply the same rule to decide
+  /// whether the coach will speak, and a second copy of "two minutes" in the
+  /// presentation layer would be free to drift out of step with this one.
+  static const Duration longRestThreshold = Duration(minutes: 2);
+
   final Set<String> _spokenPhrases = {};
   DateTime? _lastSpokenAt;
   int _setsSinceEncouragement = 0;
@@ -104,10 +112,14 @@ class CoachingEngine {
     bool hrCalloutsEnabled = true,
     bool hrSafetyWarningsEnabled = true,
     bool cautionMode = false,
+    bool quotesEnabled = true,
   }) {
     _cautionMode = cautionMode;
     return switch (event) {
-      WorkoutStarted() => _speak(event.kind, SpeechPriority.milestone, now),
+      WorkoutStarted() => _withQuote(
+          _speak(event.kind, SpeechPriority.milestone, now),
+          quotesEnabled,
+        ),
       WorkoutFinished(:final totalSets) => _speak(
           event.kind,
           SpeechPriority.milestone,
@@ -127,10 +139,8 @@ class CoachingEngine {
               encouragement: false,
             )
           : null,
-      RestFinished() => countdownsEnabled
-          ? _speak(event.kind, SpeechPriority.countdown, now,
-              encouragement: false)
-          : null,
+      RestFinished(:final restDuration) =>
+        _onRestFinished(restDuration, countdownsEnabled, quotesEnabled, now),
       RestStarted() => null,
       HeartRateZoneChanged(:final zoneNumber, :final effortLabel) =>
         _onZoneChanged(zoneNumber, effortLabel, hrCalloutsEnabled, now),
@@ -254,6 +264,66 @@ class CoachingEngine {
       _encouragementQuota = _pickEncouragementQuota();
     }
     return cue;
+  }
+
+  /// The countdown line, the quote, both merged, or neither.
+  ///
+  /// Merged rather than returned as a second cue: `FlutterTtsSpeechService`
+  /// drops any cue at equal or lower priority than the one already playing,
+  /// so a quote emitted straight after the countdown line would never be
+  /// heard. See the spec's §2 for the full derivation.
+  ///
+  /// When countdowns are off the quote is spoken alone, at milestone
+  /// priority. Letting it vanish with the countdown line would make the
+  /// countdown toggle a hidden second mute for quotes.
+  CoachingCue? _onRestFinished(
+    Duration? restDuration,
+    bool countdownsEnabled,
+    bool quotesEnabled,
+    DateTime now,
+  ) {
+    final earnsQuote = quotesEnabled &&
+        restDuration != null &&
+        restDuration >= longRestThreshold;
+
+    if (!countdownsEnabled) {
+      if (!earnsQuote) return null;
+      return _speak(TrainerEventKind.quote, SpeechPriority.milestone, now);
+    }
+
+    final cue = _speak(
+      TrainerEventKind.restFinished,
+      SpeechPriority.countdown,
+      now,
+      encouragement: false,
+    );
+    return _withQuote(cue, earnsQuote);
+  }
+
+  /// Attaches a quote to [cue], or returns it untouched.
+  ///
+  /// Gated on [_encouragementBlocked] independently of whatever [cue] itself
+  /// was allowed through on. The countdown line is exempt from that gate
+  /// (`encouragement: false`) because a missed countdown makes the feature
+  /// useless — but a motivational quote riding along on that exemption would
+  /// put inspirational chatter in the user's ear at the moment their heart
+  /// rate is over their clinician cap.
+  /// [earnsQuote] is the caller's decision that this moment qualifies —
+  /// "quotes are on" at workout start, "quotes are on *and* the rest was long
+  /// enough" at rest end.
+  CoachingCue? _withQuote(CoachingCue? cue, bool earnsQuote) {
+    if (cue == null || !earnsQuote || _encouragementBlocked) return cue;
+
+    final quote = _pickPhrase(TrainerEventKind.quote);
+    if (quote == null) return cue;
+
+    _spokenPhrases.add(quote);
+    return CoachingCue(
+      phraseKey: cue.phraseKey,
+      priority: cue.priority,
+      args: cue.args,
+      quotePhraseKey: quote,
+    );
   }
 
   /// Draws the next encouragement gap. A fixed cadence (min == max) draws

@@ -472,12 +472,22 @@ void main() {
     // bank regardless of TrainerSettings.personaId — a test that only checks
     // the setting persisted would not catch that. This asserts the spoken
     // text itself moves from one persona's bank to the other's.
+    //
+    // Left at the default quotesEnabled: true (real default configuration)
+    // rather than switched off. WorkoutStarted may now have a quote merged
+    // in, so the assertions below use containment instead of equality — but
+    // the quote bank is shared by every persona (persona_packs.dart points
+    // all three at the same bank), so a merged quote can never make a
+    // steady-only phrase appear to match sergeant's bank or vice versa. This
+    // is exactly as discriminating as the old equality check, and it keeps
+    // the cue itself covered as surviving the merge (a regression to
+    // `_resolveCue` returning the quote alone would fail this).
     final container = buildContainer();
     final bridge = container.read(_bridgeUnderTest);
     final s = lookupS(const Locale('en'));
     bridge.strings = s;
 
-    String? resolve(String key) => resolvePhrase(s, key, const {});
+    String resolve(String key) => resolvePhrase(s, key, const {})!;
     final steadyTexts = steadyPersona
         .phrasesFor(TrainerEventKind.workoutStarted)
         .map(resolve)
@@ -495,8 +505,11 @@ void main() {
     final bus = container.read(trainerEventBusProvider);
     bus.emit(const WorkoutStarted());
     await Future<void>.delayed(Duration.zero);
-    expect(steadyTexts, contains(speechService.spoken.single),
+    final firstSpoken = speechService.spoken.single;
+    expect(steadyTexts.any(firstSpoken.contains), isTrue,
         reason: 'default persona is steady');
+    expect(sergeantTexts.any(firstSpoken.contains), isFalse,
+        reason: 'must not also match the other persona\'s bank');
 
     final notifier = container.read(trainerSettingsProvider.notifier)
         as _SeededTrainerSettingsNotifier;
@@ -508,15 +521,16 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(speechService.spoken, hasLength(2));
+    final secondSpoken = speechService.spoken.last;
     expect(
-      sergeantTexts,
-      contains(speechService.spoken.last),
+      sergeantTexts.any(secondSpoken.contains),
+      isTrue,
       reason: 'switching persona must change which bank the bridge draws '
           'its cues from',
     );
     expect(
-      steadyTexts,
-      isNot(contains(speechService.spoken.last)),
+      steadyTexts.any(secondSpoken.contains),
+      isFalse,
       reason: 'the phrase spoken after the switch must not be one that '
           'could also have come from the old persona',
     );
@@ -534,6 +548,12 @@ void main() {
     // left that test green. This test seeds `personaId: 'sergeant'` before
     // the bridge is ever built, so only a correct constructor read passes
     // it.
+    //
+    // Left at the default quotesEnabled: true, same reasoning as the
+    // runtime-switch test above: containment stays exactly as discriminating
+    // as equality here because the quote bank is shared across every
+    // persona, and it keeps this test running under the real default
+    // configuration instead of a carve-out that stops covering the merge.
     final container = buildContainer(
       settings: const TrainerSettings(
         enabled: true,
@@ -545,7 +565,7 @@ void main() {
     final s = lookupS(const Locale('en'));
     bridge.strings = s;
 
-    String? resolve(String key) => resolvePhrase(s, key, const {});
+    String resolve(String key) => resolvePhrase(s, key, const {})!;
     final sergeantTexts = sergeantPersona
         .phrasesFor(TrainerEventKind.workoutStarted)
         .map(resolve)
@@ -559,10 +579,157 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(speechService.spoken, hasLength(1));
-    expect(sergeantTexts, contains(speechService.spoken.single),
+    final spoken = speechService.spoken.single;
+    expect(sergeantTexts.any(spoken.contains), isTrue,
         reason: 'the very first cue must already be Sergeant\'s — the '
             'preference was set before the bridge was built');
-    expect(steadyTexts, isNot(contains(speechService.spoken.single)));
+    expect(steadyTexts.any(spoken.contains), isFalse);
+  });
+
+  group('quotes', () {
+    test(
+        'speaks an actual quote from the bank at workout start — the whole '
+        'point of #102, and the assertion that fails against a bank nothing '
+        'reads', () async {
+      final container = buildContainer();
+      final bridge = container.read(_bridgeUnderTest);
+      final strings = lookupS(const Locale('en'));
+      bridge.strings = strings;
+
+      container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+
+      expect(speechService.spoken, hasLength(1));
+      final spoken = speechService.spoken.single;
+      final quotes = personaForId('steady')
+          .phrasesFor(TrainerEventKind.quote)
+          .map((key) => resolvePhrase(strings, key, const {}))
+          .toList();
+      expect(
+        quotes.any((quote) => quote != null && spoken.contains(quote)),
+        isTrue,
+        reason: 'expected one of the ${quotes.length} bank quotes in "$spoken"',
+      );
+    });
+
+    test('speaks a quote after a rest of two minutes or longer', () async {
+      final container = buildContainer();
+      final bridge = container.read(_bridgeUnderTest);
+      final strings = lookupS(const Locale('en'));
+      bridge.strings = strings;
+
+      container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+      speechService.spoken.clear();
+
+      container.read(trainerEventBusProvider).emit(
+            const RestFinished(restDuration: Duration(minutes: 2)),
+          );
+      await Future<void>.delayed(Duration.zero);
+
+      final spoken = speechService.spoken.single;
+      final quotes = personaForId('steady')
+          .phrasesFor(TrainerEventKind.quote)
+          .map((key) => resolvePhrase(strings, key, const {}))
+          .toList();
+      expect(quotes.any((quote) => quote != null && spoken.contains(quote)),
+          isTrue);
+    });
+
+    test('speaks no quote after a short rest', () async {
+      final container = buildContainer();
+      final bridge = container.read(_bridgeUnderTest);
+      final strings = lookupS(const Locale('en'));
+      bridge.strings = strings;
+
+      container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+      speechService.spoken.clear();
+
+      container.read(trainerEventBusProvider).emit(
+            const RestFinished(restDuration: Duration(seconds: 60)),
+          );
+      await Future<void>.delayed(Duration.zero);
+
+      final spoken = speechService.spoken.single;
+      final quotes = personaForId('steady')
+          .phrasesFor(TrainerEventKind.quote)
+          .map((key) => resolvePhrase(strings, key, const {}))
+          .toList();
+      expect(quotes.any((quote) => quote != null && spoken.contains(quote)),
+          isFalse);
+    });
+
+    test('speaks no quote when the quotes toggle is off', () async {
+      final container = buildContainer(
+        settings: const TrainerSettings(
+          enabled: true,
+          disclaimerAccepted: true,
+          quotesEnabled: false,
+        ),
+      );
+      final bridge = container.read(_bridgeUnderTest);
+      final strings = lookupS(const Locale('en'));
+      bridge.strings = strings;
+
+      container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+
+      final spoken = speechService.spoken.single;
+      final quotes = personaForId('steady')
+          .phrasesFor(TrainerEventKind.quote)
+          .map((key) => resolvePhrase(strings, key, const {}))
+          .toList();
+      expect(quotes.any((quote) => quote != null && spoken.contains(quote)),
+          isFalse);
+    });
+
+    test(
+        'a persona switch does not make an already-heard quote available '
+        'again — the bank is shared, so quote memory must survive the '
+        'switch', () async {
+      final container = buildContainer();
+      final bridge = container.read(_bridgeUnderTest);
+      final strings = lookupS(const Locale('en'));
+      bridge.strings = strings;
+      final bus = container.read(trainerEventBusProvider);
+
+      final quoteTexts = personaForId('steady')
+          .phrasesFor(TrainerEventKind.quote)
+          .map((key) => resolvePhrase(strings, key, const {}))
+          .whereType<String>()
+          .toList();
+      String? quoteIn(String spoken) {
+        final matches = quoteTexts.where(spoken.contains).toList();
+        return matches.isEmpty ? null : matches.first;
+      }
+
+      bus.emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+      final firstQuote = quoteIn(speechService.spoken.single);
+      expect(firstQuote, isNotNull);
+
+      final notifier = container.read(trainerSettingsProvider.notifier)
+          as _SeededTrainerSettingsNotifier;
+      notifier.forceUpdate(const TrainerSettings(
+        enabled: true,
+        disclaimerAccepted: true,
+        personaId: 'hype',
+      ));
+
+      // Draw the rest of the bank under the new persona; the quote already
+      // heard under Steady must not come back until every other one has.
+      final heardAfterSwitch = <String>{};
+      for (var i = 0; i < quoteTexts.length - 1; i++) {
+        speechService.spoken.clear();
+        bus.emit(const RestFinished(restDuration: Duration(minutes: 2)));
+        await Future<void>.delayed(Duration.zero);
+        final quote = quoteIn(speechService.spoken.single);
+        if (quote != null) heardAfterSwitch.add(quote);
+      }
+
+      expect(heardAfterSwitch, isNot(contains(firstQuote)));
+    });
   });
 
   test(

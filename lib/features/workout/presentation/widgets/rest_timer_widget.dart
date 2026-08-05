@@ -20,10 +20,15 @@ final restTimerProvider = NotifierProvider<RestTimerNotifier, int?>(
 class RestTimerNotifier extends Notifier<int?> {
   Timer? _timer;
   bool _completedNaturally = false;
+  Duration? _lastRestDuration;
 
   /// True when the most recent transition to null was the timer running out
   /// rather than a manual stop — only then should the alert fire.
   bool get completedNaturally => _completedNaturally;
+
+  /// What the most recent rest was set to run for, so the chime-suppression
+  /// rule and the coach's quote rule read the same number.
+  Duration? get lastRestDuration => _lastRestDuration;
 
   @override
   int? build() {
@@ -33,6 +38,7 @@ class RestTimerNotifier extends Notifier<int?> {
 
   void start(int seconds) {
     _timer?.cancel();
+    _lastRestDuration = Duration(seconds: seconds);
     state = seconds;
     ref
         .read(trainerEventBusProvider)
@@ -42,7 +48,9 @@ class RestTimerNotifier extends Notifier<int?> {
         t.cancel();
         _completedNaturally = true;
         state = null;
-        ref.read(trainerEventBusProvider).emit(const RestFinished());
+        ref
+            .read(trainerEventBusProvider)
+            .emit(RestFinished(restDuration: _lastRestDuration));
       } else {
         state = state! - 1;
         final remaining = state!;
@@ -93,7 +101,10 @@ class _RestTimerWidgetState extends ConsumerState<RestTimerWidget> {
     // The chime takes exclusive audio focus and would cut the coach off
     // mid-sentence, so it stands down whenever the coach announces rest end
     // itself. Vibration is unaffected — it does not contend for audio.
-    if (settings.soundEnabled && !ref.read(coachAnnouncesRestEndProvider)) {
+    final restDuration =
+        ref.read(restTimerProvider.notifier).lastRestDuration ?? Duration.zero;
+    if (settings.soundEnabled &&
+        !ref.read(coachAnnouncesRestEndProvider(restDuration))) {
       _audioPlayer?.play(AssetSource('sounds/timer_complete.wav'));
     }
   }

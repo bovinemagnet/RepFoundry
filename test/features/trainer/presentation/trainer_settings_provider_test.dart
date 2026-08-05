@@ -129,4 +129,37 @@ void main() {
       expect(settings.hrSafetyWarningsEnabled, isFalse);
     });
   });
+
+  group('quotesEnabled', () {
+    test('defaults to true — quotes are on unless the user says otherwise', () {
+      expect(const TrainerSettings().quotesEnabled, isTrue);
+    });
+
+    test('setQuotes updates state and persists', () async {
+      SharedPreferences.setMockInitialValues({});
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container.read(trainerSettingsProvider.notifier).setQuotes(false);
+
+      expect(container.read(trainerSettingsProvider).quotesEnabled, isFalse);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('trainer_quotes'), isFalse);
+    });
+
+    test('restores a persisted false on load', () async {
+      SharedPreferences.setMockInitialValues({'trainer_quotes': false});
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      // Awaiting any mutator forces the notifier to wait on its own
+      // in-flight load first (see `_loading` in the notifier), which is the
+      // reliable way to know the load has resolved — an arbitrary
+      // `Future.delayed` is not guaranteed to flush every microtask the
+      // real SharedPreferences plugin channel involves.
+      await container.read(trainerSettingsProvider.notifier).acceptDisclaimer();
+
+      expect(container.read(trainerSettingsProvider).quotesEnabled, isFalse);
+    });
+  });
 }

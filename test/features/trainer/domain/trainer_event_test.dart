@@ -38,4 +38,19 @@ void main() {
     expect(persona.phrasesByKind[TrainerEventKind.setLogged],
         contains('coachSteadySetLogged1'));
   });
+
+  group('RestFinished.restDuration', () {
+    test('defaults to null so existing constructions are unchanged', () {
+      const event = RestFinished();
+
+      expect(event.restDuration, isNull);
+      expect(event.kind, TrainerEventKind.restFinished);
+    });
+
+    test('carries the duration the rest actually ran for', () {
+      const event = RestFinished(restDuration: Duration(minutes: 3));
+
+      expect(event.restDuration, const Duration(minutes: 3));
+    });
+  });
 }
