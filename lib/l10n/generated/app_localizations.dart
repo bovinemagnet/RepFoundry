@@ -4368,6 +4368,18 @@ abstract class S {
   /// **'Encouragement'**
   String get trainerEncouragement;
 
+  /// No description provided for @trainerQuotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspirational quotes'**
+  String get trainerQuotes;
+
+  /// No description provided for @trainerQuotesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaks a short quote when a workout starts and after rests of two minutes or longer.'**
+  String get trainerQuotesSubtitle;
+
   /// No description provided for @trainerHrCallouts.
   ///
   /// In en, this message translates to:

@@ -2403,6 +2403,13 @@ class SZh extends S {
   String get trainerEncouragement => 'Encouragement';
 
   @override
+  String get trainerQuotes => 'Inspirational quotes';
+
+  @override
+  String get trainerQuotesSubtitle =>
+      'Speaks a short quote when a workout starts and after rests of two minutes or longer.';
+
+  @override
   String get trainerHrCallouts => 'Heart rate zone callouts';
 
   @override

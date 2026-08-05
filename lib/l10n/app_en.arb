@@ -1152,6 +1152,8 @@
   "trainerTestPhrase": "This is your coach. Good set — take your rest.",
   "trainerCountdowns": "Rest countdowns",
   "trainerEncouragement": "Encouragement",
+  "trainerQuotes": "Inspirational quotes",
+  "trainerQuotesSubtitle": "Speaks a short quote when a workout starts and after rests of two minutes or longer.",
   "trainerHrCallouts": "Heart rate zone callouts",
   "trainerHrCalloutsSubtitle": "Announces your training zone as it changes, when a heart rate monitor is connected.",
   "trainerHrSafetyWarnings": "Heart rate safety warnings",

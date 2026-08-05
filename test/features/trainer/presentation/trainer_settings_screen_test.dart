@@ -259,6 +259,7 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Review safety notice'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Not now'));
@@ -355,6 +356,30 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Withdraw consent'), findsNothing);
+  });
+
+  testWidgets('renders the quotes toggle and writes the setting through',
+      (tester) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Inspirational quotes'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+
+    final tile = find.widgetWithText(SwitchListTile, 'Inspirational quotes');
+    expect(tile, findsOneWidget);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TrainerSettingsScreen)),
+    );
+    expect(container.read(trainerSettingsProvider).quotesEnabled, isTrue);
+
+    await tester.tap(find.descendant(of: tile, matching: find.byType(Switch)));
+    await tester.pumpAndSettle();
+
+    expect(container.read(trainerSettingsProvider).quotesEnabled, isFalse);
   });
 
   group('heart-rate settings', () {
