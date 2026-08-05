@@ -92,4 +92,24 @@ void main() {
       );
     });
   });
+
+  test('quotes dropped for licensing cannot reappear in the bank', () {
+    final s = lookupS(const Locale('en'));
+    final live = [
+      for (final key in _bank) phraseResolvers[key]!(s, const {}).toLowerCase(),
+    ];
+    // Positive control: this is a negative assertion, and an empty `live`
+    // would satisfy it while checking nothing.
+    expect(live, isNotEmpty);
+    expect(rejectedQuotes, isNotEmpty);
+    for (final rejected in rejectedQuotes) {
+      for (final text in live) {
+        expect(
+          text.contains(rejected.fingerprint),
+          isFalse,
+          reason: 'this was dropped: ${rejected.reason}',
+        );
+      }
+    }
+  });
 }

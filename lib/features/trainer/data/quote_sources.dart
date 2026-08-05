@@ -46,6 +46,64 @@ class QuoteSource {
   final int? translatorDied;
 }
 
+/// A quote dropped for licensing, kept so it cannot come back by accident.
+///
+/// Three of these are the same mistake — reasoning from publication date
+/// rather than death date — and one of them, the Strode entry, reads as
+/// entirely safe under the false Emerson credit it originally shipped with.
+/// Without this list the only defence is that someone remembers.
+class RejectedQuote {
+  const RejectedQuote({
+    required this.fingerprint,
+    required this.attribution,
+    required this.reason,
+  });
+
+  /// A distinctive fragment of the dropped wording, lowercase, searched for
+  /// in every live quote.
+  final String fingerprint;
+
+  /// The name it was credited to when it shipped or was proposed.
+  final String attribution;
+
+  final String reason;
+}
+
+const List<RejectedQuote> rejectedQuotes = [
+  RejectedQuote(
+    fingerprint: "other beginning's end",
+    attribution: 'Seneca',
+    reason: "the hook of Semisonic's Closing Time (1998), verbatim; shipped "
+        'under a fabricated Seneca credit',
+  ),
+  RejectedQuote(
+    fingerprint: 'impediment to action advances action',
+    attribution: 'Marcus Aurelius',
+    reason: "Gregory Hays' 2002 rendering of Meditations — the author is "
+        'public domain, the translator is not',
+  ),
+  RejectedQuote(
+    fingerprint: 'full of suffering',
+    attribution: 'Helen Keller',
+    reason: 'Keller ("Optimism", 1903) died in 1968; in UK/EU copyright '
+        'until 2038. Its public-domain status rested on US publication '
+        'date alone.',
+  ),
+  RejectedQuote(
+    fingerprint: 'postponing, life speeds by',
+    attribution: 'Seneca',
+    reason: "Richard M. Gummere's 1917 Loeb translation; Gummere (1883-1969) "
+        'died in 1969, so the translation is in copyright until 2039',
+  ),
+  RejectedQuote(
+    fingerprint: 'follow where the path may lead',
+    attribution: 'Muriel Strode',
+    reason: 'Strode died in 1964; in copyright until 2034. Long shipped '
+        'under a false Emerson credit, which is what made it look safe — '
+        'correcting the attribution is what exposed the problem.',
+  ),
+];
+
 const Map<String, QuoteSource> quoteSources = {
   'coachQuote1': QuoteSource(
     author: 'Marcus Aurelius',
