@@ -472,7 +472,17 @@ void main() {
     // bank regardless of TrainerSettings.personaId — a test that only checks
     // the setting persisted would not catch that. This asserts the spoken
     // text itself moves from one persona's bank to the other's.
-    final container = buildContainer();
+    //
+    // quotesEnabled is switched off so the exact-equality checks below are
+    // not confused by a quote merged onto the WorkoutStarted cue — that
+    // merge is covered separately by the 'quotes' group.
+    final container = buildContainer(
+      settings: const TrainerSettings(
+        enabled: true,
+        disclaimerAccepted: true,
+        quotesEnabled: false,
+      ),
+    );
     final bridge = container.read(_bridgeUnderTest);
     final s = lookupS(const Locale('en'));
     bridge.strings = s;
@@ -534,11 +544,16 @@ void main() {
     // left that test green. This test seeds `personaId: 'sergeant'` before
     // the bridge is ever built, so only a correct constructor read passes
     // it.
+    //
+    // quotesEnabled is switched off for the same reason as the runtime-switch
+    // test above: it isolates the persona-bank assertion from the quote
+    // merge, which the 'quotes' group covers separately.
     final container = buildContainer(
       settings: const TrainerSettings(
         enabled: true,
         disclaimerAccepted: true,
         personaId: 'sergeant',
+        quotesEnabled: false,
       ),
     );
     final bridge = container.read(_bridgeUnderTest);
@@ -563,6 +578,102 @@ void main() {
         reason: 'the very first cue must already be Sergeant\'s — the '
             'preference was set before the bridge was built');
     expect(steadyTexts, isNot(contains(speechService.spoken.single)));
+  });
+
+  group('quotes', () {
+    test(
+        'speaks an actual quote from the bank at workout start — the whole '
+        'point of #102, and the assertion that fails against a bank nothing '
+        'reads', () async {
+      final container = buildContainer();
+      final bridge = container.read(_bridgeUnderTest);
+      final strings = lookupS(const Locale('en'));
+      bridge.strings = strings;
+
+      container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+
+      expect(speechService.spoken, hasLength(1));
+      final spoken = speechService.spoken.single;
+      final quotes = personaForId('steady')
+          .phrasesFor(TrainerEventKind.quote)
+          .map((key) => phraseResolvers[key]!(strings, const {}))
+          .toList();
+      expect(
+        quotes.any(spoken.contains),
+        isTrue,
+        reason: 'expected one of the ${quotes.length} bank quotes in "$spoken"',
+      );
+    });
+
+    test('speaks a quote after a rest of two minutes or longer', () async {
+      final container = buildContainer();
+      final bridge = container.read(_bridgeUnderTest);
+      final strings = lookupS(const Locale('en'));
+      bridge.strings = strings;
+
+      container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+      speechService.spoken.clear();
+
+      container.read(trainerEventBusProvider).emit(
+            const RestFinished(restDuration: Duration(minutes: 2)),
+          );
+      await Future<void>.delayed(Duration.zero);
+
+      final spoken = speechService.spoken.single;
+      final quotes = personaForId('steady')
+          .phrasesFor(TrainerEventKind.quote)
+          .map((key) => phraseResolvers[key]!(strings, const {}))
+          .toList();
+      expect(quotes.any(spoken.contains), isTrue);
+    });
+
+    test('speaks no quote after a short rest', () async {
+      final container = buildContainer();
+      final bridge = container.read(_bridgeUnderTest);
+      final strings = lookupS(const Locale('en'));
+      bridge.strings = strings;
+
+      container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+      speechService.spoken.clear();
+
+      container.read(trainerEventBusProvider).emit(
+            const RestFinished(restDuration: Duration(seconds: 60)),
+          );
+      await Future<void>.delayed(Duration.zero);
+
+      final spoken = speechService.spoken.single;
+      final quotes = personaForId('steady')
+          .phrasesFor(TrainerEventKind.quote)
+          .map((key) => phraseResolvers[key]!(strings, const {}))
+          .toList();
+      expect(quotes.any(spoken.contains), isFalse);
+    });
+
+    test('speaks no quote when the quotes toggle is off', () async {
+      final container = buildContainer(
+        settings: const TrainerSettings(
+          enabled: true,
+          disclaimerAccepted: true,
+          quotesEnabled: false,
+        ),
+      );
+      final bridge = container.read(_bridgeUnderTest);
+      final strings = lookupS(const Locale('en'));
+      bridge.strings = strings;
+
+      container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+
+      final spoken = speechService.spoken.single;
+      final quotes = personaForId('steady')
+          .phrasesFor(TrainerEventKind.quote)
+          .map((key) => phraseResolvers[key]!(strings, const {}))
+          .toList();
+      expect(quotes.any(spoken.contains), isFalse);
+    });
   });
 
   test(

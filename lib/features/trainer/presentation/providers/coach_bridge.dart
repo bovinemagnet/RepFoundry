@@ -12,6 +12,7 @@ import '../../../heart_rate/presentation/providers/zone_configuration_provider.d
 import '../../application/coaching_engine.dart';
 import '../../data/flutter_tts_speech_service.dart';
 import '../../data/persona_packs.dart';
+import '../../domain/coaching_cue.dart';
 import '../../domain/speech_service.dart';
 import '../../domain/trainer_event.dart';
 import 'phrase_resolver.dart';
@@ -119,9 +120,10 @@ class CoachBridge {
       hrCalloutsEnabled: settings.hrCalloutsEnabled,
       hrSafetyWarningsEnabled: settings.hrSafetyWarningsEnabled,
       cautionMode: _ref.read(cautionModeProvider),
+      quotesEnabled: settings.quotesEnabled,
     );
     if (cue != null) {
-      final text = resolvePhrase(strings, cue.phraseKey, cue.args);
+      final text = _resolveCue(strings, cue);
       if (text != null) {
         unawaited(
           _ref.read(speechServiceProvider).speak(text, priority: cue.priority),
@@ -144,6 +146,25 @@ class CoachBridge {
         unawaited(_ref.read(speechServiceProvider).stop());
       }
     }
+  }
+
+  /// Resolves a cue, folding in its attached quote as one utterance.
+  ///
+  /// Joined through the ARB rather than with a hardcoded space: `app_en.arb`
+  /// has ja/ko/zh siblings where a bare inter-sentence space is wrong.
+  ///
+  /// If exactly one of the two keys fails to resolve, whatever did resolve is
+  /// still spoken. `resolvePhrase` returns null for an unknown key, and
+  /// speech time is the wrong place to lose a cue over a missing quote.
+  String? _resolveCue(S strings, CoachingCue cue) {
+    final text = resolvePhrase(strings, cue.phraseKey, cue.args);
+    final quoteKey = cue.quotePhraseKey;
+    if (quoteKey == null) return text;
+
+    final quote = resolvePhrase(strings, quoteKey, const {});
+    if (quote == null) return text;
+    if (text == null) return quote;
+    return strings.coachCueWithQuote(text, quote);
   }
 
   void dispose() {

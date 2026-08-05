@@ -2392,6 +2392,11 @@ class SEn extends S {
       'Obstacles cannot crush me. Every obstacle yields to stern resolve. — Leonardo da Vinci';
 
   @override
+  String coachCueWithQuote(String cue, String quote) {
+    return '$cue $quote';
+  }
+
+  @override
   String get trainerDisclaimerTitle => 'Before your coach speaks';
 
   @override
