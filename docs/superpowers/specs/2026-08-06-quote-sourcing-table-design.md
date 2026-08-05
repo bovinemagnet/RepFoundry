@@ -186,6 +186,9 @@ where this has already bitten twice.
 - [ ] Every one of the surviving quote keys has a complete `QuoteSource` row.
 - [ ] Every translated entry names a translator dead more than 70 years.
 - [ ] Every shipped wording matches its named edition verbatim.
-- [ ] The three previously dropped quotes are recorded as rejected, with reasons.
+- [ ] Every dropped quote is recorded as rejected, with reasons — both the ones
+      dropped before this work and the ones this audit condemns. The second group
+      matters more: they carry correct-looking credits to famously public-domain
+      authors, so nothing about them looks wrong on re-reading.
 - [ ] All six enforcement assertions are mutation-proved red before green.
 - [ ] `dart analyze` clean, `dart format` clean, full suite passing.
