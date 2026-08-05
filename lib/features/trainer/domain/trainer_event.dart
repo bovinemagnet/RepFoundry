@@ -60,8 +60,20 @@ class RestCountdown extends TrainerEvent {
   TrainerEventKind get kind => TrainerEventKind.restCountdown;
 }
 
+/// A rest period ended.
+///
+/// [restDuration] is what the timer was set to run for, carried so the engine
+/// can apply the "quote after rests of two minutes or longer" rule (spec §5)
+/// without keeping its own memory of the matching [RestStarted] — which would
+/// be wrong whenever a rest began before the coach was switched on.
+///
+/// Optional, and `null` means "not known", which is treated as a short rest.
+/// A caller that cannot supply it therefore fails towards silence rather than
+/// towards an unwanted quote.
 class RestFinished extends TrainerEvent {
-  const RestFinished();
+  const RestFinished({this.restDuration});
+
+  final Duration? restDuration;
 
   @override
   TrainerEventKind get kind => TrainerEventKind.restFinished;
