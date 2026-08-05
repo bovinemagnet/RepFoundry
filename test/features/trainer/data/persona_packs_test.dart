@@ -171,10 +171,29 @@ void main() {
     // 70 years — publication date alone is never sufficient. Fewer,
     // individually verified entries beat a rounder number with an unverified
     // one in it.
+    //
+    // 17 after a fifth pass (#104) checked every survivor character-for-
+    // character against a named pre-1929 edition instead of trusting the
+    // death-date sweep alone. That sweep had only ever asked "is this person
+    // dead long enough?" — it never asked "did this person actually write
+    // this sentence?" Two entries (Emerson's "Adopt the pace of Nature. Her
+    // secret is patience." and Franklin's "Energy and persistence conquer all
+    // things.") turned up in no primary text at all, carried only by
+    // quotation aggregators — the same mechanism that put the Semisonic
+    // lyric under Seneca's name in round one, just without a living
+    // copyright holder to trip the death-date check. A third (Aristotle's
+    // "Well begun is half done.") is an English proverb no translation of
+    // Aristotle contains, and a fourth (Roosevelt's "Do what you can, with
+    // what you've got, where you are.") was Roosevelt quoting someone else,
+    // whose death year no source could establish. The rule this pass
+    // converged on: a paraphrase matching no identified edition cannot be
+    // shown *not* to be tracking a modern in-copyright translation — the
+    // Hays failure in a subtler form, since nothing here proves the wording
+    // is old rather than merely untraceable.
     for (final persona in _allPersonas) {
       expect(
         persona.phrasesFor(TrainerEventKind.quote).length,
-        greaterThanOrEqualTo(20),
+        greaterThanOrEqualTo(17),
         reason: '${persona.id} persona has too thin a quote bank',
       );
     }
