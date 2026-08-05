@@ -129,4 +129,33 @@ void main() {
       expect(settings.hrSafetyWarningsEnabled, isFalse);
     });
   });
+
+  group('quotesEnabled', () {
+    test('defaults to true — quotes are on unless the user says otherwise', () {
+      expect(const TrainerSettings().quotesEnabled, isTrue);
+    });
+
+    test('setQuotes updates state and persists', () async {
+      SharedPreferences.setMockInitialValues({});
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container.read(trainerSettingsProvider.notifier).setQuotes(false);
+
+      expect(container.read(trainerSettingsProvider).quotesEnabled, isFalse);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('trainer_quotes'), isFalse);
+    });
+
+    test('restores a persisted false on load', () async {
+      SharedPreferences.setMockInitialValues({'trainer_quotes': false});
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(trainerSettingsProvider);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(container.read(trainerSettingsProvider).quotesEnabled, isFalse);
+    });
+  });
 }
