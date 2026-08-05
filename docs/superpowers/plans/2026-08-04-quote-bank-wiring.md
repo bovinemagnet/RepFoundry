@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - **British spelling** in all comments, docs, and user-facing copy.
-- **Author:** Paul Snow. No AI-tool references in code, comments, commits, issues, or PRs.
+- **Author:** Paul Snow. No AI-tool references anywhere — code, comments, docs, **commit message bodies and trailers**, issues, or PR bodies. Specifically: no `Co-Authored-By:` naming an AI, no `Claude-Session:` trailer, no "Generated with" footer, no `claude.ai` URLs. A commit message is a subject line plus prose body, nothing else.
 - **All user-facing text goes through ARB.** Never concatenate speakable text with a hardcoded separator — `app_en.arb` has ja/ko/zh siblings.
 - **Run `flutter gen-l10n` after every `.arb` edit**, before running tests.
 - **`dart analyze` must report zero issues**; CI enforces it. `dart format --set-exit-if-changed .` must pass.
@@ -1349,10 +1349,6 @@ Spec: `docs/superpowers/specs/2026-08-04-quote-bank-wiring-design.md`
 Plan: `docs/superpowers/plans/2026-08-04-quote-bank-wiring.md`
 
 Closes #102
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-https://claude.ai/code/session_011qvccJvVhjCU5E6tKnf8rj
 EOF
 )"
 ```
