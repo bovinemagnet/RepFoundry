@@ -683,6 +683,53 @@ void main() {
       expect(quotes.any((quote) => quote != null && spoken.contains(quote)),
           isFalse);
     });
+
+    test(
+        'a persona switch does not make an already-heard quote available '
+        'again — the bank is shared, so quote memory must survive the '
+        'switch', () async {
+      final container = buildContainer();
+      final bridge = container.read(_bridgeUnderTest);
+      final strings = lookupS(const Locale('en'));
+      bridge.strings = strings;
+      final bus = container.read(trainerEventBusProvider);
+
+      final quoteTexts = personaForId('steady')
+          .phrasesFor(TrainerEventKind.quote)
+          .map((key) => resolvePhrase(strings, key, const {}))
+          .whereType<String>()
+          .toList();
+      String? quoteIn(String spoken) {
+        final matches = quoteTexts.where(spoken.contains).toList();
+        return matches.isEmpty ? null : matches.first;
+      }
+
+      bus.emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+      final firstQuote = quoteIn(speechService.spoken.single);
+      expect(firstQuote, isNotNull);
+
+      final notifier = container.read(trainerSettingsProvider.notifier)
+          as _SeededTrainerSettingsNotifier;
+      notifier.forceUpdate(const TrainerSettings(
+        enabled: true,
+        disclaimerAccepted: true,
+        personaId: 'hype',
+      ));
+
+      // Draw the rest of the bank under the new persona; the quote already
+      // heard under Steady must not come back until every other one has.
+      final heardAfterSwitch = <String>{};
+      for (var i = 0; i < quoteTexts.length - 1; i++) {
+        speechService.spoken.clear();
+        bus.emit(const RestFinished(restDuration: Duration(minutes: 2)));
+        await Future<void>.delayed(Duration.zero);
+        final quote = quoteIn(speechService.spoken.single);
+        if (quote != null) heardAfterSwitch.add(quote);
+      }
+
+      expect(heardAfterSwitch, isNot(contains(firstQuote)));
+    });
   });
 
   test(
