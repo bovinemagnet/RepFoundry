@@ -1,0 +1,65 @@
+= Permissions and device setup
+Paul Snow
+0.0.0
+:description: What RepFoundry asks permission for on Android and iOS, why each request exists, and what stops working if you decline.
+
+RepFoundry only asks for a permission when a feature needs it, and each request maps to something specific you are trying to do: pairing a heart rate monitor, getting a rest-timer alert, tracking a run with your phone locked, or syncing your weight into your phone's health app. Nothing is requested up front — the prompts appear the first time you use the feature that needs them.
+
+This page groups the requests by task rather than listing them in isolation, so you can see exactly why RepFoundry is asking and what happens if you say no.
+
+== Pairing a heart rate strap or watch
+
+RepFoundry connects to heart rate monitors over Bluetooth Low Energy (BLE) — chest straps, and watches such as Apple Watch or a Samsung Galaxy Watch that broadcast heart rate.
+
+* *Android* declares `BLUETOOTH_SCAN` and `BLUETOOTH_CONNECT` to discover and connect to nearby BLE devices. Older phones (Android 11 and below) use the equivalent legacy permissions, `BLUETOOTH` and `BLUETOOTH_ADMIN` — you do not need to do anything differently, Android selects the right one for your device automatically.
+* *iOS* declares `NSBluetoothAlwaysUsageDescription`, shown to you as "RepFoundry uses Bluetooth to connect to heart rate monitors during cardio sessions."
+
+If you decline Bluetooth access on either platform, RepFoundry cannot see or connect to a heart rate monitor. Live heart rate, heart-rate graphs, and training-zone tracking during a session will not be available, though everything else — logging sets, tracking a workout, cardio without a monitor — still works.
+
+On Android, starting a Bluetooth scan also requires location permission to be granted; see <<location>> below for why.
+
+For step-by-step pairing instructions, see xref:guide/heart-rate.adoc[].
+
+[[location]]
+== Why Android asks for your location
+
+This one deserves a straight answer, because it looks suspicious: RepFoundry does not track or record where you are for its own purposes. Location permission is requested for two unrelated reasons, both tied to platform requirements rather than anything RepFoundry chose to do:
+
+Bluetooth scanning (Android only)::
+Android's Bluetooth scanning API has historically been treated by the operating system as a location-adjacent capability, because nearby BLE devices can, in principle, be used to estimate where you are. To let any app scan for Bluetooth devices, Android requires that app to hold `ACCESS_FINE_LOCATION` or `ACCESS_COARSE_LOCATION` — this is enforced by the platform, not by RepFoundry. The app declares the newer `BLUETOOTH_SCAN` permission with a flag telling Android it does not derive your location from scan results, but on the older Android versions RepFoundry supports, the location permission is still the mechanism the OS uses to authorise the scan at all.
+
+Outdoor cardio distance (Android and iOS)::
+Separately, if you track an outdoor cardio session, RepFoundry uses GPS to record the distance covered. This is what `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION` are used for on Android, and what `NSLocationWhenInUseUsageDescription` is for on iOS — shown to you as "RepFoundry uses your location to track distance during outdoor cardio sessions."
+
+If you decline location permission, the practical effect is: RepFoundry cannot scan for or connect to a Bluetooth heart rate monitor on Android, and it cannot record distance for outdoor cardio sessions on either platform. Indoor cardio, manual logging, and everything unrelated to Bluetooth or GPS distance is unaffected.
+
+== Getting rest-timer and reminder alerts
+
+* *Android* declares `POST_NOTIFICATIONS` so RepFoundry can show rest-timer and reminder notifications, and `RECEIVE_BOOT_COMPLETED` so scheduled workout reminders survive a phone restart rather than being silently dropped.
+* *iOS* asks for notification permission through the standard system prompt the first time a notification is scheduled, rather than through an entry in the app's permission list.
+
+If you decline notifications, rest-timer completion and workout reminders will not alert you outside the app — you would need to keep RepFoundry in view to see when a rest period ends.
+
+== Tracking cardio with the screen off
+
+To keep recording heart rate and distance while your phone is locked or you have switched to another app, RepFoundry needs the operating system's cooperation to keep running in the background.
+
+* *Android* declares `FOREGROUND_SERVICE`, together with `FOREGROUND_SERVICE_LOCATION` and `FOREGROUND_SERVICE_CONNECTED_DEVICE`, so it can run a visible foreground service that keeps GPS and the Bluetooth heart rate connection alive during a cardio session. You will see a persistent notification while this is active — that is the trade-off Android requires for allowing background tracking at all.
+* *iOS* relies on the location and Bluetooth permissions described above to continue tracking distance and heart rate while the screen is locked.
+
+If background tracking is unavailable — for example, because location or Bluetooth permission was declined — RepFoundry can still track a cardio session while it is in the foreground, but distance and heart rate may stop updating once you leave the app or lock the screen.
+
+== Syncing health data with your phone's health app
+
+RepFoundry can read and write weight, body fat, exercise, and heart rate data through your phone's built-in health platform, so those numbers stay consistent with the rest of your health data.
+
+* *Android* uses Health Connect, declaring read and write permissions for heart rate, exercise, weight, and body fat.
+* *iOS* uses Apple Health, declaring `NSHealthShareUsageDescription` to read your body weight ("RepFoundry reads body weight from Apple Health to keep your metrics in sync") and `NSHealthUpdateUsageDescription` to write workouts and body metrics back ("RepFoundry writes workouts and body metrics to Apple Health for a complete fitness picture").
+
+If you decline health data access, RepFoundry keeps working entirely on its own data — you simply will not see your RepFoundry weight, body fat, exercise, or heart rate entries mirrored in Health Connect or Apple Health, and vice versa.
+
+Android also declares the general-purpose `INTERNET` permission, which is granted automatically at install with no prompt. It underpins network features such as cloud sync rather than anything you can accept or decline individually.
+
+== Platform differences at a glance
+
+Android and iOS ask for permission at different points and occasionally for slightly different scopes of the same feature — the Apple Health read permission, for instance, is scoped to weight only, while Health Connect on Android covers heart rate, exercise, weight, and body fat together. For the fuller picture of where the two platforms diverge, including cloud sync and health-app integration, see xref:platform-differences.adoc[].

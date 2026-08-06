@@ -1,0 +1,324 @@
+= Architecture
+Paul Snow
+:description: Clean architecture overview, layer responsibilities, and design decisions for RepFoundry
+:keywords: architecture, clean architecture, riverpod, flutter, layers
+:page-aliases: ROOT:architecture.adoc
+
+RepFoundry follows a clean architecture pattern with clear separation between presentation, domain, and data layers.
+The app targets both iOS and Android from a single Flutter/Dart codebase.
+The architecture prioritises offline-first operation, fast startup, and testability.
+
+== Architecture Overview
+
+The dependency rule flows strictly inward: outer layers may depend on inner layers, but inner layers never depend on outer layers.
+
+[source]
+----
+Presentation → Application → Domain ← Data
+----
+
+No layer may import from a layer further out than itself.
+The domain layer in particular has zero framework dependencies — it is pure Dart.
+
+== Technology Stack
+
+[cols="1,2,3",options="header"]
+|===
+| Layer | Technology | Purpose
+
+| Framework
+| Flutter 3.x / Dart 3.x
+| Cross-platform UI and application framework
+
+| State Management
+| Riverpod 2.x
+| Reactive state management with dependency injection
+
+| Local Database
+| Drift 2.x (SQLite)
+| Offline-first persistence with type-safe queries
+
+| Navigation
+| GoRouter
+| Declarative routing with deep link support
+
+| Dependency Injection
+| Riverpod (built-in)
+| Provider-based DI with auto-dispose and scoping
+
+| Charts
+| fl_chart
+| High-performance charting for progress visualisation
+
+| Audio
+| audioplayers 6.x
+| Cross-platform audio playback for rest timer alerts
+
+| BLE
+| flutter_blue_plus
+| Bluetooth Low Energy scanning and connection for heart rate monitors
+
+| Location
+| geolocator
+| GPS position stream for outdoor cardio distance tracking
+
+| Testing
+| flutter_test, mockito, integration_test
+| Unit, widget, and integration testing
+
+| CI/CD
+| GitHub Actions
+| Automated APK build and GitHub Release on version tags
+|===
+
+== Project Structure
+
+The project uses a feature-first directory layout.
+Each feature is self-contained with its own presentation, application, domain, and data sub-layers.
+Shared domain models and core utilities live in common directories.
+
+[source]
+----
+lib/
+├── app/                      # App-level config, theme, router
+│   ├── app.dart
+│   ├── router.dart
+│   └── theme.dart
+├── features/
+│   ├── analytics/            # Training analytics and charts
+│   ├── body_metrics/         # Weight and body fat tracking
+│   ├── cardio/               # Cardio tracking feature
+│   ├── exercises/            # Exercise library feature
+│   ├── health_sync/          # Platform health data sync
+│   ├── heart_rate/           # Real-time HR monitoring panel
+│   ├── history/              # Workout history and progress
+│   ├── notifications/        # Scheduled workout reminders
+│   ├── programmes/           # Multi-week training programmes
+│   ├── settings/             # App preferences
+│   ├── sync/                 # Cloud sync (iCloud / Google Drive)
+│   ├── templates/            # Workout templates
+│   └── workout/              # Workout logging feature
+├── core/                     # Shared utilities
+│   ├── database/             # Drift database, tables, converters
+│   │   ├── app_database.dart # @DriftDatabase class + seed data
+│   │   ├── converters.dart   # DateTime↔epoch ms, enum↔string
+│   │   ├── database_provider.dart  # Riverpod provider
+│   │   └── tables/           # Drift table definitions
+│   ├── extensions/           # Dart extension methods
+│   └── widgets/              # Reusable UI components
+└── main.dart
+----
+
+== Layer Responsibilities
+
+=== Presentation Layer
+
+Flutter widgets and screens consume state from Riverpod providers.
+Screens are thin and delegate all logic to controllers (`StateNotifier` classes).
+No business logic lives in widget `build` methods.
+
+* *Screens* — full-page widgets mapped to GoRouter routes
+* *Widgets* — reusable UI components (`SetInputCard`, `RestTimerWidget`, `ExercisePicker`, `GhostSetRow`). `RestTimerWidget` fires haptic vibration and an audible beep when the countdown completes, controlled by user preferences in `RestTimerSettings`.
+* *Models* — presentation-only data objects, e.g. `GhostSet` — a lightweight, non-persistable representation of a previous session's set used for auto-fill suggestions
+* *Controllers* — Riverpod Notifiers that manage screen-level state and coordinate use cases
+
+=== Application Layer
+
+Use cases encapsulate single business operations.
+They are pure Dart classes that depend on repository _interfaces_ (not implementations), making them fully testable without Flutter or database dependencies.
+
+* `LogSetUseCase` — validates input, persists set, updates workout summary
+* `StartWorkoutUseCase` — creates a workout record, loads a template if applicable
+* `CalculateProgressUseCase` — computes estimated 1RM, volume trends, and PRs
+
+=== Domain Layer
+
+Pure Dart models with no framework dependencies.
+These are immutable data classes with hand-written `copyWith` methods and value equality.
+
+[cols="1,2,2",options="header"]
+|===
+| Model | Key Fields | Notes
+
+| `Workout`
+| id, startedAt, completedAt, templateId?, notes
+| Top-level container for a session
+
+| `WorkoutSet`
+| id, workoutId, exerciseId, setOrder, weight, reps, rpe?, timestamp
+| Single set within a workout
+
+| `Exercise`
+| id, name, category, muscleGroup, equipmentType, isCustom
+| Exercise definitions
+
+| `CardioSession`
+| id, workoutId, exerciseId, durationSeconds, distanceMeters?, incline?, avgHeartRate?
+| Cardio entry within a workout
+
+| `WorkoutTemplate`
+| id, name, exercises (List<TemplateExercise>), createdAt, updatedAt
+| Reusable workout blueprint
+
+| `PersonalRecord`
+| id, exerciseId, recordType, value, achievedAt
+| Tracked PRs (1RM, max reps, etc.)
+|===
+
+=== Data Layer
+
+Repository implementations use Drift (SQLite) for production persistence and in-memory storage for testing.
+Each repository implements a domain-layer interface, keeping the persistence mechanism swappable.
+
+*Production repositories:*
+
+* `DriftExerciseRepository` — implements `ExerciseRepository` against SQLite
+* `DriftWorkoutRepository` — implements `WorkoutRepository` against SQLite
+
+*Test repositories (kept alongside):*
+
+* `InMemoryExerciseRepository` — used by use case tests with hand-written fakes
+* `InMemoryWorkoutRepository` — used by use case tests with hand-written fakes
+
+Key data design decisions:
+
+* Soft deletes on workouts and exercises (`deletedAt` field) to support undo and data recovery
+* Repository interfaces return `Stream` for reactive data; Drift's query watcher efficiently invalidates only affected streams when data changes
+* All timestamps stored as UTC epoch milliseconds (`IntColumn`) for consistency and sort performance
+* Enums stored as their `.name` string — human-readable in the database and safe against reordering
+
+See xref:database.adoc[Database] for full schema and design decision details.
+
+== Navigation Architecture
+
+GoRouter is configured with a `ShellRoute` for the bottom navigation bar and nested routes for detail screens.
+Deep links are supported for sharing specific workouts.
+
+The bottom navigation bar has five tabs: Workout, History, Cardio, Heart Rate, and Settings.
+Routes are defined in `lib/app/router.dart`.
+
+[cols="2,2,3",options="header"]
+|===
+| Route | Screen | Notes
+
+| `/workout`
+| ActiveWorkoutScreen
+| Main logging screen; start or continue a workout
+
+| `/exercises`
+| ExerciseLibraryScreen
+| Browse and search the exercise library
+
+| `/cardio`
+| CardioTrackingScreen
+| Log cardio sessions
+
+| `/heart-rate`
+| HeartRatePanelScreen
+| Real-time HR monitoring with zone chart
+
+| `/history`
+| HistoryListScreen
+| Past workouts in reverse chronological order
+
+| `/history/:id`
+| WorkoutDetailScreen
+| Full breakdown of a past workout
+
+| `/history/exercise/:id`
+| ExerciseProgressScreen
+| Per-exercise history with charts
+
+| `/settings`
+| SettingsScreen
+| App preferences, data export, theme toggle
+
+| `/templates`
+| TemplateListScreen
+| Manage workout templates
+|===
+
+== Offline-First Strategy
+
+The app is designed to work entirely offline.
+All data is persisted locally via Drift (SQLite).
+No feature requires network connectivity — this is critical for gym environments with poor connectivity.
+
+=== Cloud Sync
+
+Cloud sync is implemented as a best-effort, fire-and-forget layer on top of the offline-first core.
+Sync never blocks user actions; errors are swallowed and surfaced only as status indicators in the Settings screen.
+
+The sync feature uses iCloud (via CloudKit platform channel) on iOS and Google Drive (hidden app data folder) on Android.
+See xref:features/sync.adoc[Cloud Sync] for the full architecture.
+
+Key design principles:
+
+* *Local-first writes* — all data is written to SQLite immediately; sync runs after the fact
+* *Best-effort sync* — connectivity failures are silently tolerated; the user is never blocked
+* *updatedAt-wins conflict resolution* — when the same entity exists on both devices, the newer `updatedAt` timestamp wins; ties favour the local copy
+* *Fire-and-forget* — sync triggers automatically after workout completion but can also be triggered manually from Settings
+
+== Performance Considerations
+
+=== Startup Time
+
+The target is a sub-two-second cold start on mid-range devices.
+Key strategies: lazy provider initialisation (only the active workout feature loads on start) and minimal widget tree depth on the home screen.
+The exercise library loads asynchronously and is searchable once loaded.
+
+=== Database Performance
+
+For users with years of workout data, query performance is maintained through Drift's foreign-key references (which create implicit indexes) on `workout_id`, `exercise_id`, and similar columns.
+History pagination uses keyset pagination (`WHERE started_at < lastTimestamp`) rather than OFFSET to avoid degrading performance on large datasets.
+Drift's query watcher efficiently invalidates only affected streams when data changes.
+
+=== UI Rendering
+
+List-heavy screens (workout history, exercise list) use `ListView.builder` for lazy rendering.
+Charts are rendered with fl_chart, which uses `CustomPainter` for GPU-accelerated drawing.
+Animations are limited to 60fps targets with simple curves to avoid jank on older devices.
+
+== CI/CD Pipeline
+
+GitHub Actions automates the release process.
+The workflow is defined in `.github/workflows/release.yml`.
+
+=== Android APK Release
+
+Triggered by pushing a tag matching `v*`.
+
+Steps:
+
+. Checkout repository
+. Set up Java 17 (Temurin) and Flutter (stable channel)
+. Run `flutter pub get`
+. Detect pre-release: tags ending in `-SNAPSHOT` (case-insensitive) are marked as pre-release
+. Decode and write the Android keystore from repository secrets (`KEYSTORE_BASE64`, `KEY_ALIAS`, `KEY_PASSWORD`, `STORE_PASSWORD`) if `KEYSTORE_BASE64` is set
+. Build release APK: `flutter build apk --release`
+. Rename APK to `RepFoundry-\{tag\}.apk`
+. Create a GitHub Release via `softprops/action-gh-release@v2` with auto-generated release notes and the APK attached as an artifact
+
+NOTE: iOS build and deployment are not yet automated.
+
+== Security Considerations
+
+* All user data stored in the app's local storage, protected by OS-level encryption at rest
+* No personally identifiable information collected beyond optional email for cloud sync (planned v2)
+* Data export (CSV/JSON) requires user-initiated action; no automatic external transmission
+* When cloud sync ships, all API traffic will use TLS 1.3 and authentication via Firebase Auth tokens
+
+== Future Architecture Plans
+
+The following architectural investments are deferred to keep v1 lean but are accounted for in the current structure:
+
+* *Remaining Drift repositories* — `CardioSession`, `PersonalRecord`, and `WorkoutTemplate` repositories need implementing against the existing table definitions
+* *Wearable companion* — live BLE heart rate streaming from Apple Watch and Samsung Galaxy Watch is implemented (via standard BLE HR broadcast); a full native companion app for Wear OS or watchOS remains deferred
+* *Feature flags* — a `FeatureFlag` provider is planned to support A/B testing and gradual rollout of Pro features
+* *Modularisation* — features are self-contained directories today; when the codebase grows, each feature can be extracted into a separate Dart package for independent compilation and testing
+
+== Key Business Logic
+
+* `WorkoutSet.estimatedOneRepMax` — Epley formula: `weight * (1 + reps / 30.0)`
+* *PR detection* — runs on each logged set in `LogSetUseCase`
+* *Input validation* — weight >= 0, reps > 0, RPE 1–10 (optional)

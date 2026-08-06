@@ -1,0 +1,89 @@
+= Cloud sync
+Paul Snow
+0.0.0
+:description: How cross-device sync works in RepFoundry, how to turn it on, and what happens when the same workout is edited on two devices.
+
+RepFoundry can keep your workout data in step across your own devices using
+your phone's cloud account. It is entirely optional, off by default, and
+built so that a sync failure never gets in the way of logging a set.
+
+== What sync does and does not do
+
+When sync is turned on, RepFoundry copies your workout data to your cloud
+account and pulls down anything newer from your other devices. It runs
+automatically after you finish a workout and when you reopen the app, with
+no progress bar and no interruption — you can keep training while it happens
+in the background.
+
+Sync does *not* create a live, real-time connection between devices. Each
+device only sees another device's changes the next time it syncs, and there
+is no dedicated RepFoundry server in the middle — your data goes straight to
+your own cloud storage and nowhere else.
+
+== Which cloud service your platform uses
+
+RepFoundry uses each platform's own cloud service rather than a server it
+runs itself:
+
+* *iOS* syncs via iCloud.
+* *Android* syncs via Google Drive, using a private storage area that does
+  not appear alongside your other Drive files.
+
+This has one important consequence: *sync does not cross platforms.* Two
+iPhones on the same iCloud account can sync with each other, and two Android
+phones on the same Google account can sync with each other, but an iPhone
+and an Android phone cannot sync with each other at all — they write to
+completely separate cloud stores. See xref:platform-differences.adoc[] for
+the full picture.
+
+== Turning on sync
+
+Sync lives in *Settings*, under *Cross-Device Sync*:
+
+. Turn on *Enable Cross-Device Sync*.
+. A consent dialog explains that your workout data will be saved to your own
+  Google Drive or iCloud account, that RepFoundry cannot access it there, and
+  that you can delete it at any time. Accept to continue.
+. RepFoundry runs an initial sync straight away, which may show your
+  platform's sign-in or permission screen. Sync is only switched on once this
+  first run succeeds.
+
+Once it's on, the same screen shows when you last synced and offers a
+*Sync Now* button for syncing on demand. *Disable Sync & Delete Cloud Data*
+turns sync off and removes your data from cloud storage — your data on this
+device is not affected.
+
+== When the same data changes on two devices
+
+If you edit the same workout, set, or other record on two devices before
+they've had a chance to sync, RepFoundry does not merge the two edits or ask
+you to choose. It keeps whichever edit was made *more recently*, and
+discards the other one.
+
+This applies per record — so editing a workout's notes on one device and
+logging a new set on another affects different records and both changes
+survive. But if you change the same set's weight on your phone and then
+change it again on your tablet before syncing, only the later change
+remains once both devices have synced.
+
+Deleting something is treated the same way: a deletion generally wins over
+an edit made before it, so a record you delete on one device stays deleted
+even if another device edited it earlier and hasn't synced yet.
+
+== When sync fails
+
+Sync is best-effort by design. If your device is offline, cloud
+authentication has expired, or the cloud service is unreachable, an
+automatic sync simply does nothing and tries again next time — no error
+message appears, because automatic sync is not meant to interrupt you.
+
+Sync started manually with *Sync Now* is the exception: it tells you whether
+it succeeded or failed, so you have a way to check when you actually want to
+know. Either way, a failed sync never touches or loses the data already on
+your device — it just means the other device doesn't have your latest
+changes yet.
+
+[NOTE]
+====
+Looking for implementation detail? See xref:dev:features/sync.adoc[Cloud sync internals].
+====

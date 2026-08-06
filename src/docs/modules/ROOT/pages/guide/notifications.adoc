@@ -1,0 +1,47 @@
+= Notifications
+Paul Snow
+0.0.0
+:description: How to set up workout reminders and streak protection in RepFoundry, and how they differ from in-session rest-timer alerts.
+
+RepFoundry can remind you to train on the days you choose, and warn you before a training streak lapses. These scheduled reminders are a different mechanism from the rest-timer alerts you hear during a workout — this page explains both and covers how to configure the scheduled ones.
+
+== Two kinds of alert
+
+It helps to know which alert is which, since they are set up in different places:
+
+* *Rest-timer alerts* fire only while you are actively logging a workout, to tell you your rest period between sets has ended. They are a vibration and/or a sound played by the app itself while RepFoundry is open, turned on or off from the main *Settings* screen. See xref:first-workout.adoc[] for how these work during a session.
+* *Scheduled reminders* — workout reminders and the streak reminder — are genuine notifications from your device, delivered by the operating system even when RepFoundry is not open. They need the notification permission to work.
+
+The rest of this page covers scheduled reminders.
+
+== Workout reminders
+
+Workout reminders nudge you to train on the days you choose. You pick:
+
+* Which days of the week to be reminded on, using a row of day toggles.
+* A single time of day that applies to every day you have enabled.
+
+A reminder repeats every week on each enabled day, at the chosen time, until you change or turn it off.
+
+== Streak reminder
+
+The streak reminder is a separate toggle that sends one fixed notification a day, at the time you have set for your workout reminders. It fires at that time every day the toggle is on, regardless of whether you have already trained that day. It is off by default. The only way to stop it is to turn the toggle off.
+
+== Where to find these settings
+
+Reminders have their own screen, reached from a *Notifications* tile in the Settings hub. The tile's subtitle shows a summary of your current setup — for example, which days and what time — or tells you no reminders are configured if you have not set any up yet.
+
+From that screen you can also send yourself a test notification, useful for checking that reminders will actually reach you before you rely on them.
+
+== Notification permission
+
+The first time you turn on a reminder day, the streak reminder, or the test notification, RepFoundry asks your device for permission to send notifications.
+
+If you decline, your choice of days and times is still saved, but nothing will actually alert you until permission is granted. A banner appears at the top of the reminders screen offering a shortcut to your device's notification settings so you can turn permission on later.
+
+See xref:permissions.adoc[] for more on what this permission covers and what happens if you decline it.
+
+[NOTE]
+====
+Looking for implementation detail? See xref:dev:features/notifications.adoc[Notifications internals].
+====

@@ -1,0 +1,267 @@
+= Heart Rate Monitoring
+Paul Snow
+0.0.0
+:description: Implementation reference for the real-time heart rate monitoring panel in RepFoundry.
+:page-aliases: ROOT:features/heart-rate.adoc
+
+IMPORTANT: Heart rate zones are estimated training guidance only — not medical diagnosis or emergency monitoring.
+
+For the user-facing guide to this feature — supported devices, what the zones mean, health profile setup, and the safety features — see xref:ROOT:guide/heart-rate.adoc[].
+
+== Overview
+
+`HeartRatePanelScreen` (`lib/features/heart_rate/presentation/screens/heart_rate_panel_screen.dart`) is reachable from the bottom navigation bar independently of an active cardio or workout session. It shares the `HeartRateService` BLE singleton (`lib/features/cardio/data/heart_rate_service.dart`) with the xref:features/cardio.adoc[Cardio Tracking] feature: if `heartRateServiceProvider` already reports a connection when the panel opens, `syncFromService()` picks it up without reconnecting.
+
+Zone calculation, health profile modelling, and time-in-zone analysis are not implemented in this repository — they are provided by the external `hr_zones` pub package (`hr_zones: ^0.0.2` in `pubspec.yaml`), imported as `package:hr_zones/hr_zones.dart`.
+
+== BLE Connection
+
+Heart rate data is streamed from any device advertising the standard BLE Heart Rate Service (`0x180D`) via `FlutterBlueHeartRateService` (`lib/features/cardio/data/flutter_blue_heart_rate_service.dart`).
+
+=== HR Measurement Parsing
+
+The service subscribes to characteristic `0x2A37` and parses both 8-bit and 16-bit heart rate value formats per the BLE specification (`_parseHeartRate`).
+
+=== Connection and Reconnect
+
+* Initial connect (`connectToDevice`) wraps `_connectAndSubscribe` in `retryOnceOnFailure` (`lib/features/cardio/data/reconnect_strategy.dart`) — one retry after a 1-second delay, to absorb the transient Android GATT error 133 that commonly follows a peripheral powering on.
+* On an unexpected mid-session disconnect, `_attemptReconnect` runs `ReconnectStrategy.run`, which retries on an exponential backoff schedule (2, 4, 8, 16, 32, then three 60-second delays — eight attempts, a little over four minutes total) before giving up.
+* `HrConnectionState` (`connected`, `reconnecting`, `disconnected`) drives UI state via `HeartRatePanelController`, which pauses its wall-clock elapsed-time accumulator (`_pauseClock`) while reconnecting so gaps spent disconnected aren't counted toward session length.
+* Calling `disconnect()` sets `_intentionalDisconnect`, which both `_attemptReconnect` and the connection-state listener check before attempting or continuing a reconnect.
+
+== Health Profile
+
+`HealthProfile` (from `package:hr_zones`) captures the data used to personalise zone calculations: `age`, `restingHr`, `measuredMaxHr`, `clinicianMaxHr`, `lactateThresholdHr`, `betaBlocker`, `heartCondition`, `customZones` (`CustomZoneBoundary` — no in-app UI currently sets this), and `maxHrFormula` (defaults to `MaxHrFormula.tanaka`, `208 − 0.7 × age`). `isCautionMode` is a computed property, `true` when either `betaBlocker` or `heartCondition` is set.
+
+`HealthProfileNotifier` (`lib/features/heart_rate/presentation/providers/health_profile_provider.dart`) is an `AsyncNotifier<HealthProfile>` that loads and saves the profile per active client via `healthProfileRepositoryProvider.getForClient()` / `.saveForClient()`, keyed off `activeClientProvider`. A one-time `_migrateLegacyProfileOnce()` step migrates the old single-profile SharedPreferences keys (`hr_age`, `hr_resting_hr`, `hr_measured_max_hr`, `hr_clinician_max_hr`, `hr_beta_blocker`, `hr_heart_condition`) into the "self" client row (`kSelfClientId`), guarded by the `health_profile_migrated_v1` flag.
+
+=== Onboarding Flow
+
+`_HealthProfileOnboarding` (`lib/features/heart_rate/presentation/widgets/health_profile_onboarding.dart`), launched via `showHealthProfileOnboarding()`, is a 4-step bottom sheet (`_step` 0–3: age; resting + measured max HR; medical flags; clinician cap) that writes each step's fields to `HealthProfileNotifier` via `_saveCurrentStep()`. Steps can be skipped (`_advance(skip: true)`). It's triggered automatically from `HeartRatePanelScreen._onFirstVisit()` when `profile.age == null`, and fires `HrAnalyticsEvent.onboardingCompleted` on completion.
+
+`showDisclaimerIfNeeded()` (`lib/features/heart_rate/presentation/widgets/disclaimer_dialog.dart`) shows the first-use disclaimer once, gated on the `hr_disclaimer_shown` SharedPreferences flag.
+
+[[zone-calculation]]
+== Zone Calculation
+
+`calculateZones()` (from `package:hr_zones`) selects the most personalised and safest applicable method, trying each in priority order and returning the first that has enough data:
+
+[cols="1,2,1"]
+|===
+| Priority | Method | Reliability
+
+| 1
+| `ZoneMethod.custom` — `HealthProfile.customZones` is set (no in-app UI currently sets this)
+| High
+
+| 2
+| `ZoneMethod.clinicianCap` — `HealthProfile.clinicianMaxHr` is set. Always wins over the fallback chain and stays High even in caution mode — the clinician's guidance is treated as authoritative.
+| High
+
+| 3
+| `ZoneMethod.lthrFriel` — `HealthProfile.lactateThresholdHr` is set (no in-app UI currently sets this). Uses Joe Friel's published lactate-threshold-anchored 5-zone bands.
+| High (Low in caution mode)
+
+| 4
+| `ZoneMethod.hrrKarvonen` — a max HR (measured or age-estimated) and `restingHr` are both available
+| High if the max HR is measured, Medium if estimated (Low in caution mode)
+
+| 5
+| `ZoneMethod.percentOfMeasuredMax` — `measuredMaxHr` is set
+| High (Low in caution mode)
+
+| 6
+| `ZoneMethod.percentOfEstimatedMax` — fallback using `maxHrFormula` when only age is available
+| Medium (Low in caution mode)
+|===
+
+NOTE: Caution mode (`isCautionMode`) downgrades reliability to `ZoneReliability.low` for methods 3–6, but *not* for `custom` or `clinicianCap` — those two stay High regardless of caution flags, since they're authoritative external input rather than a derived estimate. Keep this distinction correct in any UI copy — it's user-visible safety messaging, and a blanket "caution mode is always Low reliability" claim is wrong for a user with a clinician cap set.
+
+=== Five-Zone Model
+
+[cols="1,1,1"]
+|===
+| Zone | % Range | Label
+
+| 1
+| 50–60 %
+| Easy (Recovery)
+
+| 2
+| 60–70 %
+| Light (Aerobic)
+
+| 3
+| 70–80 %
+| Moderate (Aerobic)
+
+| 4
+| 80–90 %
+| Hard (Anaerobic)
+
+| 5
+| 90–100 %
+| Very Hard (VO₂ Max)
+|===
+
+Percentages are of the resolved `maxHr` for max-HR-based methods, of heart rate reserve (`maxHr − restingHr`, offset by `restingHr`) for `hrrKarvonen`, or of `lactateThresholdHr` for `lthrFriel` (whose top band extends to 110 % of LTHR).
+
+=== ZoneConfiguration Output
+
+`calculateZones()` returns a `ZoneConfiguration?` (`null` if no method has enough data) containing:
+
+* `List<CalculatedZone>` — each zone with `lowerBound`, `upperBound`, `lowerPercent`, `upperPercent`, `label`, `effortLabel`, `descriptiveLabel`, `color`, and the computed `displayLabel` getter (`'$effortLabel ($descriptiveLabel)'`)
+* `method` — the selected `ZoneMethod`
+* `reliability` — `ZoneReliability.high` / `.medium` / `.low`
+* `maxHr` — the anchor HR used for percentage calculations
+* `reason` — human-readable explanation, surfaced as the `ReliabilityIndicator` tooltip
+
+`zoneConfigurationProvider` (`lib/features/heart_rate/presentation/providers/zone_configuration_provider.dart`) derives this from `healthProfileProvider`.
+
+== Charts
+
+`HeartRateChart` (`lib/features/heart_rate/presentation/widgets/heart_rate_chart.dart`, `fl_chart`) renders the windowed and full-session heart rate traces. The BPM line is curved (`curveSmoothness: 0.15`, to reduce sensor spike flicker), plotted over optional zone-band background annotations (`rangeAnnotations`, toggled via `zoneBandsProvider`), with dashed per-zone threshold lines (`_thresholdLines`, `dashArray: [4, 4]`) each labelled with its percentage and BPM value. The X-axis uses adaptive `M:SS` labels (`_xInterval(totalSeconds)` sizes the tick interval to the session length). `_TrendChartSection` in `heart_rate_panel_screen.dart` shows a windowed `HeartRateChart` alongside a `SparklineWidget` full-session trace, falling back to a second `HeartRateChart` when fewer than 2 readings exist. The window duration (30/60/90/120/300 s, default 60 s) is persisted via `ChartWindowNotifier` (`lib/features/heart_rate/presentation/providers/chart_window_provider.dart`, key `hr_chart_window_seconds`).
+
+== Session Statistics
+
+`_calculateStats()` in `HeartRatePanelScreen` derives average/min/max BPM from `HeartRatePanelState.readings`. Elapsed time is tracked in `HeartRatePanelController` via a wall-clock anchor (`_monitoringSince` / `_accumulated`) rather than a tick counter, so time spent backgrounded is still accounted for correctly on resume.
+
+== Time-in-Zone Summary
+
+`calculateTimeInZones()` (from `package:hr_zones`) processes the timestamped `HrReading` list against a `ZoneConfiguration` to produce per-zone `ZoneDuration`, `moderateOrHigherDuration` (zone 3 and above), and `recoveryHrDrop` (peak session BPM minus the BPM of a final reading at least 55 seconds after the previous one — `ReadingCadence.cooldownGap`). `_ZoneRow` in `heart_rate_panel_screen.dart` renders each zone's share as a proportional fill bar.
+
+== Caution Mode
+
+`CautionBadge` (`lib/features/heart_rate/presentation/widgets/caution_badge.dart`) renders when `profile.isCautionMode` is `true`:
+
+* Copy is selected from `S.warningBetaBlocker` / `S.warningHeartCondition`, concatenated when both flags are set.
+* Zone reliability follows the priority-chain rules above — Low unless a clinician cap is set, in which case it stays High.
+* `HeartRateZoneLegend` (`lib/features/heart_rate/presentation/widgets/heart_rate_zones.dart`) shows `s.clinicianLimitsInUse` when `config.method == ZoneMethod.clinicianCap`.
+
+== Reliability Indicator
+
+`ReliabilityIndicator` (`lib/features/heart_rate/presentation/widgets/reliability_indicator.dart`) maps `ZoneReliability` to colour, icon, and label (green `Icons.verified` High, amber `Icons.info_outline` Medium, red `Icons.warning_outlined` Low), with `config.reason` as the tooltip.
+
+== Symptom Reporting
+
+`SymptomReportButton` (`lib/features/heart_rate/presentation/widgets/symptom_report_button.dart`, label `s.symptomReportButton` = "Report Symptom") renders while `panelState.isMonitoring` is `true`. `_showSymptomDialog` lists the four symptom strings; selecting one calls `_showStopExerciseDialog`, which calls `onStopRequested()` (`controller.stopMonitoring`) *before* the stop-exercise `AlertDialog` is shown, and fires `HrAnalyticsEvent.warningDisplayed` with `type: 'symptom_report'`.
+
+== Max HR Alert
+
+`MaxHrAlertNotifier` (`lib/features/heart_rate/presentation/providers/max_hr_alert_provider.dart`) holds `vibrationEnabled` / `soundEnabled` / `cooldownSeconds` (default 15 s), persisted via SharedPreferences (`hr_max_alert_*` keys). `HeartRatePanelScreen._checkMaxHrAlert()` fires `HapticFeedback.heavyImpact()` and/or plays `sounds/timer_complete.wav` when `panelState.currentHeartRate >= zoneConfig.maxHr`, throttled by the cooldown.
+
+== Screen Layout
+
+Top to bottom in `HeartRatePanelScreen.build()`:
+
+. `KineticAppHeader`
+. `CautionBadge` (when `profile.isCautionMode`)
+. `_HeroBpmSection` — live BPM, current zone, reconnecting indicator, device name, elapsed time
+. Connect / Start / Pause / Reset controls
+. `_EkgTrace` sparkline (once readings exist)
+. `_MetricBentoGrid` — avg / max / min / reading count
+. `_ZonesSection` — zone rows with reliability indicator and time-in-zone summary
+. `_TrendChartSection` — windowed and full-session charts
+. `SymptomReportButton` (while monitoring)
+. `_WeeklyReportRow` — links to a weekly heart report; navigation is not yet implemented
+. `HeartRateZoneLegend`, or a prompt card to set up a profile when `zoneConfig` is `null`
+
+== Settings Integration
+
+`SettingsScreen` includes a Health Profile section (`_Set2Card`) bound directly to `healthProfileProvider` / `userAgeProvider`: age, resting HR, measured max HR, beta-blocker toggle, heart-condition toggle, a read-only zone-method + reliability summary row, a link into the 4-step onboarding sheet (`s.setUpHeartRateZones`), and a zone-colour-bands toggle bound to `zoneBandsProvider`. There is no direct Settings row for the clinician-provided maximum or lactate threshold. `clinicianMaxHr` can be set via the onboarding sheet's fourth step, or via the second entry point described below; `lactateThresholdHr` has no in-app UI at all.
+
+A separate Max Heart Rate Alert section binds to `maxHrAlertProvider` (vibration toggle, sound toggle, cooldown dropdown: 10/15/30/60 s), followed by the general disclaimer paragraph (`s.warningGeneralDisclaimer`).
+
+The clinician-provided maximum has a second entry point: `_HealthProfileForm` in `lib/features/clients/presentation/screens/client_detail_screen.dart` renders the full health-profile form (age, resting HR, measured max HR, clinician max HR, beta-blocker and heart-condition toggles) and saves it via `healthProfileRepositoryProvider.saveForClient()`. This is reachable for the self client too, not just coached clients — `ClientRepository.watchClients()` (`lib/features/clients/data/drift_client_repository.dart`) does not filter out `kSelfClientId`, and `client_roster_screen.dart` pushes `/clients/<id>` for every roster row including "Me". For a solo user who hasn't switched `activeClientProvider` away from the self client, this form and the Settings/onboarding paths above all read and write the same `HealthProfile` row.
+
+However, `/clients` is *not* one of `ScaffoldWithNavBar._coreTabPrefixes` (`lib/core/widgets/scaffold_with_nav_bar.dart`) — the five routes (`/workout`, `/history`, `/cardio`, `/heart-rate`, `/settings`) that get the bottom navigation bar on a phone-width window. The only navigation to `/clients` is through `DesktopNavRail`, and `ResponsiveContext.hasNavRail` (`lib/core/responsive/breakpoints.dart`) only returns `true` once the window is at least `Breakpoints.tablet` (600 dp) wide — below that, `hasNavRail` is unconditionally `false`. So below the tablet breakpoint there is currently no route to the client detail screen, and by extension no phone-width path to this second entry point.
+
+== Analytics Events
+
+HR-related analytics events (`HrAnalyticsEvent`, `lib/features/heart_rate/domain/analytics_events.dart`) are fired through `HrAnalyticsReporter`. The MVP uses `NoopAnalyticsReporter` (debug log only); a production reporter can be swapped in via `hrAnalyticsReporterProvider`.
+
+[cols="1,2"]
+|===
+| Event | When fired
+
+| `onboardingCompleted`
+| User finishes the 4-step onboarding sheet
+
+| `healthFieldCompleted`
+| User saves an optional health field
+
+| `cautionModeActivated`
+| A medical flag is set
+
+| `zoneMethodSelected`
+| `zoneConfigurationProvider` recalculates a non-null `ZoneConfiguration` — fires on every recalculation triggered by a health-profile change, not only when the selected method itself changes
+
+| `customCapUsed`
+| Clinician cap is entered
+
+| `warningDisplayed`
+| A warning or symptom dialog is shown
+|===
+
+== Key Files
+
+[cols="1,2"]
+|===
+| File | Purpose
+
+| `lib/features/heart_rate/domain/analytics_events.dart`
+| `HrAnalyticsEvent` enum and `HrAnalyticsReporter` interface
+
+| `lib/features/heart_rate/domain/warning_messages.dart`
+| Static warning and disclaimer string constants (non-l10n fallback)
+
+| `lib/features/heart_rate/presentation/providers/health_profile_provider.dart`
+| `HealthProfileNotifier` — per-client, repository-backed state
+
+| `lib/features/heart_rate/presentation/providers/zone_configuration_provider.dart`
+| Derived provider watching `healthProfileProvider`
+
+| `lib/features/heart_rate/presentation/providers/chart_window_provider.dart`
+| Sliding window duration state
+
+| `lib/features/heart_rate/presentation/providers/max_hr_alert_provider.dart`
+| Vibration / sound / cooldown settings for the max-HR alert
+
+| `lib/features/heart_rate/presentation/screens/heart_rate_panel_screen.dart`
+| Main monitoring screen
+
+| `lib/features/heart_rate/presentation/controllers/heart_rate_panel_controller.dart`
+| Monitoring state notifier (non-autoDispose)
+
+| `lib/features/heart_rate/presentation/widgets/heart_rate_chart.dart`
+| `fl_chart` line chart with zone bands
+
+| `lib/features/heart_rate/presentation/widgets/heart_rate_zones.dart`
+| Zone legend with dual labels
+
+| `lib/features/heart_rate/presentation/widgets/health_profile_onboarding.dart`
+| 4-step onboarding bottom sheet
+
+| `lib/features/heart_rate/presentation/widgets/caution_badge.dart`
+| Amber caution warning card
+
+| `lib/features/heart_rate/presentation/widgets/reliability_indicator.dart`
+| Colour-coded reliability badge
+
+| `lib/features/heart_rate/presentation/widgets/symptom_report_button.dart`
+| In-exercise symptom reporting
+
+| `lib/features/cardio/data/flutter_blue_heart_rate_service.dart`
+| `FlutterBlueHeartRateService` — BLE scan / connect / parse
+
+| `lib/features/cardio/data/reconnect_strategy.dart`
+| `retryOnceOnFailure` and `ReconnectStrategy` backoff schedule
+|===
+
+`HealthProfile`, `CustomZoneBoundary`, `MaxHrFormula`, the zone-calculation engine, and the time-in-zone calculator all live outside this repository, in the `hr_zones` pub package (`hr_zones: ^0.0.2`).
+
+== Related Features
+
+* xref:features/cardio.adoc[Cardio Tracking] — shares the `HeartRateService` BLE singleton
+* xref:features/workout.adoc[Workout Logging] — heart rate context alongside strength training
+* xref:ROOT:guide/heart-rate.adoc[] — the user-facing guide to this feature

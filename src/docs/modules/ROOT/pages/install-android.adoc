@@ -1,0 +1,44 @@
+= Install RepFoundry on Android
+Paul Snow
+0.0.0
+:description: How to download and sideload RepFoundry on Android, and what to expect on first launch.
+
+RepFoundry for Android is not published on the Google Play Store. You install it by downloading a signed APK from GitHub and sideloading it onto your device.
+
+== Download the APK
+
+RepFoundry releases are published on GitHub, with a signed APK attached to each release.
+
+1. Go to the releases page: https://github.com/bovinemagnet/RepFoundry/releases[RepFoundry releases].
+2. Find the release you want. Each release is tagged with a version number, and the attached file is named `RepFoundry-v<version>.apk`.
+3. Download the APK to your Android device, or download it on a computer and transfer it to your device.
+
+TIP: Releases tagged with a `-SNAPSHOT` suffix (for example, `v1.2.0-SNAPSHOT`) are marked as pre-release. These are test builds and are not recommended for general use. If you want a stable, supported build, choose the latest release that is not marked pre-release.
+
+== Enable installation from unknown sources
+
+Because RepFoundry is not distributed through the Play Store, Android blocks installation until you explicitly allow it. On modern Android versions this permission is granted per app, not with a single global switch.
+
+When you open the downloaded APK, Android will prompt you to allow installs from the app you used to open it (for example, your file manager or browser). Follow the on-screen prompt to grant that permission for the specific app, then continue with the install.
+
+If Android blocks the install without prompting, check that app's individual permission:
+
+1. Open *Settings*.
+2. Go to *Apps* (or *Apps & notifications*).
+3. Find the app you used to open the APK (for example, your file manager or browser).
+4. Look for *Install unknown apps* and enable it for that app.
+5. Return to the APK file and try installing again.
+
+The exact wording and navigation path vary slightly between Android versions and device manufacturers, but the setting is always attached to the specific app you used to open the file, not a device-wide toggle.
+
+== What to expect on first launch
+
+When you open RepFoundry for the first time, the app initialises its local database on the device. No account creation or sign-in is required — RepFoundry works fully offline.
+
+During first use, the app will ask for permissions as they become relevant to the features you use, such as Bluetooth for heart rate monitors or notifications for rest-timer alerts. See xref:permissions.adoc[] for what each permission is for and what happens if you decline it.
+
+== Updates are not automatic
+
+Sideloaded apps do not update themselves. RepFoundry installed this way will not check for or download new versions on its own.
+
+To update, return to the https://github.com/bovinemagnet/RepFoundry/releases[releases page], download the APK for the new version, and install it over the existing app.

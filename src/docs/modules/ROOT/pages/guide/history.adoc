@@ -1,0 +1,52 @@
+= History and records
+Paul Snow
+0.0.0
+:description: How to browse past workouts, track an exercise's progress over time, and understand your personal records in RepFoundry.
+
+The History screen is where every completed workout ends up. From here you can reopen a past session, see how a single exercise has progressed over weeks or months, and review your personal records.
+
+History has two tabs: *History*, which lists your sessions, and *Progress*, which shows trend charts, a training streak, a calendar heatmap and muscle group balance. This page covers the History tab and records. For deeper charts and analytics, see xref:guide/analytics.adoc[].
+
+== The workout history list
+
+The History tab lists your completed workouts, most recent first, grouped under headings such as *This Week*, *Last Week*, and then by month. Each entry shows a duration and a total volume (weight lifted multiplied by reps, summed across all sets), plus a weekly volume summary at the top of the tab.
+
+Tap any entry to open its full detail: the date and time it started, duration, total sets, total volume, and a breakdown by exercise. Each exercise section lists every set logged that session — weight, reps, and estimated one-rep max — and is marked if it produced a personal record. If a heart rate monitor was connected during the session, average and peak heart rate appear alongside the sets. Any stretching completed as part of the workout is listed underneath the exercises with its duration.
+
+From the workout detail screen you can also:
+
+* Save the workout as a reusable blueprint — see xref:guide/templates.adoc[].
+* Continue the workout, if it was left unfinished.
+
+Tapping an exercise's name inside a workout's detail takes you straight to that exercise's history, described below.
+
+== Per-exercise history
+
+Open an exercise's history to see how that specific lift has progressed. This view shows:
+
+* Your best estimated one-rep max and total volume lifted for that exercise, across up to the 200 most recent sets.
+* A trend chart of estimated one-rep max over time.
+* A table of recent sets with date, weight, reps and estimated one-rep max for each.
+
+You can reach this view either by tapping an exercise inside a past workout's detail, or from the Progress tab's list of trained exercises.
+
+== Personal records
+
+RepFoundry automatically checks every set you log — except warm-up sets, which never count — against your best-ever result for that exercise and records a new personal record whenever a set beats it. A single set can set more than one kind of record at once. There are four record types:
+
+* *Estimated one-rep max* — the set's estimated one-rep max, calculated from its weight and reps.
+* *Max weight* — the heaviest weight lifted for that exercise in a set, regardless of how many reps were done.
+* *Max reps* — the highest number of reps completed for that exercise in a set.
+* *Max volume* — the highest volume (weight multiplied by reps) for a single set of that exercise.
+
+Because personal records are tracked per exercise and per record type independently, a heavy, low-rep set and a lighter, high-rep set of the same exercise can each hold their own record at the same time.
+
+=== The personal records page
+
+Tap the trophy icon on the History screen to open the dedicated personal records page. It lists every exercise you have a record for, with each record type, its value, and when it was achieved. If you have not set any records yet, the page explains that records appear here once you do.
+
+== Cardio sessions in history
+
+Saving a cardio session — see xref:guide/cardio.adoc[] — creates a history entry too, since a cardio session is stored as a completed workout under the hood. It appears in the workout list alongside strength workouts, in its correct place by date, with its duration shown correctly.
+
+However, because a cardio session has no logged sets, that history entry shows zero total volume and, when opened, no exercise breakdown. Distance and heart rate data captured during the cardio session are not shown in the history list or workout detail — they live only in the cardio feature itself. If you want to review a session's distance or heart rate data, do so from the cardio screen at the time, rather than from history afterwards. Nothing is lost — the underlying cardio session record is still saved — but history is not currently where that detail resurfaces.

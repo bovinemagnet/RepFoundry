@@ -1,0 +1,64 @@
+= Stretching
+Paul Snow
+0.0.0
+:description: How to log timed or manual stretching entries against a workout in RepFoundry, using the built-in stretch presets or a custom stretch name.
+
+RepFoundry can record stretching alongside a workout — mobility work, a warm-up, or a cool-down — without it affecting your strength sets. Stretching entries are stored separately from working sets, so they never count towards volume totals or personal records.
+
+There is no dedicated stretching tab. Stretching lives inside an active workout, as a *Stretching* section on the Workout screen.
+
+== Where to find it
+
+The *Stretching* section appears on the active workout screen in two places: above the exercise list while the workout is still empty, and near the bottom, just before the *Finish Workout?* button, once you have logged exercises. Either way, it is part of the same active workout — not a separate screen.
+
+You can reach it in two ways:
+
+* While a workout is already in progress, scroll to the *Stretching* section and tap *Add Stretching* (or *Add*, once you already have entries).
+* From the idle Workout tab, before starting a workout, tap *Start Stretching* under "Or start from". This begins a new, empty workout and opens the Add Stretching sheet immediately — it is a shortcut into the same feature, not a different kind of session.
+
+== Stretch presets
+
+The Add Stretching sheet offers twenty built-in stretches as selectable chips:
+
+* Standing Hamstring Stretch
+* Seated Forward Fold
+* Standing Quadriceps Stretch
+* Low Lunge Hip Flexor
+* Pigeon Pose
+* Butterfly Stretch
+* Child's Pose
+* Cobra Stretch
+* Cat–Cow
+* Downward-Facing Dog
+* Cross-Body Shoulder Stretch
+* Doorway Chest Stretch
+* Standing Calf Stretch
+* Supine Spinal Twist
+* Neck Side Stretch
+* Figure-4 Glute Stretch
+* 90/90 Hip Stretch
+* Frog Pose
+* Front Splits
+* Side Splits (Middle Splits)
+
+If none of these fit, choose *Custom…* and type your own stretch name (up to 60 characters).
+
+== The timer
+
+The sheet offers three ways to record how long you held a stretch, switched with a segmented control:
+
+* *Timer* — starts a running stopwatch. Tap *Start* to begin, *Pause* to stop counting without losing the elapsed time, and *Reset* to clear it back to zero. The elapsed time is shown as it counts up.
+* *Manual* — type minutes and seconds directly, or tap a quick-add chip (1, 2, 5, 10, or 15 minutes) to fill them in for you.
+* *Untimed* — just logs that you did the stretch, with no duration recorded. Untimed entries are excluded from the total-minutes count shown on the section.
+
+Pick a preset (or a custom name), choose a recording method, optionally add a note, then tap *Save* to add the entry to the workout. Tapping *Cancel* discards it. If you leave the sheet with a timer running, the elapsed time is kept, so reopening *Add Stretching* picks up where you left off.
+
+== Recording and reviewing entries
+
+Saved stretching entries appear as a list in the *Stretching* section for the rest of the workout, each showing its name, duration (or a dash for untimed entries), and any note. The section header totals the entry count and the combined minutes across all timed entries in the workout.
+
+Once the workout is finished, the same stretching entries appear on that workout's page in xref:guide/history.adoc[], listed with their durations and a combined minutes total.
+
+== Removing an entry
+
+Tap the close icon (an "x") on a stretching entry to remove it. You are asked to confirm before it is deleted.

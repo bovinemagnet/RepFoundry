@@ -1,0 +1,24 @@
+= Install RepFoundry on iOS
+Paul Snow
+0.0.0
+:description: RepFoundry has no App Store listing or TestFlight build. The only way to run it on iOS today is to build it from source.
+
+There is no App Store listing for RepFoundry, and no TestFlight build. The release pipeline currently builds and signs Android APKs only — iOS packaging is not yet automated. If you own an iPhone, the only way to run RepFoundry today is to build it from source yourself.
+
+This is not a "coming soon" — there is no scheduled App Store release to point to. It is simply the current state of the project.
+
+== The one route that works
+
+Building from source requires a Mac with Xcode installed, since iOS apps can only be built and signed on macOS. Once you have Flutter and Xcode set up, you build and run the app in the same way any Flutter developer would, deploying to your own device or the iOS Simulator.
+
+Full setup steps — installing Flutter, installing Xcode, and running the app — are covered in xref:dev:getting-started.adoc[].
+
+RepFoundry targets iOS 15 and later, so your device (or the Simulator's chosen iOS version) needs to meet that minimum.
+
+== What this means in practice
+
+* You will need a Mac. There is no way to build an iOS app on Windows or Linux.
+* You will need an Apple ID to sign the app for your own device, even for local development builds.
+* Updates are manual — you rebuild from source each time you want the latest changes, in the same way as installing it the first time.
+
+If an automated iOS release becomes available in future, this page will be updated to describe it.

@@ -1,0 +1,137 @@
+= Body Metrics
+Paul Snow
+0.0.0
+:description: Guide to the body metrics tracking feature in RepFoundry.
+:page-aliases: ROOT:features/body-metrics.adoc
+
+Implementation reference for body metrics. For what the feature does from a
+user's point of view — what can be recorded, adding an entry, and how the
+history is shown — see xref:ROOT:guide/body-metrics.adoc[].
+
+== Overview
+
+Body metrics are stored as `BodyMetric` records in the local SQLite database via `DriftBodyMetricRepository`.
+Records carry a `clientId` (see the clients feature), and soft deletes via `deletedAt` follow the same pattern used elsewhere in the app.
+When xref:features/health-sync.adoc[Health Sync] is enabled, weight and body fat entries are automatically pushed to Apple HealthKit or Google Health Connect on save.
+
+== BodyMetric Model
+
+[source,dart]
+----
+class BodyMetric {
+  final String id;                 // UUID v4
+  final DateTime date;             // UTC timestamp of the measurement
+  final double weight;             // kg
+  final double? bodyFatPercent;    // optional; 0–100
+  final String? notes;             // optional free-text notes
+  final String clientId;           // owning client; defaults to kSelfClientId
+  final DateTime updatedAt;        // last-write timestamp, used for sync merge
+  final DateTime? deletedAt;       // soft-delete marker
+}
+----
+
+=== Factory Constructor
+
+[source,dart]
+----
+static BodyMetric create({
+  required double weight,
+  DateTime? date,                    // defaults to DateTime.now().toUtc()
+  double? bodyFatPercent,
+  String? notes,
+  String clientId = kSelfClientId,
+})
+----
+
+=== copyWith
+
+The `copyWith` method supports clearing optional fields via dedicated boolean parameters:
+
+[source,dart]
+----
+BodyMetric copyWith({
+  ...
+  bool clearBodyFat = false,  // pass true to set bodyFatPercent to null
+  bool clearNotes = false,    // pass true to set notes to null
+})
+----
+
+== Screen
+
+`BodyMetricsScreen` (`lib/features/body_metrics/presentation/screens/body_metrics_screen.dart`) is a `ConsumerWidget` watching `bodyMetricsStreamProvider`, composed of:
+
+* `_LatestCard` — summary of the most recent entry
+* `_WeightChart` — rendered via the shared `ProgressChartWidget`; only built when `metrics.length >= 2`
+* `_MetricTile` — one per history row, wrapped in `Dismissible` for swipe-to-delete
+* `_AddBodyMetricDialog` — a `ConsumerStatefulWidget` (state is used so its `TextEditingController`s survive the dialog's exit transition) that returns a `BodyMetric` via `Navigator.pop`
+
+Weight is entered and displayed in the user's configured `WeightUnit` (`lib/core/units/weight_unit.dart`); it is converted to kg via `toKg()` before being persisted.
+
+== Health Sync Integration
+
+*Write*: after `_showAddDialog` returns a new `BodyMetric`, the screen saves it via `bodyMetricRepositoryProvider.create()`, then — best-effort, inside a `try/catch` — checks `HealthSyncSettings.enabled && writeWeight` and calls `HealthSyncService.writeWeight()`, followed by `writeBodyFat()` if `bodyFatPercent` is non-null.
+
+*Read*: `healthWeightCheckProvider` (`lib/features/health_sync/presentation/providers/health_weight_import_provider.dart`), a `FutureProvider.autoDispose`, runs when `HealthSyncSettings.enabled && readWeight`. It calls `HealthSyncService.readLatestWeight()` and compares the sample's date against `BodyMetricRepository.getLatest(kSelfClientId)`, returning `null` if there's nothing newer. `BodyMetricsScreen` listens to this provider and, when a sample is returned, shows a `SnackBar` with an *Import* action; tapping it builds a `BodyMetric` from the sample (always against `kSelfClientId`, since platform health data belongs to the device owner) and saves it directly via `bodyMetricRepositoryProvider.create()` — it does not pre-fill the add-entry form.
+
+== Database Persistence
+
+`DriftBodyMetricRepository` implements the `BodyMetricRepository` interface against the `body_metrics` SQLite table.
+
+[cols="1,2"]
+|===
+| Column | Type
+
+| `id`
+| `TEXT PRIMARY KEY` (UUID v4)
+
+| `date`
+| `INTEGER` (UTC epoch milliseconds)
+
+| `weight`
+| `REAL` (kg)
+
+| `body_fat_percent`
+| `REAL NULLABLE`
+
+| `notes`
+| `TEXT NULLABLE`
+
+| `updated_at`
+| `INTEGER` (UTC epoch milliseconds, defaults to 0), used for sync merge
+
+| `deleted_at`
+| `INTEGER NULLABLE` (UTC epoch milliseconds), soft-delete marker
+
+| `client_id`
+| `TEXT`, references `clients.id`, defaults to `kSelfClientId`
+|===
+
+`idx_body_metrics_date` indexes the `date` column.
+
+== Key Files
+
+[cols="1,2"]
+|===
+| File | Purpose
+
+| `lib/features/body_metrics/domain/models/body_metric.dart`
+| `BodyMetric` domain model
+
+| `lib/features/body_metrics/domain/repositories/body_metric_repository.dart`
+| Repository interface
+
+| `lib/features/body_metrics/data/drift_body_metric_repository.dart`
+| SQLite persistence
+
+| `lib/features/body_metrics/presentation/screens/body_metrics_screen.dart`
+| Screen and its widgets
+|===
+
+== Related Features
+
+* xref:features/health-sync.adoc[Health Sync] — auto-push weight and body fat to health stores
+
+[NOTE]
+====
+Looking for the user-facing guide? See xref:ROOT:guide/body-metrics.adoc[Body metrics].
+====

@@ -1,0 +1,223 @@
+= Health Sync
+Paul Snow
+0.0.0
+:description: Implementation reference for Apple HealthKit and Health Connect integration.
+:page-aliases: ROOT:features/health-sync.adoc
+
+Implementation reference for health data sync. For what this does from a user's point of view — which platform your phone uses, what data moves and in which direction, and how it differs from cloud sync — see xref:ROOT:guide/health-sync.adoc[].
+
+== Overview
+
+Integration is provided by the `health` Flutter package.
+The `HealthSyncService` class wraps the platform API and exposes write operations for workouts, weight, body fat, and heart rate, plus a read operation for weight.
+All sync operations are opt-in and controlled by granular settings toggles.
+
+== HealthSyncSettings
+
+Settings are persisted via SharedPreferences through `HealthSyncSettingsNotifier`.
+
+[source,dart]
+----
+class HealthSyncSettings {
+  final bool enabled;           // master toggle; no sync occurs when false
+  final bool writeWorkouts;     // push completed workouts to the health store
+  final bool writeWeight;       // push body weight and body fat entries
+  final bool writeHeartRate;    // push BPM samples recorded during monitoring
+  final bool readWeight;        // pull the latest weight entry from the health store
+}
+----
+
+Default values:
+
+[cols="1,1"]
+|===
+| Setting | Default
+
+| `enabled`
+| `false`
+
+| `writeWorkouts`
+| `true`
+
+| `writeWeight`
+| `true`
+
+| `writeHeartRate`
+| `false`
+
+| `readWeight`
+| `false`
+|===
+
+== HealthSyncService
+
+=== Requesting Permissions
+
+[source,dart]
+----
+Future<bool> requestAuthorisation({
+  bool writeWorkouts = true,
+  bool writeWeight = true,
+  bool writeHeartRate = true,
+  bool readWeight = true,
+})
+----
+
+Builds the required `HealthDataType` and `HealthDataAccess` lists based on the active settings toggles, then calls `Health.requestAuthorization()`.
+The method returns `true` when the platform grants all requested permissions.
+
+=== Writing Workouts
+
+[source,dart]
+----
+Future<bool> writeWorkout({
+  required DateTime startTime,
+  required DateTime endTime,
+  required int totalCalories,
+  bool isCardio = false,
+  double? distanceMeters,
+})
+----
+
+* Strength workouts are written as `HealthWorkoutActivityType.FUNCTIONAL_STRENGTH_TRAINING`.
+* Cardio sessions are written as `HealthWorkoutActivityType.RUNNING`.
+* Energy is recorded in kilocalories; distance (when available) is recorded in metres.
+
+=== Writing Body Weight
+
+[source,dart]
+----
+Future<bool> writeWeight({required double weightKg, required DateTime dateTime})
+----
+
+Writes a single weight sample in kilograms to `HealthDataType.WEIGHT`.
+
+=== Writing Body Fat Percentage
+
+[source,dart]
+----
+Future<bool> writeBodyFat({required double percent, required DateTime dateTime})
+----
+
+Writes a body fat percentage sample to `HealthDataType.BODY_FAT_PERCENTAGE`.
+
+=== Writing Heart Rate Samples
+
+[source,dart]
+----
+Future<bool> writeHeartRate({required int bpm, required DateTime dateTime})
+----
+
+Writes a single BPM sample to `HealthDataType.HEART_RATE` with `RecordingMethod.automatic`.
+
+=== Reading Weight
+
+[source,dart]
+----
+Future<double?> readLatestWeight()
+----
+
+Queries `HealthDataType.WEIGHT` for the past 30 days, sorts by date descending, and returns the most recent value in kg.
+Returns `null` when no data is available or permission has not been granted.
+
+== Auto-Sync Hooks
+
+When Health Sync is enabled, writes are triggered automatically at two points:
+
+[cols="1,2"]
+|===
+| Trigger | Data written
+
+| Workout completion (`completedAt` is set)
+| Workout session (start/end time, estimated calories)
+
+| Body metric save
+| Body weight (kg) and body fat percentage (if available)
+|===
+
+Heart rate samples are written during the heart rate monitoring session if `writeHeartRate` is enabled — each BPM reading is pushed as an individual sample.
+
+== Weight Import
+
+`healthWeightCheckProvider` (`lib/features/health_sync/presentation/providers/health_weight_import_provider.dart`) is a `FutureProvider.autoDispose` watched from the Body Metrics screen.
+It only runs when `enabled` and `readWeight` are both true, calls `HealthSyncService.readLatestWeight()`, and compares the result against the latest locally stored `BodyMetric` for `kSelfClientId`.
+A strictly newer sample surfaces as a snackbar with an *Import* action that creates a new `BodyMetric` entry; a sample that is not newer than the local record, or any error along the way, is discarded silently.
+
+== Platform Permissions
+
+=== iOS — HealthKit
+
+Requires the following keys in `Info.plist`:
+
+[cols="1,2"]
+|===
+| Key | Usage description
+
+| `NSHealthShareUsageDescription`
+| Shown when requesting read access
+
+| `NSHealthUpdateUsageDescription`
+| Shown when requesting write access
+|===
+
+The `health` package handles the HealthKit entitlement and permission request dialog.
+
+=== Android — Health Connect
+
+Health Connect permissions are declared in `AndroidManifest.xml`.
+The required permissions depend on the active settings:
+
+[cols="1,2"]
+|===
+| Permission | Required for
+
+| `android.permission.health.WRITE_EXERCISE`, `READ_EXERCISE`
+| `writeWorkouts`
+
+| `android.permission.health.READ_WEIGHT`, `WRITE_WEIGHT`
+| `writeWeight` / `readWeight`
+
+| `android.permission.health.READ_BODY_FAT`, `WRITE_BODY_FAT`
+| `writeWeight` (body fat)
+
+| `android.permission.health.READ_HEART_RATE`, `WRITE_HEART_RATE`
+| `writeHeartRate`
+|===
+
+NOTE: The manifest declares both read and write permissions per data type even where `requestAuthorisation()` only ever requests one direction (for example, `READ_EXERCISE` and `READ_HEART_RATE` are declared but not currently requested) — Health Connect requires the pairing to be present in the manifest regardless of runtime usage.
+
+NOTE: Health Connect requires Android 9+ and the Health Connect app to be installed.
+On devices running Android 14+, Health Connect is bundled with the OS.
+
+== Settings UI
+
+Rendered inline in the private `_SyncRemindersCard` class in `settings_screen.dart`, alongside Notifications and Cloud Sync — there is no dedicated Health Sync widget file.
+
+There is no standalone "connect" or "re-authorise" action. The master toggle's `onChanged` handler calls `HealthSyncService.requestAuthorisation()` directly when the switch moves from off to on, and only calls `HealthSyncSettingsNotifier.toggleEnabled()` once that call succeeds; `toggleEnabled()` itself just flips and persists the flag and does not request authorisation on its own. If authorisation is denied, a snackbar is shown and the toggle is left off.
+
+== Key Files
+
+[cols="1,2"]
+|===
+| File | Purpose
+
+| `lib/features/health_sync/data/health_sync_service.dart`
+| `HealthSyncService` — wraps the `health` package
+
+| `lib/features/health_sync/presentation/providers/health_sync_settings_provider.dart`
+| `HealthSyncSettings` model and `HealthSyncSettingsNotifier`
+
+| `lib/features/health_sync/presentation/providers/health_weight_import_provider.dart`
+| Weight import from health store
+|===
+
+== Related Features
+
+* xref:features/body-metrics.adoc[Body Metrics] — source of weight and body fat writes
+* xref:features/heart-rate.adoc[Heart Rate Monitoring] — source of BPM sample writes
+* xref:features/workout.adoc[Workout Logging] — source of workout session writes
+
+[NOTE]
+====
+Looking for the user-facing guide? See xref:ROOT:guide/health-sync.adoc[Health sync].
+====

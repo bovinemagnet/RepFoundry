@@ -1,75 +1,50 @@
-= RepFoundry Documentation
+= RepFoundry
 Paul Snow
-:description: Overview of the RepFoundry Flutter workout tracking application
-:keywords: repfoundry, flutter, workout, tracking
+0.0.0
+:description: RepFoundry is an offline-first workout tracker for the gym floor. Start here to install the app and log your first workout.
 
-RepFoundry is a cross-platform Flutter/Dart workout tracking application targeting iOS 15+ and Android 10+.
-It is built from a single codebase and follows clean architecture with feature-first modularisation, Riverpod for state management, and an offline-first design with SQLite persistence via Drift.
-The architecture prioritises fast startup, testability, and full offline operation — all data is stored locally so the app works reliably in gym environments with poor connectivity.
+RepFoundry is a workout tracker built for the gym floor. It works fully offline, so a patchy signal in the basement of your gym is never a problem, and there is no account to create or sign into before you can start logging a set.
 
-== Key Features
+== Who this is for
 
-The following capabilities are available or planned in RepFoundry:
+RepFoundry serves two kinds of user:
 
-* *Workout logging* — log sets, reps, weight, and RPE with ghost-set auto-fill from the previous session
-* *Cardio tracking* — track duration, distance, incline, and live heart rate during cardio sessions
-* *Heart rate monitoring* — real-time BLE heart rate streaming with zone charts, session stats, and time-in-zone analysis
-* *Workout templates* — create and reuse workout blueprints
-* *Analytics* — estimated one-rep max, personal records, volume trends, and progress charts
-* *Programme builder* — structured training programmes with progression rules (planned)
-* *Health sync* — integration with platform health APIs (planned)
-* *Body metrics* — track weight and other body measurements over time (planned)
-* *Notifications* — rest timer alerts and workout reminders (partially implemented via in-app haptics and audio)
+Training on your own::
+Log workouts, track cardio sessions, watch your heart rate live during a session, and see your progress build up over weeks and months.
 
-== Technology Stack
+Coaching others::
+A personal trainer can manage multiple clients from the same app — see xref:guide/clients.adoc[] — following their programmes and reviewing their progress alongside their own training.
 
-[cols="1,2,3",options="header"]
-|===
-| Layer | Technology | Purpose
+== What to read next
 
-| Framework
-| Flutter 3.x / Dart 3.x
-| Cross-platform UI and application framework
+If you have not installed RepFoundry yet, start with whichever platform you carry:
 
-| State Management
-| Riverpod 2.x
-| Reactive state management with built-in dependency injection
+* xref:install-android.adoc[]
+* xref:install-ios.adoc[]
 
-| Local Database
-| Drift 2.x (SQLite)
-| Offline-first persistence with type-safe queries
+Once it is installed, xref:first-workout.adoc[] walks through starting a session, adding an exercise, logging your first set, and finishing up.
 
-| Navigation
-| GoRouter
-| Declarative routing with deep link support
+Two more pages are worth knowing about early:
 
-| Charts
-| fl_chart
-| High-performance charting for progress visualisation
+* xref:permissions.adoc[] explains what RepFoundry asks for on your phone and why.
+* xref:platform-differences.adoc[] covers where iOS and Android behave differently, including cloud sync and health data.
 
-| Audio
-| audioplayers 6.x
-| Cross-platform audio playback for rest timer alerts
+== Using RepFoundry
 
-| BLE
-| flutter_blue_plus
-| Bluetooth Low Energy scanning for heart rate monitors
+Once you are past the basics, these pages cover each feature in full:
 
-| Location
-| geolocator
-| GPS position stream for outdoor cardio distance tracking
-|===
+Core training::
+xref:guide/workout.adoc[], xref:guide/cardio.adoc[], xref:guide/heart-rate.adoc[], xref:guide/trainer.adoc[], xref:guide/stretching.adoc[], xref:guide/exercises.adoc[], xref:guide/templates.adoc[], xref:guide/programmes.adoc[]
 
-== Target Platforms
+Progress::
+xref:guide/history.adoc[], xref:guide/analytics.adoc[], xref:guide/body-metrics.adoc[]
 
-* *iOS 15+* — iPhone and iPad
-* *Android 10+* — Android namespace `com.repfoundry.app`, three build flavours: `dev`, `staging`, `prod`
+Syncing and data::
+xref:guide/sync.adoc[], xref:guide/health-sync.adoc[], xref:guide/notifications.adoc[], xref:guide/settings.adoc[]
 
-== Documentation Sections
+For trainers::
+xref:guide/clients.adoc[]
 
-* xref:getting-started.adoc[Getting Started] — prerequisites, build commands, and project layout for developers
-* xref:architecture.adoc[Architecture] — clean architecture overview, layer responsibilities, and design decisions
-* xref:database.adoc[Database] — Drift/SQLite schema, design decisions, and migration strategy
-* xref:state-management.adoc[State Management] — Riverpod provider hierarchy and key state patterns
-* xref:testing.adoc[Testing] — test structure, tooling, and coverage targets
-* xref:localisation.adoc[Localisation] — ARB workflow, generated class usage, and adding new strings
+== Looking for the developer documentation?
+
+If you are after the architecture, the codebase, or how to build RepFoundry from source, you want the developer documentation instead: xref:dev:index.adoc[].

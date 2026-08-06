@@ -1,0 +1,235 @@
+= Responsive Desktop Layouts
+Paul Snow
+:description: How RepFoundry adapts its navigation shell and screen layouts for tablet and desktop widths using a mobile-first breakpoint strategy
+:keywords: responsive, desktop, breakpoints, nav rail, two-pane, adaptive layout, master-detail
+:page-aliases: ROOT:responsive-desktop.adoc
+
+RepFoundry is a mobile-first application.
+Above defined breakpoints, the navigation shell switches to a persistent side-rail and selected screens reflow into denser two-pane *power layouts* that make productive use of the extra width — for reviewing history, analysing training trends, and editing templates.
+
+The guiding principle is *same app, more context*: the Kinetic Green theme tokens, type scale, and chart helpers remain identical across all widths.
+Only the layout changes between breakpoints, and every workflow stays round-trippable with the mobile presentation.
+
+== Breakpoints
+
+Breakpoints are defined in `lib/core/responsive/breakpoints.dart` as constants on the `Breakpoints` class.
+The `ResponsiveContext` extension on `BuildContext` exposes convenience getters so screens never need to write `MediaQuery.sizeOf(context).width` comparisons by hand.
+
+[cols="1,1,2,2",options="header"]
+|===
+| Name | Width | Navigation | Layout behaviour
+
+| Mobile
+| < 600 px
+| Glass bottom nav bar (five core tabs only)
+| Single-pane phone layouts; unchanged.
+
+| Tablet
+| 600 – 1 023 px
+| Persistent labelled side-rail (252 px)
+| Two-pane layouts where they fit; `context.hasNavRail` is `true`.
+
+| Desktop
+| ≥ 1 024 px
+| Full labelled side-rail (252 px)
+| Bespoke two-pane power layouts; `context.isWide` is `true`.
+|===
+
+.Breakpoint constants and context getters
+[cols="2,3",options="header"]
+|===
+| Symbol | Value / meaning
+
+| `Breakpoints.tablet`
+| `600`
+
+| `Breakpoints.desktop`
+| `1024`
+
+| `Breakpoints.navRailWidth`
+| `252`
+
+| `context.isMobile`
+| `width < 600`
+
+| `context.isTablet`
+| `600 <= width < 1024`
+
+| `context.isDesktop`
+| `width >= 1024`
+
+| `context.hasNavRail`
+| `width >= 600` — rail is visible
+
+| `context.isWide`
+| `width >= 1024` — power layouts active
+|===
+
+== Layout override setting
+
+By default the layout tier is chosen automatically from the window width (`LayoutMode.auto`).
+A manual override is available at *Settings -> Appearance -> Layout*: a compact segmented control offering three options.
+
+[cols="1,3",options="header"]
+|===
+| Option | Behaviour
+
+| *Auto*
+| Follows window width: side-rail from 600 px, two-pane power layouts from 1 024 px.
+  This is the default.
+
+| *Mobile*
+| Forces the mobile experience (bottom nav, single-pane) regardless of window width.
+  Content is presented as a centred phone-width column rather than stretched.
+
+| *Desktop*
+| Forces the desktop experience (side-rail + two-pane power layouts) from tablet width (≥ 600 px) upward.
+|===
+
+=== Phone-width guard
+
+The override applies *only at tablet and desktop widths (≥ 600 px)*.
+On phone widths (< 600 px) the app always uses the mobile layout and any saved override is silently ignored.
+This ensures the desktop chrome can never be forced onto a screen too narrow to accommodate it.
+
+=== Implementation
+
+[cols="2,3",options="header"]
+|===
+| File | Purpose
+
+| `lib/core/responsive/layout_mode.dart`
+| Defines `enum LayoutMode { auto, mobile, desktop }` and the `LayoutModeScope` `InheritedWidget` that exposes the active mode to the widget tree.
+
+| `lib/features/settings/presentation/providers/layout_mode_provider.dart`
+| `layoutModeProvider` — SharedPreferences-backed Riverpod provider (key `layout_mode`, default `auto`).
+
+| `lib/app/app.dart`
+| Injects `LayoutModeScope` near the app root via the `MaterialApp.router` `builder` callback so every descendant can read the active mode.
+|===
+
+The `ResponsiveContext` getters `hasNavRail` and `isWide` consult `LayoutModeScope.of(context)` and apply the phone-width guard before returning a value.
+Because `LayoutModeScope` is an `InheritedWidget`, switching the setting triggers a rebuild of all dependants — the app reflows live without a restart.
+
+=== Robustness under forced desktop on narrow tablets
+
+When *Desktop* is forced on a tablet that is narrower than a typical desktop viewport, the two-pane layouts reflow rather than overflow:
+
+* KPI strips reflow from 4 to 2 to 1 columns via the shared `KpiStrip` widget (`lib/core/widgets/kpi_strip.dart`).
+* Master and library panes clamp their width to a fraction of the available pane width, preventing either pane from squeezing its content to zero.
+
+== Adaptive Navigation Shell
+
+`ScaffoldWithNavBar` (`lib/core/widgets/scaffold_with_nav_bar.dart`) is the `ShellRoute` builder registered in `lib/app/router.dart`.
+It is responsible for switching between the bottom nav bar and the side-rail.
+
+=== Mobile (< 600 px)
+
+A glass-effect bottom navigation bar is shown for the five core tabs: Workout, History, Cardio, Heart Rate, and Settings.
+Deeper routes that the shell also wraps (Analytics, Templates, Programmes) retain their full-screen presentation with no bottom nav visible.
+
+=== Tablet and desktop (≥ 600 px)
+
+A persistent `DesktopNavRail` (`lib/core/widgets/desktop_nav_rail.dart`, 252 px wide) appears on the left.
+Destinations are organised by intent:
+
+* *Train* — Workout, Cardio
+* *Review* — History, Analytics, Heart Rate
+* *Plan* — Templates, Programmes
+* *Settings* — pinned at the bottom of the rail
+
+The active destination uses an accent-soft background fill, accent-coloured text, and a filled icon variant.
+
+All eight primary destinations, plus selected detail and edit routes (for example `/templates/:id`), are nested inside the `ShellRoute`.
+This keeps the rail visible during template editing and other in-context workflows.
+
+=== Readable maximum width
+
+Screens that do not implement a bespoke two-pane layout are centred at a maximum content width of 980 px inside the rail shell rather than being stretched across the full remaining pane.
+This prevents readability problems on ultra-wide viewports for screens that have not yet adopted a power layout.
+
+== Two-Pane Power Layout Patterns
+
+Three screens implement bespoke desktop layouts.
+Each follows one of two compositional patterns:
+
+[cols="1,2,2,3",options="header"]
+|===
+| Pattern | Screen | Widget file | Description
+
+| Master–detail
+| History
+| `lib/features/history/presentation/widgets/history_desktop_view.dart`
+| Fixed-width session list on the left (~420 px) with the selected workout's full breakdown on the right: a KPI strip, per-set volume chart, and per-exercise set breakdown. Selection is held in widget state — no route navigation — so the rail and list remain stable.
+
+| Dashboard grid
+| Analytics
+| `lib/features/analytics/presentation/widgets/analytics_desktop_view.dart`
+| KPI strip across the top followed by all charts visible simultaneously in a two-column grid: weekly volume (full width); muscle balance and training load (side by side); PR timeline (full width). No drill-down step is required.
+
+| Library + canvas
+| Templates
+| `lib/features/templates/presentation/widgets/templates_desktop_view.dart`
+| Fixed-width template library on the left (~320 px) feeding a selected-template exercise canvas on the right. The canvas hosts the full inline editor for exercise additions, set targets, and progressions.
+|===
+
+=== Shared desktop building blocks
+
+`DesktopTopBar` (`lib/core/widgets/desktop_top_bar.dart`) provides a consistent eyebrow label, title/subtitle row, and contextual action slot.
+It replaces the Material `AppBar` in power layouts.
+
+Reusable Kinetic atoms are defined in `lib/core/widgets/kinetic.dart`:
+
+* `KineticStatTile` — compact stat card (label + value + optional unit)
+* `KineticPill` — small badge/chip component
+* `KineticSectionLabel` — section divider with label
+
+Exercise id-to-name resolution in detail panes uses `exerciseLookupProvider` from `lib/core/providers.dart`.
+
+NOTE: Prefer operational tables, inline-editable cells, and dense charts over decorative card arrangements.
+Desktop layouts reuse the same tokens and chart helpers as mobile; only the spatial organisation changes.
+
+== Adding a Desktop Layout to a Screen
+
+Follow this pattern for any screen that benefits from a bespoke wide layout:
+
+. Create a desktop view widget under the feature's `presentation/widgets/` directory (for example `my_feature_desktop_view.dart`).
+. In the screen's `build` method, branch on `context.isWide` and return the desktop widget when `true`; fall through to the existing mobile layout otherwise.
+. Use `DesktopTopBar` instead of an `AppBar`, and `KineticStatTile` / `KineticSectionLabel` for the stat strip and section dividers.
+
+[source,dart]
+----
+// lib/features/my_feature/presentation/screens/my_feature_screen.dart
+
+import 'package:repfoundry/core/responsive/breakpoints.dart';
+
+@override
+Widget build(BuildContext context) {
+  if (context.isWide) {
+    return const MyFeatureDesktopView(); // <1>
+  }
+
+  // Existing mobile layout — untouched
+  return Scaffold(
+    appBar: AppBar(title: const Text('My Feature')),
+    body: const MyFeatureMobileBody(),
+  );
+}
+----
+<1> `context.isWide` is the `ResponsiveContext` getter — no manual `MediaQuery` call needed.
+
+The mobile layout is never altered; the desktop view is an additive opt-in.
+
+== Testing
+
+Layout tests verify the shell adapts correctly by pumping the widget tree at specific viewport widths:
+
+* *390 px wide* — expect the bottom navigation bar to be present and `DesktopNavRail` to be absent.
+* *1 280 px wide* — expect `DesktopNavRail` to be present and the bottom navigation bar to be absent.
+
+Relevant test files:
+
+* `test/core/widgets/adaptive_nav_shell_test.dart`
+* `test/features/history/presentation/screens/history_desktop_view_test.dart`
+
+Follow the same pump-at-width pattern when testing any new desktop view widget.

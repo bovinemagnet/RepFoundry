@@ -3,3 +3,4 @@ title: RepFoundry
 version: ~
 nav:
   - modules/ROOT/nav.adoc
+  - modules/dev/nav.adoc

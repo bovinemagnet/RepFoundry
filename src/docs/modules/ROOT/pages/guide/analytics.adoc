@@ -1,0 +1,92 @@
+= Analytics
+Paul Snow
+0.0.0
+:description: How to read the analytics charts in RepFoundry — weekly volume, muscle balance, personal record timeline, and training load.
+
+The *Analytics* screen turns your logged workouts into charts so you can see
+trends that are hard to spot set by set: whether your training volume is
+rising or falling, whether one muscle group is being neglected, how your
+personal records have progressed, and how hard each week has felt.
+
+Analytics needs a few completed workouts before it has anything to show. On a
+new profile, or one with very little history, the screen shows a short
+message instead of the charts.
+
+NOTE: Warm-up sets are left out of every chart and every total on this page.
+Only working sets count.
+
+== Weekly volume trend
+
+This chart plots your total training volume — weight lifted multiplied by
+reps completed — for each calendar week, as a line. A rising line means
+you're doing more overall work week to week; a falling line means less.
+
+Tap or hover a point on the line to see the exact volume for that week and
+the percentage change compared with the week before. The very first week
+shown has no prior week to compare against, so no percentage change is
+displayed for it.
+
+== Muscle group balance
+
+This chart shows what share of your total training volume went to each
+muscle group, so you can spot imbalances — for example, a lot of volume on
+push exercises and very little on pulling or legs.
+
+Because the chart needs at least three muscle groups with recorded volume to
+draw a meaningful shape, it will ask you to train a few more muscle groups
+before it appears. Cardio activity is tracked separately and is not included
+in this breakdown.
+
+== Personal record timeline
+
+This is a scrollable row of cards, one per personal record, with the most
+recent record first. Each card shows:
+
+* The exercise
+* The kind of record — estimated one-rep max, heaviest weight, most reps, or
+  most volume in a single set
+* The value achieved
+* The date it was achieved
+
+Estimated one-rep max is not a tested maximum — it's a projection calculated
+from a set's weight and reps using the Epley formula:
+
+[source,text]
+----
+estimated 1RM = weight × (1 + reps / 30)
+----
+
+Because it's an estimate, treat it as a useful trend line rather than a
+number to load onto the bar. For the full list of personal records, see
+xref:guide/history.adoc[].
+
+== Weekly training load
+
+Training load combines how much you trained with how hard it felt. Each
+week's load is the number of working sets performed multiplied by the
+average RPE (rate of perceived exertion) you logged that week. Weeks where
+no sets have an RPE logged show a load of zero rather than being left out of
+the chart.
+
+Use this alongside the volume trend: rising volume with steady or falling
+load can suggest your sessions are feeling easier for the same amount of
+work, while rising load can be an early signal to plan a lighter week.
+
+== Where to find it
+
+On a phone, Analytics is not one of the five bottom-navigation tabs. Open
+xref:guide/history.adoc[History], switch to the *Progress* tab, and tap the
+*View Advanced Analytics* tile.
+
+On a tablet or desktop-sized window, Analytics is also available directly as
+its own navigation-rail destination.
+
+On larger screens, all four charts and a summary strip of key numbers —
+total volume, workout count, average session volume, and PR count — are
+shown together on one dashboard. On phones, each chart appears in its own
+card as you scroll down the screen.
+
+[NOTE]
+====
+Looking for implementation detail? See xref:dev:features/analytics.adoc[Analytics internals].
+====
