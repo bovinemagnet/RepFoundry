@@ -1,0 +1,4 @@
+{
+  "description": "Build tasks for the RepFoundry documentation UI",
+  "flags.tasksDepth": 1
+}

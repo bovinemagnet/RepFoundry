@@ -1,0 +1,76 @@
+antoraVersion: '3.1.0'
+site:
+  url: http://localhost:5252
+  title: RepFoundry Documentation
+  homeUrl: &home_url /repfoundry/index.html
+  components:
+  - &component
+    name: repfoundry
+    title: &component_title RepFoundry
+    url: /repfoundry/index.html
+    versions:
+    - &component_version
+      title: *component_title
+      url: /repfoundry/index.html
+      version: 'HEAD'
+      displayVersion: 'HEAD'
+    latestVersion: *component_version
+page:
+  url: *home_url
+  home: true
+  title: RepFoundry Documentation
+  component: *component
+  componentVersion: *component_version
+  version: 'HEAD'
+  displayVersion: 'HEAD'
+  module: ROOT
+  relativeSrcPath: index.adoc
+  editUrl: https://github.com/bovinemagnet/RepFoundry/edit/main/src/docs/modules/ROOT/pages/index.adoc
+  origin:
+    private: false
+  next:
+    content: Getting Started
+    url: '#'
+    urlType: 'internal'
+  breadcrumbs:
+  - content: RepFoundry Documentation
+    url: /repfoundry/index.html
+    urlType: internal
+  navigation:
+  - root: true
+    items:
+    - content: Overview
+      url: /repfoundry/index.html
+      urlType: internal
+    - content: Getting Started
+      url: '#'
+      urlType: fragment
+    - content: Architecture
+      url: '#'
+      urlType: fragment
+    - content: Database
+      url: '#'
+      urlType: fragment
+    - content: State Management
+      url: '#'
+      urlType: fragment
+    - content: Features
+      items:
+      - content: Workout Logging
+        url: '#'
+        urlType: fragment
+      - content: Cardio Tracking
+        url: '#'
+        urlType: fragment
+      - content: Heart Rate Monitoring
+        url: '#'
+        urlType: fragment
+      - content: Advanced Analytics
+        url: '#'
+        urlType: fragment
+    - content: Testing
+      url: '#'
+      urlType: fragment
+    - content: Localisation
+      url: '#'
+      urlType: fragment

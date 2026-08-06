@@ -5,7 +5,26 @@ plugins {
 antora {
     playbook = 'antora-playbook.yml'
     options = ['--fetch']
-    environment = [
-        'SITE_URL': 'https://repfoundry.dev'
-    ]
+}
+
+// The playbook's ui.bundle.url points at ui/build/ui-bundle.zip, which is a
+// build artifact (ui/.gitignore excludes build/). Pack it before generating
+// the site so `gradle21w antora` works from a clean checkout.
+//
+// node_modules is installed only when absent rather than on every run: the
+// input tracking below re-runs this task whenever the UI sources change, and
+// a full `npm ci` on each CSS tweak would make local iteration painful.
+tasks.register('uiBundle', Exec) {
+    group = 'documentation'
+    description = 'Packs the RepFoundry documentation UI into ui/build/ui-bundle.zip'
+    workingDir = file('ui')
+    commandLine 'sh', '-c', '[ -d node_modules ] || npm ci; npx gulp bundle'
+    inputs.dir('ui/src')
+    inputs.dir('ui/gulp.d')
+    inputs.files('ui/package.json', 'ui/package-lock.json', 'ui/gulpfile.js')
+    outputs.file('ui/build/ui-bundle.zip')
+}
+
+tasks.named('antora') {
+    dependsOn 'uiBundle'
 }
