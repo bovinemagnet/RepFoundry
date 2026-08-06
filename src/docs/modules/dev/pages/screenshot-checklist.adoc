@@ -120,11 +120,11 @@ Filenames below are plain text — this page does not embed them with `image::`,
 | Filename | Screen and state to capture | Used by
 
 | `coach-settings.png`
-| The *Settings → Virtual Trainer* screen, showing the persona picker (Steady/Hype/Sergeant), speech rate control, and the individual on/off toggles.
+| The *Settings → Virtual Trainer* screen, showing the persona picker (Steady/Hype/Sergeant), speech rate control, and the individual on/off toggles. Coach mode is gated behind the `virtualTrainer` entitlement — in a normal build no Coach section appears in Settings at all, and this screen cannot be reached.
 | xref:ROOT:guide/trainer.adoc[]
 
 | `coach-safety-notice.png`
-| The first-time coach safety notice dialog.
+| The first-time coach safety notice dialog. Same gating as `coach-settings.png` above — not reachable in a normal build.
 | xref:ROOT:guide/trainer.adoc[]
 |===
 
@@ -135,11 +135,11 @@ Filenames below are plain text — this page does not embed them with `image::`,
 | Filename | Screen and state to capture | Used by
 
 | `client-roster.png`
-| The client roster, with several clients shown by name and colour swatch, including the "You" entry.
+| The client roster, with several clients shown by name and colour swatch, including the "You" entry. Only reachable at a window width of 600dp or wider — the Clients destination is not one of the five phone-sized bottom-nav tabs, and only appears in the tablet/desktop navigation rail. Capture from an emulator or window sized to at least 600dp wide.
 | xref:ROOT:guide/clients.adoc[]
 
 | `client-profile.png`
-| A client's profile page, showing assigned plans and their health profile.
+| A client's profile page, showing assigned plans and their health profile. Same width requirement as `client-roster.png` above — not reachable on a phone-sized screen.
 | xref:ROOT:guide/clients.adoc[]
 
 | `active-client-switcher.png`
