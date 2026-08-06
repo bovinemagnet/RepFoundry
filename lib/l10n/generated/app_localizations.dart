@@ -4131,7 +4131,7 @@ abstract class S {
   /// No description provided for @coachQuote2.
   ///
   /// In en, this message translates to:
-  /// **'If it is not right, do not do it. If it is not true, do not say it. — Marcus Aurelius'**
+  /// **'If it is not right, do not do it: if it is not true, do not say it. — Marcus Aurelius'**
   String get coachQuote2;
 
   /// No description provided for @coachQuote3.
@@ -4170,23 +4170,11 @@ abstract class S {
   /// **'I neither know nor think that I know. — Socrates'**
   String get coachQuote9;
 
-  /// No description provided for @coachQuote10.
-  ///
-  /// In en, this message translates to:
-  /// **'Well begun is half done. — Aristotle'**
-  String get coachQuote10;
-
   /// No description provided for @coachQuote12.
   ///
   /// In en, this message translates to:
   /// **'Nothing great was ever achieved without enthusiasm. — Ralph Waldo Emerson'**
   String get coachQuote12;
-
-  /// No description provided for @coachQuote13.
-  ///
-  /// In en, this message translates to:
-  /// **'Adopt the pace of Nature. Her secret is patience. — Ralph Waldo Emerson'**
-  String get coachQuote13;
 
   /// No description provided for @coachQuote14.
   ///
@@ -4199,12 +4187,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'The question is not what you look at, but what you see. — Henry David Thoreau'**
   String get coachQuote15;
-
-  /// No description provided for @coachQuote16.
-  ///
-  /// In en, this message translates to:
-  /// **'Energy and persistence conquer all things. — Benjamin Franklin'**
-  String get coachQuote16;
 
   /// No description provided for @coachQuote17.
   ///
@@ -4221,14 +4203,8 @@ abstract class S {
   /// No description provided for @coachQuote19.
   ///
   /// In en, this message translates to:
-  /// **'The credit belongs to the man who is actually in the arena. — Theodore Roosevelt'**
+  /// **'The credit belongs to the man who is actually in the arena, whose face is marred by dust and sweat and blood; who strives valiantly. — Theodore Roosevelt'**
   String get coachQuote19;
-
-  /// No description provided for @coachQuote20.
-  ///
-  /// In en, this message translates to:
-  /// **'Do what you can, with what you\'ve got, where you are. — Theodore Roosevelt'**
-  String get coachQuote20;
 
   /// No description provided for @coachQuote21.
   ///

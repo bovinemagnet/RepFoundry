@@ -12,8 +12,10 @@ import '../domain/trainer_event.dart';
 /// Marcus Aurelius' own (long-expired) name. Check both death dates before
 /// adding an entry, and drop it rather than guess if either is unclear.
 ///
-/// The per-quote sourcing table (author, work, translation/edition relied on)
-/// is not yet in this repo — see issue #104.
+/// The per-quote sourcing evidence — author, work, edition, translator, and
+/// both death dates — is in `quote_sources.dart`, one row per key here.
+/// Tests enforce the correspondence both ways: a quote added here without a
+/// row there fails the suite.
 ///
 /// Spoken at workout start and after rests of
 /// `CoachingEngine.longRestThreshold` or longer, merged into the cue for that
@@ -34,16 +36,12 @@ const List<String> _quoteBank = [
   'coachQuote7',
   'coachQuote8',
   'coachQuote9',
-  'coachQuote10',
   'coachQuote12',
-  'coachQuote13',
   'coachQuote14',
   'coachQuote15',
-  'coachQuote16',
   'coachQuote17',
   'coachQuote18',
   'coachQuote19',
-  'coachQuote20',
   'coachQuote21',
   'coachQuote22',
   'coachQuote23',

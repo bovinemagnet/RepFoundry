@@ -171,10 +171,33 @@ void main() {
     // 70 years — publication date alone is never sufficient. Fewer,
     // individually verified entries beat a rounder number with an unverified
     // one in it.
+    //
+    // 17 after a fifth pass (#104) checked every survivor character-for-
+    // character against a named pre-1929 edition instead of trusting the
+    // death-date sweep alone. That sweep had only ever asked "is this person
+    // dead long enough?" — it never asked "did this person actually write
+    // this sentence?" Two entries (Emerson's "Adopt the pace of Nature. Her
+    // secret is patience." and Franklin's "Energy and persistence conquer all
+    // things.") turned up in no primary text at all, carried only by
+    // quotation aggregators — the same mechanism that put the Semisonic
+    // lyric under Seneca's name in round one, just without a living
+    // copyright holder to trip the death-date check. A third (Aristotle's
+    // "Well begun is half done.") is an English proverb absent from both
+    // pre-1929 Aristotle translations checked — Chase's *Nicomachean
+    // Ethics* and Ellis's *Politics* — and a fourth (Roosevelt's "Do what
+    // you can, with what you've got, where you are.") was Roosevelt quoting
+    // someone else, whose death year no source could establish. The rule
+    // this pass converged on: wording that matches no identified edition
+    // cannot be shown *not* to be someone else's in-copyright words. In a
+    // translated author that is the Hays shape — a modern rendering under a
+    // public-domain name. In an English original, where no translator
+    // exists to check, it is the Semisonic shape — a modern text under a
+    // long-dead author's name. Either way nothing here proves the wording is
+    // old rather than merely untraceable.
     for (final persona in _allPersonas) {
       expect(
         persona.phrasesFor(TrainerEventKind.quote).length,
-        greaterThanOrEqualTo(20),
+        greaterThanOrEqualTo(17),
         reason: '${persona.id} persona has too thin a quote bank',
       );
     }

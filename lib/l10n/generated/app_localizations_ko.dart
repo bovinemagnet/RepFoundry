@@ -2268,7 +2268,7 @@ class SKo extends S {
 
   @override
   String get coachQuote2 =>
-      'If it is not right, do not do it. If it is not true, do not say it. — Marcus Aurelius';
+      'If it is not right, do not do it: if it is not true, do not say it. — Marcus Aurelius';
 
   @override
   String get coachQuote3 =>
@@ -2294,15 +2294,8 @@ class SKo extends S {
   String get coachQuote9 => 'I neither know nor think that I know. — Socrates';
 
   @override
-  String get coachQuote10 => 'Well begun is half done. — Aristotle';
-
-  @override
   String get coachQuote12 =>
       'Nothing great was ever achieved without enthusiasm. — Ralph Waldo Emerson';
-
-  @override
-  String get coachQuote13 =>
-      'Adopt the pace of Nature. Her secret is patience. — Ralph Waldo Emerson';
 
   @override
   String get coachQuote14 =>
@@ -2311,10 +2304,6 @@ class SKo extends S {
   @override
   String get coachQuote15 =>
       'The question is not what you look at, but what you see. — Henry David Thoreau';
-
-  @override
-  String get coachQuote16 =>
-      'Energy and persistence conquer all things. — Benjamin Franklin';
 
   @override
   String get coachQuote17 =>
@@ -2326,11 +2315,7 @@ class SKo extends S {
 
   @override
   String get coachQuote19 =>
-      'The credit belongs to the man who is actually in the arena. — Theodore Roosevelt';
-
-  @override
-  String get coachQuote20 =>
-      'Do what you can, with what you\'ve got, where you are. — Theodore Roosevelt';
+      'The credit belongs to the man who is actually in the arena, whose face is marred by dust and sweat and blood; who strives valiantly. — Theodore Roosevelt';
 
   @override
   String get coachQuote21 => 'Action is eloquence. — William Shakespeare';
