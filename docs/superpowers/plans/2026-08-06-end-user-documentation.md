@@ -16,7 +16,7 @@
 - **Sentence-case headings** — `= Page title`, `== Section title`.
 - **Author line** `Paul Snow` and version `0.0.0` on every new page, matching `features/heart-rate.adoc`.
 - **No `image::` directives.** No screenshots exist yet, and the CI build runs `--log-failure-level=warn`, so a missing image fails the build.
-- **Every new page must appear in its module's `nav.adoc`.** An unlisted page is unreachable.
+- **Every new page must appear in its module's `nav.adoc` by the end of Task 5.** An unlisted page is unreachable. Tasks 2, 3 and 4 create ROOT pages *before* the end-user nav is written in Task 5; that is deliberate sequencing, not a violation. Task 5 Step 3 proves no page was missed.
 - **Links between pages use `xref:`**, never relative file paths. Cross-module: `xref:dev:architecture.adoc[]`.
 - **Source blocks must declare a language**: `[source,bash]`.
 - **Validation command:** `gradle21w antora`. Not `npx antora`, not `./gradlew`.
