@@ -1,5 +1,9 @@
 site:
   title: RepFoundry Documentation
+  # Project-site URL on GitHub Pages. The /RepFoundry path segment matters —
+  # Antora uses it as the site's base path when generating the 404 page and
+  # sitemap, which would otherwise point at the domain root.
+  url: https://bovinemagnet.github.io/RepFoundry
   start_page: repfoundry::index.adoc
 
 content:

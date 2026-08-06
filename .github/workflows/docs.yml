@@ -1,0 +1,64 @@
+name: Documentation
+
+# Builds the Antora site from src/docs and publishes it to GitHub Pages.
+#
+# Pull requests build the site but do not deploy — --log-failure-level=warn
+# turns a broken xref or missing include into a failed check, so documentation
+# breakage is caught on the PR rather than after it lands on main.
+#
+# Repo setting required once: Settings → Pages → Build and deployment →
+# Source = "GitHub Actions".
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# Serialise deployments. Queued runs wait rather than cancel, so a rapid
+# sequence of pushes still ends with the newest commit published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Antora site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Mirrors the local `gradle21w antora` build (org.antora Gradle plugin,
+      # Antora 3.1) but invokes Antora directly so the docs job needs no JVM.
+      # Keep the pinned major in step with the plugin's bundled version.
+      - name: Build site
+        run: npx --yes antora@3.1 --fetch --log-failure-level=warn antora-playbook.yml
+
+      - name: Upload Pages artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
