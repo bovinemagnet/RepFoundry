@@ -1,0 +1,55 @@
+= Coach mode
+Paul Snow
+0.0.0
+:description: How RepFoundry's spoken coach works during a workout — the three coaching voices, when it speaks, and the safety behaviour built into it.
+
+Coach mode is a spoken voice that talks you through a workout: it opens the session, counts down your rests, calls out a completed set or a personal record, and closes things out at the end. It speaks through your device's text-to-speech voice, so no internet connection or extra download is needed.
+
+IMPORTANT: The coach is a companion to help you stay on track — it is not a personal trainer and not medical advice. It does not know your form, your injuries, or your limits. Stop exercising and seek medical help if you feel pain, dizziness, or chest discomfort.
+
+== The three coaching voices
+
+Coach mode offers three personas. They say the same kinds of things — a set logged, a rest finished, a personal record — in different tones:
+
+Steady:: Calm and measured. For example, on a logged set: "That's logged. Nice control."
+Hype:: Energetic and celebratory. The same moment: "Yes! That's another one in the books."
+Sergeant:: Firm and to the point. The same moment: "Set logged. Next."
+
+Whichever voice you pick, the coach only ever praises completing a set and staying consistent — none of the three personas will ever push you to add more weight or work through pain.
+
+== When the coach speaks
+
+During an active workout, the coach speaks at these moments:
+
+* At the start of the workout.
+* After a logged set — roughly every second or third set, so it doesn't talk over every single one. This spacing is redrawn each time so it doesn't settle into a predictable rhythm.
+* Immediately for a personal record, regardless of that spacing.
+* Counting down the last few seconds of a rest, and again when the rest ends.
+* When the workout finishes, with your total set count.
+* If you have a heart rate monitor connected, when you move into a new training zone, and if your heart rate rises above or returns below your maximum — see xref:guide/heart-rate.adoc[] for how zones and your maximum heart rate are worked out.
+
+At workout start, and after a rest of two minutes or longer, the coach can also add a short inspirational quote — for example: "No longer talk at all about the kind of man that a good man ought to be, but be such. — Marcus Aurelius". Every quote in the bank is drawn from a writer long enough in the public domain that the words are free to share.
+
+Each of these — rest countdowns, encouragement, quotes, heart rate zone callouts, and heart rate safety warnings — has its own switch, so you can keep the parts you want and turn off the rest without losing the whole coach.
+
+== Encouragement pauses above your maximum heart rate
+
+If a heart rate monitor is connected and your heart rate rises above the maximum figure in your health profile — most reliably, a clinician-provided cap — the coach stops speaking encouragement: no cheering a completed set, no personal-record announcement, no inspirational quote. In its place you get a calm, repeated warning telling you your heart rate is above your maximum and asking you to ease off, spaced at least thirty seconds apart so it doesn't talk over itself. Once your heart rate drops back under your maximum, the coach confirms it and encouragement resumes.
+
+This is deliberate: a user pushing past a medically set limit is not the moment for the coach to be cheering them on.
+
+== Why the rest chime doesn't cut the coach off
+
+RepFoundry's rest timer normally ends with a chime. When the coach is enabled and about to speak its own end-of-rest line — which it always does when rest countdowns are switched on, and also for a long rest that has earned a quote even with countdowns off — the chime stays silent instead of sounding alongside it. The two competing for the same moment would otherwise cut the coach off mid-sentence. If the coach isn't going to speak at that moment, the chime plays as normal.
+
+== Turning it on, off, and adjusting what it says
+
+Coach mode lives in *Settings → Virtual Trainer* — see xref:guide/settings.adoc[] for the rest of the settings screen. The first time you switch it on, a safety notice explains what the coach is (and isn't) and asks you to accept it before it will speak — you can revisit this notice at any time from *Review safety notice*, and *Withdraw consent* turns the coach off and clears your acceptance, so you'd need to accept the notice again before it can speak.
+
+From the same screen you can:
+
+* Choose your coaching voice — Steady, Hype, or Sergeant.
+* Adjust the speech rate, with a *Test voice* button to hear it before you commit.
+* Switch rest countdowns, encouragement, inspirational quotes, heart rate zone callouts, and heart rate safety warnings on or off individually.
+
+Turning off the main *Enable coach* switch silences the coach immediately, even mid-sentence — it doesn't wait for the current line to finish.

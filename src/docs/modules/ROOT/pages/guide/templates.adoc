@@ -1,0 +1,87 @@
+= Workout templates
+Paul Snow
+0.0.0
+:description: How to build, reuse, and manage workout templates in RepFoundry, and how templates differ from programmes.
+
+Open *Templates* from *Settings* to create and manage your templates.
+
+== What is a template?
+
+A template is a single reusable workout — a saved list of exercises, each
+with a target number of sets and a target rep count. It has no dates and no
+schedule attached to it; it is just a blueprint you can start a workout from
+whenever you like.
+
+[TIP]
+====
+A template is not the same as a xref:guide/programmes.adoc[programme]. A
+template is one reusable workout. A programme is a multi-week schedule that
+assigns templates to specific days and can automatically progress the
+weights over time. Build your templates first, then, if you want a
+structured schedule, assign them into a programme.
+====
+
+== Creating a template from scratch
+
+. Open *Settings* and tap *Templates*.
+. Tap the add button and give the template a name.
+. On the template's edit screen, tap *Add Exercise* and choose an exercise
+  from the picker (the same picker used when xref:guide/workout.adoc[logging
+  a workout]). Each exercise you add starts with a default target of 3 sets
+  and 10 reps.
+. Adjust the target sets and target reps for each exercise as needed, and
+  drag exercises by their handle to reorder them.
+. Tap *Save*.
+
+You can reopen a template at any time to keep editing it.
+
+== Creating a template from a finished workout
+
+Rather than building a template from scratch, you can turn a workout you
+have already completed into one. Open that workout from your history and
+use the *Save as Template* action, then give the new template a name.
+
+RepFoundry derives the template's exercises and targets from what you
+actually logged:
+
+* Exercises appear in the template in the order each one first appeared in
+  the workout.
+* An exercise's target sets is the number of working sets you logged for
+  it — warm-up sets are not counted. If every set you logged for that
+  exercise was a warm-up, all of them are counted instead.
+* An exercise's target reps is the most common rep count among those
+  counted sets. If two rep counts are tied, whichever one you logged first
+  wins the tie.
+
+You cannot save an empty workout as a template — RepFoundry asks you to log
+at least one set first. Once created, the new template behaves exactly like
+one built from scratch: you can rename it, edit its exercises and targets,
+or delete it.
+
+== Starting a workout from a template
+
+From the start of a workout, choose *Start from Template* and pick one from
+the list (see xref:first-workout.adoc[] for the other ways a workout can
+start). RepFoundry begins a new workout and adds every exercise from the
+template to it, ready for you to log.
+
+Target sets and reps are your plan for the session, not a hard limit —
+nothing stops you from logging more or fewer sets than the template
+suggests. As with adding any exercise, the weight, reps, and RPE fields are
+pre-filled with suggestions from your last session for that exercise, where
+one exists.
+
+== Editing and deleting templates
+
+From the templates list you can:
+
+* Tap a template to reopen it and edit its name, exercises, targets, or
+  exercise order.
+* Duplicate a template, which creates an independent copy you can then
+  change without affecting the original — useful for building a variant of
+  an existing template.
+* Delete a template. You are asked to confirm first, and deletion cannot be
+  undone.
+
+Deleting or editing a template does not change any workout you have already
+completed from it — past history stays exactly as logged.

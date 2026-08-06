@@ -1,0 +1,58 @@
+= Managing clients
+Paul Snow
+0.0.0
+:description: How personal trainers manage a client roster, per-client health profiles, plan assignments, and the active client switcher in RepFoundry.
+
+This page is for personal trainers who coach other people through RepFoundry. If you only use RepFoundry to train yourself, you can skip it — everything you log already goes against your own data, and nothing here changes that.
+
+== Where to find it
+
+Client management lives behind a *Clients* destination that only appears once your device or window is tablet-sized or larger. On a phone-sized screen there is currently no way to open the client roster or a client's profile page. This isn't a bug to work around — it's simply where the feature lives today.
+
+That said, switching *which* client you're currently working with is possible from a phone — see <<the-active-client-switcher>> below. It's only the roster and per-client profile screens that need the wider layout.
+
+== The client roster
+
+The roster lists every client you coach, each shown with a name and a colour swatch. The colour is chosen when the client is created and is used throughout the app — on the roster, and on the active client indicator described below — to help you tell clients apart at a glance.
+
+Tapping a client opens their profile page, where you assign plans and edit their health profile.
+
+== Adding a client
+
+From the roster, use *New client* to add someone. Give them a name and pick an accent colour from the offered palette. That's all a new client needs — you can add notes and everything else afterwards.
+
+== The self client
+
+Your own roster always contains one client you can't delete: a "You" entry, badged accordingly, representing your own training. If you used RepFoundry before client management existed, your existing workouts, cardio sessions, and body metrics were carried into this entry, so nothing you'd already logged is lost.
+
+Deleting a client removes them from the roster but keeps their logged data — it's hidden, not erased. The self client can't be deleted at all.
+
+== Assigning plans to a client
+
+From a client's profile page, use *Assign plan* to link them to a workout template or a programme from your library. This is a live link: if you later edit the template or programme itself, every client assigned to it sees the update. Unassigning a client from a plan removes that link without touching the plan itself or anything the client has already logged against it.
+
+== Per-client health profiles
+
+Each client has their own health profile — age, resting and measured maximum heart rate, a clinician-provided maximum heart rate, and the beta-blocker and heart-condition flags. You can open and edit any client's health profile from their profile page, regardless of who is currently your active client.
+
+This profile is what personalises that client's heart rate training zones and caution-mode behaviour. See xref:guide/heart-rate.adoc[] for how those figures are used to calculate zones, reliability, and caution mode.
+
+[[the-active-client-switcher]]
+== The active client switcher
+
+At any time, exactly one client is your *active* client. This matters because RepFoundry uses it to decide whose data you're working with:
+
+* Any workout you start, and every set you log in it, is recorded against the active client.
+* Any cardio session you record is recorded against the active client.
+* Any body metric entry (weight, body fat) you add is recorded against the active client.
+* Your workout history, streaks, and analytics (weekly volume, muscle balance, personal record timeline, training load) all show the active client's data only — not a combined view across everyone you coach.
+* The heart rate panel shows training zones calculated from the active client's health profile, and its caution mode reflects that client's flags.
+
+Getting this wrong means logging a session, a set, or a body metric entry against the wrong person, so RepFoundry keeps the active client visible wherever it matters:
+
+* On a tablet or desktop-sized window, a switcher chip sits in the navigation rail at all times, showing the active client's colour and name (or the "You" badge). Tapping it opens a sheet listing every client; tapping a client there makes them active immediately.
+* On any screen size, while you're on the active workout screen or the cardio tracking screen, a compact badge shows the active client and opens the same switcher sheet when tapped — this is the one place the switcher reaches a phone.
+
+Switching the active client only changes who new activity is attributed to and which existing data you're viewing. It does not move, copy, or delete anything already logged.
+
+TIP: Before you start a session for a client who isn't currently active, check the badge or the rail switcher first. There's no confirmation prompt when a set is saved — it's simply attributed to whoever was active at the time.

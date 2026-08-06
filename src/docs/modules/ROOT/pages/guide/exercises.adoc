@@ -1,0 +1,73 @@
+= Exercise library
+Paul Snow
+0.0.0
+:description: How to browse, search, and add custom exercises to RepFoundry's exercise library, and how category and muscle group differ.
+
+Every set you log, every template you build, and every cardio session you start draws on RepFoundry's exercise library — 21 built-in exercises plus any custom ones you add.
+
+== Opening the library
+
+The library does not have its own tab in the bottom navigation. Instead, RepFoundry opens it, titled *Choose Exercise*, wherever you need to pick an exercise: adding an exercise to an active workout, or adding one while building a template.
+
+== Browsing and searching
+
+The library lists every exercise alphabetically by name. Type into the search field at the top to filter by name — matching is case-insensitive and matches anywhere in the name, not just the start.
+
+Below the search field, a row of filter chips lets you narrow the list to a single muscle group, plus an *All* chip to clear the filter. While you are searching, the muscle group filter is ignored — search looks across the whole library regardless of which chip is selected.
+
+Built-in exercises show a chevron on the right; tapping the row selects that exercise. Custom exercises additionally show a small edit icon so you can jump straight to editing them without leaving the list.
+
+== Category and muscle group are different fields
+
+Every exercise has both a *category* (Strength, Cardio, Flexibility, or Custom) and a *muscle group* (Chest, Back, Shoulders, Biceps, Triceps, Forearms, Core, Quadriceps, Hamstrings, Glutes, Calves, Full Body, or Cardio). They look similar but drive different things:
+
+* *Category* sets the icon shown on the exercise's avatar in the library list.
+* *Muscle group* drives the filter chips on this screen — and, separately, it is what decides which exercises appear as choices on the *Cardio* tab. The cardio exercise list filters on muscle group only, not category.
+
+This matters if you create your own cardio machine or activity: giving it a Cardio *category* is not enough to make it appear on the Cardio tab. Its muscle group must also be set to Cardio. The built-in *Rowing Machine* exercise is a good example of the trap — its category is Cardio, but its muscle group is Full Body, so it does not appear in the Cardio tab's exercise list even though it is clearly a cardio machine. See xref:guide/cardio.adoc[] for how that list is used.
+
+== Creating a custom exercise
+
+Tap *+ Custom* on the Choose Exercise screen to open the New Exercise screen. Fill in:
+
+* *Exercise Name* — required. This is the name shown everywhere the exercise appears: the workout log, history, templates, and personal records.
+* *Category* — Strength, Cardio, Flexibility, or Custom. Sets the avatar icon; strength exercises can also be offered a warm-up ramp when logging sets (see xref:guide/workout.adoc[]), depending on the equipment type you choose below.
+* *Muscle Group* — one of the thirteen groups listed above. Used for the filter chips here and, for cardio activities specifically, for appearing on the Cardio tab.
+* *Equipment* — Barbell, Dumbbell, Machine, Cable, Bodyweight, Kettlebell, Resistance Band, Cardio Machine, or Other.
+
+Tap *Create* to save it. If you opened the library from an active workout or a template you were editing, the new exercise is selected immediately — you do not need to search for it again.
+
+== Editing a custom exercise
+
+Tap the edit icon on a custom exercise's row to change its name, category, muscle group, or equipment, then tap *Save*. Built-in exercises cannot be edited.
+
+== The default exercise library
+
+RepFoundry seeds 21 exercises on first run:
+
+[cols="3,1,2,2"]
+|===
+| Exercise | Category | Muscle group | Equipment
+
+| Barbell Bench Press | Strength | Chest | Barbell
+| Barbell Row | Strength | Back | Barbell
+| Barbell Squat | Strength | Quadriceps | Barbell
+| Cable Fly | Strength | Chest | Cable
+| Deadlift | Strength | Back | Barbell
+| Dumbbell Curl | Strength | Biceps | Dumbbell
+| Hip Thrust | Strength | Glutes | Barbell
+| Incline Dumbbell Press | Strength | Chest | Dumbbell
+| Lat Pulldown | Strength | Back | Cable
+| Leg Curl | Strength | Hamstrings | Machine
+| Leg Extensions | Strength | Quadriceps | Machine
+| Leg Press | Strength | Quadriceps | Machine
+| Overhead Press | Strength | Shoulders | Barbell
+| Pec Deck | Strength | Chest | Machine
+| Plank | Strength | Core | Bodyweight
+| Pull-up | Strength | Back | Bodyweight
+| Romanian Deadlift | Strength | Hamstrings | Barbell
+| Rowing Machine | Cardio | Full Body | Cardio Machine
+| Stationary Bike | Cardio | Cardio | Cardio Machine
+| Treadmill | Cardio | Cardio | Cardio Machine
+| Tricep Pushdown | Strength | Triceps | Cable
+|===

@@ -1,0 +1,106 @@
+= Settings
+Paul Snow
+0.0.0
+:description: How to import workout history from other apps, back up or export your data, configure your health profile for heart rate zones, and manage appearance, rest timer alerts and notifications from RepFoundry's Settings screen.
+
+The *Settings* screen is where you bring history in from another app, back your data out, configure the health profile behind your heart rate zones, and adjust how RepFoundry looks and alerts you.
+
+== Importing workout history from another app
+
+RepFoundry can read history exported from *Hevy*, *Strong*, or its own CSV export, letting you arrive from another app without starting your history over. Two ways to bring a file in are offered under *Settings → Data*:
+
+*Import from File* — pick a file from your device. RepFoundry looks at the content: text starting with `{` is treated as JSON, anything else as CSV. For a CSV file, it detects which of the three supported layouts the header row matches and shows you the detected format to confirm before anything is imported.
+
+*Import from JSON* — paste JSON text directly rather than picking a file — useful for restoring a backup from pasted clipboard content.
+
+=== Supported CSV formats
+
+[cols="1,2,1"]
+|===
+| Format | Detected by | Weight unit
+
+| Hevy
+| Header contains `exercise_title` and `weight_kg`
+| Always kilograms
+
+| Strong
+| Header contains `exercise name` and `set order`
+| Read per row if the file has a `weight unit` column; otherwise you're asked to confirm kg or lbs before importing
+
+| RepFoundry CSV
+| Header contains `date`, `exercise`, and `e1rm` — this is the layout produced by this app's own `sets.csv` export
+| Always kilograms
+|===
+
+=== What a CSV import brings in — and what it doesn't
+
+All three formats import the same way: completed workouts (grouped by session) and the strength sets within them — exercise name, weight, reps, RPE where present, and warm-up flags. Any exercise name that doesn't match your library is created automatically as a custom exercise, and personal records are backfilled retroactively for any imported set that beats what's currently on record.
+
+CSV import does *not* bring in cardio sessions or stretching sessions, even if the source app recorded them — only strength sets are picked up. Rows that look like cardio (distance or duration instead of reps), rows with zero or unreadable reps, and rows with a date RepFoundry can't parse are all skipped; the count of skipped rows is shown in the import summary. The RepFoundry CSV format also carries no workout boundaries of its own, so its sets are regrouped into one workout per calendar day rather than reproducing your original session structure.
+
+Re-importing the same file a second time is safe — matching rows are recognised and skipped rather than duplicated.
+
+=== Restoring a full JSON backup
+
+Importing a `.json` file (via *Import from File*) or pasted JSON text (via *Import from JSON*) is the only route that restores a full backup taken with *Export as JSON*. On top of workouts, sets and custom exercises, it also restores cardio sessions and stretching sessions — neither of which CSV import carries. Body-metric entries are included in a JSON export but are not currently restored on import, even though they were exported.
+
+== Exporting your data
+
+Two export options live under *Settings → Data*.
+
+*Export as JSON* produces one file containing everything: exercises, workouts with their sets, cardio sessions, personal records, body-metric entries, and stretching sessions, timestamped at export time. This is the format *Import from JSON* and *Import from File* restore, so it's the option to use for a full backup or for moving your history to a new install.
+
+NOTE: If you track more than one client, the JSON export includes every client in your roster, not just your own history — though re-importing it currently attaches everything back to your own profile rather than restoring individual clients separately.
+
+*Export as CSV* produces five separate files for spreadsheet analysis rather than a single re-importable backup:
+
+[source,csv]
+----
+client_id,date,exercise,weight,reps,rpe,volume,e1rm
+----
+
+`sets.csv`, `cardio.csv`, `personal_records.csv`, `body_metrics.csv`, and `stretching.csv`. Of these, `sets.csv` uses RepFoundry's own re-importable layout — the header shown above — so your strength history can round-trip out to CSV and back in again through *Import from File*. The other four files are for analysis outside the app; they aren't a format RepFoundry itself imports.
+
+== Health profile and heart rate zones
+
+The *Health Profile* card lets you enter the figures RepFoundry's heart rate zones are calculated from:
+
+* *Age* — enables an age-based estimate of your maximum heart rate
+* *Resting Heart Rate*
+* *Measured Max Heart Rate* — your actual peak heart rate from a lab or field test
+* *Beta Blocker Medication* and *Heart Condition* toggles — these flag medical factors that affect how reliable a numeric heart rate zone is for you
+
+A clinician-provided maximum heart rate — the most authoritative input, when your doctor has given you one — isn't entered directly on this list. It's set through *Set Up Heart Rate Zones*, a guided step-by-step setup reachable from the same card, or from your own client profile page on tablet or desktop-sized layouts.
+
+The card also shows your current *Zone Method* and confidence level, and a *Zone Colour Bands* toggle for the colour-coded zone display.
+
+See xref:guide/heart-rate.adoc[] for how these inputs are combined into zones, what each confidence level means, and how caution mode behaves when a medical flag is set.
+
+== Appearance
+
+Under *Settings → Appearance*:
+
+*Theme* switches between Light, Dark, and Auto (follows your device's system setting).
+
+*Layout* switches between Auto, Mobile, and Desktop. The override only takes effect on tablet-sized screens and larger — phones always use the mobile layout regardless of this setting.
+
+*Show Exercise Images* toggles whether exercise images are shown throughout the app.
+
+== Rest timer alerts
+
+Under *Settings → Rest Timer*, *Vibration Alert* and *Sound Alert* each independently control whether the rest timer vibrates and/or plays a sound when it finishes. Both are on by default.
+
+== Notifications
+
+Workout reminder notifications are configured on their own screen, reached from *Settings → Notifications*. See xref:guide/notifications.adoc[] for how to set them up.
+
+== Clearing all data
+
+[WARNING]
+====
+Clearing all data is permanent and cannot be undone. RepFoundry does not export or back up your data automatically before doing this — if you might want your history back later, use *Export as JSON* first.
+====
+
+*Clear All Data*, under *Settings → Data*, deletes every workout, set, cardio session, personal record, template, programme, body-metric entry, stretching session, and client profile — along with any custom exercises you've created. The default exercise library is reseeded afterwards, and all app preferences (theme, layout, health profile, rest timer and notification settings, and everything else stored in app settings) are reset to their defaults at the same time.
+
+A confirmation dialog asks you to confirm before anything is deleted.

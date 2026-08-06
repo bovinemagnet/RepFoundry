@@ -18,7 +18,7 @@ When you create a custom exercise, you give it:
 * A muscle group — Chest, Back, Shoulders, Biceps, Triceps, Forearms, Core, Quadriceps, Hamstrings, Glutes, Calves, Full Body, or Cardio.
 * An equipment type — Barbell, Dumbbell, Machine, Cable, Bodyweight, Kettlebell, Resistance Band, Cardio Machine, or Other.
 
-Deleting a custom exercise removes it from the picker, but any workout history that already references it stays intact.
+You can edit a custom exercise's name, category, muscle group, or equipment type at any time — look for the edit icon next to it in the exercise picker. Built-in exercises cannot be edited.
 
 == Editing and deleting a logged set
 
