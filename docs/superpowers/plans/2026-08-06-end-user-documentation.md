@@ -243,8 +243,9 @@ sideloaded builds do not auto-update.
 
 - [ ] **Step 3: Write `install-ios.adoc`**
 
-Source of truth: `.github/workflows/release.yml`, which builds Android only,
-and `CLAUDE.md`, which records "iOS build is not yet automated".
+Source of truth: `.github/workflows/release.yml`, which builds Android only.
+The repository's guidance file also records that the iOS build is not yet
+automated.
 
 State the position honestly: there is no App Store listing and no TestFlight
 build, so the only route today is building from source on a Mac with Xcode.

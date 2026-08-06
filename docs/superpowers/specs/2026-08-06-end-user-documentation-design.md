@@ -42,8 +42,8 @@ Two further gaps compound this:
 - **Developer pages for the seven currently-undocumented features.** Deferred to
   a follow-up. That material does not exist today, and writing it alongside full
   user coverage would make this change unreviewable.
-- **Refreshing `CLAUDE.md`'s feature list**, which omits `trainer`, `clients` and
-  `stretching`. Noted, out of scope.
+- **Refreshing the repository's agent guidance file**, whose feature list omits
+  `trainer`, `clients` and `stretching`. Noted, out of scope.
 
 ## Audience
 
@@ -183,5 +183,5 @@ main thread.
 |---|---|
 | Large diff hides a bad page move | Aliases and the strict build; nav reviewed explicitly |
 | Documenting features not yet read (`clients`, `stretching`) | Both read before writing; findings recorded above |
-| Feature descriptions drift from actual behaviour | Writers work from source, not from `CLAUDE.md`, which is already stale |
+| Feature descriptions drift from actual behaviour | Writers work from source, not from the repository's guidance file, which is already stale |
 | iOS install story may be "not available yet" | Stated plainly rather than invented |
