@@ -36,7 +36,7 @@ Presentation → Application → Domain ← Data
 - **Data**: Repository implementations (`DriftExerciseRepository`, `DriftWorkoutRepository` for production; `InMemory*Repository` kept for testing). Soft deletes via `deletedAt` field.
 - **Presentation**: Screens, widgets, and Riverpod controllers (`Notifier`, `AsyncNotifier`). Screens are thin — logic lives in controllers.
 
-**Feature directories** under `lib/features/`: `analytics`, `body_metrics`, `cardio`, `exercises`, `health_sync`, `heart_rate`, `history`, `notifications`, `programmes`, `settings`, `sync`, `templates`, `workout`. Each feature contains its own `presentation/`, `application/`, `domain/`, and `data/` sub-layers.
+**Feature directories** under `lib/features/`: `analytics`, `body_metrics`, `cardio`, `clients`, `exercises`, `health_sync`, `heart_rate`, `history`, `notifications`, `programmes`, `settings`, `stretching`, `sync`, `templates`, `trainer`, `workout`. Each feature contains its own `presentation/`, `application/`, `domain/`, and `data/` sub-layers.
 
 Shared code lives in `lib/core/` (extensions, widgets, providers, database).
 
@@ -44,7 +44,7 @@ Shared code lives in `lib/core/` (extensions, widgets, providers, database).
 
 The app uses Drift for SQLite persistence. Key files:
 
-- `lib/core/database/app_database.dart` — `@DriftDatabase` class with 7 tables, `forTesting(QueryExecutor)` constructor, and seed data (18 default exercises)
+- `lib/core/database/app_database.dart` — `@DriftDatabase` class with 15 tables, `forTesting(QueryExecutor)` constructor, and seed data (21 default exercises)
 - `lib/core/database/tables/` — Drift table definitions (exercises, workouts, workout_sets, cardio_sessions, personal_records, workout_templates, template_exercises)
 - `lib/core/database/converters.dart` — DateTime↔epoch ms and enum↔string helpers
 - `lib/core/database/database_provider.dart` — Riverpod `Provider<AppDatabase>` overridden in `main()`
@@ -91,6 +91,9 @@ Offline-first cloud sync via iCloud (iOS) / Google Drive (Android). Key componen
 - **Programmes** (`lib/features/programmes/`): Multi-week training programmes (`Programme`, `ProgrammeDay`, `ProgressionRule` models) with three progression strategies (fixedIncrement, percentage, deload). Drift repository + list/edit screens.
 - **Notifications** (`lib/features/notifications/`): `NotificationService` wrapping `flutter_local_notifications` with timezone support. `ReminderSettings` model + Riverpod provider for scheduled workout reminders.
 - **Health Sync** (`lib/features/health_sync/`): Platform health data synchronisation.
+- **Trainer** (`lib/features/trainer/`): Coach mode. `Persona` holds ARB phrase keys rather than literal text, so all coaching copy is localised; three packs (Steady, Hype, Sergeant) in `persona_packs.dart`. `CoachingEngine` decides when to speak; `CoachBridge` and `coach_announcements.dart` wire it to the UI. Encouragement is suppressed above the clinician cap, in caution mode, and in zone 5 — the safety warning itself still speaks. Gated behind `Entitlement.virtualTrainer`, which is empty by default.
+- **Clients** (`lib/features/clients/`): Personal-trainer client roster (`Client`, `ClientPlanAssignment`) with per-client `HealthProfile`. An always-present self client (`kSelfClientId`) owns the operator's own data. The active client scopes new records and filters history and analytics. Roster and detail screens are reachable only via the desktop nav rail (≥600dp); the active-client switcher is available on phones mid-session.
+- **Stretching** (`lib/features/stretching/`): Timed stretching entries (`StretchingSession`) with 20 localised presets. No dedicated route — it renders as a section inside the active workout screen.
 
 ## Navigation (GoRouter)
 
@@ -156,7 +159,14 @@ Uses `flutter_lints` with additional strict rules: `always_declare_return_types`
 
 ## Documentation
 
-Antora documentation site: `src/docs/` (build with `gradle21w antora`)
+Antora documentation site: `src/docs/` (build with `gradle21w antora`), published to https://bovinemagnet.github.io/RepFoundry/ on every push to `main`.
+
+Two modules, and content belongs in exactly one of them:
+
+- `modules/ROOT/` — **end-user documentation**, the site default. Antora omits ROOT from URLs, so these pages sit at `/repfoundry/<page>.html`. Never name a Dart class, provider, or file path on these pages.
+- `modules/dev/` — **developer documentation** at `/repfoundry/dev/<page>.html`. Implementation detail lives here.
+
+Nine features have a page in both; each links to its counterpart. Pull requests run the docs build with `--log-failure-level=warn`, so a broken `xref:` or a missing image fails the check.
 Architecture document (legacy): `docs/RepFoundry.Architecture.md`
 Product requirements (legacy): `docs/RepFoundry.prd.md`
 Heart rate monitoring PRD (legacy): `docs/heartRateMonitoringPRD.md`
