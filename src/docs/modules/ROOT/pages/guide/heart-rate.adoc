@@ -76,7 +76,7 @@ Resting heart rate:: combined with a maximum heart rate, enables a calculation p
 Measured maximum heart rate:: your actual peak heart rate from a lab or field test. Treated as more reliable than an age-based estimate.
 Clinician-provided maximum heart rate:: a maximum heart rate prescribed by a healthcare professional. This overrides every other input and is always treated as the most reliable source.
 
-All of these are optional. Age, resting heart rate, and measured maximum heart rate can be skipped in the guided setup and added later from *Settings → Health Profile*. A clinician-provided maximum heart rate has two entry points: the guided setup itself, or the *Clients* tab — tap *Me* and enter it there. Either one updates the same value.
+All of these are optional. Age, resting heart rate, and measured maximum heart rate can be skipped in the guided setup and added later from *Settings → Health Profile*. A clinician-provided maximum heart rate can also be entered from your own client profile page — but that page is only available in RepFoundry's wider, tablet or desktop-sized layout. On a phone-sized screen there is currently no way to open it, so the guided setup is your only route to entering a clinician cap there.
 
 == Reliability indicator
 
