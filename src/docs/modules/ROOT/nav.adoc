@@ -1,1 +1,27 @@
 * xref:index.adoc[Overview]
+* Getting the app
+** xref:install-android.adoc[Install on Android]
+** xref:install-ios.adoc[Install on iOS]
+** xref:permissions.adoc[Permissions and device setup]
+** xref:platform-differences.adoc[Android and iOS differences]
+* xref:first-workout.adoc[Your first workout]
+* Using RepFoundry
+** xref:guide/workout.adoc[Workout logging]
+** xref:guide/cardio.adoc[Cardio tracking]
+** xref:guide/heart-rate.adoc[Heart rate monitoring]
+** xref:guide/trainer.adoc[Coach mode]
+** xref:guide/stretching.adoc[Stretching]
+** xref:guide/exercises.adoc[Exercise library]
+** xref:guide/templates.adoc[Workout templates]
+** xref:guide/programmes.adoc[Training programmes]
+* Progress
+** xref:guide/history.adoc[History and records]
+** xref:guide/analytics.adoc[Analytics]
+** xref:guide/body-metrics.adoc[Body metrics]
+* Syncing and data
+** xref:guide/sync.adoc[Cloud sync]
+** xref:guide/health-sync.adoc[Health sync]
+** xref:guide/notifications.adoc[Notifications and reminders]
+** xref:guide/settings.adoc[Settings, import and export]
+* For trainers
+** xref:guide/clients.adoc[Managing clients]
