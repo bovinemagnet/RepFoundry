@@ -164,13 +164,9 @@ hrefs against the built site, not by trusting the build.
 ## Dependency on PR #110
 
 PR #110 (header nav pointing at component paths rather than the site root) is
-open and unmerged. It edits `ui/src/partials/header-content.hbs`, the same file
-this change rewrites.
-
-PR #110 should merge first. This change then replaces those three links with the
-**User Guide / Developer** switcher. The fix is not wasted: it establishes that
-header links must be component-qualified, which the new links must also be, and
-it keeps the currently-live site working in the interim.
+**merged**, and this work is based on it. It established that header links must
+be component-qualified — site-root paths 404 — which the new **User Guide /
+Developer** switcher must also honour.
 
 ## Delivery
 
