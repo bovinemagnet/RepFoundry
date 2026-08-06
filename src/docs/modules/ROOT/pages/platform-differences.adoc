@@ -1,0 +1,79 @@
+= Platform differences
+Paul Snow
+0.0.0
+:description: How RepFoundry differs between Android and iOS, including why cloud sync cannot cross the platform boundary.
+
+RepFoundry behaves the same way on Android and iOS for almost everything — logging sets, tracking cardio, watching your heart rate, building programmes. The differences that do exist come from what each platform's cloud and health services allow, and from how each build is currently distributed. This page collects all of them in one place.
+
+== Cloud sync does not cross platforms
+
+This is the fact to know before you rely on sync: *an iPhone and an Android phone cannot sync workout data with each other.*
+
+RepFoundry backs up and syncs your data using each platform's own cloud service, rather than a server RepFoundry runs itself:
+
+* *iOS* syncs via iCloud.
+* *Android* syncs via Google Drive, using a hidden app-data folder your other Drive files never touch.
+
+Using your own cloud account means RepFoundry never holds a copy of your data on a server it controls. It also means sync only works between devices on the same platform:
+
+* Two iPhones signed into the same iCloud account can sync with each other.
+* Two Android phones signed into the same Google account can sync with each other.
+* An iPhone and an Android phone cannot sync with each other, even for the same person, because they write to entirely separate cloud stores.
+
+This is a *platform constraint*, not a RepFoundry design choice — iCloud and Google Drive are not interoperable, and RepFoundry has no server of its own to bridge them. If that changes, it would need a RepFoundry-run backend, which is not part of the app today.
+
+If you use both an iPhone and an Android phone, treat each as holding its own independent history rather than a synced pair.
+
+See xref:guide/sync.adoc[] for how sync merges data and resolves conflicts on each platform.
+
+== Health data goes to a different store
+
+RepFoundry can write workouts, body weight, body fat percentage and heart rate samples to your phone's health store, and can read your latest weight back in. Which store it uses depends on platform:
+
+* *iOS* writes to Apple Health.
+* *Android* writes to Health Connect.
+
+These are separate, platform-provided services with no data flowing between them — data written to Apple Health on an iPhone is not visible to Health Connect on an Android phone, and vice versa. This follows from how Apple Health and Health Connect are built, not from a RepFoundry decision.
+
+See xref:guide/health-sync.adoc[] for exactly what is written and when.
+
+== Availability: Android is released, iOS is source-only
+
+* *Android* — signed release builds are published on GitHub for every tagged release. See xref:install-android.adoc[].
+* *iOS* — there is no App Store listing and no TestFlight build. The only way to run RepFoundry on iOS today is to build it from source on a Mac. See xref:install-ios.adoc[].
+
+This is a project resourcing decision, not a platform limitation — nothing about iOS prevents a signed release from existing; automating it simply has not happened yet.
+
+== Comparison
+
+[cols="1,2,2", options="header"]
+|===
+| | Android | iOS
+
+| Cloud sync backend
+| Google Drive (hidden app-data folder)
+| iCloud
+
+| Cross-platform sync
+| Not possible — separate backend from iOS
+| Not possible — separate backend from Android
+
+| Health data store
+| Health Connect
+| Apple Health
+
+| Distribution
+| Signed APK, sideloaded from GitHub Releases
+| Build from source (Mac + Xcode required)
+
+| Auto-updates
+| No — sideloaded builds do not update themselves
+| No — reinstall from source to update
+|===
+
+== Related pages
+
+* xref:install-android.adoc[]
+* xref:install-ios.adoc[]
+* xref:guide/sync.adoc[]
+* xref:guide/health-sync.adoc[]

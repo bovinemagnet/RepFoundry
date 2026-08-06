@@ -1,6 +1,34 @@
 = RepFoundry
 Paul Snow
 0.0.0
-:description: RepFoundry user documentation.
+:description: RepFoundry is an offline-first workout tracker for the gym floor. Start here to install the app and log your first workout.
 
-Placeholder. Replaced in Task 2.
+RepFoundry is a workout tracker built for the gym floor. It works fully offline, so a patchy signal in the basement of your gym is never a problem, and there is no account to create or sign into before you can start logging a set.
+
+== Who this is for
+
+RepFoundry serves two kinds of user:
+
+Training on your own::
+Log workouts, track cardio sessions, watch your heart rate live during a session, and see your progress build up over weeks and months.
+
+Coaching others::
+A personal trainer can manage multiple clients from the same app, following their programmes and reviewing their progress alongside their own training.
+
+== What to read next
+
+If you have not installed RepFoundry yet, start with whichever platform you carry:
+
+* xref:install-android.adoc[]
+* xref:install-ios.adoc[]
+
+Once it is installed, xref:first-workout.adoc[] walks through starting a session, adding an exercise, logging your first set, and finishing up.
+
+Two more pages are worth knowing about early:
+
+* xref:permissions.adoc[] explains what RepFoundry asks for on your phone and why.
+* xref:platform-differences.adoc[] covers where iOS and Android behave differently, including cloud sync and health data.
+
+== Looking for the developer documentation?
+
+If you are after the architecture, the codebase, or how to build RepFoundry from source, you want the developer documentation instead: xref:dev:index.adoc[].

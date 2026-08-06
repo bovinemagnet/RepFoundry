@@ -1,0 +1,68 @@
+= Your first workout
+Paul Snow
+0.0.0
+:description: A start-to-finish walkthrough of logging your first workout in RepFoundry — starting a session, adding an exercise, logging a set, and understanding ghost sets and the rest timer.
+
+This page walks through a first workout in RepFoundry, start to finish: opening the app, starting a session, adding an exercise, logging sets, and finishing up. It covers the whole loop at a beginner level. For the full feature reference, see xref:guide/workout.adoc[].
+
+RepFoundry opens on the *Workout* tab. The bottom navigation bar also gives you *History*, *Cardio*, *Heart Rate*, and *Settings* — but everything below happens on the Workout tab.
+
+== Starting a workout
+
+With no workout in progress, the Workout tab shows a "Ready to train?" prompt with a *Start Workout* button.
+
+Tapping *Start Workout* begins a new, empty session immediately — there is no setup screen to fill in first. The screen switches to the active-session view, ready for you to add exercises.
+
+Underneath the *Start Workout* button, the app also offers three alternative starting points if you would rather not build the session from scratch: starting a stretching-only session, starting from a saved template, or starting from a day in a training programme. These are optional shortcuts — the walkthrough below assumes the plain *Start Workout* path.
+
+== Adding an exercise
+
+Once a workout is active, a floating *Add Exercise* button appears. Tapping it opens the exercise picker, where you choose the exercise you want to log.
+
+After you pick an exercise, it is added to the session and its card expands automatically, ready for you to log a set. If you have already added other exercises, adding a new one collapses their input cards so only one exercise is open for logging at a time — this keeps the screen from being crowded with multiple entry forms at once. Tap a collapsed exercise's *Add Set* row at any time to reopen it for logging.
+
+== Logging a set
+
+Each open exercise shows a set-entry card with fields for *Weight* and *Reps*, and a *Log Set* button.
+
+* *Weight* accepts a decimal value, in the unit you have configured (for example, kg).
+* *Reps* must be a whole number greater than zero.
+* *RPE* (Rate of Perceived Exertion, a 1–10 effort score) is optional. Tap *Add RPE* to reveal a third field for it; tap *Hide RPE* to remove it again. When shown, RPE must be between 1 and 10.
+
+There is also a *Warm-up* toggle next to the *Log Set* button. Turning it on marks the next logged set as a warm-up rather than a working set, which keeps it out of your working-set history while still recording it.
+
+Tap *Log Set* to save the set. It is saved immediately — there is no separate "save workout" step for individual sets — and appears as a small set card above the entry form, showing the weight and reps you logged. The entry form then resets, ready for the next set.
+
+== Ghost sets: why the fields are already filled in
+
+The first time you add an exercise you have logged before, you may notice the *Weight* and *Reps* fields (and *RPE*, if you used it last time) are already filled in, and there are dimmed placeholder rows sitting above the entry card that you did not create.
+
+This is expected, and it is called a *ghost set*. When you add an exercise, RepFoundry looks up your most recently completed session for that same exercise and uses it to help you pick up where you left off:
+
+* The set-entry fields are pre-filled with the weight, reps, and (if recorded) RPE from the matching set in your last session, so you can repeat it with a single tap of *Log Set* — or adjust the numbers first if you want to do more or less than last time.
+* Any further sets from that last session that you have not yet matched are shown as dimmed placeholder rows alongside your real logged sets. These are not real sets — they are a preview of what you did last time, for reference. They disappear one by one as you log real sets to replace them.
+
+If it is your first time doing an exercise, or you have no completed session for it yet, there is nothing to suggest, so the fields simply start at zero and no placeholder rows appear.
+
+== The rest timer
+
+A rest timer bar sits near the top of the active-session screen, with quick-start buttons for common durations (1:00, 1:30, 2:00, and 3:00). Tapping one starts a countdown, shown in the bar; tap the stop icon to cancel it early.
+
+When the timer reaches zero, RepFoundry can alert you two ways, both configurable in *Settings*:
+
+* *Vibration* — a haptic pulse on your device.
+* *Sound* — a chime played through the device speaker.
+
+Both are enabled by default, and either or both can be turned off if you prefer a silent rest timer.
+
+== Finishing the workout
+
+When you are done, end the session using either the *Finish* pill in the workout header, or the *Finish Workout?* button at the bottom of the exercise list. Either one opens a confirmation dialog, since finishing saves the workout and closes it out. Confirm with *Finish* to complete the workout, or *Cancel* to keep logging.
+
+Once finished, the workout is saved to your history and the Workout tab returns to the "Ready to train?" starting state, ready for next time.
+
+== Where to go next
+
+This page covers the core loop. For the full set of workout features — supersets, warm-up ramps, personal record celebrations, editing or deleting a logged set, and more — see xref:guide/workout.adoc[].
+
+If a feature you try to use asks for a permission (for example, pairing a heart rate strap over Bluetooth, or rest-timer notifications), see xref:permissions.adoc[] for what each permission is for and what happens if you decline it.
