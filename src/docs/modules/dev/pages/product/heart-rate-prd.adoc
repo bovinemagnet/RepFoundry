@@ -2,6 +2,7 @@
 Paul Snow
 :description: Product requirements for heart rate monitoring during exercise, covering zone calculation, onboarding, safety requirements, and UI behaviour.
 :keywords: heart rate, BPM, zones, HRR, Karvonen, PRD, product requirements
+:page-aliases: ROOT:product/heart-rate-prd.adoc
 
 *Version 1.0 | 07 March 2026* +
 *Prepared for: Product, Design, Engineering, and QA*

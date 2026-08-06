@@ -2,6 +2,7 @@
 Paul Snow
 :description: Developer guide for setting up and building RepFoundry
 :keywords: setup, build, flutter, dart, prerequisites
+:page-aliases: ROOT:getting-started.adoc
 
 This guide covers everything a developer needs to get RepFoundry building and running locally.
 

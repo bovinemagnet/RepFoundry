@@ -2,6 +2,7 @@
 Paul Snow
 0.0.0
 :description: Guide to the advanced analytics charts and metrics in RepFoundry.
+:page-aliases: ROOT:features/analytics.adoc
 
 The advanced analytics feature provides data-driven insight into training history through weekly volume trends, muscle group balance, PR timelines, and training load measurements.
 

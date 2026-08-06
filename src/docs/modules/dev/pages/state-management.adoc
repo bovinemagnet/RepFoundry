@@ -2,6 +2,7 @@
 Paul Snow
 :description: Riverpod provider hierarchy, key state patterns, and data flow in RepFoundry
 :keywords: riverpod, state management, provider, stream, notifier
+:page-aliases: ROOT:state-management.adoc
 
 RepFoundry uses https://riverpod.dev/[Riverpod 2.x] throughout for reactive state management and dependency injection.
 All providers are defined at module level (not inside widgets) and accessed via `ref.watch()`, `ref.read()`, or `ref.listen()`.

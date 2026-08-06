@@ -2,6 +2,7 @@
 Paul Snow
 :description: Drift/SQLite schema, design decisions, key files, and migration strategy for RepFoundry
 :keywords: database, drift, sqlite, schema, migration
+:page-aliases: ROOT:database.adoc
 
 RepFoundry uses https://drift.simonbinder.eu/[Drift] (formerly Moor) as its SQLite persistence layer.
 Drift provides type-safe Dart query builders, generated companion classes, and reactive `Stream`-based query watchers.

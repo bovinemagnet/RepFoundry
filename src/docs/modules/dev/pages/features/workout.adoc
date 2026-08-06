@@ -2,6 +2,7 @@
 Paul Snow
 0.0.0
 :description: Comprehensive guide to the workout logging feature in RepFoundry.
+:page-aliases: ROOT:features/workout.adoc
 
 The workout logging feature is the core of RepFoundry.
 It lets users record sets with weight, reps, and optional RPE; manage an exercise library; organise sessions with templates; and track personal records automatically.

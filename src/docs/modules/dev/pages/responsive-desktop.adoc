@@ -2,6 +2,7 @@
 Paul Snow
 :description: How RepFoundry adapts its navigation shell and screen layouts for tablet and desktop widths using a mobile-first breakpoint strategy
 :keywords: responsive, desktop, breakpoints, nav rail, two-pane, adaptive layout, master-detail
+:page-aliases: ROOT:responsive-desktop.adoc
 
 RepFoundry is a mobile-first application.
 Above defined breakpoints, the navigation shell switches to a persistent side-rail and selected screens reflow into denser two-pane *power layouts* that make productive use of the extra width — for reviewing history, analysing training trends, and editing templates.

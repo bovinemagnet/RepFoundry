@@ -2,6 +2,7 @@
 Paul Snow
 :description: Test structure, tooling, coverage targets, and how to run tests in RepFoundry
 :keywords: testing, flutter_test, mockito, drift, unit tests, widget tests
+:page-aliases: ROOT:testing.adoc
 
 RepFoundry follows a layered testing strategy that mirrors the clean architecture of the production code.
 Tests live in the `test/` directory, mirroring the structure of `lib/`.

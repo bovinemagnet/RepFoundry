@@ -2,6 +2,7 @@
 Paul Snow
 0.0.0
 :description: Guide to Apple Health and Google Health Connect integration in RepFoundry.
+:page-aliases: ROOT:features/health-sync.adoc
 
 Health Sync lets RepFoundry exchange data with the platform health stores — Apple HealthKit on iOS and Google Health Connect on Android — so workout, body metric, and heart rate data is available in other health apps and vice versa.
 

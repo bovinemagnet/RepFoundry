@@ -2,6 +2,7 @@
 Paul Snow
 :description: Reference for RepFoundry's version numbering and release tagging scheme
 :keywords: versioning, semver, release, tags, workflow, snapshot
+:page-aliases: ROOT:release-versioning.adoc
 
 This page is the authoritative reference for how RepFoundry versions and releases are numbered. It describes the tag scheme, how the release workflow derives a build's version, and the (non-authoritative) role of `pubspec.yaml`.
 

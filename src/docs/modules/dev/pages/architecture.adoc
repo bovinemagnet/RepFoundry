@@ -2,6 +2,7 @@
 Paul Snow
 :description: Clean architecture overview, layer responsibilities, and design decisions for RepFoundry
 :keywords: architecture, clean architecture, riverpod, flutter, layers
+:page-aliases: ROOT:architecture.adoc
 
 RepFoundry follows a clean architecture pattern with clear separation between presentation, domain, and data layers.
 The app targets both iOS and Android from a single Flutter/Dart codebase.

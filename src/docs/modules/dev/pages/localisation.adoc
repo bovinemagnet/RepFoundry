@@ -2,6 +2,7 @@
 Paul Snow
 :description: ARB workflow, generated class usage, and how to add new strings in RepFoundry
 :keywords: localisation, l10n, gen-l10n, ARB, flutter, internationalisation
+:page-aliases: ROOT:localisation.adoc
 
 RepFoundry externalises all user-facing strings using Flutter's built-in `gen-l10n` code generation tool.
 This keeps translatable text out of widget files and makes the app ready for additional locales in the future.

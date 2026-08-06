@@ -2,6 +2,7 @@
 Paul Snow
 :description: Offline-first cloud sync architecture — iCloud (iOS) and Google Drive (Android)
 :keywords: sync, cloud, iCloud, CloudKit, Google Drive, offline-first, conflict resolution
+:page-aliases: ROOT:features/sync.adoc
 
 RepFoundry syncs workout data across devices using iCloud on iOS and Google Drive on Android.
 Automatic sync is best-effort and fire-and-forget, so workout completion and app resume are not blocked.

@@ -2,6 +2,7 @@
 Paul Snow
 0.0.0
 :description: Guide to the body metrics tracking feature in RepFoundry.
+:page-aliases: ROOT:features/body-metrics.adoc
 
 The body metrics feature lets users record and track body weight, body fat percentage, and optional notes over time.
 Entries can be imported from the platform health store and are exported alongside workout data.

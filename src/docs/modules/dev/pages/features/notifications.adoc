@@ -2,6 +2,7 @@
 Paul Snow
 0.0.0
 :description: Guide to workout reminder and streak notifications in RepFoundry.
+:page-aliases: ROOT:features/notifications.adoc
 
 RepFoundry can send scheduled push notifications to remind users to work out on chosen days and to protect active training streaks.
 

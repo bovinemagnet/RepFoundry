@@ -2,6 +2,7 @@
 Paul Snow
 0.0.0
 :description: Guide to creating and running structured training programmes in RepFoundry.
+:page-aliases: ROOT:features/programmes.adoc
 
 The Programme Builder lets users create multi-week training plans by assigning workout templates to specific days and defining automatic progression rules for each exercise.
 

@@ -2,6 +2,7 @@
 Paul Snow
 0.0.0
 :description: Guide to the cardio session tracking feature in RepFoundry.
+:page-aliases: ROOT:features/cardio.adoc
 
 The cardio tracking feature records duration-based activities — running, cycling, rowing, and similar exercises — with optional GPS distance, incline input, and live BLE heart rate monitoring.
 

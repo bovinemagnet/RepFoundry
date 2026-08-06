@@ -2,6 +2,7 @@
 Paul Snow
 0.0.0
 :description: Guide to the real-time heart rate monitoring panel in RepFoundry.
+:page-aliases: ROOT:features/heart-rate.adoc
 
 The heart rate monitoring panel provides live BPM readings, colour-coded training zones, session summaries, and safety-first handling of medical edge cases.
 
