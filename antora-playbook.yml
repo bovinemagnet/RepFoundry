@@ -14,7 +14,11 @@ content:
 
 ui:
   bundle:
-    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
+    # Built from source in ui/ by `gulp bundle`. Antora needs the packed zip,
+    # not the source tree, and ui/.gitignore excludes build/ — so this file is
+    # produced by the build, never committed. The Gradle `antora` task depends
+    # on `uiBundle`, and the docs workflow packs it before generating the site.
+    url: ./ui/build/ui-bundle.zip
     snapshot: true
 
 output:

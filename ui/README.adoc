@@ -1,0 +1,76 @@
+= RepFoundry Documentation UI
+:url-antora: https://antora.org
+:url-upstream: https://gitlab.com/antora/antora-ui-default
+
+This is the RepFoundry documentation UI: the {url-upstream}[Antora default UI], vendored into this
+repository and restyled to match the RepFoundry app (Kinetic Green: spring green on charcoal, tokens lifted from `lib/app/theme.dart`).
+
+* Dark is the native mode; a navbar toggle switches to light and remembers the choice in `localStorage`.
+* Type: Space Grotesk (display) + Manrope (body) + JetBrains Mono (code), loaded from Google Fonts.
+* Colour, spacing and radii come from `src/css/vars.css`, which mirrors the design-system tokens.
+* Sectioning uses tonal surface shifts, not 1px borders.
+
+== Build the bundle
+
+[,console]
+----
+$ cd ui
+$ npm install
+$ npx gulp bundle
+----
+
+The bundle lands at `ui/build/ui-bundle.zip`.
+
+== Point the playbook at it
+
+Replace the `ui:` block in `antora-playbook.yml`:
+
+[,yaml]
+----
+ui:
+  bundle:
+    url: ./ui/build/ui-bundle.zip
+    snapshot: true
+----
+
+== Live preview while editing the UI
+
+[,console]
+----
+$ npx gulp preview
+----
+
+Serves `preview-src/index.adoc` (a kitchen-sink page) at http://localhost:5252 with watch + rebuild.
+
+== Where things live
+
+[cols="1,2",options="header"]
+|===
+| Path | What it is
+
+| `src/css/vars.css`
+| All design tokens. Change the palette here and the whole site follows.
+
+| `src/css/doc.css`
+| Article body: headings, admonitions, tables, code, lists.
+
+| `src/css/header.css`
+| Glass navbar, gradient wordmark, theme toggle.
+
+| `src/partials/*.hbs`
+| Page templates (Handlebars). `header-content.hbs` holds the brand and top nav.
+
+| `src/js/07-theme-toggle.js`
+| Dark/light switching. The no-flash pre-paint script lives in `partials/head-prelude.hbs`.
+|===
+
+== Notes on the fork
+
+Two deliberate changes from upstream:
+
+* `gulp.d/tasks/build.js` runs `postcss-custom-properties` with `preserve: true`. Upstream flattens
+  custom properties at build time, which would freeze the site in dark mode.
+* The Roboto `@fontsource` packages are dropped in favour of Google Fonts links in
+  `partials/head-styles.hbs`.
+
+Upstream is MPL-2.0; see the Antora default UI project for the original source.

@@ -1,0 +1,67 @@
+= RepFoundry Documentation
+:description: Preview page for the RepFoundry documentation UI
+:toclevels: 2
+
+RepFoundry is a cross-platform Flutter workout tracking application targeting iOS 15+ and Android 10+.
+It follows clean architecture with feature-first modularisation, Riverpod for state management, and an offline-first design with SQLite persistence via Drift.
+
+[.cards]
+* *Workout logging* -- sets, reps, weight and RPE with ghost-set auto-fill
+* *Cardio tracking* -- duration, distance, incline and live heart rate
+* *Heart rate zones* -- BLE streaming with time-in-zone analysis
+* *Analytics* -- estimated 1RM, personal records and volume trends
+
+== Typography and blocks
+
+Body copy is set in Manrope; headings in Space Grotesk with tight tracking.
+Inline code such as `WorkoutRepository` sits on a tonal chip, and links like https://antora.org[Antora] take the spring-green spine colour.
+
+NOTE: Admonition labels are mono pills that overlap the top edge of a tonal panel.
+
+TIP: Deeper emerald is reserved for tips and successful states.
+
+IMPORTANT: Volt green marks records and anything the reader must not miss.
+
+CAUTION: Volt marks anything the reader must slow down for.
+
+WARNING: Red matches the danger token and heart-rate zone 5.
+
+== Code
+
+[,dart]
+----
+final session = await ref.read(workoutRepositoryProvider).startSession(
+  templateId: template.id,
+  startedAt: clock.now(),
+);
+----
+
+== Tables
+
+[cols="1,2,3",options="header"]
+|===
+| Layer | Technology | Purpose
+
+| Framework
+| Flutter 3.x / Dart 3.x
+| Cross-platform UI and application framework
+
+| State Management
+| Riverpod 2.x
+| Reactive state management with dependency injection
+
+| Local Database
+| Drift 2.x (SQLite)
+| Offline-first persistence with type-safe queries
+|===
+
+== Lists and quotes
+
+. Scan the machine QR code
+. Log the working set
+. Rest timer fires automatically
+
+[quote,RepFoundry PRD]
+____
+All data is stored locally so the app works reliably in gym environments with poor connectivity.
+____

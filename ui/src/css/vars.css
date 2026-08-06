@@ -1,0 +1,252 @@
+/* RepFoundry documentation theme — tokens
+ * Mirrors the RepFoundry design system (Kinetic Precision): spring-green spine,
+ * tonal surface ladder, no 1px sectioning borders, Space Grotesk + Manrope.
+ * Dark is the native mode; light is opt-in via the navbar toggle. */
+
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --rf-surface: #0a0b0d;
+  --rf-surface-lowest: #070809;
+  --rf-surface-low: #15181c;
+  --rf-surface-container: #1c2026;
+  --rf-surface-high: #252a31;
+  --rf-surface-highest: #2b3138;
+  --rf-surface-bright: #0e1013;
+
+  --rf-primary: #00e5a0;
+  --rf-primary-dim: #10b981;
+  --rf-on-primary: #04130d;
+  --rf-secondary: #10b981;
+  --rf-tertiary: #c6ff3d;
+  --rf-on-tertiary: #14210a;
+  --rf-error: #ff5d73;
+  --rf-on-error: #3a0510;
+  --rf-success: #10b981;
+  --rf-on-success: #04130d;
+  --rf-warning: #c6ff3d;
+  --rf-on-warning: #14210a;
+
+  --rf-on-surface: #f3f6f4;
+  --rf-on-surface-variant: #8b938f;
+  --rf-outline: #565d59;
+  --rf-outline-variant: #3a4047;
+  --rf-line: rgba(255, 255, 255, 0.07);
+  --rf-line-strong: rgba(255, 255, 255, 0.12);
+  --rf-accent-soft: rgba(0, 229, 160, 0.14);
+  --rf-accent-fill: #00e5a0;
+  --rf-volt: #c6ff3d;
+
+  --rf-gradient: linear-gradient(135deg, #00e5a0 0%, #10b981 100%);
+  --rf-glass-bg: rgba(14, 16, 19, 0.72);
+  --rf-elevation: none;
+  --rf-elevation-menu: 0 16px 40px rgba(0, 0, 0, 0.55);
+  --rf-scrim: rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --rf-surface: #eaeeec;
+  --rf-surface-lowest: #ffffff;
+  --rf-surface-low: #f5f8f6;
+  --rf-surface-container: #eef2f0;
+  --rf-surface-high: #e5ebe7;
+  --rf-surface-highest: #dde4df;
+  --rf-surface-bright: #ffffff;
+
+  --rf-primary: #059669;
+  --rf-primary-dim: #047857;
+  --rf-on-primary: #042016;
+  --rf-secondary: #059669;
+  --rf-tertiary: #5b8c00;
+  --rf-on-tertiary: #ffffff;
+  --rf-error: #d4264a;
+  --rf-on-error: #ffffff;
+  --rf-success: #059669;
+  --rf-on-success: #ffffff;
+  --rf-warning: #5b8c00;
+  --rf-on-warning: #ffffff;
+
+  --rf-on-surface: #0c1410;
+  --rf-on-surface-variant: #5d655f;
+  --rf-outline: #9aa39d;
+  --rf-outline-variant: #d4dcd6;
+  --rf-line: rgba(11, 18, 15, 0.07);
+  --rf-line-strong: rgba(11, 18, 15, 0.12);
+  --rf-accent-soft: rgba(0, 195, 137, 0.14);
+  --rf-accent-fill: #00c389;
+  --rf-volt: #5b8c00;
+
+  --rf-gradient: linear-gradient(135deg, #00c389 0%, #059669 100%);
+  --rf-glass-bg: rgba(255, 255, 255, 0.78);
+  --rf-elevation: 0 4px 16px rgba(12, 20, 16, 0.1);
+  --rf-elevation-menu: 0 16px 40px rgba(12, 20, 16, 0.18);
+  --rf-scrim: rgba(12, 20, 16, 0.35);
+}
+
+/* ── Antora UI variables, bound to the RepFoundry tokens ───────────── */
+:root {
+  --rem-base: 16;
+
+  --body-font-family: "Manrope", system-ui, -apple-system, sans-serif;
+  --display-font-family: "Space Grotesk", system-ui, sans-serif;
+  --monospace-font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --label-font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --icon-font-family: "Material Symbols Outlined";
+  --body-font-size: calc(16 / var(--rem-base) * 1rem);
+  --body-font-size--desktop: calc(17 / var(--rem-base) * 1rem);
+  --body-font-size--print: calc(12 / var(--rem-base) * 1rem);
+  --body-line-height: 1.6;
+  --body-font-weight-bold: 700;
+  --monospace-font-weight-bold: 600;
+
+  --body-background: var(--rf-surface);
+  --body-font-color: var(--rf-on-surface);
+  --panel-background: var(--rf-surface-container);
+  --panel-border-color: var(--rf-outline-variant);
+  --color-white: #ffffff;
+
+  --link-font-color: var(--rf-primary);
+  --link_hover-font-color: var(--rf-tertiary);
+  --link_unresolved-font-color: var(--rf-error);
+
+  /* layout */
+  --navbar-height: 4rem;
+  --toolbar-height: 3rem;
+  --drawer-height: 2.75rem;
+  --body-top: var(--navbar-height);
+  --body-min-height: calc(100vh - var(--body-top));
+  --nav-width: 18.5rem;
+  --nav-height: calc(100vh - var(--navbar-height) - var(--toolbar-height));
+  --nav-height--desktop: calc(100vh - var(--navbar-height));
+  --nav-line-height: 1.5;
+  --nav-panel-menu-height: calc(100% - var(--drawer-height));
+  --nav-panel-explore-height: calc(100% - var(--drawer-height));
+  --toc-width: 14rem;
+  --toc-width--widescreen: 16rem;
+  --toc-line-height: 1.4;
+  --toc-top: calc(var(--body-top) + var(--toolbar-height) + 1.5rem);
+  --toc-height: calc(100vh - var(--toc-top) - 3.5rem);
+  --doc-font-size: calc(16 / var(--rem-base) * 1rem);
+  --doc-font-size--desktop: calc(17 / var(--rem-base) * 1rem);
+  --doc-line-height: 1.7;
+  --doc-margin: 0;
+  --doc-margin--desktop: 0 auto;
+  --doc-max-width: none;
+  --doc-max-width--desktop: 48rem;
+
+  /* navbar */
+  --navbar-background: var(--rf-glass-bg);
+  --navbar-font-color: var(--rf-on-surface);
+  --navbar-menu-font-color: var(--rf-on-surface-variant);
+  --navbar-menu-background: var(--rf-surface-container);
+  --navbar-menu-border-color: transparent;
+  --navbar-menu_hover-background: var(--rf-surface-high);
+  --navbar_hover-background: var(--rf-surface-high);
+  --navbar-button-background: var(--rf-surface-high);
+  --navbar-button-border-color: transparent;
+  --navbar-button-font-color: var(--rf-on-surface);
+
+  /* toolbar */
+  --toolbar-background: var(--rf-surface);
+  --toolbar-font-color: var(--rf-on-surface-variant);
+  --toolbar-border-color: var(--rf-line);
+  --toolbar-muted-color: var(--rf-outline);
+
+  /* nav */
+  --nav-background: var(--rf-surface-low);
+  --nav-secondary-background: var(--rf-surface-container);
+  --nav-border-color: var(--rf-line);
+  --nav-panel-divider-color: var(--rf-line);
+  --nav-heading-font-color: var(--rf-on-surface);
+  --nav-muted-color: var(--rf-on-surface-variant);
+
+  /* toc */
+  --toc-font-color: var(--rf-on-surface-variant);
+  --toc-heading-font-color: var(--rf-on-surface);
+  --toc-border-color: var(--rf-line-strong);
+
+  /* doc */
+  --doc-font-color: var(--rf-on-surface);
+  --heading-font-color: var(--rf-on-surface);
+  --heading-font-weight: 700;
+  --alt-heading-font-weight: 600;
+  --section-divider-color: var(--rf-line-strong);
+  --abstract-background: var(--rf-surface-low);
+  --abstract-border-color: var(--rf-primary);
+  --abstract-font-color: var(--rf-on-surface-variant);
+  --caption-font-color: var(--rf-on-surface-variant);
+  --caption-font-style: normal;
+  --caption-font-weight: 600;
+  --code-background: var(--rf-accent-soft);
+  --code-font-color: var(--rf-primary);
+  --pre-background: var(--rf-surface-low);
+  --pre-border-color: transparent;
+  --pre-annotation-font-color: var(--rf-on-surface-variant);
+  --example-background: var(--rf-surface-low);
+  --example-border-color: var(--rf-surface-high);
+  --sidebar-background: var(--rf-surface-low);
+  --quote-background: var(--rf-surface-low);
+  --quote-border-color: var(--rf-primary);
+  --quote-font-color: var(--rf-on-surface);
+  --quote-attribution-font-color: var(--rf-on-surface-variant);
+  --table-border-color: var(--rf-line);
+  --table-stripe-background: var(--rf-surface-low);
+  --table-footer-background: var(--rf-surface-container);
+  --kbd-background: var(--rf-surface-container);
+  --kbd-border-color: var(--rf-line-strong);
+  --admonition-background: var(--rf-surface-low);
+  --admonition-label-font-weight: 700;
+  --note-color: var(--rf-primary);
+  --note-on-color: var(--rf-on-primary);
+  --tip-color: var(--rf-success);
+  --tip-on-color: var(--rf-on-success);
+  --important-color: var(--rf-tertiary);
+  --important-on-color: var(--rf-on-tertiary);
+  --caution-color: var(--rf-warning);
+  --caution-on-color: var(--rf-on-warning);
+  --warning-color: var(--rf-error);
+  --warning-on-color: var(--rf-on-error);
+
+  /* footer */
+  --footer-background: var(--rf-surface-low);
+  --footer-font-color: var(--rf-on-surface-variant);
+  --footer-link-font-color: var(--rf-primary);
+  --footer-line-height: 1.6;
+
+  /* page versions */
+  --page-version-menu-background: var(--rf-surface-container);
+  --page-version-missing-font-color: var(--rf-outline);
+
+  /* scrollbars */
+  --scrollbar-track-color: var(--rf-surface);
+  --scrollbar-thumb-color: var(--rf-surface-highest);
+  --scrollbar_hover-thumb-color: var(--rf-outline-variant);
+
+  /* syntax highlighting */
+  --hljs-keyword: var(--rf-primary);
+  --hljs-type: var(--rf-secondary);
+  --hljs-var: var(--rf-tertiary);
+  --hljs-string: var(--rf-success);
+  --hljs-number: var(--rf-warning);
+  --hljs-comment: var(--rf-outline);
+  --hljs-remove: rgba(255, 93, 115, 0.18);
+  --hljs-addition: rgba(16, 185, 129, 0.18);
+
+  /* radii — RepFoundry scale */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.125rem;
+  --radius-xl: 1.375rem;
+  --radius-full: 9999px;
+
+  /* stacking */
+  --z-index-doc: 1;
+  --z-index-nav: 2;
+  --z-index-toolbar: 3;
+  --z-index-page-version-menu: 4;
+  --z-index-navbar: 5;
+}

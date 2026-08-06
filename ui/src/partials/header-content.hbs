@@ -1,0 +1,27 @@
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item brand" href="{{{or site.url siteRootPath}}}">
+        <span class="brand-mark">RepFoundry</span>
+        <span class="brand-suffix">Docs</span>
+      </a>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="{{{relativize '/index.html'}}}">Overview</a>
+        <a class="navbar-item" href="{{{relativize '/getting-started.html'}}}">Getting Started</a>
+        <a class="navbar-item" href="{{{relativize '/architecture.html'}}}">Architecture</a>
+        <a class="navbar-item is-external" href="https://github.com/bovinemagnet/RepFoundry">Source</a>
+        <button class="theme-toggle" type="button" aria-label="Toggle light and dark theme" title="Toggle light and dark theme">
+          <span class="icon icon-dark">dark_mode</span>
+          <span class="icon icon-light">light_mode</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+</header>

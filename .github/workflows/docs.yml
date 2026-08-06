@@ -34,6 +34,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+      # The playbook's ui.bundle.url points at ui/build/ui-bundle.zip, which is
+      # gitignored, so the UI must be packed from source before Antora runs.
+      # Equivalent to the Gradle `uiBundle` task.
+      - name: Build documentation UI bundle
+        working-directory: ui
+        run: |
+          npm ci
+          npx gulp bundle
 
       # Mirrors the local `gradle21w antora` build (org.antora Gradle plugin,
       # Antora 3.1) but invokes Antora directly so the docs job needs no JVM.
