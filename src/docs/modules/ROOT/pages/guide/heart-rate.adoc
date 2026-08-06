@@ -1,0 +1,130 @@
+= Heart rate monitoring
+Paul Snow
+0.0.0
+:description: How to connect a heart rate monitor, understand your training zones, and use the safety features in RepFoundry's heart rate panel.
+
+RepFoundry shows live heart rate, training zones, and session summaries from a connected Bluetooth heart rate monitor, either in its own dedicated panel or alongside a cardio session.
+
+IMPORTANT: Heart rate zones are estimated training guidance only — not medical diagnosis or emergency monitoring.
+
+== Where to find it
+
+Open the *Heart Rate* tab from the bottom navigation bar at any time — it works independently of an active cardio or workout session. If you already connected a monitor from the xref:guide/cardio.adoc[Cardio] tab, the heart rate panel picks up that connection automatically when you open it, and vice versa.
+
+== Connecting a monitor
+
+Tap *Connect HR Monitor* to scan for nearby devices. If Bluetooth is off, RepFoundry offers to turn it on for you. RepFoundry asks for Bluetooth permission (and, on Android, location permission) the first time it needs to scan — see xref:permissions.adoc[] for what's requested and why, and what stops working if you decline.
+
+Once you pick a device from the scan results, RepFoundry connects and starts monitoring straight away. While connected, a *Disconnect* control is available from the heart rate screen's top bar, along with a setup-guide shortcut.
+
+=== Supported devices
+
+* Dedicated chest straps — Polar, Garmin, Wahoo, and similar standard Bluetooth heart rate broadcasts
+* Apple Watch — requires *Broadcast Heart Rate* enabled in the Workout app
+* Samsung Galaxy Watch — requires BLE heart rate broadcast enabled in Samsung Health
+
+A step-by-step setup guide for watches and straps is available from the help icon on the heart rate screen.
+
+=== If the connection drops
+
+If a monitor disconnects unexpectedly — out of range, interference — RepFoundry shows a reconnecting indicator and keeps trying automatically, with progressively longer gaps between attempts, for several minutes before giving up. Session time isn't counted while reconnecting, so a brief dropout doesn't inflate your recorded session length.
+
+Tapping *Disconnect* yourself ends the connection deliberately; RepFoundry will not try to reconnect after that.
+
+== The first time you use it
+
+The first time you open the heart rate panel, a one-time disclaimer confirms that zones are exercise guidance, not medical advice. If you haven't entered your age yet, a guided setup then walks you through your health profile in four steps — each step can be skipped. You can re-launch this setup at any time from *Settings → Health Profile → Set Up Heart Rate Zones*.
+
+== Understanding your zones
+
+RepFoundry divides effort into five zones, each with a percentage range and a dual label describing both the effort level and its physiological effect:
+
+[cols="1,1,2"]
+|===
+| Zone | % range | Label
+
+| 1
+| 50–60%
+| Easy (Recovery)
+
+| 2
+| 60–70%
+| Light (Aerobic)
+
+| 3
+| 70–80%
+| Moderate (Aerobic)
+
+| 4
+| 80–90%
+| Hard (Anaerobic)
+
+| 5
+| 90–100%
+| Very Hard (VO₂ Max)
+|===
+
+The percentage range is measured against whichever maximum-heart-rate figure your health profile resolves to — see <<personalising-your-zones>> below. Your current zone is shown next to your live BPM, and a full zone legend with BPM ranges appears further down the screen.
+
+[[personalising-your-zones]]
+== Personalising your zones
+
+Zones are calculated from whichever of the following you provide in your health profile — each one lets RepFoundry produce a more personalised, higher-confidence result:
+
+Age:: enables an age-based estimate of your maximum heart rate. This is the least specific input, and is only used when nothing more precise is available.
+Resting heart rate:: combined with a maximum heart rate, enables a calculation personalised to your individual heart rate range rather than a flat percentage of maximum.
+Measured maximum heart rate:: your actual peak heart rate from a lab or field test. Treated as more reliable than an age-based estimate.
+Clinician-provided maximum heart rate:: a maximum heart rate prescribed by a healthcare professional. This overrides every other input and is always treated as the most reliable source.
+
+All of these are optional. Age, resting heart rate, and measured maximum heart rate can be skipped in the guided setup and added later from *Settings → Health Profile*. A clinician-provided maximum heart rate can only be set through the guided setup itself (*Settings → Health Profile → Set Up Heart Rate Zones*).
+
+== Reliability indicator
+
+A confidence badge next to the zone legend shows how much RepFoundry trusts the current zone calculation:
+
+[cols="1,2"]
+|===
+| Level | When shown
+
+| High
+| A clinician-provided maximum heart rate, or your measured maximum heart rate, is in use.
+
+| Medium
+| Zones are based only on an age estimate.
+
+| Low
+| A medical caution flag is set and no clinician-provided maximum heart rate is available to anchor the calculation.
+|===
+
+A clinician-provided maximum heart rate keeps reliability at High even when a caution flag is set — clinician guidance is treated as authoritative regardless of what else is entered.
+
+== Caution mode
+
+If you indicate you take beta-blocker medication or have a heart condition in your health profile, caution mode activates:
+
+* An amber caution card appears at the top of the heart rate screen, with wording specific to the flag or flags you set — it points you toward rate of perceived exertion (RPE), the talk test, and clinician advice rather than a numeric target.
+* Zone reliability drops to Low, unless a clinician-provided maximum heart rate is set, in which case reliability stays High.
+* If a clinician-provided maximum heart rate is in use, the zone legend notes "Clinician-provided limits in use."
+
+== Heart rate alerts
+
+RepFoundry can alert you when your heart rate reaches the top of your zone range — most usefully, your clinician-provided maximum, if you've set one. Vibration, a warning sound, and the minimum time between repeated alerts can all be configured from *Settings → Max Heart Rate Alert*.
+
+== Reporting symptoms
+
+A *Report Symptom* button is available on the heart rate screen while you're actively monitoring. Tapping it lists possible symptoms — chest pain or tightness, severe dizziness, feeling faint, or unusual shortness of breath. Selecting any of them stops monitoring immediately and shows an urgent-guidance dialogue with two options: *I need help* or *I'm OK, stopping exercise*.
+
+== Session summary
+
+While monitoring, RepFoundry shows:
+
+* Live BPM and your current zone
+* Rolling and full-session heart rate charts
+* Average, minimum, and maximum BPM for the session
+* Time spent in each zone, plus total time spent at a moderate effort or higher
+* Your heart rate drop in the minute after you stop monitoring — a rough indicator of recovery
+
+[NOTE]
+====
+Looking for implementation detail? See xref:dev:features/heart-rate.adoc[Heart rate monitoring internals].
+====

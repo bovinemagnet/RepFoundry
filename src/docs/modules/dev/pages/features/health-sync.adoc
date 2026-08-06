@@ -1,10 +1,10 @@
 = Health Sync
 Paul Snow
 0.0.0
-:description: Guide to Apple Health and Google Health Connect integration in RepFoundry.
+:description: Implementation reference for Apple HealthKit and Health Connect integration.
 :page-aliases: ROOT:features/health-sync.adoc
 
-Health Sync lets RepFoundry exchange data with the platform health stores — Apple HealthKit on iOS and Google Health Connect on Android — so workout, body metric, and heart rate data is available in other health apps and vice versa.
+Implementation reference for health data sync. For what this does from a user's point of view — which platform your phone uses, what data moves and in which direction, and how it differs from cloud sync — see xref:ROOT:guide/health-sync.adoc[].
 
 == Overview
 
@@ -139,8 +139,9 @@ Heart rate samples are written during the heart rate monitoring session if `writ
 
 == Weight Import
 
-When `readWeight` is enabled, users can trigger a weight import from the *Body Metrics* screen or *Settings → Health Sync → Import Weight*.
-`healthWeightImportProvider` calls `HealthSyncService.readLatestWeight()` and, if a value is returned, pre-fills the weight entry form.
+`healthWeightCheckProvider` (`lib/features/health_sync/presentation/providers/health_weight_import_provider.dart`) is a `FutureProvider.autoDispose` watched from the Body Metrics screen.
+It only runs when `enabled` and `readWeight` are both true, calls `HealthSyncService.readLatestWeight()`, and compares the result against the latest locally stored `BodyMetric` for `kSelfClientId`.
+A strictly newer sample surfaces as a snackbar with an *Import* action that creates a new `BodyMetric` entry; a sample that is not newer than the local record, or any error along the way, is discarded silently.
 
 == Platform Permissions
 
@@ -170,34 +171,29 @@ The required permissions depend on the active settings:
 |===
 | Permission | Required for
 
-| `android.permission.health.WRITE_EXERCISE`
+| `android.permission.health.WRITE_EXERCISE`, `READ_EXERCISE`
 | `writeWorkouts`
 
 | `android.permission.health.READ_WEIGHT`, `WRITE_WEIGHT`
 | `writeWeight` / `readWeight`
 
-| `android.permission.health.WRITE_BODY_FAT`
+| `android.permission.health.READ_BODY_FAT`, `WRITE_BODY_FAT`
 | `writeWeight` (body fat)
 
-| `android.permission.health.WRITE_HEART_RATE`
+| `android.permission.health.READ_HEART_RATE`, `WRITE_HEART_RATE`
 | `writeHeartRate`
 |===
+
+NOTE: The manifest declares both read and write permissions per data type even where `requestAuthorisation()` only ever requests one direction (for example, `READ_EXERCISE` and `READ_HEART_RATE` are declared but not currently requested) — Health Connect requires the pairing to be present in the manifest regardless of runtime usage.
 
 NOTE: Health Connect requires Android 9+ and the Health Connect app to be installed.
 On devices running Android 14+, Health Connect is bundled with the OS.
 
 == Settings UI
 
-The *Health Sync* section in the Settings screen contains:
+Rendered inline in the private `_SyncRemindersCard` class in `settings_screen.dart`, alongside Notifications and Cloud Sync — there is no dedicated Health Sync widget file.
 
-* Master enable toggle
-* *Write workouts* toggle
-* *Write weight and body fat* toggle
-* *Write heart rate* toggle
-* *Import weight from health store* toggle
-* *Connect / Re-authorise* button — opens the platform permission sheet
-
-Toggling the master switch to `enabled` immediately triggers `requestAuthorisation()` with the current per-feature settings.
+There is no standalone "connect" or "re-authorise" action. The master toggle's `onChanged` handler calls `HealthSyncService.requestAuthorisation()` directly when the switch moves from off to on, and only calls `HealthSyncSettingsNotifier.toggleEnabled()` once that call succeeds; `toggleEnabled()` itself just flips and persists the flag and does not request authorisation on its own. If authorisation is denied, a snackbar is shown and the toggle is left off.
 
 == Key Files
 
@@ -220,3 +216,8 @@ Toggling the master switch to `enabled` immediately triggers `requestAuthorisati
 * xref:features/body-metrics.adoc[Body Metrics] — source of weight and body fat writes
 * xref:features/heart-rate.adoc[Heart Rate Monitoring] — source of BPM sample writes
 * xref:features/workout.adoc[Workout Logging] — source of workout session writes
+
+[NOTE]
+====
+Looking for the user-facing guide? See xref:ROOT:guide/health-sync.adoc[Health sync].
+====

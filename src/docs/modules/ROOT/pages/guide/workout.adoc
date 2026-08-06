@@ -1,0 +1,75 @@
+= Workout logging
+Paul Snow
+0.0.0
+:description: A full reference to workout logging in RepFoundry — the exercise library, logging and editing sets, warm-up ramps, supersets, personal records, and templates.
+
+Workout logging is the core of RepFoundry: recording sets with weight, reps, and optional RPE against exercises drawn from a library, with automatic personal record detection along the way.
+
+If you have not logged a workout yet, start with xref:first-workout.adoc[] for a start-to-finish beginner walkthrough. This page is the fuller reference — everything else the feature can do.
+
+== The exercise library
+
+RepFoundry ships with 21 built-in exercises covering common barbell, dumbbell, machine, and bodyweight movements. You can add unlimited custom exercises of your own from the exercise picker.
+
+When you create a custom exercise, you give it:
+
+* A name.
+* A category — Strength, Cardio, Flexibility, or Custom.
+* A muscle group — Chest, Back, Shoulders, Biceps, Triceps, Forearms, Core, Quadriceps, Hamstrings, Glutes, Calves, Full Body, or Cardio.
+* An equipment type — Barbell, Dumbbell, Machine, Cable, Bodyweight, Kettlebell, Resistance Band, Cardio Machine, or Other.
+
+Deleting a custom exercise removes it from the picker, but any workout history that already references it stays intact.
+
+== Editing and deleting a logged set
+
+Tap any logged set to reopen it in an edit dialog, where you can correct the weight, reps, RPE, or warm-up status. Press and hold a logged set to delete it — there is no confirmation prompt, so treat it as immediate.
+
+== Warm-up sets and the warm-up ramp
+
+Turning on the *Warm-up* toggle before logging a set (covered in xref:first-workout.adoc[]) marks it as a warm-up. Warm-up sets are excluded from your working-set history, volume totals, and personal record checks.
+
+For exercises using loadable equipment — barbell, dumbbell, kettlebell, cable, or machine — RepFoundry can also generate a warm-up ramp for you. Enter the weight you plan to work up to, then use the warm-up ramp option to see a suggested sequence of lighter sets building up to that weight, with the reps decreasing as the weight increases. For barbell exercises, the ramp opens with an empty-bar set. Confirm to add every step in the ramp as warm-up sets in one go, or dismiss and log your own warm-ups manually. The ramp is not offered for bodyweight, resistance band, cardio machine, or other non-loadable equipment.
+
+== Supersets
+
+Two exercises in the same session can be linked as a superset so you move between them together. Press and hold an exercise card and choose to link it as a superset, then pick the exercise you want to pair it with. Linked exercises are shown grouped together with a superset indicator; tap the unlink icon on the group to separate them again.
+
+== Personal records
+
+RepFoundry automatically checks every working set (warm-ups are excluded) against your all-time best for that exercise, across four record types:
+
+[cols="1,2"]
+|===
+| Record type | What it tracks
+
+| Estimated one-rep max
+| Your highest estimated single-rep strength for the exercise, calculated from weight and reps together.
+
+| Max weight
+| The heaviest weight you have lifted for a single rep.
+
+| Max reps
+| The most reps you have completed in a single set, regardless of weight.
+
+| Max volume
+| The highest weight × reps total in a single set.
+|===
+
+When a set beats a previous best, a celebration appears on screen with a trophy icon, the record type, and the new value. It dismisses itself after a few seconds, or you can tap it to dismiss early.
+
+== Templates
+
+Templates are reusable workout blueprints — a saved list of exercises with target sets and reps for each — so you do not have to rebuild a session from scratch every time.
+
+=== Starting from a template
+
+From the Templates screen, pick a saved template and start a workout from it. The exercise list is pre-populated from the template, and ghost sets from your last session for each exercise are loaded as usual.
+
+=== Creating a template
+
+You can build a template from scratch — give it a name, add exercises, and set a target number of sets and reps for each, reordering them as needed — or save one directly from a workout you have just finished. When you save a completed workout as a template, the number of sets you logged for each exercise becomes its target sets, and the rep count you used most often becomes its target reps.
+
+[NOTE]
+====
+Looking for implementation detail? See xref:dev:features/workout.adoc[Workout logging internals].
+====

@@ -4,9 +4,9 @@ Paul Snow
 :keywords: sync, cloud, iCloud, CloudKit, Google Drive, offline-first, conflict resolution
 :page-aliases: ROOT:features/sync.adoc
 
-RepFoundry syncs workout data across devices using iCloud on iOS and Google Drive on Android.
-Automatic sync is best-effort and fire-and-forget, so workout completion and app resume are not blocked.
-Manual setup and "Sync Now" run from Settings and may show platform authentication UI.
+Implementation reference for cross-device sync. For what sync does from a user's
+point of view — turning it on, what platforms it works between, and how conflicts
+are resolved — see xref:ROOT:guide/sync.adoc[].
 
 == Overview
 
@@ -187,3 +187,8 @@ After consent, Settings runs an interactive first sync. `cloud_sync_enabled` is 
 | `presentation/providers/sync_settings_provider.dart` | Riverpod providers for settings + state
 | `presentation/widgets/sync_consent_dialog.dart` | One-time consent dialog
 |===
+
+[NOTE]
+====
+Looking for the user-facing guide? See xref:ROOT:guide/sync.adoc[Cloud sync].
+====

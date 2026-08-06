@@ -1,0 +1,96 @@
+= Programme builder
+Paul Snow
+0.0.0
+:description: How to build a multi-week training programme in RepFoundry and let automatic progression adjust your working weights.
+
+Open *Programmes* from *Settings* to build and manage your training programmes.
+
+== What is a programme?
+
+A programme is a named, multi-week training plan. You set how many weeks it
+runs for, then assign a saved workout to specific days across those weeks.
+Once a programme is under way, starting a workout from it loads the
+right workout for today and can automatically nudge your working weights up
+(or back down) as the weeks go on.
+
+[TIP]
+====
+A programme is not the same as a xref:guide/templates.adoc[template]. A
+template is a single reusable workout — a list of exercises with target sets
+and reps. A programme is the schedule: it decides *which* template you do on
+*which* day of *which* week, and adds automatic weight progression on top.
+You build templates first, then assign them into a programme.
+====
+
+== Building a programme
+
+. Open *Settings* and tap *Programmes*.
+. Tap the add button and give the programme a name and a duration in weeks.
+. On the programme's schedule grid, tap any day to assign one of your saved
+  templates to it, or leave it blank to mark it a rest day. Tap a filled day
+  again to remove or replace the assignment.
+. Add progression rules for any exercises you want to increase automatically
+  (see below).
+. Save the programme.
+
+You can come back and edit the name, duration, schedule, or progression
+rules at any time. Deleting a programme removes its whole schedule and all
+of its progression rules along with it — this cannot be undone.
+
+== How progression works
+
+Progression rules let RepFoundry adjust your suggested working weight for an
+exercise automatically as a programme advances, instead of you having to
+work out the numbers yourself each week.
+
+For each rule you choose an exercise, a strategy, a value, and how often the
+step should happen (every week, every second week, and so on). There are
+three strategies:
+
+Add a fixed amount::
+Adds a set amount of weight each time the rule is due — for example, add
+2.5 kg to the working weight. This suits lifts where you progress in small,
+consistent jumps, such as the main barbell lifts.
+
+Increase by a percentage::
+Increases the working weight by a percentage each time the rule is due — for
+example, add 5%. This suits exercises where a fixed weight jump would be too
+big or too small relative to what you're already lifting, such as
+accessory or isolation exercises.
+
+Reduce by a percentage (deload)::
+Reduces the working weight by a percentage each time the rule is due. Use
+this to deliberately schedule a lighter recovery week partway through a
+programme, rather than always pushing the weight upward.
+
+The first week of a programme is always the baseline — no progression is
+applied yet. From then on, a step is applied at the frequency you chose (for
+example, every second week). Each step is calculated from the weight you
+actually lifted last time, so increases carry forward on their own; you
+don't need to update anything by hand. If an exercise has no progression
+rule, RepFoundry just carries your last logged weight forward unchanged, the
+same as it does for any workout without a programme.
+
+A weight can never be pushed down to zero — if a reduction would take it
+that low, RepFoundry leaves the weight unchanged instead.
+
+== Starting a workout from a programme
+
+From the workout screen, choose *Start from Programme* and pick the
+programme you want to follow. RepFoundry looks at the schedule for today's
+day of the week within the programme's current week and starts that
+workout, with suggested weights already adjusted for any progression that's
+due.
+
+If there's nothing scheduled for today — for example, it's a rest day in
+the schedule — RepFoundry tells you no workout is scheduled today rather
+than starting one.
+
+A programme's week count begins the first time you actually start a workout
+from it, not when you created it. So you can build a programme in advance
+and it will still begin at week one whenever you first use it.
+
+[NOTE]
+====
+Looking for implementation detail? See xref:dev:features/programmes.adoc[Programme builder internals].
+====

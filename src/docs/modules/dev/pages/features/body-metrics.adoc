@@ -4,13 +4,14 @@ Paul Snow
 :description: Guide to the body metrics tracking feature in RepFoundry.
 :page-aliases: ROOT:features/body-metrics.adoc
 
-The body metrics feature lets users record and track body weight, body fat percentage, and optional notes over time.
-Entries can be imported from the platform health store and are exported alongside workout data.
+Implementation reference for body metrics. For what the feature does from a
+user's point of view — what can be recorded, adding an entry, and how the
+history is shown — see xref:ROOT:guide/body-metrics.adoc[].
 
 == Overview
 
 Body metrics are stored as `BodyMetric` records in the local SQLite database via `DriftBodyMetricRepository`.
-The history screen shows a chronological list of entries and a weight trend chart.
+Records carry a `clientId` (see the clients feature), and soft deletes via `deletedAt` follow the same pattern used elsewhere in the app.
 When xref:features/health-sync.adoc[Health Sync] is enabled, weight and body fat entries are automatically pushed to Apple HealthKit or Google Health Connect on save.
 
 == BodyMetric Model
@@ -23,6 +24,9 @@ class BodyMetric {
   final double weight;             // kg
   final double? bodyFatPercent;    // optional; 0–100
   final String? notes;             // optional free-text notes
+  final String clientId;           // owning client; defaults to kSelfClientId
+  final DateTime updatedAt;        // last-write timestamp, used for sync merge
+  final DateTime? deletedAt;       // soft-delete marker
 }
 ----
 
@@ -32,9 +36,10 @@ class BodyMetric {
 ----
 static BodyMetric create({
   required double weight,
-  DateTime? date,          // defaults to DateTime.now().toUtc()
+  DateTime? date,                    // defaults to DateTime.now().toUtc()
   double? bodyFatPercent,
   String? notes,
+  String clientId = kSelfClientId,
 })
 ----
 
@@ -51,37 +56,22 @@ BodyMetric copyWith({
 })
 ----
 
-== Body Metrics Screen
+== Screen
 
-The body metrics screen (`BodyMetricsScreen`) contains two sections:
+`BodyMetricsScreen` (`lib/features/body_metrics/presentation/screens/body_metrics_screen.dart`) is a `ConsumerWidget` watching `bodyMetricsStreamProvider`, composed of:
 
-=== Add Entry Form
+* `_LatestCard` — summary of the most recent entry
+* `_WeightChart` — rendered via the shared `ProgressChartWidget`; only built when `metrics.length >= 2`
+* `_MetricTile` — one per history row, wrapped in `Dismissible` for swipe-to-delete
+* `_AddBodyMetricDialog` — a `ConsumerStatefulWidget` (state is used so its `TextEditingController`s survive the dialog's exit transition) that returns a `BodyMetric` via `Navigator.pop`
 
-* *Weight* (kg) — required numeric input
-* *Body fat %* — optional numeric input
-* *Date* — defaults to today; editable via a date picker
-* *Notes* — optional free-text field
-* *Save* button — persists the entry and, if Health Sync is enabled with `writeWeight`, pushes to the health store
-
-=== History List
-
-Entries are displayed in reverse chronological order.
-Each row shows date, weight, body fat percentage (if present), and notes (if present).
-Swipe-to-delete removes an entry from the local database.
-
-=== Weight Trend Chart
-
-A `fl_chart` line chart plots weight over time, connecting all recorded entries chronologically.
-The chart helps users visualise progress towards weight goals.
+Weight is entered and displayed in the user's configured `WeightUnit` (`lib/core/units/weight_unit.dart`); it is converted to kg via `toKg()` before being persisted.
 
 == Health Sync Integration
 
-When `HealthSyncSettings.writeWeight` is `true`:
+*Write*: after `_showAddDialog` returns a new `BodyMetric`, the screen saves it via `bodyMetricRepositoryProvider.create()`, then — best-effort, inside a `try/catch` — checks `HealthSyncSettings.enabled && writeWeight` and calls `HealthSyncService.writeWeight()`, followed by `writeBodyFat()` if `bodyFatPercent` is non-null.
 
-. After saving a `BodyMetric`, `HealthSyncService.writeWeight()` is called with the recorded kg value.
-. If `bodyFatPercent` is non-null, `HealthSyncService.writeBodyFat()` is called with the percentage.
-
-When `HealthSyncSettings.readWeight` is `true`, users can tap *Import from health store* to pre-fill the weight field with the most recent value from the platform health store (last 30 days).
+*Read*: `healthWeightCheckProvider` (`lib/features/health_sync/presentation/providers/health_weight_import_provider.dart`), a `FutureProvider.autoDispose`, runs when `HealthSyncSettings.enabled && readWeight`. It calls `HealthSyncService.readLatestWeight()` and compares the sample's date against `BodyMetricRepository.getLatest(kSelfClientId)`, returning `null` if there's nothing newer. `BodyMetricsScreen` listens to this provider and, when a sample is returned, shows a `SnackBar` with an *Import* action; tapping it builds a `BodyMetric` from the sample (always against `kSelfClientId`, since platform health data belongs to the device owner) and saves it directly via `bodyMetricRepositoryProvider.create()` — it does not pre-fill the add-entry form.
 
 == Database Persistence
 
@@ -105,7 +95,18 @@ When `HealthSyncSettings.readWeight` is `true`, users can tap *Import from healt
 
 | `notes`
 | `TEXT NULLABLE`
+
+| `updated_at`
+| `INTEGER` (UTC epoch milliseconds, defaults to 0), used for sync merge
+
+| `deleted_at`
+| `INTEGER NULLABLE` (UTC epoch milliseconds), soft-delete marker
+
+| `client_id`
+| `TEXT`, references `clients.id`, defaults to `kSelfClientId`
 |===
+
+`idx_body_metrics_date` indexes the `date` column.
 
 == Key Files
 
@@ -121,9 +122,16 @@ When `HealthSyncSettings.readWeight` is `true`, users can tap *Import from healt
 
 | `lib/features/body_metrics/data/drift_body_metric_repository.dart`
 | SQLite persistence
+
+| `lib/features/body_metrics/presentation/screens/body_metrics_screen.dart`
+| Screen and its widgets
 |===
 
 == Related Features
 
 * xref:features/health-sync.adoc[Health Sync] — auto-push weight and body fat to health stores
-* xref:features/analytics.adoc[Advanced Analytics] — complement training trends with body composition data
+
+[NOTE]
+====
+Looking for the user-facing guide? See xref:ROOT:guide/body-metrics.adoc[Body metrics].
+====

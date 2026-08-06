@@ -42,20 +42,7 @@ double? get paceMinutesPerKm {
 
 == Tracking Screen
 
-The `CardioTrackingScreen` provides a live dashboard during an active session.
-
-=== Live Display
-
-* Elapsed time (stopwatch)
-* Distance covered (when GPS is active)
-* Current pace (minutes per km, recalculated on each GPS fix)
-* Live BPM from a connected BLE heart rate monitor
-* Reconnecting indicator when the BLE link is temporarily lost
-
-=== Incline Input
-
-Users can enter or update the current incline at any point during the session.
-The value is stored on the `CardioSession` as a percentage (e.g. `5.0` = 5 %).
+`CardioTrackingScreen` renders a live dashboard driven by `CardioTrackingState` — elapsed time, GPS distance/pace, and current BPM are all fields on that state, updated by `CardioTrackingController` on a 1-second timer and on each GPS/HR stream event.
 
 == GPS Distance Tracking
 
@@ -78,19 +65,12 @@ The service requests *While in Use* location permission on first launch.
 | `ACCESS_FINE_LOCATION`
 |===
 
-NOTE: GPS tracking is optional.
-If the user declines location permission or taps *Skip GPS*, distance and pace fields remain `null` and the session saves successfully.
+Declined or later-revoked permission leaves `distanceMeters`/`paceMinutesPerKm` `null`; the save path has no dependency on GPS state.
 
 == BLE Heart Rate Monitor
 
 The cardio feature integrates live BLE heart rate streaming via the `HeartRateService` interface and `FlutterBlueHeartRateService` implementation.
-This is the same BLE layer shared with the xref:features/heart-rate.adoc[Heart Rate Monitoring] panel.
-
-=== Supported Devices
-
-* Standard chest straps (Polar, Garmin, Wahoo) — BLE HR Service UUID `0x180D`
-* Apple Watch — requires *Broadcast Heart Rate* enabled in the Workout app
-* Samsung Galaxy Watch — requires BLE broadcast enabled in Samsung Health
+This is the same BLE layer shared with the xref:features/heart-rate.adoc[Heart Rate Monitoring] panel — `FlutterBlueHeartRateService` is a singleton, so a device connected from one screen stays connected on the other.
 
 === Connection Flow
 
@@ -101,38 +81,22 @@ This is the same BLE layer shared with the xref:features/heart-rate.adoc[Heart R
 
 === Connection State
 
-`HrConnectionState` drives the UI indicator:
+`HrConnectionState` (`connected` / `reconnecting` / `disconnected`) drives `CardioTrackingState.hrConnected` / `hrReconnecting`, which the tracking screen renders as the connecting/connected/disconnected card states.
 
-[cols="1,2"]
-|===
-| State | UI
-
-| `connected`
-| BPM shown in green
-
-| `reconnecting`
-| "Reconnecting…" amber indicator; BPM display paused
-
-| `disconnected`
-| "Not connected" message; connect button shown
-|===
-
-*Auto-reconnect:* on unexpected disconnection the service retries up to 2 times with a 2-second delay between attempts.
-Intentional disconnects (via `disconnect()`) bypass reconnection.
+*Auto-reconnect:* `FlutterBlueHeartRateService._attemptReconnect` hands off to `ReconnectStrategy`, which on unexpected disconnection retries with exponential backoff — `defaultDelays` is `[2, 4, 8, 16, 32, 60, 60, 60]` seconds, so it keeps trying for a little over four minutes before giving up and emitting `HrConnectionState.disconnected`. The initial `connectToDevice` call is separately wrapped in `retryOnceOnFailure`, a single one-off retry after 1 second to absorb Android's transient GATT error 133 on first connect. Intentional disconnects (via `disconnect()`, which sets `_intentionalDisconnect`) bypass reconnection entirely.
 
 === Setup Help
 
-An in-app setup guide (`HrSetupGuideDialog`) provides device-specific pairing instructions for Apple Watch and Samsung Galaxy Watch.
-It is accessible via the help icon on the HR monitor card.
+`HrSetupGuideDialog` renders the device-specific pairing steps for Apple Watch, Samsung Galaxy Watch, and chest straps (sourced from the `appleWatchStep*` / `samsungWatchStep*` / `chestStrapStep*` ARB entries), opened via `showHrSetupGuide()`.
 
 == Save Flow
 
-When the user taps *Finish*:
+`CardioTrackingController.save()`:
 
-. `SaveCardioSessionUseCase` is called with the accumulated metrics.
+. Calls `SaveCardioSessionUseCase.execute()` with the accumulated metrics.
 . A `Workout` is created retroactively with the session's `startedAt` and `completedAt` timestamps.
 . A `CardioSession` is attached to the workout via its `workoutId`.
-. Navigation moves to the workout history list.
+. State resets to `CardioTrackingState(savedSuccessfully: true)`; the screen clears its input fields and shows a snackbar. There is no navigation away from the Cardio tab.
 
 [source,dart]
 ----
@@ -153,11 +117,6 @@ final session = CardioSession.create(
 
 await cardioRepo.saveSession(session);
 ----
-
-== Cardio in Workout History
-
-Saved cardio sessions appear in the history list alongside strength workouts.
-The history tile shows exercise name, duration, distance (if available), and average heart rate (if available).
 
 == Key Files
 
@@ -201,6 +160,7 @@ The history tile shows exercise name, duration, distance (if available), and ave
 
 == Related Features
 
+* xref:ROOT:guide/cardio.adoc[Cardio tracking] — end-user guide for logging a cardio session
 * xref:features/workout.adoc[Workout Logging] — strength session recording
 * xref:features/heart-rate.adoc[Heart Rate Monitoring] — dedicated HR panel shares the BLE service
 * xref:features/analytics.adoc[Advanced Analytics] — volume and training load trends

@@ -6,12 +6,7 @@ Paul Snow
 
 The Programme Builder lets users create multi-week training plans by assigning workout templates to specific days and defining automatic progression rules for each exercise.
 
-== Overview
-
-A *programme* is a named, time-bounded training plan divided into weeks and days.
-Each day references an existing xref:features/workout.adoc[workout template] and can carry progression rules that automatically adjust target weights as the programme advances.
-
-When the user starts a workout and a programme is active, RepFoundry finds today's template and applies the relevant progression rules to produce adjusted target weights.
+For the user-facing walkthrough (building a programme, what each progression strategy does), see xref:ROOT:guide/programmes.adoc[Programme builder].
 
 == Domain Models
 
@@ -20,17 +15,21 @@ When the user starts a workout and a programme is active, RepFoundry finds today
 [source,dart]
 ----
 class Programme {
-  final String id;               // UUID v4
+  final String id;
   final String name;
   final int durationWeeks;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? startedAt;  // set on first startFromProgramme() call
+  final DateTime? deletedAt;  // soft delete
   final List<ProgrammeDay> days;
   final List<ProgressionRule> rules;
 }
 ----
 
-`Programme.create({required String name, required int durationWeeks})` generates a UUID, sets `createdAt` and `updatedAt` to `DateTime.now().toUtc()`, and returns a programme with empty `days` and `rules` lists.
+`Programme.create({required String name, required int durationWeeks})` generates a UUID, sets `createdAt` and `updatedAt` to `DateTime.now().toUtc()`, and returns a programme with empty `days` and `rules` lists, and `startedAt` unset.
+
+`startedAt` is null until the user starts a workout from the programme for the first time; `isStarted` reports whether it has been set. `currentWeek({DateTime? now})` derives the 1-based current week from `startedAt`, clamped to `[1, durationWeeks]`, and returns `1` when the programme has not started.
 
 === ProgrammeDay
 
@@ -43,6 +42,8 @@ class ProgrammeDay {
   final int dayOfWeek;      // DateTime.monday (1) through DateTime.sunday (7)
   final String templateId;
   final String templateName; // denormalised for display
+  final DateTime updatedAt;
+  final DateTime? deletedAt; // soft delete
 }
 ----
 
@@ -60,6 +61,8 @@ class ProgressionRule {
   final ProgressionType type;
   final double value;
   final int frequencyWeeks; // apply every N weeks (default: 1)
+  final DateTime updatedAt;
+  final DateTime? deletedAt; // soft delete
 }
 ----
 
@@ -82,77 +85,74 @@ class ProgressionRule {
 | `baseWeight × (1 − value / 100)`
 |===
 
+==== appliesInWeek
+
+[source,dart]
+----
+bool appliesInWeek(int currentWeek) {
+  if (currentWeek <= 1) return false;
+  return (currentWeek - 1) % frequencyWeeks == 0;
+}
+----
+
+Week 1 never progresses — it is the pre-programme baseline. After that, a step is due at the start of each `frequencyWeeks`-long period (for `frequencyWeeks = 2`: weeks 3, 5, 7, …). Because ghost weights are sourced from the last completed session, a single step per due week is cumulative in effect — each applied step is already baked into the weight the next step starts from.
+
 ==== applyProgression
 
 [source,dart]
 ----
 double applyProgression(double baseWeight) {
-  return switch (type) {
+  final result = switch (type) {
     ProgressionType.fixedIncrement => baseWeight + value,
     ProgressionType.percentage     => baseWeight * (1 + value / 100),
     ProgressionType.deload         => baseWeight * (1 - value / 100),
   };
+  return result > 0 ? result : baseWeight;
 }
 ----
 
 *Example:* A `fixedIncrement` rule with `value = 2.5` applied to a base weight of 80 kg produces a target of 82.5 kg.
 
+Result is clamped: a rule whose raw result would be zero or negative (e.g. a `deload` of 100% or more) is treated as a no-op and returns `baseWeight` unchanged, so a weight can never be driven to or below 0.
+
 == Target Weight Calculation
 
-When `StartWorkoutUseCase` detects an active programme for today's date, it:
+Programme-aware workout start is implemented in `ActiveWorkoutController.startFromProgramme(Programme programme)` (presentation layer), not in `StartWorkoutUseCase` — the latter only handles blank/template starts and has no programme awareness.
 
-. Locates the `ProgrammeDay` whose `weekNumber` and `dayOfWeek` match the current programme week and day.
-. Loads the assigned template.
-. For each `TemplateExercise` in the template, fetches the most recent logged weight for that exercise.
-. Finds the matching `ProgressionRule` (by `exerciseId`) and calls `applyProgression(lastWeight)`.
-. Passes the computed target weight to the active workout controller as the ghost set suggestion.
+`startFromProgramme` does the following:
 
-If no `ProgressionRule` exists for an exercise, the last logged weight is used unchanged (standard ghost set behaviour).
+. Treats a not-yet-started programme as if `startedAt` were now, purely for the lookup, so `currentWeek()` resolves to `1`. The real `startedAt` is not persisted at this point.
+. Computes `currentWeek` from the (tentative) `startedAt` and finds the `ProgrammeDay` whose `dayOfWeek` and `weekNumber` match today and the current week.
+. If no matching day exists, returns `false` without starting a workout — the caller (`active_workout_screen.dart`) shows "No workout scheduled for today".
+. Loads the assigned `WorkoutTemplate` and starts the workout from it via `startFromTemplate`.
+. Only now — once a workout is actually going to start — commits the anchor by calling `ProgrammeRepository.markProgrammeStarted()` if the programme hadn't started yet. This avoids advancing the programme clock for a day with nothing scheduled.
+. For each `ProgressionRule` whose `appliesInWeek(currentWeek)` is true, overwrites the matching exercise's ghost set weights with `rule.applyProgression(lastWeight)` (rounded to 2 decimal places).
+
+If no `ProgressionRule` exists for an exercise, the ghost set weight is left as the last logged weight, unchanged — standard ghost set behaviour.
 
 == Programme List Screen
 
-The programme list screen displays all programmes as cards with name and duration.
-Actions available:
+`ProgrammeListScreen` (`programme_list_screen.dart`) reads `programmeListProvider`, a `StreamProvider` over `ProgrammeRepository.watchAllProgrammes()`, so the list updates immediately after any mutation. On wide layouts it defers to `ProgrammesDesktopView`, a master-list/detail-pane layout that embeds `ProgrammeEditScreen` in the right-hand pane instead of pushing a new route.
 
-* *Create* — opens a name and duration dialog; `Programme.create()` is called and the new record is persisted.
-* *Delete* — soft-deletes (or hard-deletes, depending on implementation) the programme and its days and rules.
-* *Select* — marks a programme as active; subsequent workout starts will use it.
+Each tile navigates to `ProgrammeEditScreen` on tap. The overflow menu offers *Edit* (same navigation) and *Delete*. There is no "mark as active" action here — a programme has no persisted active flag. Selecting *which* programme to run a workout from happens at workout-start time (see below); `startedAt` is set implicitly the first time a workout is actually started from that programme.
 
-Programmes are loaded as a reactive stream so the list updates immediately after any mutation.
+`ProgrammeRepository.deleteProgramme(id)` is always a soft delete: it stamps `deletedAt` on the programme row and cascades `deletedAt` to all of its `ProgrammeDay` and `ProgressionRule` rows in a single transaction. `getProgramme`/`getAllProgrammes`/`watchAllProgrammes` all filter on `deletedAt.isNull()`.
 
 == Programme Edit Screen
 
-The programme edit screen presents a week / day grid.
-Each cell in the grid represents a `(weekNumber, dayOfWeek)` slot.
+`ProgrammeEditScreen` (`programme_edit_screen.dart`) loads the `Programme`, its `ProgrammeDay` list, and its `ProgressionRule` list, plus exercise names for each rule's `exerciseId`. The week/day grid is generated from `durationWeeks`; each cell corresponds to a `(weekNumber, dayOfWeek)` pair.
 
 === Assigning a Template
 
-Tapping an empty slot opens the template picker.
-On selection, a `ProgrammeDay` is created and the slot is filled with the template name.
-
-=== Removing a Day
-
-Long-pressing (or tapping a remove icon on) a filled slot deletes the `ProgrammeDay`.
+Tapping a slot opens a modal template picker sourced from `WorkoutTemplateRepository.getAllTemplates()`, plus a "Rest day" option (a sentinel distinct from the sheet being dismissed). Selecting a template replaces any existing `ProgrammeDay` for that slot (remove then insert) and calls `ProgrammeRepository.addDay()`. Selecting "Rest day" on a filled slot calls `ProgrammeRepository.removeDay()`.
 
 === Managing Progression Rules
 
-A *Rules* section below the grid lists the `ProgressionRule` records for the programme.
-Each rule shows the exercise name, progression type, increment/percentage value, and frequency.
-New rules are added via an exercise picker followed by type and value inputs.
+The rules section lists `ProgressionRule` records with exercise name, type label, value, and frequency. Adding a rule opens a dialog with an exercise dropdown, a `ProgressionType` dropdown, a value field, and a frequency-in-weeks field, then calls `ProgrammeRepository.addRule()`. Removing a rule calls `ProgrammeRepository.removeRule()`.
 
 == Programme-Aware Workout Start
 
-`StartWorkoutUseCase` follows this logic:
-
-. Check whether an active programme exists.
-. If yes, find the `ProgrammeDay` matching today.
-. Load the template from that day.
-. For each exercise, compute the adjusted target weight from the applicable `ProgressionRule`.
-. Initialise the active workout with the template's exercise list and progression-adjusted ghost sets.
-. If no programme is active (or today has no scheduled day), fall back to the standard empty-workout or manual template flow.
-
-NOTE: `frequencyWeeks` controls how often a rule is applied.
-A rule with `frequencyWeeks = 2` only increases the weight on even-numbered weeks within the programme; on odd weeks the previous week's weight is repeated.
+The entry point is on `ActiveWorkoutScreen`: a "Start from Programme" row opens a picker (`_showProgrammePicker`) built from `ProgrammeRepository.getAllProgrammes()`, listing each programme's name and assigned-day count. Selecting one calls `ActiveWorkoutController.startFromProgramme(programme)` (see <<Target Weight Calculation>> above for the full sequence). If it returns `false`, the screen shows a snackbar rather than starting a workout.
 
 == Key Files
 
@@ -163,8 +163,23 @@ A rule with `frequencyWeeks = 2` only increases the weight on even-numbered week
 | `lib/features/programmes/domain/models/programme.dart`
 | `Programme`, `ProgrammeDay`, `ProgressionRule`, and `ProgressionType` definitions
 
-| `lib/features/workout/application/start_workout_use_case.dart`
-| Programme-aware workout initialisation
+| `lib/features/programmes/domain/repositories/programme_repository.dart`
+| `ProgrammeRepository` interface, including `markProgrammeStarted`
+
+| `lib/features/programmes/data/drift_programme_repository.dart`
+| Drift-backed implementation; soft-delete cascade for days/rules
+
+| `lib/features/programmes/presentation/screens/programme_list_screen.dart`
+| Programme list, create dialog, delete confirmation
+
+| `lib/features/programmes/presentation/screens/programme_edit_screen.dart`
+| Week/day grid, template picker, progression rule management
+
+| `lib/features/programmes/presentation/widgets/programmes_desktop_view.dart`
+| Master-list/detail-pane layout for wide screens
+
+| `lib/features/workout/presentation/controllers/active_workout_controller.dart`
+| `startFromProgramme` — programme-aware workout start and ghost weight progression
 
 | `lib/features/templates/domain/models/workout_template.dart`
 | `WorkoutTemplate` and `TemplateExercise` models

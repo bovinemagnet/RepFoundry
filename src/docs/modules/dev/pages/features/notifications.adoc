@@ -6,6 +6,11 @@ Paul Snow
 
 RepFoundry can send scheduled push notifications to remind users to work out on chosen days and to protect active training streaks.
 
+[NOTE]
+====
+Looking for the user-facing guide? See xref:ROOT:guide/notifications.adoc[]. Note that scheduled reminders (this page) are a separate mechanism from in-session rest-timer alerts, which are covered in the workout feature.
+====
+
 == Overview
 
 Notifications are delivered via the `flutter_local_notifications` package using timezone-aware scheduling from the `timezone` package.
@@ -149,21 +154,15 @@ No additional `Info.plist` keys are required beyond those added by the `flutter_
 
 == Settings UI
 
-Notifications have a dedicated screen at the route `/settings/notifications`, reached from a *Notifications* tile in the Settings hub.
-The tile's subtitle summarises current configuration (for example, `Mon, Wed, Fri at 18:00`) or shows _No reminders configured_ when none are enabled.
+The reminders screen lives at route `/settings/notifications`, reached from a *Notifications* tile in the Settings hub. Screen composition:
 
-The notifications screen contains:
+* Permission-denied banner — a `MaterialBanner` shown when `notificationPermissionProvider` resolves to `denied`; its action calls `openNotificationSettings()` via the `app_settings` package, then `refresh()` to re-check status
+* `ReminderDaysPicker` — seven `FilterChip` widgets bound to `reminderSettingsProvider`, gated by an `onBeforeToggle` callback that calls `_ensurePermission`
+* Time picker — platform `showTimePicker`; result is passed to `setTime(hour, minute)`
+* Streak toggle — a `SwitchListTile` bound to `toggleStreakReminder()`
+* Test notification tile — disabled when permission is denied; calls `showTestNotification()`
 
-* *Permission denied banner* — appears at the top when notifications are blocked at the OS level, with an *Open settings* action that launches the system notification settings via the `app_settings` package
-* *Day picker* — a row of toggle chips for Monday through Sunday
-* *Time picker* — opens the platform time picker; updates `hour` and `minute`
-* *Streak reminder toggle* — enables or disables the daily streak protection notification
-* *Send test notification* — fires an immediate notification so the user can verify their setup is working; disabled when permission is denied
-
-The first time the user enables a reminder day, the streak toggle, or taps the test notification button, the OS permission prompt appears.
-If the user denies permission, the toggle still persists their choice but the banner appears so they can re-grant later.
-
-Changes are saved immediately via `ReminderSettingsNotifier`, which reschedules all active notifications to reflect the updated preferences.
+`_ensurePermission` requests the OS permission lazily, on first interaction with any of the above, rather than at app startup. Every mutation persists immediately and triggers `_reschedule()` on `ReminderSettingsNotifier`, which reschedules all active notifications to reflect the updated preferences.
 
 == Key Files
 

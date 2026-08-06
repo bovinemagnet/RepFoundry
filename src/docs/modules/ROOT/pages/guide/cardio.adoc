@@ -1,0 +1,78 @@
+= Cardio tracking
+Paul Snow
+0.0.0
+:description: How to record a cardio session in RepFoundry, including GPS distance, incline, and live heart rate.
+
+RepFoundry records duration-based cardio activities — running, cycling, rowing, and similar exercises — alongside your strength workouts, with optional GPS distance, incline, and live heart rate from a connected Bluetooth monitor.
+
+== Overview
+
+A cardio session tracks elapsed time from the moment you start it, plus whichever of these you choose to capture:
+
+* Distance, from GPS or entered manually
+* Incline, entered manually as a percentage
+* Average heart rate, from a connected Bluetooth monitor or entered manually
+
+None of these are required. You can save a session with just a duration.
+
+== Starting and controlling a session
+
+Open the *Cardio* tab and choose an exercise from the pills across the top — the exercises you've tagged as cardio (Treadmill and Stationary Bike by default) appear here. Tap *Start Session* to begin the timer.
+
+While a session is running you can:
+
+* *Pause* it and *Resume* later — the elapsed time picks up where you left off.
+* *Reset* to clear the current session and start again.
+* *Save Session* once you have some elapsed time recorded.
+
+The timer keeps counting correctly even if the app is backgrounded or the phone is locked while a session is running.
+
+== Tracking distance with GPS
+
+Turn on *GPS Distance Tracking* to have RepFoundry follow your position and calculate distance automatically, with pace recalculated live as you move. The first time you turn it on, you'll be asked to grant location permission. If you decline, or later revoke the permission, distance and pace stay blank — the session still saves normally.
+
+GPS tracking is entirely optional. With it switched off, you can enter a distance manually instead, and RepFoundry will calculate pace from that.
+
+== Recording incline
+
+Enter or update the incline at any point during a session — it's stored as a percentage (for example, `5.0` means a 5% incline).
+
+== Connecting a heart rate monitor
+
+Cardio sessions can show live BPM from a Bluetooth heart rate strap or watch. Tap the *Heart Rate Monitor* card and then *Connect* to scan for nearby devices.
+
+Cardio shares its Bluetooth connection with the dedicated heart rate panel — connect a device once and it stays connected whichever screen you're on. See xref:guide/heart-rate.adoc[] for more on the heart rate panel, training zones, and device pairing.
+
+=== Supported devices
+
+* Standard chest straps and arm bands (Polar, Garmin, Wahoo, and similar) — these are detected automatically once worn.
+* Apple Watch — enable *Broadcast Heart Rate* under Settings → Workout → Heart Rate on the watch, then start any workout on it before connecting.
+* Samsung Galaxy Watch — enable BLE heart rate broadcasting in Samsung Health on the watch before connecting.
+
+A step-by-step setup guide for watches and straps is available from the help icon on the Heart Rate Monitor card.
+
+=== While connected
+
+* A connecting or reconnecting device shows its name with a progress indicator.
+* Once connected, live BPM is shown on the card, along with the device name and a *Disconnect* option.
+* If the connection drops unexpectedly — out of range, interference — RepFoundry keeps trying to reconnect for several minutes before giving up, so brief dropouts usually recover on their own.
+* Tapping *Disconnect* ends the connection deliberately; RepFoundry will not try to reconnect after that.
+
+If no devices are found, make sure your monitor is actually broadcasting — for a chest strap that means wearing it, for a watch that means enabling broadcast mode and, for Apple Watch, starting a workout on the watch itself.
+
+== Entering data manually
+
+If GPS is off, or no heart rate monitor is connected, distance and average heart rate can be typed in directly before you save.
+
+== Comparing to your last session
+
+Once you pick an exercise, RepFoundry shows a summary of your most recent session for that same exercise — duration, distance, pace, and average heart rate — so you can see at a glance how the current session compares.
+
+== Saving a session
+
+Tap *Save Session* to finish. The session is saved with its recorded start and end time and becomes part of your workout history alongside your strength sessions.
+
+[NOTE]
+====
+Looking for implementation detail? See xref:dev:features/cardio.adoc[Cardio tracking internals].
+====

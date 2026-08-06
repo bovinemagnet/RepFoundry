@@ -4,7 +4,12 @@ Paul Snow
 :description: Guide to the advanced analytics charts and metrics in RepFoundry.
 :page-aliases: ROOT:features/analytics.adoc
 
-The advanced analytics feature provides data-driven insight into training history through weekly volume trends, muscle group balance, PR timelines, and training load measurements.
+Implementation reference for the analytics feature: weekly volume trends, muscle group balance, PR timelines, and training load measurements.
+
+[NOTE]
+====
+For an explanation of what these charts show and how to read them, see xref:ROOT:guide/analytics.adoc[Analytics].
+====
 
 == Overview
 
@@ -15,8 +20,6 @@ Providers query the `WorkoutRepository` and `ExerciseRepository`, filter out war
 NOTE: Warm-up sets (where `WorkoutSet.isWarmUp == true`) are excluded from all analytics calculations.
 
 == Weekly Volume Trend
-
-The weekly volume chart shows total training volume (kg × reps) per calendar week as a line chart, with percentage change indicators between consecutive weeks.
 
 === WeeklyVolume Model
 
@@ -56,8 +59,6 @@ Fetches up to 200 completed workouts, collects all non-warm-up sets, and delegat
 
 == Muscle Group Balance
 
-The muscle group balance chart visualises how training volume is distributed across muscle groups, enabling users to spot imbalances.
-
 === MuscleBalance Model
 
 [source,dart]
@@ -79,23 +80,17 @@ The provider:
 . Excludes `MuscleGroup.cardio` from the output (cardio volume is tracked separately).
 . Returns entries sorted by `MuscleGroup.index` for consistent legend ordering.
 
-== PR Timeline
+NOTE: `MuscleBalanceChart` requires at least 3 entries to render (fl_chart's `RadarChart` asserts on fewer vertices); the widget falls back to a prompt string below that threshold.
 
-The PR timeline displays personal records as a horizontally scrollable set of cards, ordered by date achieved, allowing users to see their progression over time.
+== PR Timeline
 
 === prTimelineProvider
 
 The provider reads from the `PersonalRecord` repository and returns records sorted by `achievedAt` in reverse chronological order.
-Each card shows:
-
-* Exercise name
-* PR type (estimated 1RM, max weight, max reps, or max volume)
-* Value achieved
-* Date achieved
+`RecordType` values are `estimatedOneRepMax`, `maxWeight`, `maxReps`, and `maxVolume`; the UI maps these to display labels in `PrTimeline._recordTypeLabel`.
 
 == Training Load
 
-The training load chart measures subjective workout intensity over time.
 Load is defined as the number of working sets multiplied by the average RPE for that week.
 
 === WeeklyLoad Model

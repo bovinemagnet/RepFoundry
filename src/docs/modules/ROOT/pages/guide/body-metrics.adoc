@@ -1,0 +1,58 @@
+= Body metrics
+Paul Snow
+0.0.0
+:description: How to record and track body weight and body fat percentage in RepFoundry.
+
+RepFoundry lets you record body weight over time, alongside an optional body
+fat percentage and a note, so you can track how your body is changing outside
+of the numbers on the bar.
+
+== What you can record
+
+Each entry captures:
+
+* *Weight* — required, shown in whichever unit (kg or lb) you've set for the
+  app.
+* *Body fat percentage* — optional.
+* *Notes* — an optional free-text note.
+* *Date* — defaults to today, but can be changed.
+
+There is no field for other body measurements such as waist or chest — only
+weight, body fat percentage, and notes are recorded.
+
+== Adding an entry
+
+From the *Body Metrics* screen, tap the *Add Measurement* button. Enter a
+weight, and optionally a body fat percentage and a note, then save. The entry
+is added to your history immediately.
+
+== Viewing your history
+
+The screen shows your most recent entry first, as a summary card with your
+latest weight and body fat percentage (if you recorded one). Below that, once
+you have at least two entries, a chart plots your weight over time so you can
+see the trend at a glance.
+
+Your full history is listed underneath, most recent first, showing the date,
+weight, body fat percentage and notes for each entry. Swipe an entry to
+delete it.
+
+== Importing from your health app
+
+If xref:guide/health-sync.adoc[Health Sync] is turned on and allowed to read
+weight data, RepFoundry checks your phone's health store for a weight reading
+newer than your most recent entry. When it finds one, it offers to import it
+as a new entry with a single tap.
+
+If Health Sync is allowed to write data instead, saving a new body metrics
+entry automatically sends the weight — and body fat percentage, if you
+entered one — to your phone's health store.
+
+== Where to find it
+
+Open *Settings* and choose *Body Metrics*.
+
+[NOTE]
+====
+Looking for implementation detail? See xref:dev:features/body-metrics.adoc[Body metrics internals].
+====

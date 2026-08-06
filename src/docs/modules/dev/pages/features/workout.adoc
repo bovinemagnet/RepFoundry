@@ -7,6 +7,11 @@ Paul Snow
 The workout logging feature is the core of RepFoundry.
 It lets users record sets with weight, reps, and optional RPE; manage an exercise library; organise sessions with templates; and track personal records automatically.
 
+[NOTE]
+====
+For user-facing guidance on this feature, see xref:ROOT:guide/workout.adoc[Workout logging].
+====
+
 == Overview
 
 A workout session is represented by the `Workout` domain model, which acts as a container for one or more `WorkoutSet` records.
@@ -15,8 +20,7 @@ All sets are persisted to SQLite immediately on entry — never batched — so d
 
 == Exercise Library
 
-RepFoundry ships 18 default exercises, seeded into the database on first run (IDs `'1'` through `'18'`).
-Users can add unlimited custom exercises.
+RepFoundry seeds 21 default exercises into the database on first run (IDs `'1'` through `'21'`).
 
 === Exercise Model
 
@@ -84,7 +88,7 @@ class Exercise {
 
 === Creating a Custom Exercise
 
-Custom exercises are created via the *Create Exercise* screen and persisted through `DriftExerciseRepository`.
+Custom exercises are persisted through `DriftExerciseRepository`.
 The `isCustom` flag distinguishes them from seeded exercises in the library view.
 Soft deletes are used so history referencing a deleted exercise remains valid.
 
@@ -136,8 +140,7 @@ Warm-up rows are visually distinguished in the set list with a *W* badge.
 
 === Editing Logged Sets
 
-After a set is persisted, users can open the *Edit Set* dialog from any set row to correct weight, reps, RPE, or warm-up status.
-Changes are written immediately through `DriftWorkoutRepository`.
+Edits to a persisted set are written immediately through `DriftWorkoutRepository`.
 
 == Ghost Set Auto-Fill
 
@@ -159,11 +162,10 @@ GhostSet? nextGhostSet(String exerciseId)
 List<GhostSet> remainingGhosts(String exerciseId)
 ----
 
-== Superset and Circuit Grouping
+== Superset Grouping
 
-Sets can be linked into a superset or circuit by sharing the same `groupId` UUID.
-The UI presents a *Link / Unlink* action on each set row.
-Sets with the same `groupId` are visually grouped and can be navigated sequentially during the rest period.
+Sets can be linked into a superset by sharing the same `groupId` UUID, via `linkSupersetSets`/`unlinkSupersetSets` and grouped for rendering with `getSupersetGroups` (`active_workout_controller.dart`).
+Linking is triggered by a long-press on the exercise card (`_ExerciseSection.onLinkSuperset`), not a per-set control.
 Unlinking a set clears its `groupId` via `copyWith(clearGroupId: true)`.
 
 == Rest Timer
@@ -222,13 +224,12 @@ Each template contains an ordered list of `TemplateExercise` entries specifying 
 
 === Using a Template
 
-. Navigate to *Templates* and select a template.
-. Tap *Start Workout* — `StartWorkoutUseCase` creates a `Workout` with `templateId` set.
-. The exercise list is pre-populated from the template; ghost sets are loaded for each exercise.
+`StartWorkoutUseCase` creates a `Workout` with `templateId` set; the exercise list and ghost sets are then populated as for any other session.
 
 === Creating a Template
 
-Templates can be created from scratch via the *Template Edit* screen, or saved from a completed workout.
+`ConvertWorkoutToTemplateUseCase` derives a template from a completed workout: sets are grouped by exercise (excluding warm-ups where working sets exist), `targetSets` is the working-set count, and `targetReps` is the most common rep count (`_mostCommonReps`, ties broken by first occurrence).
+
 Each `TemplateExercise` stores:
 
 [cols="1,2"]
@@ -253,14 +254,12 @@ Each `TemplateExercise` stores:
 
 == Active Workout State Flow
 
-. User taps *Start Workout*
-. `ActiveWorkoutController` creates a `Workout` record in the repository
-. User adds an exercise — ghost sets are loaded from the last session
-. Dimmed ghost rows appear beneath confirmed sets
+. `ActiveWorkoutController.startWorkout` creates a `Workout` record in the repository
+. Adding an exercise triggers a load of ghost sets from the last session
+. Ghost rows render beneath confirmed sets until consumed
 . `SetInputCard` pre-fills the next ghost's weight / reps / RPE
 . Each confirmed set is persisted immediately
-. Rest timer runs between sets
-. User taps *Finish* — workout is marked `completedAt`; history providers refresh via broadcast streams
+. Finishing marks the workout `completedAt`; history providers refresh via broadcast streams
 
 == Key Files
 

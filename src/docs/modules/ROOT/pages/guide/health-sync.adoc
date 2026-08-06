@@ -1,0 +1,69 @@
+= Health sync
+Paul Snow
+0.0.0
+:description: How RepFoundry exchanges weight, body fat, heart rate and workout data with Apple Health or Health Connect, and how that differs from cloud sync.
+
+Health sync lets RepFoundry share data with your phone's built-in health platform — Apple Health on iOS, Health Connect on Android — so the numbers you log in RepFoundry also show up in your phone's own health app, and vice versa for your weight.
+
+It is switched off by default. Nothing is written to or read from your phone's health store until you turn it on.
+
+== Which health platform your phone uses
+
+* On *iOS*, RepFoundry connects to *Apple Health*.
+* On *Android*, RepFoundry connects to *Health Connect* (the OS-level health data store; on Android 14 and later it is built in, on earlier versions you need the Health Connect app installed).
+
+You cannot choose a different health platform — RepFoundry always uses whichever one is native to your phone.
+
+== What moves, and in which direction
+
+Health sync is not all-or-nothing. Four settings toggles under *Settings → Sync & Reminders → Health Sync* control what is shared, on top of a master switch for the feature as a whole:
+
+[cols="1,2"]
+|===
+| Toggle | What it controls
+
+| *Health Sync* (master)
+| Turns the whole feature on or off. Nothing below happens while this is off.
+
+| *Write Workouts*
+| Sends each completed workout (strength or cardio, start and end time, estimated calories, distance for cardio) to your health app.
+
+| *Write Weight*
+| Sends body weight and, when you record it, body fat percentage entries to your health app.
+
+| *Write Heart Rate*
+| Sends each heart rate reading recorded during a monitoring session to your health app.
+
+| *Read Weight*
+| Looks for a newer weight entry in your health app than the one RepFoundry already has, and offers to import it.
+|===
+
+*Write Workouts* and *Write Weight* are on by default once you enable Health Sync; *Write Heart Rate* and *Read Weight* are off by default and need to be turned on individually.
+
+Reading only applies to weight — RepFoundry does not pull workouts, body fat, or heart rate data back in from your health app. When a newer weight entry is found, you are prompted to import it the next time you visit the *Body Metrics* screen; it is not applied automatically.
+
+Health Connect and Apple Health both grant RepFoundry read and write access across four data categories: heart rate, exercise (workouts), weight, and body fat. What RepFoundry actually does with that access is described in the table above.
+
+== Granting access
+
+Turning on the *Health Sync* master toggle immediately prompts your phone's permission screen for Apple Health or Health Connect, scoped to whichever of the four toggles above are currently on. Grant the request to complete setup.
+
+If you decline, the master toggle stays off and RepFoundry tells you the request was refused. You can try again at any time by turning the toggle on again — the phone re-prompts using your device's normal permission flow.
+
+You can change what is shared at any point by adjusting the individual toggles, and turn the whole feature off again from the same screen. Turning it off stops any further sharing; it does not remove data already written to your health app or delete anything from RepFoundry.
+
+For the platform permission prompts behind this feature, and what stops working if you decline them, see xref:permissions.adoc[]. For how the two platforms diverge more generally, see xref:platform-differences.adoc[].
+
+== How this differs from cloud sync
+
+Health sync and cloud sync solve different problems and are easy to confuse because both move data off your phone.
+
+* *Cloud sync* (see xref:guide/sync.adoc[]) mirrors your entire RepFoundry history — workouts, sets, templates, programmes and more — between your own devices on the same platform, using iCloud or Google Drive. It exists to keep multiple devices in step with each other.
+* *Health sync* exchanges a handful of specific data points — workouts, weight, body fat, and heart rate — with your phone's health app, so that app and any other app connected to it can see them too. It does not back up your RepFoundry data and does not move data between devices.
+
+Turning health sync on or off has no effect on cloud sync, and vice versa — they are independent settings.
+
+[NOTE]
+====
+Looking for implementation detail? See xref:dev:features/health-sync.adoc[Health sync internals].
+====
