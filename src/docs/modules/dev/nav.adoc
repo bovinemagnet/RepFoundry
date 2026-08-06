@@ -17,6 +17,7 @@
 * xref:testing.adoc[Testing]
 * xref:localisation.adoc[Localisation]
 * xref:release-versioning.adoc[Release Versioning]
+* xref:screenshot-checklist.adoc[Screenshot checklist]
 * Product
 ** xref:product/requirements.adoc[Product Requirements]
 ** xref:product/heart-rate-prd.adoc[Heart Rate PRD]

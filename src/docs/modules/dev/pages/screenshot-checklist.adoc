@@ -1,0 +1,225 @@
+= Screenshot checklist
+Paul Snow
+0.0.0
+:description: The screenshots the end-user documentation wants, with the filename each should be saved as and the screen to capture it from.
+
+The end-user guide (`ROOT` module) describes RepFoundry's screens in prose only — none of its pages currently contain an `image::` directive. This page is the input to a follow-up capture pass: it lists every screenshot those pages want, the filename each should be saved as, and which screen and state to capture it from.
+
+IMPORTANT: No page may reference any of these images until the corresponding file actually exists under the images directory. The Antora build used in CI (`--log-failure-level=warn`) fails on a missing image, so adding an `image::` directive ahead of the file would break the build. Capture the screenshot first, add the file, then wire up the reference.
+
+Filenames below are plain text — this page does not embed them with `image::`, so their absence does not affect the build.
+
+== Journey pages
+
+[cols="2,3,3", options="header"]
+|===
+| Filename | Screen and state to capture | Used by
+
+| `workout-idle.png`
+| Workout tab in its idle state — the "Ready to train?" prompt with the *Start Workout* button and the alternative starting points underneath.
+| xref:ROOT:first-workout.adoc[]
+
+| `workout-active-session.png`
+| Active workout screen mid-session, with at least one exercise card expanded and one collapsed, showing logged sets.
+| xref:ROOT:first-workout.adoc[]
+
+| `set-entry-ghost-set.png`
+| A set-entry card with *Weight*, *Reps*, and *RPE* pre-filled from a ghost set, and at least one dimmed placeholder row visible above it.
+| xref:ROOT:first-workout.adoc[]
+
+| `rest-timer.png`
+| The rest timer bar mid-countdown, with the quick-start duration buttons and the stop icon visible.
+| xref:ROOT:first-workout.adoc[]
+
+| `finish-workout-dialog.png`
+| The *Finish Workout?* confirmation dialog.
+| xref:ROOT:first-workout.adoc[]
+|===
+
+== Workout logging (guide)
+
+[cols="2,3,3", options="header"]
+|===
+| Filename | Screen and state to capture | Used by
+
+| `exercise-picker.png`
+| The *Choose Exercise* screen, with the search field and muscle group filter chips visible.
+| xref:ROOT:guide/workout.adoc[], xref:ROOT:guide/exercises.adoc[]
+
+| `edit-set-dialog.png`
+| The edit dialog opened by tapping a logged set, showing the weight, reps, RPE, and warm-up fields.
+| xref:ROOT:guide/workout.adoc[]
+
+| `warmup-ramp.png`
+| The warm-up ramp suggestion sheet for a loadable exercise, showing the generated sequence of lighter sets.
+| xref:ROOT:guide/workout.adoc[]
+
+| `superset-linked.png`
+| Two exercise cards linked as a superset, with the superset indicator and unlink icon visible.
+| xref:ROOT:guide/workout.adoc[]
+
+| `pr-celebration.png`
+| The personal record celebration overlay, with the trophy icon, record type, and new value.
+| xref:ROOT:guide/workout.adoc[]
+|===
+
+== Templates and programmes
+
+[cols="2,3,3", options="header"]
+|===
+| Filename | Screen and state to capture | Used by
+
+| `templates-list.png`
+| The Templates screen listing saved templates.
+| xref:ROOT:guide/templates.adoc[]
+
+| `template-edit.png`
+| A template's edit screen, showing exercises with target sets/reps and the drag handles used to reorder them.
+| xref:ROOT:guide/templates.adoc[]
+
+| `programmes-schedule.png`
+| A programme's schedule grid, with templates assigned to some days and others left as rest days.
+| xref:ROOT:guide/programmes.adoc[]
+
+| `progression-rule.png`
+| The progression rule editor, showing the exercise, strategy, value, and frequency fields.
+| xref:ROOT:guide/programmes.adoc[]
+|===
+
+== Cardio and heart rate
+
+[cols="2,3,3", options="header"]
+|===
+| Filename | Screen and state to capture | Used by
+
+| `cardio-session.png`
+| The Cardio tab mid-session, with the exercise pills, running timer, and GPS Distance Tracking toggle visible.
+| xref:ROOT:guide/cardio.adoc[]
+
+| `cardio-hr-connect.png`
+| The Heart Rate Monitor card on the Cardio tab, mid-connection with a device name and progress indicator.
+| xref:ROOT:guide/cardio.adoc[]
+
+| `heart-rate-zones.png`
+| The Heart Rate panel showing live BPM, the current zone, and the full five-zone legend with BPM ranges.
+| xref:ROOT:guide/heart-rate.adoc[]
+
+| `heart-rate-caution.png`
+| The amber caution card active at the top of the Heart Rate screen, with the zone reliability badge showing Low.
+| xref:ROOT:guide/heart-rate.adoc[]
+
+| `heart-rate-symptom.png`
+| The urgent-guidance dialogue shown after selecting a symptom from *Report Symptom*, with its two response options.
+| xref:ROOT:guide/heart-rate.adoc[]
+|===
+
+== Coach mode
+
+[cols="2,3,3", options="header"]
+|===
+| Filename | Screen and state to capture | Used by
+
+| `coach-settings.png`
+| The *Settings → Virtual Trainer* screen, showing the persona picker (Steady/Hype/Sergeant), speech rate control, and the individual on/off toggles.
+| xref:ROOT:guide/trainer.adoc[]
+
+| `coach-safety-notice.png`
+| The first-time coach safety notice dialog.
+| xref:ROOT:guide/trainer.adoc[]
+|===
+
+== Managing clients
+
+[cols="2,3,3", options="header"]
+|===
+| Filename | Screen and state to capture | Used by
+
+| `client-roster.png`
+| The client roster, with several clients shown by name and colour swatch, including the "You" entry.
+| xref:ROOT:guide/clients.adoc[]
+
+| `client-profile.png`
+| A client's profile page, showing assigned plans and their health profile.
+| xref:ROOT:guide/clients.adoc[]
+
+| `active-client-switcher.png`
+| The active client switcher sheet, opened from the navigation rail chip or the compact badge.
+| xref:ROOT:guide/clients.adoc[]
+|===
+
+== Sync
+
+[cols="2,3,3", options="header"]
+|===
+| Filename | Screen and state to capture | Used by
+
+| `sync-settings.png`
+| *Settings → Cross-Device Sync*, with sync enabled, showing the last-synced time and *Sync Now* button.
+| xref:ROOT:guide/sync.adoc[]
+
+| `health-sync-settings.png`
+| *Settings → Sync & Reminders → Health Sync*, showing the master switch and the four individual toggles.
+| xref:ROOT:guide/health-sync.adoc[]
+|===
+
+== Analytics, body metrics, and history
+
+[cols="2,3,3", options="header"]
+|===
+| Filename | Screen and state to capture | Used by
+
+| `analytics-charts.png`
+| The Analytics screen with data present — weekly volume trend, muscle group balance, personal record timeline, and weekly training load.
+| xref:ROOT:guide/analytics.adoc[]
+
+| `body-metrics.png`
+| The Body Metrics screen, with the latest-entry summary card, the weight-over-time chart, and the history list below it.
+| xref:ROOT:guide/body-metrics.adoc[]
+
+| `new-exercise.png`
+| The New Exercise screen, with name, category, muscle group, and equipment fields filled in.
+| xref:ROOT:guide/exercises.adoc[]
+
+| `history-list.png`
+| The History tab, showing completed workouts grouped under headings such as "This week" and "Last week".
+| xref:ROOT:guide/history.adoc[]
+
+| `workout-detail.png`
+| A workout's detail screen, with its exercise breakdown and a set marked as a personal record.
+| xref:ROOT:guide/history.adoc[]
+
+| `exercise-history.png`
+| A single exercise's history view, with its estimated one-rep max trend chart and recent-sets table.
+| xref:ROOT:guide/history.adoc[]
+
+| `personal-records.png`
+| The dedicated personal records page, listing exercises with their record types, values, and dates.
+| xref:ROOT:guide/history.adoc[]
+|===
+
+== Notifications, settings, and stretching
+
+[cols="2,3,3", options="header"]
+|===
+| Filename | Screen and state to capture | Used by
+
+| `notifications-settings.png`
+| The reminders screen, with the day-of-week toggles and the time picker set.
+| xref:ROOT:guide/notifications.adoc[]
+
+| `settings-hub.png`
+| The main Settings screen, showing the tiles for Data, Health Profile, Appearance, Units, Rest Timer, and Notifications.
+| xref:ROOT:guide/settings.adoc[]
+
+| `import-screen.png`
+| The *Import from File* flow after picking a CSV file, showing the detected format (Hevy, Strong, or RepFoundry CSV) awaiting confirmation.
+| xref:ROOT:guide/settings.adoc[]
+
+| `export-data.png`
+| *Settings → Data*, showing the *Export as JSON* and *Export as CSV* options.
+| xref:ROOT:guide/settings.adoc[]
+
+| `stretching-sheet.png`
+| The Add Stretching sheet, with a preset chip selected and the Timer method running.
+| xref:ROOT:guide/stretching.adoc[]
+|===
