@@ -9,16 +9,22 @@ The architecture prioritises fast startup, testability, and full offline operati
 
 == Key Features
 
-The following capabilities are available or planned in RepFoundry:
+RepFoundry ships the following features:
 
 * *Workout logging* — log sets, reps, weight, and RPE with ghost-set auto-fill from the previous session
+* *Exercise library* — 21 built-in exercises plus unlimited custom exercises, searchable and filterable by muscle group
 * *Cardio tracking* — track duration, distance, incline, and live heart rate during cardio sessions
 * *Heart rate monitoring* — real-time BLE heart rate streaming with zone charts, session stats, and time-in-zone analysis
+* *Coach mode* — spoken voice coaching during a workout across three personas, with heart-rate-aware safety behaviour
 * *Workout templates* — create and reuse workout blueprints
+* *Stretching* — log timed or manual stretching entries against a workout, tracked separately from working sets
+* *Programme builder* — structured training programmes with progression rules
 * *Analytics* — estimated one-rep max, personal records, volume trends, and progress charts
-* *Programme builder* — structured training programmes with progression rules (planned)
-* *Health sync* — integration with platform health APIs (planned)
-* *Body metrics* — track weight and other body measurements over time (planned)
+* *History* — browse past workouts, per-exercise progress, and personal records
+* *Body metrics* — track weight and body fat percentage over time
+* *Health sync* — integration with platform health APIs (Apple Health / Health Connect)
+* *Client management* — personal trainers manage multiple clients, each with their own health profile and plan assignments
+* *Settings* — import/export of workout history, health profile configuration, and app preferences
 * *Notifications* — rest timer alerts and workout reminders (partially implemented via in-app haptics and audio)
 
 == Technology Stack
@@ -65,11 +71,20 @@ The following capabilities are available or planned in RepFoundry:
 * *iOS 15+* — iPhone and iPad
 * *Android 10+* — Android namespace `com.repfoundry.app`, three build flavours: `dev`, `staging`, `prod`
 
+== Looking for the end-user guide?
+
+If you want to install and use RepFoundry rather than build it, see the end-user guide instead: xref:ROOT:index.adoc[].
+
 == Documentation Sections
 
 * xref:getting-started.adoc[Getting Started] — prerequisites, build commands, and project layout for developers
 * xref:architecture.adoc[Architecture] — clean architecture overview, layer responsibilities, and design decisions
 * xref:database.adoc[Database] — Drift/SQLite schema, design decisions, and migration strategy
 * xref:state-management.adoc[State Management] — Riverpod provider hierarchy and key state patterns
+* xref:responsive-desktop.adoc[Responsive Desktop Layouts] — adaptive layout behaviour on tablet and desktop-sized windows
+* Feature Internals — implementation detail for each feature: xref:features/workout.adoc[Workout Logging], xref:features/cardio.adoc[Cardio Tracking], xref:features/heart-rate.adoc[Heart Rate Monitoring], xref:features/programmes.adoc[Programme Builder], xref:features/analytics.adoc[Advanced Analytics], xref:features/sync.adoc[Cloud Sync], xref:features/health-sync.adoc[Health Sync], xref:features/body-metrics.adoc[Body Metrics], xref:features/notifications.adoc[Notifications]
 * xref:testing.adoc[Testing] — test structure, tooling, and coverage targets
 * xref:localisation.adoc[Localisation] — ARB workflow, generated class usage, and adding new strings
+* xref:release-versioning.adoc[Release Versioning] — versioning scheme and release process
+* xref:screenshot-checklist.adoc[Screenshot checklist] — screenshots required for a release
+* Product — xref:product/requirements.adoc[Product Requirements] and xref:product/heart-rate-prd.adoc[Heart Rate PRD]

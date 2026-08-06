@@ -13,7 +13,7 @@ Training on your own::
 Log workouts, track cardio sessions, watch your heart rate live during a session, and see your progress build up over weeks and months.
 
 Coaching others::
-A personal trainer can manage multiple clients from the same app, following their programmes and reviewing their progress alongside their own training.
+A personal trainer can manage multiple clients from the same app — see xref:guide/clients.adoc[] — following their programmes and reviewing their progress alongside their own training.
 
 == What to read next
 
@@ -28,6 +28,22 @@ Two more pages are worth knowing about early:
 
 * xref:permissions.adoc[] explains what RepFoundry asks for on your phone and why.
 * xref:platform-differences.adoc[] covers where iOS and Android behave differently, including cloud sync and health data.
+
+== Using RepFoundry
+
+Once you are past the basics, these pages cover each feature in full:
+
+Core training::
+xref:guide/workout.adoc[], xref:guide/cardio.adoc[], xref:guide/heart-rate.adoc[], xref:guide/trainer.adoc[], xref:guide/stretching.adoc[], xref:guide/exercises.adoc[], xref:guide/templates.adoc[], xref:guide/programmes.adoc[]
+
+Progress::
+xref:guide/history.adoc[], xref:guide/analytics.adoc[], xref:guide/body-metrics.adoc[]
+
+Syncing and data::
+xref:guide/sync.adoc[], xref:guide/health-sync.adoc[], xref:guide/notifications.adoc[], xref:guide/settings.adoc[]
+
+For trainers::
+xref:guide/clients.adoc[]
 
 == Looking for the developer documentation?
 

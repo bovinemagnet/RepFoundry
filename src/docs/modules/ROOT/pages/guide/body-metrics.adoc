@@ -11,7 +11,7 @@ of the numbers on the bar.
 
 Each entry captures:
 
-* *Weight* — required, shown in whichever unit (kg or lb) you've set for the
+* *Weight* — required, shown in whichever unit (kg or lbs) you've set for the
   app.
 * *Body fat percentage* — optional.
 * *Notes* — an optional free-text note.

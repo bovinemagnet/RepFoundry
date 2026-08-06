@@ -76,6 +76,10 @@ The card also shows your current *Zone Method* and confidence level, and a *Zone
 
 See xref:guide/heart-rate.adoc[] for how these inputs are combined into zones, what each confidence level means, and how caution mode behaves when a medical flag is set.
 
+== Max heart rate alert
+
+Under *Settings → Max Heart Rate Alert*, you can configure vibration, a warning sound, and the minimum time between repeated alerts for when your heart rate reaches the top of your zone range. See xref:guide/heart-rate.adoc[] for how zones and alerts work.
+
 == Appearance
 
 Under *Settings → Appearance*:
@@ -99,6 +103,14 @@ Under *Settings → Rest Timer*, *Vibration Alert* and *Sound Alert* each indepe
 == Notifications
 
 Workout reminder notifications are configured on their own screen, reached from *Settings → Notifications*. See xref:guide/notifications.adoc[] for how to set them up.
+
+== Sync and reminders
+
+Health sync and cross-device sync sit alongside workout reminders under *Settings → Reminders*:
+
+*Health Sync* turns on sharing with Apple Health or Health Connect — see xref:guide/health-sync.adoc[] for what is shared and how to configure it.
+
+*Cross-Device Sync* mirrors your history between your own devices via iCloud or Google Drive — see xref:guide/sync.adoc[] for how it works and what happens when the same record changes on two devices.
 
 == Clearing all data
 

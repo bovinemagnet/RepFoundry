@@ -9,7 +9,7 @@ History has two tabs: *History*, which lists your sessions, and *Progress*, whic
 
 == The workout history list
 
-The History tab lists your completed workouts, most recent first, grouped under headings such as *This week*, *Last week*, and then by month. Each entry shows a duration and a total volume (weight lifted multiplied by reps, summed across all sets), plus a weekly volume summary at the top of the tab.
+The History tab lists your completed workouts, most recent first, grouped under headings such as *This Week*, *Last Week*, and then by month. Each entry shows a duration and a total volume (weight lifted multiplied by reps, summed across all sets), plus a weekly volume summary at the top of the tab.
 
 Tap any entry to open its full detail: the date and time it started, duration, total sets, total volume, and a breakdown by exercise. Each exercise section lists every set logged that session — weight, reps, and estimated one-rep max — and is marked if it produced a personal record. If a heart rate monitor was connected during the session, average and peak heart rate appear alongside the sets. Any stretching completed as part of the workout is listed underneath the exercises with its duration.
 

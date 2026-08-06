@@ -13,7 +13,7 @@ With no workout in progress, the Workout tab shows a "Ready to train?" prompt wi
 
 Tapping *Start Workout* begins a new, empty session immediately — there is no setup screen to fill in first. The screen switches to the active-session view, ready for you to add exercises.
 
-Underneath the *Start Workout* button, the app also offers three alternative starting points if you would rather not build the session from scratch: starting a stretching-only session, starting from a saved template, or starting from a day in a training programme. These are optional shortcuts — the walkthrough below assumes the plain *Start Workout* path.
+Underneath the *Start Workout* button, the app also offers three alternative starting points if you would rather not build the session from scratch: starting a stretching-only session (see xref:guide/stretching.adoc[]), starting from a saved template, or starting from a day in a training programme. These are optional shortcuts — the walkthrough below assumes the plain *Start Workout* path.
 
 == Adding an exercise
 

@@ -74,8 +74,14 @@ work, while rising load can be an early signal to plan a lighter week.
 
 == Where to find it
 
-Analytics is available from the app's main navigation. On larger screens
-(tablets, desktop), all four charts and a summary strip of key numbers —
+On a phone, Analytics is not one of the five bottom-navigation tabs. Open
+xref:guide/history.adoc[History], switch to the *Progress* tab, and tap the
+*View Advanced Analytics* tile.
+
+On a tablet or desktop-sized window, Analytics is also available directly as
+its own navigation-rail destination.
+
+On larger screens, all four charts and a summary strip of key numbers —
 total volume, workout count, average session volume, and PR count — are
 shown together on one dashboard. On phones, each chart appears in its own
 card as you scroll down the screen.

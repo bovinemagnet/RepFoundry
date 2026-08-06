@@ -16,7 +16,7 @@ You cannot choose a different health platform — RepFoundry always uses whichev
 
 == What moves, and in which direction
 
-Health sync is not all-or-nothing. Four settings toggles under *Settings → Sync & Reminders → Health Sync* control what is shared, on top of a master switch for the feature as a whole:
+Health sync is not all-or-nothing. Four settings toggles under *Settings → Reminders → Health Sync* control what is shared, on top of a master switch for the feature as a whole:
 
 [cols="1,2"]
 |===

@@ -9,7 +9,7 @@ There is no dedicated stretching tab. Stretching lives inside an active workout,
 
 == Where to find it
 
-The *Stretching* section appears on the active workout screen in two places: above the exercise list while the workout is still empty, and near the bottom, just before the *Complete Workout* button, once you have logged exercises. Either way, it is part of the same active workout — not a separate screen.
+The *Stretching* section appears on the active workout screen in two places: above the exercise list while the workout is still empty, and near the bottom, just before the *Finish Workout?* button, once you have logged exercises. Either way, it is part of the same active workout — not a separate screen.
 
 You can reach it in two ways:
 

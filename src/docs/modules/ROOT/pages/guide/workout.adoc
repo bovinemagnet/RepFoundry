@@ -9,7 +9,7 @@ If you have not logged a workout yet, start with xref:first-workout.adoc[] for a
 
 == The exercise library
 
-RepFoundry ships with 21 built-in exercises covering common barbell, dumbbell, machine, and bodyweight movements. You can add unlimited custom exercises of your own from the exercise picker.
+RepFoundry ships with 21 built-in exercises covering common barbell, dumbbell, machine, and bodyweight movements. You can add unlimited custom exercises of your own from the exercise picker. For the full library reference — searching, editing, and the default exercise list — see xref:guide/exercises.adoc[].
 
 When you create a custom exercise, you give it:
 
@@ -59,11 +59,11 @@ When a set beats a previous best, a celebration appears on screen with a trophy 
 
 == Templates
 
-Templates are reusable workout blueprints — a saved list of exercises with target sets and reps for each — so you do not have to rebuild a session from scratch every time.
+Templates are reusable workout blueprints — a saved list of exercises with target sets and reps for each — so you do not have to rebuild a session from scratch every time. See xref:guide/templates.adoc[] for the full reference on building and managing them.
 
 === Starting from a template
 
-From the Templates screen, pick a saved template and start a workout from it. The exercise list is pre-populated from the template, and ghost sets from your last session for each exercise are loaded as usual.
+From the start of a workout, choose *Start from Template* and pick one from the list. The exercise list is pre-populated from the template, and ghost sets from your last session for each exercise are loaded as usual.
 
 === Creating a template
 
