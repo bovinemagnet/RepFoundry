@@ -120,7 +120,7 @@ Percentages are of the resolved `maxHr` for max-HR-based methods, of heart rate 
 
 == Charts
 
-`HeartRateChart` (`lib/features/heart_rate/presentation/widgets/heart_rate_chart.dart`, `fl_chart`) renders the windowed and full-session heart rate traces with zone-band background annotations. `_TrendChartSection` in `heart_rate_panel_screen.dart` shows a windowed `HeartRateChart` alongside a `SparklineWidget` full-session trace, falling back to a second `HeartRateChart` when fewer than 2 readings exist. The window duration (30/60/90/120/300 s, default 60 s) is persisted via `ChartWindowNotifier` (`lib/features/heart_rate/presentation/providers/chart_window_provider.dart`, key `hr_chart_window_seconds`). Zone-band annotations are toggled via `zoneBandsProvider`.
+`HeartRateChart` (`lib/features/heart_rate/presentation/widgets/heart_rate_chart.dart`, `fl_chart`) renders the windowed and full-session heart rate traces. The BPM line is curved (`curveSmoothness: 0.15`, to reduce sensor spike flicker), plotted over optional zone-band background annotations (`rangeAnnotations`, toggled via `zoneBandsProvider`), with dashed per-zone threshold lines (`_thresholdLines`, `dashArray: [4, 4]`) each labelled with its percentage and BPM value. The X-axis uses adaptive `M:SS` labels (`_xInterval(totalSeconds)` sizes the tick interval to the session length). `_TrendChartSection` in `heart_rate_panel_screen.dart` shows a windowed `HeartRateChart` alongside a `SparklineWidget` full-session trace, falling back to a second `HeartRateChart` when fewer than 2 readings exist. The window duration (30/60/90/120/300 s, default 60 s) is persisted via `ChartWindowNotifier` (`lib/features/heart_rate/presentation/providers/chart_window_provider.dart`, key `hr_chart_window_seconds`).
 
 == Session Statistics
 
@@ -168,9 +168,11 @@ Top to bottom in `HeartRatePanelScreen.build()`:
 
 == Settings Integration
 
-`SettingsScreen` includes a Health Profile section (`_Set2Card`) bound directly to `healthProfileProvider` / `userAgeProvider`: age, resting HR, measured max HR, beta-blocker toggle, heart-condition toggle, a read-only zone-method + reliability summary row, a link into the 4-step onboarding sheet (`s.setUpHeartRateZones`), and a zone-colour-bands toggle bound to `zoneBandsProvider`. There is no direct Settings row for the clinician-provided maximum or lactate threshold — `clinicianMaxHr` can only be set via the onboarding sheet's fourth step.
+`SettingsScreen` includes a Health Profile section (`_Set2Card`) bound directly to `healthProfileProvider` / `userAgeProvider`: age, resting HR, measured max HR, beta-blocker toggle, heart-condition toggle, a read-only zone-method + reliability summary row, a link into the 4-step onboarding sheet (`s.setUpHeartRateZones`), and a zone-colour-bands toggle bound to `zoneBandsProvider`. There is no direct Settings row for the clinician-provided maximum or lactate threshold. `clinicianMaxHr` can be set via the onboarding sheet's fourth step, or via the second entry point described below; `lactateThresholdHr` has no in-app UI at all.
 
 A separate Max Heart Rate Alert section binds to `maxHrAlertProvider` (vibration toggle, sound toggle, cooldown dropdown: 10/15/30/60 s), followed by the general disclaimer paragraph (`s.warningGeneralDisclaimer`).
+
+The clinician-provided maximum has a second entry point: `_HealthProfileForm` in `lib/features/clients/presentation/screens/client_detail_screen.dart` renders the full health-profile form (age, resting HR, measured max HR, clinician max HR, beta-blocker and heart-condition toggles) and saves it via `healthProfileRepositoryProvider.saveForClient()`. This is reachable for the self client too, not just coached clients: `ClientRepository.watchClients()` (`lib/features/clients/data/drift_client_repository.dart`) does not filter out `kSelfClientId`, `client_roster_screen.dart` pushes `/clients/<id>` for every roster row including "Me", and `/clients` is itself a bottom-nav destination (`scaffold_with_nav_bar.dart`). For a solo user who hasn't switched `activeClientProvider` away from the self client, this form and the Settings/onboarding paths above all read and write the same `HealthProfile` row.
 
 == Analytics Events
 
@@ -188,6 +190,9 @@ HR-related analytics events (`HrAnalyticsEvent`, `lib/features/heart_rate/domain
 
 | `cautionModeActivated`
 | A medical flag is set
+
+| `zoneMethodSelected`
+| `zoneConfigurationProvider` recalculates a non-null `ZoneConfiguration` — fires on every recalculation triggered by a health-profile change, not only when the selected method itself changes
 
 | `customCapUsed`
 | Clinician cap is entered

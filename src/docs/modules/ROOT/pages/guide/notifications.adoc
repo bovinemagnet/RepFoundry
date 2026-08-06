@@ -25,7 +25,7 @@ A reminder repeats every week on each enabled day, at the chosen time, until you
 
 == Streak reminder
 
-The streak reminder is a separate toggle that sends one notification a day, at the same time as your workout reminders, warning you if you have not yet logged a workout that day. It is off by default. Turn it on if you want a nudge to protect an active streak; logging any workout that day means the reminder has done its job and you will not be pestered further once you have trained.
+The streak reminder is a separate toggle that sends one fixed notification a day, at the time you have set for your workout reminders. It fires at that time every day the toggle is on, regardless of whether you have already trained that day. It is off by default. The only way to stop it is to turn the toggle off.
 
 == Where to find these settings
 

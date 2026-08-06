@@ -64,7 +64,7 @@ RepFoundry divides effort into five zones, each with a percentage range and a du
 | Very Hard (VO₂ Max)
 |===
 
-The percentage range is measured against whichever maximum-heart-rate figure your health profile resolves to — see <<personalising-your-zones>> below. Your current zone is shown next to your live BPM, and a full zone legend with BPM ranges appears further down the screen.
+For most people, the percentage range is measured against whichever maximum-heart-rate figure your health profile resolves to — see <<personalising-your-zones>> below. If you've entered a resting heart rate as well as a maximum, RepFoundry instead measures the percentage against your heart rate reserve (the gap between resting and maximum), which more closely reflects your individual range. Your current zone is shown next to your live BPM, and a full zone legend with BPM ranges appears further down the screen.
 
 [[personalising-your-zones]]
 == Personalising your zones
@@ -76,7 +76,7 @@ Resting heart rate:: combined with a maximum heart rate, enables a calculation p
 Measured maximum heart rate:: your actual peak heart rate from a lab or field test. Treated as more reliable than an age-based estimate.
 Clinician-provided maximum heart rate:: a maximum heart rate prescribed by a healthcare professional. This overrides every other input and is always treated as the most reliable source.
 
-All of these are optional. Age, resting heart rate, and measured maximum heart rate can be skipped in the guided setup and added later from *Settings → Health Profile*. A clinician-provided maximum heart rate can only be set through the guided setup itself (*Settings → Health Profile → Set Up Heart Rate Zones*).
+All of these are optional. Age, resting heart rate, and measured maximum heart rate can be skipped in the guided setup and added later from *Settings → Health Profile*. A clinician-provided maximum heart rate has two entry points: the guided setup itself, or the *Clients* tab — tap *Me* and enter it there. Either one updates the same value.
 
 == Reliability indicator
 

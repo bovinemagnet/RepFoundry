@@ -42,7 +42,7 @@ Health sync is not all-or-nothing. Four settings toggles under *Settings → Syn
 
 Reading only applies to weight — RepFoundry does not pull workouts, body fat, or heart rate data back in from your health app. When a newer weight entry is found, you are prompted to import it the next time you visit the *Body Metrics* screen; it is not applied automatically.
 
-Health Connect and Apple Health both grant RepFoundry read and write access across four data categories: heart rate, exercise (workouts), weight, and body fat. What RepFoundry actually does with that access is described in the table above.
+RepFoundry asks for write access to four data types — workouts, weight, body fat, and heart rate — but read access to only one: weight. It never reads your heart rate or workout history back out of your health app. The two platforms surface this differently: Android's Health Connect presents separate read and write permissions for each data type, while iOS's Apple Health uses two broader prompts instead — one covering everything RepFoundry reads, one covering everything it writes.
 
 == Granting access
 

@@ -46,7 +46,7 @@ RepFoundry automatically checks every working set (warm-ups are excluded) agains
 | Your highest estimated single-rep strength for the exercise, calculated from weight and reps together.
 
 | Max weight
-| The heaviest weight you have lifted for a single rep.
+| The heaviest weight you have lifted in any working set, whatever the rep count.
 
 | Max reps
 | The most reps you have completed in a single set, regardless of weight.

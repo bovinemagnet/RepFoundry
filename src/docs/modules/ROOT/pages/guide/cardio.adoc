@@ -17,7 +17,7 @@ None of these are required. You can save a session with just a duration.
 
 == Starting and controlling a session
 
-Open the *Cardio* tab and choose an exercise from the pills across the top — the exercises you've tagged as cardio (Treadmill and Stationary Bike by default) appear here. Tap *Start Session* to begin the timer.
+Open the *Cardio* tab and choose an exercise from the pills across the top — Treadmill and Stationary Bike appear here by default. This list is keyed on an exercise's *muscle group*, not its category, so if you add your own cardio machine or activity, set its muscle group to *Cardio* as well — tagging it under a cardio category alone will not make it appear in this list. (This is also why the default Rowing Machine exercise, whose muscle group is Full Body, does not show up here.) Tap *Start Session* to begin the timer.
 
 While a session is running you can:
 

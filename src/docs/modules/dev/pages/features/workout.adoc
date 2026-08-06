@@ -193,8 +193,8 @@ Four PR types are tracked:
 | Epley: `weight × (1 + reps / 30.0)`
 
 | Max weight
-| Heaviest single-rep lift
-| `weight` where `reps == 1`
+| Heaviest weight lifted, any rep count
+| `weight` (no rep-count filter)
 
 | Max reps
 | Most reps at any weight
