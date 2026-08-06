@@ -32,11 +32,15 @@ At workout start, and after a rest of two minutes or longer, the coach can also 
 
 Each of these — rest countdowns, encouragement, quotes, heart rate zone callouts, and heart rate safety warnings — has its own switch, so you can keep the parts you want and turn off the rest without losing the whole coach.
 
-== Encouragement pauses above your maximum heart rate
+== When encouragement and quotes pause
 
-If a heart rate monitor is connected and your heart rate rises above the maximum figure in your health profile — most reliably, a clinician-provided cap — the coach stops speaking encouragement: no cheering a completed set, no personal-record announcement, no inspirational quote. In its place you get a calm, repeated warning telling you your heart rate is above your maximum and asking you to ease off, spaced at least thirty seconds apart so it doesn't talk over itself. Once your heart rate drops back under your maximum, the coach confirms it and encouragement resumes.
+Three things pause the coach's encouragement — cheering a completed set, a personal-record announcement, and inspirational quotes — while leaving rest countdowns, heart rate zone callouts, and heart rate safety warnings unaffected:
 
-This is deliberate: a user pushing past a medically set limit is not the moment for the coach to be cheering them on.
+* *Your heart rate rises above your maximum.* If a heart rate monitor is connected and your heart rate rises above the maximum figure in your health profile — most reliably, a clinician-provided cap — the coach stops speaking encouragement. In its place you get a calm, repeated warning telling you your heart rate is above your maximum and asking you to ease off, spaced at least thirty seconds apart so it doesn't talk over itself. Once your heart rate drops back under your maximum, the coach confirms it and encouragement resumes.
+* *You've set a caution flag in your health profile.* Indicating that you take beta-blocker medication or have a heart condition puts your whole session into caution mode — see xref:guide/heart-rate.adoc[] for what this flag also does to your training zones. Caution mode holds for the entire session regardless of your heart rate at any given moment: with either flag set, the coach never speaks encouragement or a quote, starting from your very first logged set.
+* *You reach zone 5, the top training zone.* Encouragement and quotes pause for as long as you stay there, and resume once a lower-zone reading arrives.
+
+None of this means the coach has stopped working — rest countdowns, zone announcements, and heart rate safety warnings keep speaking throughout all three. It's a deliberate choice: pushing past a safe limit, or training under a condition that needs extra care, is not the moment for the coach to be cheering you on.
 
 == Why the rest chime doesn't cut the coach off
 
@@ -44,7 +48,9 @@ RepFoundry's rest timer normally ends with a chime. When the coach is enabled an
 
 == Turning it on, off, and adjusting what it says
 
-Coach mode lives in *Settings → Virtual Trainer* — see xref:guide/settings.adoc[] for the rest of the settings screen. The first time you switch it on, a safety notice explains what the coach is (and isn't) and asks you to accept it before it will speak — you can revisit this notice at any time from *Review safety notice*, and *Withdraw consent* turns the coach off and clears your acceptance, so you'd need to accept the notice again before it can speak.
+Coach mode is not yet available in normal builds of RepFoundry. When it is available, it lives in *Settings → Virtual Trainer* — see xref:guide/settings.adoc[] for the rest of the settings screen; until then, no Coach section appears there at all. This isn't a bug to work around — it's simply not switched on for everyone yet.
+
+The rest of this section describes the settings screen as it works once coach mode is available. The first time you switch it on, a safety notice explains what the coach is (and isn't) and asks you to accept it before it will speak — you can revisit this notice at any time from *Review safety notice*, and *Withdraw consent* turns the coach off and clears your acceptance, so you'd need to accept the notice again before it can speak.
 
 From the same screen you can:
 

@@ -19,7 +19,7 @@ Tapping a client opens their profile page, where you assign plans and edit their
 
 == Adding a client
 
-From the roster, use *New client* to add someone. Give them a name and pick an accent colour from the offered palette. That's all a new client needs — you can add notes and everything else afterwards.
+From the roster, use *New client* to add someone. Give them a name and pick an accent colour from the offered palette — that's all a new client needs. Choose the name carefully: there is currently no way to rename a client or change their colour after creation, so a mistyped name stays that way. Once they're added, you assign plans and set up their health profile from their profile page.
 
 == The self client
 

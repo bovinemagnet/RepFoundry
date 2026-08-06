@@ -80,11 +80,17 @@ See xref:guide/heart-rate.adoc[] for how these inputs are combined into zones, w
 
 Under *Settings → Appearance*:
 
+*Show Exercise Images* toggles whether exercise images are shown throughout the app.
+
 *Theme* switches between Light, Dark, and Auto (follows your device's system setting).
 
 *Layout* switches between Auto, Mobile, and Desktop. The override only takes effect on tablet-sized screens and larger — phones always use the mobile layout regardless of this setting.
 
-*Show Exercise Images* toggles whether exercise images are shown throughout the app.
+== Units
+
+*Weight Unit*, under *Settings → Units*, switches how weights are displayed throughout the app between kg and lbs. This is a display setting only — weights are always stored internally in kilograms and converted for display, so changing it reformats your existing history rather than altering any figures.
+
+It has no effect on how an imported file is interpreted: that's decided by the source format itself. Hevy exports are always in kilograms, and Strong exports use whatever unit each row declares or, when a file doesn't declare one, the unit you're asked to confirm at import time — not whatever your Weight Unit display setting happens to be set to.
 
 == Rest timer alerts
 

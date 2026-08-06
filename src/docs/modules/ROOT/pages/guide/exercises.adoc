@@ -31,9 +31,9 @@ This matters if you create your own cardio machine or activity: giving it a Card
 Tap *+ Custom* on the Choose Exercise screen to open the New Exercise screen. Fill in:
 
 * *Exercise Name* — required. This is the name shown everywhere the exercise appears: the workout log, history, templates, and personal records.
-* *Category* — Strength, Cardio, Flexibility, or Custom. Sets the avatar icon; strength exercises can also be offered a warm-up ramp when logging sets (see xref:guide/workout.adoc[]), depending on the equipment type you choose below.
+* *Category* — Strength, Cardio, Flexibility, or Custom. Sets the avatar icon shown for the exercise in the library list.
 * *Muscle Group* — one of the thirteen groups listed above. Used for the filter chips here and, for cardio activities specifically, for appearing on the Cardio tab.
-* *Equipment* — Barbell, Dumbbell, Machine, Cable, Bodyweight, Kettlebell, Resistance Band, Cardio Machine, or Other.
+* *Equipment* — Barbell, Dumbbell, Machine, Cable, Bodyweight, Kettlebell, Resistance Band, Cardio Machine, or Other. Also decides whether a warm-up ramp is offered when logging sets for the exercise (see xref:guide/workout.adoc[]) — offered for Barbell, Dumbbell, Kettlebell, Cable, and Machine equipment, not for the others.
 
 Tap *Create* to save it. If you opened the library from an active workout or a template you were editing, the new exercise is selected immediately — you do not need to search for it again.
 
