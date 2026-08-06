@@ -17,8 +17,9 @@ import 'fakes.dart';
 Future<({Widget app, AppDatabase database})> createTestApp({
   FakeHeartRateService? heartRateService,
   FakeLocationService? locationService,
+  Map<String, Object>? initialPrefs,
 }) async {
-  SharedPreferences.setMockInitialValues({});
+  SharedPreferences.setMockInitialValues(initialPrefs ?? {});
 
   final database = AppDatabase.forTesting(NativeDatabase.memory());
   final hrService = heartRateService ?? FakeHeartRateService();
