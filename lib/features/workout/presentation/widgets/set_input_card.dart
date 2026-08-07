@@ -242,67 +242,82 @@ class _SetInputCardState extends State<SetInputCard> {
           // ── Action row ─────────────────────────────────────────────
           // "+ Add RPE" (accent mono text), "Warm-up" ghost pill toggle,
           // and "+ Log Set" KineticCta pushed to the trailing edge.
+          //
+          // The affordances sit in a Wrap inside an Expanded rather than
+          // directly in this Row. Laid out in a row they need 522pt, and
+          // every phone we support gives less — 393pt on an iPhone 16 Pro —
+          // which clipped the LOG SET call-to-action off the right edge and
+          // painted it under the Add Exercise button. A Wrap cannot overflow
+          // horizontally: it reflows onto a second line instead, at any
+          // width, in any language. The CTA stays outside it so it keeps the
+          // trailing edge on wide layouts.
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // "+ Add RPE" affordance — accent mono, matches rf.css
-              // inline style: color:var(--accent-line), JetBrains Mono 700 12px.
-              GestureDetector(
-                onTap: () => setState(() => _showRpe = !_showRpe),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+              Expanded(
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Icon(
-                      _showRpe ? Icons.remove : Icons.add,
-                      size: 16,
-                      color: cs.primary,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      (_showRpe ? s.hideRpe : s.addRpe).toUpperCase(),
-                      style: KineticText.mono(
-                        size: 12,
-                        letterSpacing: 0.5,
-                        color: cs.primary,
+                    // "+ Add RPE" affordance — accent mono, matches rf.css
+                    // inline style: color:var(--accent-line), JetBrains Mono 700 12px.
+                    GestureDetector(
+                      onTap: () => setState(() => _showRpe = !_showRpe),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _showRpe ? Icons.remove : Icons.add,
+                            size: 16,
+                            color: cs.primary,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            (_showRpe ? s.hideRpe : s.addRpe).toUpperCase(),
+                            style: KineticText.mono(
+                              size: 12,
+                              letterSpacing: 0.5,
+                              color: cs.primary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    // "Warm-up" ghost pill toggle
+                    GestureDetector(
+                      onTap: () => setState(() => _isWarmUp = !_isWarmUp),
+                      child: KineticPill(
+                        s.warmUpLabel,
+                        variant: _isWarmUp
+                            ? KineticPillVariant.accent
+                            : KineticPillVariant.ghost,
+                      ),
+                    ),
+                    // "Add warm-up" ramp affordance — only for loadable equipment.
+                    if (widget.onAddWarmup != null)
+                      GestureDetector(
+                        onTap: _addWarmup,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.whatshot, size: 16, color: cs.primary),
+                            const SizedBox(width: 5),
+                            Text(
+                              s.addWarmup.toUpperCase(),
+                              style: KineticText.mono(
+                                size: 12,
+                                letterSpacing: 0.5,
+                                color: cs.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
               const SizedBox(width: 10),
-              // "Warm-up" ghost pill toggle
-              GestureDetector(
-                onTap: () => setState(() => _isWarmUp = !_isWarmUp),
-                child: KineticPill(
-                  s.warmUpLabel,
-                  variant: _isWarmUp
-                      ? KineticPillVariant.accent
-                      : KineticPillVariant.ghost,
-                ),
-              ),
-              // "Add warm-up" ramp affordance — only for loadable equipment.
-              if (widget.onAddWarmup != null) ...[
-                const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: _addWarmup,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.whatshot, size: 16, color: cs.primary),
-                      const SizedBox(width: 5),
-                      Text(
-                        s.addWarmup.toUpperCase(),
-                        style: KineticText.mono(
-                          size: 12,
-                          letterSpacing: 0.5,
-                          color: cs.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              const Spacer(),
               // "+ Log Set" CTA — auto width, 46px height
               KineticCta(
                 label: s.logSet,
