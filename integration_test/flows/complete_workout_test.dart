@@ -60,8 +60,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 10. A set card should appear showing the weight and reps (the reps
-      // use a "×" multiplication sign in the redesigned set chip).
-      expect(find.text('100.0kg'), findsOneWidget);
+      // use a "×" multiplication sign in the redesigned set chip). The
+      // weight has no trailing ".0": the chip renders through
+      // WeightUnit.formatFromKg, which drops a zero decimal, so 100 kg
+      // reads "100kg" and 62.5 kg reads "62.5kg".
+      expect(find.text('100kg'), findsOneWidget);
       expect(find.text('× 5'), findsOneWidget);
 
       // The first set sets a personal record, whose celebration overlay covers
