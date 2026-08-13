@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
+import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
+
+import '../helpers/fakes.dart';
 import '../helpers/screenshot_seed.dart';
 import '../helpers/test_app.dart';
 
@@ -19,13 +22,7 @@ void main() {
     await tester.pumpWidget(testApp.app);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Start Workout'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Add Exercise'));
-    await tester.pumpAndSettle();
-    await pumpUntilFound(tester, find.text('Barbell Bench Press'));
-    await tester.tap(find.text('Barbell Bench Press'));
-    await tester.pumpAndSettle();
+    await startWorkoutWith(tester, 'Barbell Bench Press');
 
     // A session with nothing logged is the empty state of this screen: the
     // volume header reads 0 kg and no completed set rows exist. Log the
@@ -44,6 +41,189 @@ void main() {
     await binding.takeScreenshot('workout-logging');
     await testApp.database.close();
   });
+
+  testWidgets('first-workout', (tester) async {
+    final testApp = await createTestApp(initialPrefs: screenshotPrefs());
+    await seedScreenshotData(testApp.database);
+    await tester.pumpWidget(testApp.app);
+    await tester.pumpAndSettle();
+
+    await startWorkoutWith(tester, 'Barbell Bench Press');
+
+    // Start the rest timer before logging, not after: a logged set that
+    // beats a record raises the personal-record overlay, and that overlay
+    // absorbs pointer events, so the tap on the chip would be swallowed
+    // without failing the test.
+    await tester.tap(find.text('1:30'));
+    await tester.pump();
+
+    await _logSet(tester, weight: '55', reps: '10');
+
+    // The first set of a session always sets some record, so the
+    // celebration overlay covers the middle of the screen. It dismisses on
+    // a real three-second Timer that neither pump(duration) nor runAsync
+    // advances under this binding, so tap it away instead.
+    await tester.tap(find.text('Barbell Bench Press').last);
+    await tester.pumpAndSettle();
+    await scrollToTop(
+      tester,
+      find.text('Barbell Bench Press', skipOffstage: false),
+    );
+
+    // A running rest timer rebuilds every second, so the tree never settles
+    // and pumpAndSettle would time out rather than return.
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await binding.takeScreenshot('first-workout');
+    await testApp.database.close();
+  });
+
+  testWidgets('stretching', (tester) async {
+    final testApp = await createTestApp(initialPrefs: screenshotPrefs());
+    await seedScreenshotData(testApp.database);
+    await tester.pumpWidget(testApp.app);
+    await tester.pumpAndSettle();
+
+    await startWorkoutWith(tester, 'Barbell Bench Press');
+
+    // Stretching has no route of its own: it is a section of the active
+    // workout screen. The sheet is what documents the feature, since the
+    // section itself is one button until something has been added.
+    // Unscrolled, this button sits underneath the navigation bar, and a tap
+    // on it lands on the History tab instead — silently, since the finder
+    // itself matches.
+    final addStretching = find.text('Add Stretching', skipOffstage: false);
+    await tester.ensureVisible(addStretching);
+    await tester.pumpAndSettle();
+    await tester.tap(addStretching);
+    await settleForCapture(tester);
+
+    await binding.takeScreenshot('stretching');
+    await testApp.database.close();
+  });
+
+  testWidgets('cardio-session', (tester) async {
+    final locationService = FakeLocationService();
+    final heartRateService = FakeHeartRateService(
+      devicesToReturn: const [
+        DiscoveredHrDevice(id: 'polar-h9', name: 'Polar H9'),
+      ],
+    );
+    final testApp = await createTestApp(
+      initialPrefs: screenshotPrefs(),
+      locationService: locationService,
+      heartRateService: heartRateService,
+    );
+    await seedScreenshotData(testApp.database);
+    await tester.pumpWidget(testApp.app);
+    await tester.pumpAndSettle();
+
+    await goTo(tester, '/cardio');
+
+    // Distance and pace stay blank unless GPS tracking is switched on, so
+    // the emitted fixes below would otherwise change nothing on screen.
+    final gpsToggle = find.byType(Switch).first;
+    await tester.ensureVisible(gpsToggle);
+    await tester.pumpAndSettle();
+    await tester.tap(gpsToggle);
+    await tester.pumpAndSettle();
+
+    // Connect a strap so the session shows a heart rate alongside pace.
+    await tester.tap(find.text('Connect'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Polar H9'));
+    await tester.pumpAndSettle();
+
+    final startSession = find.text('START SESSION', skipOffstage: false);
+    await tester.ensureVisible(startSession);
+    await tester.pumpAndSettle();
+    await tester.tap(startSession);
+    await tester.pump();
+
+    // Feed the route a few fixes so distance and pace read as a session in
+    // progress rather than a stopwatch on zero.
+    for (var i = 0; i < 5; i++) {
+      locationService.emitPosition(
+        latitude: 51.5074 + i * 0.002,
+        longitude: -0.1278 + i * 0.001,
+      );
+      heartRateService.emitHeartRate(132 + i * 3);
+      await tester.pump(const Duration(seconds: 1));
+    }
+
+    // The clock is the subject of this shot; ensureVisible left the list
+    // scrolled past it.
+    await scrollToTop(
+      tester,
+      find.text('GPS Distance Tracking', skipOffstage: false),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await binding.takeScreenshot('cardio-session');
+    await testApp.database.close();
+  });
+
+  testWidgets('heart-rate-panel', (tester) async {
+    final heartRateService = FakeHeartRateService(
+      devicesToReturn: const [
+        DiscoveredHrDevice(id: 'polar-h9', name: 'Polar H9'),
+      ],
+    );
+    final testApp = await createTestApp(
+      initialPrefs: screenshotPrefs(),
+      heartRateService: heartRateService,
+    );
+    await seedScreenshotData(testApp.database);
+    await tester.pumpWidget(testApp.app);
+    await tester.pumpAndSettle();
+
+    await goTo(tester, '/heart-rate');
+
+    // Connect a strap through the device picker, exactly as a reader would.
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Polar H9'));
+    await tester.pumpAndSettle();
+
+    // Enough readings to draw a trace rather than a flat line.
+    const beats = [96, 108, 121, 133, 142, 148, 151, 147, 153, 158];
+    for (final bpm in beats) {
+      heartRateService.emitHeartRate(bpm);
+      await tester.pump(const Duration(seconds: 1));
+    }
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await binding.takeScreenshot('heart-rate-panel');
+    await testApp.database.close();
+  });
+
+  testWidgets('coach-mode', (tester) async {
+    final testApp = await createTestApp(initialPrefs: screenshotPrefs());
+    await seedScreenshotData(testApp.database);
+    await tester.pumpWidget(testApp.app);
+    await tester.pumpAndSettle();
+
+    // Reachable only because the fixture unlocks the virtualTrainer
+    // entitlement; without it this route renders nothing to photograph.
+    await goTo(tester, '/settings/trainer');
+    await settleForCapture(tester);
+
+    await binding.takeScreenshot('coach-mode');
+    await testApp.database.close();
+  });
+}
+
+/// Starts a workout and adds [exercise] to it, leaving the set input card on
+/// screen ready to type into.
+Future<void> startWorkoutWith(WidgetTester tester, String exercise) async {
+  await tester.tap(find.text('Start Workout'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Add Exercise'));
+  await tester.pumpAndSettle();
+  await pumpUntilFound(tester, find.text(exercise));
+  await tester.tap(find.text(exercise));
+  await tester.pumpAndSettle();
 }
 
 /// Types [weight] and [reps] into the set input card's fields. The fields are

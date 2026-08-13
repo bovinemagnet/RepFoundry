@@ -29,6 +29,26 @@ const _uuid = Uuid();
 /// silently photograph the wrong thing rather than fail.
 Map<String, Object> screenshotPrefs() => {
       'unlocked_entitlements': <String>['virtualTrainer'],
+      // The heart rate panel opens a disclaimer on first visit and a profile
+      // onboarding sheet whenever the age is unset. Both would sit over the
+      // screen being photographed. The hr_* keys are read once and migrated
+      // into the self client's health profile, which also gives the zones
+      // real numbers to work from.
+      'hr_disclaimer_shown': true,
+      'hr_age': 34,
+      'hr_resting_hr': 58,
+      'hr_measured_max_hr': 186,
+      // Cloud sync renders as a single toggle until it is switched on, so
+      // the sync capture would otherwise show none of what it documents.
+      'cloud_sync_enabled': true,
+      'cloud_sync_consent_given': true,
+      'cloud_sync_last_sync_at': DateTime.now()
+          .subtract(const Duration(hours: 2))
+          .millisecondsSinceEpoch,
+      // The coach is off until accepted, so its settings screen would
+      // otherwise document the feature in its switched-off state.
+      'trainer_enabled': true,
+      'trainer_disclaimer_accepted': true,
     };
 
 /// Fills [database] with three weeks of realistic training history so that
@@ -42,7 +62,7 @@ Map<String, Object> screenshotPrefs() => {
 /// - two personal records
 /// - one cardio session with a heart-rate reading
 /// - several body-metric entries
-/// - one workout template and one multi-week programme
+/// - three workout templates and two multi-week programmes
 /// - a second client alongside the always-present self client
 Future<void> seedScreenshotData(db.AppDatabase database) async {
   final now = DateTime.now().toUtc();
@@ -237,29 +257,43 @@ Future<void> seedScreenshotData(db.AppDatabase database) async {
     );
   }
 
-  // One workout template covering the push day.
-  final templateId = _uuid.v4();
+  // Three workout templates. One would satisfy "not an empty state", but a
+  // single row on an otherwise blank screen is a poor documentation image.
   final templateNow = DateTime.now().toUtc();
-  final template = WorkoutTemplate(
-    id: templateId,
-    name: 'Push Day',
-    createdAt: templateNow,
-    updatedAt: templateNow,
-    exercises: [
-      for (var i = 0; i < pushDay.length; i++)
-        TemplateExercise(
-          id: _uuid.v4(),
-          templateId: templateId,
-          exerciseId: pushDay[i].id,
-          exerciseName: pushDay[i].name,
-          targetSets: 3,
-          targetReps: 8,
-          orderIndex: i,
-          updatedAt: templateNow,
-        ),
-    ],
+  Future<WorkoutTemplate> createTemplate(
+    String name,
+    List<Exercise> exercises,
+  ) async {
+    final templateId = _uuid.v4();
+    final template = WorkoutTemplate(
+      id: templateId,
+      name: name,
+      createdAt: templateNow,
+      updatedAt: templateNow,
+      exercises: [
+        for (var i = 0; i < exercises.length; i++)
+          TemplateExercise(
+            id: _uuid.v4(),
+            templateId: templateId,
+            exerciseId: exercises[i].id,
+            exerciseName: exercises[i].name,
+            targetSets: 3,
+            targetReps: 8,
+            orderIndex: i,
+            updatedAt: templateNow,
+          ),
+      ],
+    );
+    await templateRepo.createTemplate(template);
+    return template;
+  }
+
+  final template = await createTemplate('Push Day', pushDay);
+  final pullTemplate = await createTemplate('Pull & Legs', pullDay);
+  await createTemplate(
+    'Upper Body Volume',
+    [benchPress, barbellRow, overheadPress, dumbbellCurl],
   );
-  await templateRepo.createTemplate(template);
 
   // One multi-week programme built from that template, already under way
   // so the current-week indicator has something to show.
@@ -291,6 +325,25 @@ Future<void> seedScreenshotData(db.AppDatabase database) async {
     programme.id,
     startedAt: now.subtract(const Duration(days: 15)),
   );
+
+  // A second programme, never started, so the list shows both a programme
+  // under way and one waiting to begin.
+  final strengthBase = Programme.create(
+    name: '8-Week Strength Base',
+    durationWeeks: 8,
+  );
+  await programmeRepo.createProgramme(strengthBase);
+  for (var week = 1; week <= 8; week++) {
+    await programmeRepo.addDay(
+      ProgrammeDay.create(
+        programmeId: strengthBase.id,
+        weekNumber: week,
+        dayOfWeek: DateTime.wednesday,
+        templateId: pullTemplate.id,
+        templateName: pullTemplate.name,
+      ),
+    );
+  }
 
   // A second client alongside the always-present self client.
   await clientRepo.createClient(

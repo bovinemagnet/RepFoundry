@@ -279,7 +279,7 @@ git commit -m "test: capture the first documentation screenshot end to end"
 
 Each test is named for the image it produces, follows the Task 2 shape, and calls `convertFlutterSurfaceToImage()` once at the start of the first test in its file.
 
-- [ ] **Step 1: Finish `training_test.dart`**
+- [x] **Step 1: Finish `training_test.dart`**
 
 Add captures named `first-workout`, `cardio-session`, `heart-rate-panel`, `coach-mode`, `stretching`. Notes:
 
@@ -288,17 +288,17 @@ Add captures named `first-workout`, `cardio-session`, `heart-rate-panel`, `coach
 - `coach-mode` is reachable only because Task 1 unlocked `virtualTrainer`. If the tile is absent, the preferences did not load — do not work around it by editing the widget tree.
 - `stretching` renders as a section inside the active workout screen; it has no route of its own.
 
-- [ ] **Step 2: Write `library_test.dart`**
+- [x] **Step 2: Write `library_test.dart`**
 
 Captures: `exercise-library`, `templates`, `programmes`, `settings`, `notifications`.
 
-- [ ] **Step 3: Write `progress_test.dart`**
+- [x] **Step 3: Write `progress_test.dart`**
 
 Captures: `history`, `analytics`, `body-metrics`, `sync-ios`, `nav-ios`.
 
 `sync-ios` is the cloud-sync settings screen showing iCloud. `nav-ios` shows the bottom navigation — it is the counterpart to `nav-android` and exists to illustrate the platform-differences page, so frame it on the navigation rather than on whatever screen happens to be open.
 
-- [ ] **Step 4: Capture all three suites**
+- [x] **Step 4: Capture all three suites**
 
 ```bash
 for suite in training library progress; do
@@ -311,11 +311,11 @@ ls build/screenshots/
 
 Expected: 15 PNGs.
 
-- [ ] **Step 5: Look at every one of them**
+- [x] **Step 5: Look at every one of them**
 
 Open all fifteen. Check each shows the screen its name claims, with populated data, no spinner, no half-open sheet, no debug banner. Note any that need a different waiting strategy and fix them now — a bad screenshot is much cheaper to fix here than after it is wired into a page.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add integration_test/screenshots/
