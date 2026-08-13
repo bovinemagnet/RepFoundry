@@ -125,3 +125,4 @@ scratch.txt
 .codex
 AGENTS.md
 .mcp.json
+integration_test/flows/zz_probe_test.dart
