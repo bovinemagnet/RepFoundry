@@ -50,7 +50,7 @@ Spec: `docs/superpowers/specs/2026-08-06-user-doc-screenshots-design.md`
 **Interfaces:**
 - Produces: `Future<void> seedScreenshotData(AppDatabase database)` and `Map<String, Object> screenshotPrefs()`. `createTestApp` gains a named parameter `Map<String, Object>? initialPrefs`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `integration_test/screenshots/seed_test.dart`:
 
@@ -82,7 +82,7 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 ```bash
 flutter test integration_test/screenshots/seed_test.dart
@@ -90,7 +90,7 @@ flutter test integration_test/screenshots/seed_test.dart
 
 Expected: FAIL to compile — `screenshot_seed.dart` does not exist, and `createTestApp` has no `initialPrefs` parameter.
 
-- [ ] **Step 3: Add the preferences parameter**
+- [x] **Step 3: Add the preferences parameter**
 
 In `test_app.dart`, change the signature and the mock-values line:
 
@@ -105,7 +105,7 @@ Future<({Widget app, AppDatabase database})> createTestApp({
 
 Leave the rest of the function unchanged. Existing callers pass nothing and keep the empty-map behaviour they have today.
 
-- [ ] **Step 4: Write the fixture**
+- [x] **Step 4: Write the fixture**
 
 Create `integration_test/helpers/screenshot_seed.dart`. It must produce, through the Drift repositories rather than raw table inserts (so it stays valid if the schema moves):
 
@@ -142,7 +142,7 @@ The key and the string-list shape come from
 `lib/core/entitlements/entitlement_provider.dart:7,25`. Do not seed
 `theme_mode` — dark is already the default.
 
-- [ ] **Step 5: Run it and watch it pass**
+- [x] **Step 5: Run it and watch it pass**
 
 ```bash
 flutter test integration_test/screenshots/seed_test.dart
@@ -150,11 +150,11 @@ flutter test integration_test/screenshots/seed_test.dart
 
 Expected: PASS.
 
-- [ ] **Step 6: Prove the test can fail**
+- [x] **Step 6: Prove the test can fail**
 
 Comment out the `await seedScreenshotData(...)` line and re-run. Expected: FAIL on the empty-state assertion — confirming the assertion is reached and the fixture is what satisfies it, rather than the app happening to have data. Restore.
 
-- [ ] **Step 7: Confirm nothing else broke and commit**
+- [x] **Step 7: Confirm nothing else broke and commit**
 
 ```bash
 flutter test
@@ -175,7 +175,7 @@ Prove the whole pipeline on a single image before writing nineteen more.
 - Consumes: `seedScreenshotData`, `screenshotPrefs`, `createTestApp(initialPrefs:)` from Task 1.
 - Produces: the `takeScreenshot` naming convention every later capture follows — the image's final filename without extension, e.g. `workout-logging`.
 
-- [ ] **Step 1: Write the driver**
+- [x] **Step 1: Write the driver**
 
 Create `test_driver/integration_test.dart`:
 
@@ -196,7 +196,7 @@ Future<void> main() async {
 }
 ```
 
-- [ ] **Step 2: Write the first capture**
+- [x] **Step 2: Write the first capture**
 
 Create `integration_test/screenshots/training_test.dart` with one test for now:
 
@@ -236,7 +236,7 @@ void main() {
 }
 ```
 
-- [ ] **Step 3: Boot the simulator and capture**
+- [x] **Step 3: Boot the simulator and capture**
 
 ```bash
 xcrun simctl boot "iPhone 16 Pro" || true
@@ -246,7 +246,7 @@ flutter drive \
   -d "iPhone 16 Pro"
 ```
 
-- [ ] **Step 4: Verify the artefact, not the exit code**
+- [x] **Step 4: Verify the artefact, not the exit code**
 
 ```bash
 ls -la build/screenshots/workout-logging.png
@@ -257,7 +257,7 @@ Expected: the file exists, is more than 50KB, and its dimensions match the simul
 
 If the screen is wrong, the usual causes are a missing `pumpAndSettle` after an animation, or a bottom sheet still open over the content.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add test_driver/ integration_test/screenshots/
