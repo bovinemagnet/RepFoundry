@@ -63,7 +63,7 @@ Map<String, Object> screenshotPrefs() => {
 /// - one cardio session with a heart-rate reading
 /// - several body-metric entries
 /// - three workout templates and two multi-week programmes
-/// - a second client alongside the always-present self client
+/// - a roster of five clients alongside the always-present self client
 Future<void> seedScreenshotData(db.AppDatabase database) async {
   final now = DateTime.now().toUtc();
 
@@ -345,12 +345,20 @@ Future<void> seedScreenshotData(db.AppDatabase database) async {
     );
   }
 
-  // A second client alongside the always-present self client.
-  await clientRepo.createClient(
-    Client.create(
-      name: 'Jamie Rivera',
-      colour: 0xFF2196F3,
-      notes: 'Marathon training block',
-    ),
-  );
+  // A roster of clients alongside the always-present self client. One would
+  // satisfy "not an empty state", but the clients screenshot is taken on an
+  // iPad, where a two-row list leaves most of the frame empty and documents
+  // the feature as though nobody uses it.
+  const clientSeeds = [
+    ('Jamie Rivera', 0xFF4C6EF5, 'Marathon training block'),
+    ('Priya Nair', 0xFF37B24D, 'Return to lifting after shoulder surgery'),
+    ('Tom Okafor', 0xFFF59F00, 'Off-season strength, three sessions a week'),
+    ('Sofia Marchetti', 0xFFE64980, 'Powerlifting meet in eleven weeks'),
+    ('Dan Whitlock', 0xFF7048E8, 'General fitness, prefers morning sessions'),
+  ];
+  for (final (name, colour, notes) in clientSeeds) {
+    await clientRepo.createClient(
+      Client.create(name: name, colour: colour, notes: notes),
+    );
+  }
 }

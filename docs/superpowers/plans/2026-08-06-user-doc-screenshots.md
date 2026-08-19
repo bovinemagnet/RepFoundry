@@ -330,20 +330,23 @@ git commit -m "test: capture the remaining iPhone documentation screenshots"
 - Create: `integration_test/screenshots/clients_test.dart`
 - Modify: `integration_test/screenshots/progress_test.dart` — the platform-suffix guard in step 3
 
-- [ ] **Step 1: Write the clients capture**
+- [x] **Step 1: Write the clients capture**
 
 The roster and detail screens are reachable **only** via the desktop nav rail at ≥600dp. On a phone they do not exist, so this one runs on an iPad. Seed the second client from Task 1's fixture, navigate via the rail, and capture `clients`.
 
-- [ ] **Step 2: Capture on the iPad**
+- [x] **Step 2: Capture on the iPad**
+
+Several `iPad Pro 11-inch (M4)` simulators exist locally, one per installed
+runtime, so address one by UDID rather than by name:
 
 ```bash
-xcrun simctl boot "iPad Pro 11-inch (M4)" || true
+xcrun simctl boot D38E3E20-0B1F-4473-B608-EAA69C549F72 || true   # iOS 18.5
 flutter drive --driver=test_driver/integration_test.dart \
   --target=integration_test/screenshots/clients_test.dart \
-  -d "iPad Pro 11-inch (M4)"
+  -d D38E3E20-0B1F-4473-B608-EAA69C549F72
 ```
 
-- [ ] **Step 3: Capture the two Android images**
+- [x] **Step 3: Capture the two Android images**
 
 Start the emulator, then run `progress_test.dart` against it. Only `sync-android` and `nav-android` are kept from that run; the rest are discarded by `tools/screenshots.sh` in Task 5.
 
@@ -352,16 +355,33 @@ emulator -avd Medium_Phone_API_36.1 -no-snapshot -no-boot-anim &
 adb wait-for-device
 flutter drive --driver=test_driver/integration_test.dart \
   --target=integration_test/screenshots/progress_test.dart \
-  -d emulator-5554
+  -d emulator-5554 --flavor dev --profile \
+  --dart-define=SCREENSHOT_PLATFORM=android
 ```
+
+`--flavor dev` is required: the project has three Android flavours, so a bare
+`assembleDebug` builds all of them and the tool reports "Gradle build failed to
+produce an .apk file". `--profile` is what makes it installable — the debug APK
+is 120MB, mostly `kernel_blob.bin`, and the `Medium_Phone_API_36.1` AVD has a 6GB
+data partition sitting at 93% full, so a debug install fails with "Requested
+internal only, but not enough space". Profile mode is AOT-compiled and small
+enough to fit, and photographs identically.
 
 The Android run must produce `sync-android.png` and `nav-android.png`. Add a `--dart-define=SCREENSHOT_PLATFORM=android` guard in the test so the two navigation captures write platform-suffixed names, rather than renaming files afterwards in the shell where the mapping would be invisible.
 
-If `convertFlutterSurfaceToImage()` throws, it is being called more than once in the run — it is once per driver session, not once per test.
+`convertFlutterSurfaceToImage()` must run in **every** capturing test, not once per run. `integration_test` registers an `addTearDown` that reverts the surface when each test ends, so a single call at the start of the run leaves every later test throwing "Call convertFlutterSurfaceToImage() before taking a screenshot". On iOS the call is a no-op, which is why the once-per-run form looked correct through Tasks 2 and 3.
 
-- [ ] **Step 4: Look at all three, then commit**
+- [x] **Step 4: Look at all three, then commit**
 
-Verify `sync-android` really shows Google Drive and not iCloud — that difference is the entire reason both images exist.
+**The premise of the two platform pairs did not survive the capture.** `sync-android`
+shows no cloud provider at all: the sync section reads "Enable Cross-Device Sync /
+Sync your workout data across devices", and the only place the app names a provider
+is `syncConsentBody`, which names Google Drive **and** iCloud in one shared string.
+`nav-android` is likewise the app's own Flutter bottom bar, pixel-for-pixel the iOS
+one. Both Android images are therefore near-duplicates of their iOS counterparts,
+differing only in aspect ratio and the timestamp. Both are captured and available,
+but Task 6 should decide whether `guide/sync.adoc` and `platform-differences.adoc`
+genuinely need two images each, or one image plus a sentence.
 
 ```bash
 git add integration_test/screenshots/
@@ -371,6 +391,13 @@ git commit -m "test: capture the iPad clients roster and the Android-specific sc
 ---
 
 ### Task 5: The orchestration script
+
+> **Carried over from Task 4:** the Android run of `progress_test.dart` also
+> rewrites `history.png`, `analytics.png` and `body-metrics.png` with Android
+> versions of screens the docs shoot on an iPhone. The script must either run
+> Android before iOS, or copy `sync-android.png` and `nav-android.png` out and
+> discard the rest of that run, or the three iPhone images silently become
+> Android ones.
 
 **Files:**
 - Create: `tools/screenshots.sh`

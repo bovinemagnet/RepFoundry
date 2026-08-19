@@ -9,11 +9,28 @@ import '../helpers/test_app.dart';
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  /// Which platform this run is photographing.
+  ///
+  /// Two of the captures below exist once per platform because the app
+  /// genuinely differs there — the cloud provider and the navigation bar.
+  /// The run writes platform-suffixed names itself rather than the shell
+  /// renaming files afterwards, where the mapping would be invisible.
+  const platform =
+      String.fromEnvironment('SCREENSHOT_PLATFORM', defaultValue: 'ios');
+
   /// Boots a seeded app and navigates to [location].
   Future<AppDatabase> open(
     WidgetTester tester, {
     required String location,
   }) async {
+    // Android renders into a surface the framework cannot read back until
+    // this runs; on iOS it is a no-op. It belongs in every capturing test,
+    // not once per run: integration_test registers an addTearDown that
+    // reverts the surface when the test ends, so a single call at the start
+    // leaves every later test throwing "Call convertFlutterSurfaceToImage()
+    // before taking a screenshot".
+    await binding.convertFlutterSurfaceToImage();
+
     final testApp = await createTestApp(initialPrefs: screenshotPrefs());
     await seedScreenshotData(testApp.database);
     await tester.pumpWidget(testApp.app);
@@ -23,11 +40,6 @@ void main() {
   }
 
   testWidgets('history', (tester) async {
-    // Android renders into a surface the framework cannot read back until
-    // this runs; on iOS it is a no-op. Must happen before the first
-    // takeScreenshot of the run, not before each one.
-    await binding.convertFlutterSurfaceToImage();
-
     final database = await open(tester, location: '/history');
     await settleForCapture(tester);
     await binding.takeScreenshot('history');
@@ -48,7 +60,7 @@ void main() {
     await database.close();
   });
 
-  testWidgets('sync-ios', (tester) async {
+  testWidgets('sync', (tester) async {
     final database = await open(tester, location: '/settings');
     // Cloud sync is a section part-way down the settings list rather than a
     // screen of its own. The list builds lazily, so the tile does not exist
@@ -64,17 +76,17 @@ void main() {
     await tester.drag(find.byType(Scrollable).first, const Offset(0, 220));
     await tester.pumpAndSettle();
     await settleForCapture(tester);
-    await binding.takeScreenshot('sync-ios');
+    await binding.takeScreenshot('sync-$platform');
     await database.close();
   });
 
-  testWidgets('nav-ios', (tester) async {
+  testWidgets('nav', (tester) async {
     // The subject is the bottom navigation bar, not the screen behind it —
     // the orchestration script crops this one to the bar. History is used
     // only because it is populated and unambiguous.
     final database = await open(tester, location: '/history');
     await settleForCapture(tester);
-    await binding.takeScreenshot('nav-ios');
+    await binding.takeScreenshot('nav-$platform');
     await database.close();
   });
 }

@@ -13,8 +13,11 @@ void main() {
 
   testWidgets('workout-logging', (tester) async {
     // Android renders into a surface the framework cannot read back until
-    // this runs; on iOS it is a no-op. Must happen before the first
-    // takeScreenshot of the run, not before each one.
+    // this runs; on iOS it is a no-op. It belongs in every capturing test,
+    // not once per run: integration_test registers an addTearDown that
+    // reverts the surface when the test ends, so a single call at the start
+    // leaves every later test throwing "Call convertFlutterSurfaceToImage()
+    // before taking a screenshot".
     await binding.convertFlutterSurfaceToImage();
 
     final testApp = await createTestApp(initialPrefs: screenshotPrefs());
@@ -43,6 +46,7 @@ void main() {
   });
 
   testWidgets('first-workout', (tester) async {
+    await binding.convertFlutterSurfaceToImage();
     final testApp = await createTestApp(initialPrefs: screenshotPrefs());
     await seedScreenshotData(testApp.database);
     await tester.pumpWidget(testApp.app);
@@ -80,6 +84,7 @@ void main() {
   });
 
   testWidgets('stretching', (tester) async {
+    await binding.convertFlutterSurfaceToImage();
     final testApp = await createTestApp(initialPrefs: screenshotPrefs());
     await seedScreenshotData(testApp.database);
     await tester.pumpWidget(testApp.app);
@@ -104,6 +109,7 @@ void main() {
   });
 
   testWidgets('cardio-session', (tester) async {
+    await binding.convertFlutterSurfaceToImage();
     final locationService = FakeLocationService();
     final heartRateService = FakeHeartRateService(
       devicesToReturn: const [
@@ -165,6 +171,7 @@ void main() {
   });
 
   testWidgets('heart-rate-panel', (tester) async {
+    await binding.convertFlutterSurfaceToImage();
     final heartRateService = FakeHeartRateService(
       devicesToReturn: const [
         DiscoveredHrDevice(id: 'polar-h9', name: 'Polar H9'),
@@ -199,6 +206,7 @@ void main() {
   });
 
   testWidgets('coach-mode', (tester) async {
+    await binding.convertFlutterSurfaceToImage();
     final testApp = await createTestApp(initialPrefs: screenshotPrefs());
     await seedScreenshotData(testApp.database);
     await tester.pumpWidget(testApp.app);
