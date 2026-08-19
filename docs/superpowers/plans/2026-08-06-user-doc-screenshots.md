@@ -402,7 +402,7 @@ git commit -m "test: capture the iPad clients roster and the Android-specific sc
 **Files:**
 - Create: `tools/screenshots.sh`
 
-- [ ] **Step 1: Write the script**
+- [x] **Step 1: Write the script**
 
 `tools/screenshots.sh` must, with `set -euo pipefail`:
 
@@ -415,7 +415,7 @@ git commit -m "test: capture the iPad clients roster and the Android-specific sc
 
 Include the expected filenames as an explicit list in the script, so step 6 checks against a stated contract rather than against whatever happens to be on disk.
 
-- [ ] **Step 2: Run it from a clean state**
+- [x] **Step 2: Run it from a clean state**
 
 ```bash
 rm -rf build/screenshots src/docs/modules/ROOT/assets/images
@@ -425,11 +425,11 @@ ls src/docs/modules/ROOT/assets/images/ | wc -l
 
 Expected: 20.
 
-- [ ] **Step 3: Prove the missing-image guard works**
+- [x] **Step 3: Prove the missing-image guard works**
 
 Delete one PNG from `build/screenshots/` after capture and re-run only the install phase. Expected: the script exits non-zero and names the missing file. Restore.
 
-- [ ] **Step 4: Check the weight**
+- [x] **Step 4: Check the weight**
 
 ```bash
 du -sh src/docs/modules/ROOT/assets/images/
@@ -438,7 +438,7 @@ ls -lS src/docs/modules/ROOT/assets/images/ | head -3
 
 Expected: total around 4MB, largest file under 200KB.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add tools/screenshots.sh src/docs/modules/ROOT/assets/images/
