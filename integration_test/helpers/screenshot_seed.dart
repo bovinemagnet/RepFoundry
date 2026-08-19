@@ -29,6 +29,12 @@ const _uuid = Uuid();
 /// silently photograph the wrong thing rather than fail.
 Map<String, Object> screenshotPrefs() => {
       'unlocked_entitlements': <String>['virtualTrainer'],
+      // Pin the display unit. Without a stored value the app picks one from
+      // the device locale — US/LR/MM get lbs, everywhere else kg — so the
+      // Android emulator photographed "18,003 lbs" for the same data the
+      // iPhone photographed as "8,166 kg", and the images a machine produces
+      // depended on how it happened to be set up.
+      'weight_unit': 'kg',
       // The heart rate panel opens a disclaimer on first visit and a profile
       // onboarding sheet whenever the age is unset. Both would sit over the
       // screen being photographed. The hr_* keys are read once and migrated

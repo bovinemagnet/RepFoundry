@@ -18,8 +18,12 @@ void main() {
     // the app lands on — navigate there so the assertion below actually
     // exercises the fixture instead of trivially passing on the landing
     // screen, which never shows this text either way.
-    await tester.tap(find.text('History'));
-    await tester.pumpAndSettle();
+    //
+    // Routed rather than tapped: the phone bottom bar renders its labels
+    // through toUpperCase(), so find.text('History') matches on a tablet,
+    // where the nav rail keeps title case, and finds nothing on any phone.
+    // This test is about the fixture, not about navigation.
+    await goTo(tester, '/history');
 
     // The history screen must not be showing its empty state — that is the
     // single failure this fixture exists to prevent, and it is invisible
