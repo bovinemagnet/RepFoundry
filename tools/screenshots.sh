@@ -28,6 +28,12 @@ readonly AVD_NAME="Medium_Phone_API_36.1"
 readonly TARGET_WIDTH=750
 readonly MAX_BYTES=200000
 
+# The navigation captures photograph a whole screen, because a screenshot has
+# to be of something; the bar along its bottom is the actual subject. Cropped
+# to this height they document the bar, and nav-ios stops being a byte-for-byte
+# copy of the history screenshot that already appears on its own page.
+readonly NAV_BAR_HEIGHT=210
+
 # The contract. Step "verify" checks against this list rather than against
 # whatever happens to be on disk, so a capture suite that silently stopped
 # half way fails the run instead of installing a partial set.
@@ -184,11 +190,24 @@ optimise() {
   rm -rf "$OPTIMISED_DIR"
   mkdir -p "$OPTIMISED_DIR"
 
+  # Renders one image at documentation width, cropping the navigation shots to
+  # the bar. Extra arguments are passed to the resize.
+  render() {
+    local name="$1" out="$2"
+    shift 2
+    magick "$RAW_DIR/$name.png" \
+      -resize "${TARGET_WIDTH}x" "$@" -strip \
+      -define png:compression-level=9 "$out"
+    if [[ "$name" == nav-* ]]; then
+      magick "$out" \
+        -gravity South -crop "${TARGET_WIDTH}x${NAV_BAR_HEIGHT}+0+0" +repage \
+        -define png:compression-level=9 "$out"
+    fi
+  }
+
   for name in "${EXPECTED_IMAGES[@]}"; do
     local out="$OPTIMISED_DIR/$name.png"
-    magick "$RAW_DIR/$name.png" \
-      -resize "${TARGET_WIDTH}x" -strip \
-      -define png:compression-level=9 "$out"
+    render "$name" "$out"
 
     # Quantise only what still exceeds the budget. Most screens are flat dark
     # panels that compress losslessly to well under it; the few with large
@@ -197,9 +216,7 @@ optimise() {
     local bytes
     bytes=$(stat -f%z "$out")
     if ((bytes > MAX_BYTES)); then
-      magick "$RAW_DIR/$name.png" \
-        -resize "${TARGET_WIDTH}x" -strip -colors 256 \
-        -define png:compression-level=9 "$out"
+      render "$name" "$out" -colors 256
       bytes=$(stat -f%z "$out")
       ((bytes <= MAX_BYTES)) ||
         die "$name.png is ${bytes} bytes after quantising, over the ${MAX_BYTES} budget"

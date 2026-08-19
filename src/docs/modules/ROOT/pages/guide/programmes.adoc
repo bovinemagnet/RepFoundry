@@ -5,6 +5,8 @@ Paul Snow
 
 Open *Programmes* from *Settings* to build and manage your training programmes.
 
+image::programmes.png["The Programmes screen listing a 4-Week Push Focus programme in week 3 of 4, and an 8-Week Strength Base programme not yet started"]
+
 == What is a programme?
 
 A programme is a named, multi-week training plan. You set how many weeks it

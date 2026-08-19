@@ -5,6 +5,8 @@ Paul Snow
 
 RepFoundry can remind you to train on the days you choose, and warn you before a training streak lapses. These scheduled reminders are a different mechanism from the rest-timer alerts you hear during a workout — this page explains both and covers how to configure the scheduled ones.
 
+image::notifications.png["The Notifications screen with day-of-week chips for training days, a reminder time of 18:00, a streak reminder toggle, and an action to send a test notification"]
+
 == Two kinds of alert
 
 It helps to know which alert is which, since they are set up in different places:

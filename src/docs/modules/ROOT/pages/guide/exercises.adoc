@@ -5,6 +5,8 @@ Paul Snow
 
 Every set you log, every template you build, and every cardio session you start draws on RepFoundry's exercise library — 21 built-in exercises plus any custom ones you add.
 
+image::exercise-library.png["The Choose Exercise library with a search box, muscle group filter chips, and exercises listed alphabetically, each showing its muscle group and equipment"]
+
 == Opening the library
 
 The library does not have its own tab in the bottom navigation. Instead, RepFoundry opens it, titled *Choose Exercise*, wherever you need to pick an exercise: adding an exercise to an active workout, or adding one while building a template.

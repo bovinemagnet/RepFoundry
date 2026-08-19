@@ -5,6 +5,8 @@ Paul Snow
 
 RepFoundry can record stretching alongside a workout — mobility work, a warm-up, or a cool-down — without it affecting your strength sets. Stretching entries are stored separately from working sets, so they never count towards volume totals or personal records.
 
+image::stretching.png["The Add Stretching sheet listing preset stretches including standing hamstring stretch, pigeon pose, cat-cow and downward-facing dog"]
+
 There is no dedicated stretching tab. Stretching lives inside an active workout, as a *Stretching* section on the Workout screen.
 
 == Where to find it

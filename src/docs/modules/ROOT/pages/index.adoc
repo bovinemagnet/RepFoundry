@@ -5,6 +5,8 @@ Paul Snow
 
 RepFoundry is a workout tracker built for the gym floor. It works fully offline, so a patchy signal in the basement of your gym is never a problem, and there is no account to create or sign into before you can start logging a set.
 
+image::hero.png["Three RepFoundry screens side by side: a live heart-rate session reading 158 bpm, an active workout with sets logged against a bench press, and the analytics dashboard"]
+
 == Who this is for
 
 RepFoundry serves two kinds of user:

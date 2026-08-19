@@ -5,6 +5,8 @@ Paul Snow
 
 The History screen is where every completed workout ends up. From here you can reopen a past session, see how a single exercise has progressed over weeks or months, and review your personal records.
 
+image::history.png["The Training History screen showing a weekly volume trend of 8,166 kg, a search box, and completed sessions listed by date with their duration, volume and a per-exercise bar chart"]
+
 History has two tabs: *History*, which lists your sessions, and *Progress*, which shows trend charts, a training streak, a calendar heatmap and muscle group balance. This page covers the History tab and records. For deeper charts and analytics, see xref:guide/analytics.adoc[].
 
 == The workout history list

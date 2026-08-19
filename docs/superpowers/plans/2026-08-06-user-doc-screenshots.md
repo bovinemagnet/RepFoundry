@@ -452,7 +452,7 @@ git commit -m "feat: one command regenerates every documentation screenshot"
 **Files:**
 - Modify: 17 files under `src/docs/modules/ROOT/pages/`
 
-- [ ] **Step 1: Add the hero to the landing page**
+- [x] **Step 1: Add the hero to the landing page**
 
 In `index.adoc`, place the hero immediately after the opening paragraph — before `== Who this is for` — so it is the first thing below the intro rather than pushed under a heading:
 
@@ -460,7 +460,7 @@ In `index.adoc`, place the hero immediately after the opening paragraph — befo
 image::hero.png[RepFoundry on iPhone: a heart-rate session, an active workout with sets logged, and the analytics dashboard]
 ```
 
-- [ ] **Step 2: Add one image to each feature page**
+- [x] **Step 2: Add one image to each feature page**
 
 Sixteen pages, each taking the image named for it in the spec's coverage table. Place it after the page's opening paragraph, not at the very top — the reader needs a sentence of context first.
 
@@ -468,7 +468,7 @@ Sixteen pages, each taking the image named for it in the spec's coverage table. 
 
 Alt text describes what is on screen, not what the file is called. "Analytics screen showing weekly training volume rising over eight weeks" — not "Analytics screenshot".
 
-- [ ] **Step 3: Build the docs**
+- [x] **Step 3: Build the docs**
 
 ```bash
 gradle21w antora
@@ -476,15 +476,15 @@ gradle21w antora
 
 Expected: success. A missing image is a build failure at `--log-failure-level=warn`, so this is the step that proves every macro resolves.
 
-- [ ] **Step 4: Prove the build catches a broken image**
+- [x] **Step 4: Prove the build catches a broken image**
 
 Rename one PNG, rebuild, confirm the build fails and names it, then restore. Without this you have only proved the build passes, not that it was ever checking.
 
-- [ ] **Step 5: Look at the rendered site**
+- [x] **Step 5: Look at the rendered site**
 
 Open the generated site and check each image renders at a sensible width, is legible on the page, and sits with the prose it illustrates.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/docs/

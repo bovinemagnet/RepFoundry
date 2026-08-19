@@ -5,6 +5,8 @@ Paul Snow
 
 RepFoundry shows live heart rate, training zones, and session summaries from a connected Bluetooth heart rate monitor, either in its own dedicated panel or alongside a cardio session.
 
+image::heart-rate-panel.png["The heart rate panel reading 158 bpm in the Moderate (Aerobic) zone, with a rising trend line and session figures of 136 bpm average and 158 bpm maximum"]
+
 IMPORTANT: Heart rate zones are estimated training guidance only — not medical diagnosis or emergency monitoring.
 
 == Where to find it
