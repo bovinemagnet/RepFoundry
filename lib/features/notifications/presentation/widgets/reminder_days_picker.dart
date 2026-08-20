@@ -24,8 +24,12 @@ class ReminderDaysPicker extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      // Wrap, not Row: seven chips do not fit across a phone. A Row
+      // overflowed by 39px on a 402dp screen and by more on narrower ones.
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 8,
+        runSpacing: 8,
         children: dayLabels.entries.map((entry) {
           final selected = settings.enabledDays.contains(entry.key);
           return FilterChip(

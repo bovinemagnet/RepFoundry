@@ -5,6 +5,8 @@ Paul Snow
 
 RepFoundry records duration-based cardio activities — running, cycling, rowing, and similar exercises — alongside your strength workouts, with optional GPS distance, incline, and live heart rate from a connected Bluetooth monitor.
 
+image::cardio-session.png["A cardio session in progress showing elapsed duration, average pace, GPS distance, and a live heart rate of 144 bpm from a connected Polar H9 strap",380]
+
 == Overview
 
 A cardio session tracks elapsed time from the moment you start it, plus whichever of these you choose to capture:

@@ -1263,7 +1263,7 @@ class _KineticVolumeHero extends ConsumerWidget {
             ),
             const SizedBox(width: 10),
             Text(
-              '$totalSets SETS · $exerciseCount EXERCISES',
+              '${s.activeSessionSetCount(totalSets)} · ${s.activeSessionExerciseCount(exerciseCount)}',
               style: KineticText.mono(
                 size: 12,
                 color: cs.onSurfaceVariant,

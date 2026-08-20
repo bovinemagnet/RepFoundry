@@ -5,6 +5,12 @@ Paul Snow
 
 RepFoundry behaves the same way on Android and iOS for almost everything — logging sets, tracking cardio, watching your heart rate, building programmes. The differences that do exist come from what each platform's cloud and health services allow, and from how each build is currently distributed. This page collects all of them in one place.
 
+image::nav.png["RepFoundry's bottom navigation bar, with Workout, History, Cardio, Heart Rate and Settings, and History selected"]
+
+The navigation bar above is the same on both platforms, down to the icons and
+the labels: RepFoundry draws it itself rather than using either platform's
+native tab bar. Nothing on this page is about how the app looks.
+
 == Cloud sync does not cross platforms
 
 This is the fact to know before you rely on sync: *an iPhone and an Android phone cannot sync workout data with each other.*

@@ -5,6 +5,8 @@ Paul Snow
 
 This page is for personal trainers who coach other people through RepFoundry. If you only use RepFoundry to train yourself, you can skip it — everything you log already goes against your own data, and nothing here changes that.
 
+image::clients.png["The client roster on an iPad, with the navigation rail on the left and six clients listed, including the operator's own entry marked You",380]
+
 == Where to find it
 
 Client management lives behind a *Clients* destination that only appears once your device or window is tablet-sized or larger. On a phone-sized screen there is currently no way to open the client roster or a client's profile page. This isn't a bug to work around — it's simply where the feature lives today.

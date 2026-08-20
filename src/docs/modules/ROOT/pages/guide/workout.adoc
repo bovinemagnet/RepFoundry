@@ -5,6 +5,8 @@ Paul Snow
 
 Workout logging is the core of RepFoundry: recording sets with weight, reps, and optional RPE against exercises drawn from a library, with automatic personal record detection along the way.
 
+image::workout-logging.png["A bench press card part way through a session: sets one and two logged at 55 kg and 60 kg, a third typed in at 62.5 kg for 6 reps, and the Log Set button ready",380]
+
 If you have not logged a workout yet, start with xref:first-workout.adoc[] for a start-to-finish beginner walkthrough. This page is the fuller reference — everything else the feature can do.
 
 == The exercise library

@@ -4,7 +4,11 @@ plugins {
 
 antora {
     playbook = 'antora-playbook.yml'
-    options = ['--fetch']
+    // --log-failure-level=warn matches .github/workflows/docs.yml. Without it
+    // the local build prints "target of image not found" as an ERROR and still
+    // reports BUILD SUCCESSFUL, so a broken xref or a missing screenshot goes
+    // green here and red on the pull request.
+    options = ['--fetch', '--log-failure-level=warn']
 }
 
 // The playbook's ui.bundle.url points at ui/build/ui-bundle.zip, which is a

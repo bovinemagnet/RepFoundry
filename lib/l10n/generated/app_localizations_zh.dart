@@ -765,6 +765,28 @@ class SZh extends S {
   }
 
   @override
+  String activeSessionSetCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count SETS',
+      one: '1 SET',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String activeSessionExerciseCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count EXERCISES',
+      one: '1 EXERCISE',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get prBadge => 'PR!';
 
   @override
