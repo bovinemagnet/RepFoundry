@@ -52,21 +52,38 @@ jobs:
             echo "prerelease=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # `secrets` is not one of the contexts available to a step's `if:` —
+      # referencing it there is a workflow validation error that stops the
+      # whole file starting, which is what kept this workflow from ever
+      # running. The steps below branch on this boolean instead, so the
+      # signing key stays in the environment of the one step that decodes it
+      # rather than every step in the job.
+      - name: Detect signing configuration
+        id: signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Require signing secrets for non-snapshot releases
-        if: ${{ steps.release_type.outputs.prerelease == 'false' && secrets.KEYSTORE_BASE64 == '' }}
+        if: ${{ steps.release_type.outputs.prerelease == 'false' && steps.signing.outputs.present == 'false' }}
         run: |
           echo "::error::KEYSTORE_BASE64 secret is not set — refusing to publish an unsigned release."
           exit 1
 
       - name: Decode keystore
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: ${{ steps.signing.outputs.present == 'true' }}
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           echo "$KEYSTORE_BASE64" | base64 --decode > android/app/keystore.jks
 
       - name: Create key.properties
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: ${{ steps.signing.outputs.present == 'true' }}
         env:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
