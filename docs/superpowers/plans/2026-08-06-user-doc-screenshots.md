@@ -495,7 +495,7 @@ git commit -m "docs: illustrate the user documentation with app screenshots"
 
 ### Task 7: Verify and open the pull request
 
-- [ ] **Step 1: Full verification**
+- [x] **Step 1: Full verification**
 
 ```bash
 flutter test
@@ -506,7 +506,7 @@ gradle21w antora
 
 Report the real test count. All four must be clean.
 
-- [ ] **Step 2: Confirm the untouched pages really are untouched**
+- [x] **Step 2: Confirm the untouched pages really are untouched**
 
 ```bash
 git diff main --stat -- src/docs/modules/ROOT/pages/install-android.adoc \
@@ -516,11 +516,11 @@ git diff main --stat -- src/docs/modules/ROOT/pages/install-android.adoc \
 
 Expected: no output.
 
-- [ ] **Step 3: Confirm every image is referenced**
+- [x] **Step 3: Confirm every image is referenced**
 
 For each of the twenty files in the assets directory, grep the pages for its name. An unreferenced image is dead weight in git; a referenced-but-absent one already failed the build in Task 6.
 
-- [ ] **Step 4: Open the pull request**
+- [x] **Step 4: Open the pull request**
 
 The body must state which pages gained images, why the install and permissions pages did not, that `tools/screenshots.sh` regenerates everything, and the repository size added. Attach or reference the hero so a reviewer can see it without checking out the branch.
 
@@ -530,7 +530,7 @@ The body must state which pages gained images, why the install and permissions p
 
 **The screenshots are the deliverable, and no test can review them.** Every capture task ends with "open the images and look at them" for that reason. A green `flutter drive` proves the app did not crash — nothing more. This project has previously shipped a fully-wired feature that no test could see; a folder of screenshots of loading spinners would be the same failure in a new medium.
 
-**`convertFlutterSurfaceToImage()` is once per driver session**, not once per test, and is a no-op on iOS. Calling it twice throws.
+**`convertFlutterSurfaceToImage()` is once per test**, not once per driver session. `integration_test` registers an `addTearDown` that reverts the surface when each test ends, so a single call at the start of a run leaves every later capture throwing "Call convertFlutterSurfaceToImage() before taking a screenshot". It is a no-op on iOS, which is why the once-per-run form survived Tasks 2 and 3 unnoticed. Calling it twice within one test throws.
 
 **Do not widen app code to make capture easier.** If a screen is hard to reach, that is worth knowing — reach it the way a user does.
 
