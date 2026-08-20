@@ -7,11 +7,11 @@ RepFoundry can keep your workout data in step across your own devices using
 your phone's cloud account. It is entirely optional, off by default, and
 built so that a sync failure never gets in the way of logging a set.
 
-.On iOS
-image::sync-ios.png["Cloud sync switched on in Settings on iOS, showing the last sync time, a Sync Now action, and an option to disable sync and delete the cloud copy"]
+image::sync.png["Cloud sync switched on in Settings, showing the last sync time, a Sync Now action, and an option to disable sync and delete the cloud copy",380]
 
-.On Android
-image::sync-android.png["The same cloud sync settings on Android, showing the last sync time, Sync Now, and the option to disable sync and delete the cloud copy"]
+NOTE: This screen is the same on Android. What differs is where your data
+goes — iCloud on iOS, Google Drive on Android — and that is not something the
+settings screen shows.
 
 == What sync does and does not do
 

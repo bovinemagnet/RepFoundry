@@ -6,10 +6,12 @@
 #   bash tools/screenshots.sh capture    drive the simulators only
 #   bash tools/screenshots.sh install    composite, optimise and install only
 #
-# Captures run on three devices because the app is not the same on all of
-# them: the clients roster exists only behind the desktop nav rail at 600dp
-# and up, and two screens are documented per platform. The images are
-# committed, so the docs build needs none of this.
+# Captures run on two devices because the app is not the same on both: the
+# clients roster exists only behind the desktop nav rail at 600dp and up.
+# There is no Android run — the two screens once shot per platform, cloud sync
+# and the navigation bar, turned out to render identically, so the Android
+# copies documented nothing the iPhone ones did not. The images are committed,
+# so the docs build needs none of this.
 
 set -euo pipefail
 
@@ -21,17 +23,16 @@ readonly INSTALL_DIR="src/docs/modules/ROOT/assets/images"
 
 readonly IPHONE_NAME="iPhone 16 Pro"
 readonly IPAD_NAME="iPad Pro 11-inch (M4)"
-readonly AVD_NAME="Medium_Phone_API_36.1"
 
 # Documentation images are 750px wide and must stay under 200KB each, so the
 # docs repository does not grow by a megabyte every time a screen is retouched.
 readonly TARGET_WIDTH=750
 readonly MAX_BYTES=200000
 
-# The navigation captures photograph a whole screen, because a screenshot has
+# The navigation capture photographs a whole screen, because a screenshot has
 # to be of something; the bar along its bottom is the actual subject. Cropped
-# to this height they document the bar, and nav-ios stops being a byte-for-byte
-# copy of the history screenshot that already appears on its own page.
+# to this height it documents the bar, and stops being a byte-for-byte copy of
+# the history screenshot that already appears on its own page.
 readonly NAV_BAR_HEIGHT=210
 
 # The contract. Step "verify" checks against this list rather than against
@@ -54,10 +55,8 @@ readonly EXPECTED_IMAGES=(
   settings
   notifications
   clients
-  sync-ios
-  sync-android
-  nav-ios
-  nav-android
+  sync
+  nav
 )
 
 log() { printf '\n\033[1m==> %s\033[0m\n' "$1"; }
@@ -83,21 +82,6 @@ boot_simulator() {
   xcrun simctl bootstatus "$1" -b >/dev/null
 }
 
-boot_emulator() {
-  if adb devices | grep -q "emulator-[0-9]*[[:space:]]*device"; then
-    return
-  fi
-  local emulator="${ANDROID_HOME:-$HOME/Library/Android/sdk}/emulator/emulator"
-  if command -v emulator >/dev/null; then
-    emulator="emulator"
-  fi
-  "$emulator" -avd "$AVD_NAME" -no-snapshot -no-boot-anim >/dev/null 2>&1 &
-  adb wait-for-device
-  until [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; do
-    sleep 2
-  done
-}
-
 drive() {
   local target="$1"
   shift
@@ -113,20 +97,6 @@ capture() {
   local iphone ipad
   iphone=$(simulator_udid "$IPHONE_NAME")
   ipad=$(simulator_udid "$IPAD_NAME")
-
-  # Android runs first, and deliberately so. progress_test also photographs
-  # history, analytics and body metrics, which the docs shoot on an iPhone;
-  # running Android last would leave Android versions of those three behind
-  # under iPhone filenames, which no later step could detect.
-  log "Android: sync and navigation ($AVD_NAME)"
-  boot_emulator
-  # --flavor dev because the project has three Android flavours and a bare
-  # assembleDebug produces no single APK. --profile because the debug APK is
-  # ~120MB, mostly kernel_blob.bin, and installs fail on an AVD with a full
-  # data partition; profile mode is AOT-compiled, small, and photographs the
-  # same.
-  drive progress_test.dart -d emulator-5554 --flavor dev --profile \
-    --dart-define=SCREENSHOT_PLATFORM=android
 
   log "iPhone: training screens ($IPHONE_NAME)"
   boot_simulator "$iphone"
@@ -198,7 +168,7 @@ optimise() {
     magick "$RAW_DIR/$name.png" \
       -resize "${TARGET_WIDTH}x" "$@" -strip \
       -define png:compression-level=9 "$out"
-    if [[ "$name" == nav-* ]]; then
+    if [[ "$name" == nav ]]; then
       magick "$out" \
         -gravity South -crop "${TARGET_WIDTH}x${NAV_BAR_HEIGHT}+0+0" +repage \
         -define png:compression-level=9 "$out"

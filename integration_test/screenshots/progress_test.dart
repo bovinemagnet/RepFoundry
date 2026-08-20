@@ -9,15 +9,6 @@ import '../helpers/test_app.dart';
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  /// Which platform this run is photographing.
-  ///
-  /// Two of the captures below exist once per platform because the app
-  /// genuinely differs there — the cloud provider and the navigation bar.
-  /// The run writes platform-suffixed names itself rather than the shell
-  /// renaming files afterwards, where the mapping would be invisible.
-  const platform =
-      String.fromEnvironment('SCREENSHOT_PLATFORM', defaultValue: 'ios');
-
   /// Boots a seeded app and navigates to [location].
   Future<AppDatabase> open(
     WidgetTester tester, {
@@ -61,6 +52,10 @@ void main() {
   });
 
   testWidgets('sync', (tester) async {
+    // Shot once, not once per platform. The sync screen names no cloud
+    // provider on either platform — the only string that does is
+    // syncConsentBody, which names Google Drive and iCloud together — so an
+    // Android counterpart differed from this only in its aspect ratio.
     final database = await open(tester, location: '/settings');
     // Cloud sync is a section part-way down the settings list rather than a
     // screen of its own. The list builds lazily, so the tile does not exist
@@ -76,7 +71,7 @@ void main() {
     await tester.drag(find.byType(Scrollable).first, const Offset(0, 220));
     await tester.pumpAndSettle();
     await settleForCapture(tester);
-    await binding.takeScreenshot('sync-$platform');
+    await binding.takeScreenshot('sync');
     await database.close();
   });
 
@@ -84,9 +79,12 @@ void main() {
     // The subject is the bottom navigation bar, not the screen behind it —
     // the orchestration script crops this one to the bar. History is used
     // only because it is populated and unambiguous.
+    //
+    // Shot once: the bar is RepFoundry's own Flutter widget, so it renders
+    // identically on Android, and two copies of one bar documented nothing.
     final database = await open(tester, location: '/history');
     await settleForCapture(tester);
-    await binding.takeScreenshot('nav-$platform');
+    await binding.takeScreenshot('nav');
     await database.close();
   });
 }

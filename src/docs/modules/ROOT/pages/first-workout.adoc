@@ -5,7 +5,7 @@ Paul Snow
 
 This page walks through a first workout in RepFoundry, start to finish: opening the app, starting a session, adding an exercise, logging sets, and finishing up. It covers the whole loop at a beginner level. For the full feature reference, see xref:guide/workout.adoc[].
 
-image::first-workout.png["An active session showing 1.0k kg of volume across two logged sets, and a bench press card with set one at 55 kg for 10 reps, set two at 60 kg for 8, and a third typed in ready to log"]
+image::first-workout.png["An active session showing 1.0k kg of volume across two logged sets, and a bench press card with set one at 55 kg for 10 reps, set two at 60 kg for 8, and a third typed in ready to log",380]
 
 RepFoundry opens on the *Workout* tab. The bottom navigation bar also gives you *History*, *Cardio*, *Heart Rate*, and *Settings* — but everything below happens on the Workout tab.
 

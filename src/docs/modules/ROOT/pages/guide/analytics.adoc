@@ -8,7 +8,7 @@ trends that are hard to spot set by set: whether your training volume is
 rising or falling, whether one muscle group is being neglected, how your
 personal records have progressed, and how hard each week has felt.
 
-image::analytics.png["The Analytics screen showing a weekly volume trend that rises then falls, and a muscle group balance radar covering chest, back, shoulders, biceps and quadriceps"]
+image::analytics.png["The Analytics screen showing a weekly volume trend that rises then falls, and a muscle group balance radar covering chest, back, shoulders, biceps and quadriceps",380]
 
 Analytics needs a few completed workouts before it has anything to show. On a
 new profile, or one with very little history, the screen shows a short

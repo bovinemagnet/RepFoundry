@@ -112,8 +112,13 @@ that change most often as OS versions move.
 
 ## 7. Coverage
 
-19 images plus the hero. iOS is the default; Android appears only where the
-platforms genuinely diverge.
+17 images plus the hero. iOS is the default; Android appears only where the
+platforms genuinely diverge — and on inspection, nowhere in this set does it.
+Cloud sync names no provider on either platform (only `syncConsentBody` does,
+and it names both), and the navigation bar is RepFoundry's own Flutter widget,
+identical on Android down to the icons. Both were originally shot twice; the
+Android copies documented nothing and were dropped, along with the Android
+capture run.
 
 | Image | Page | Device |
 |---|---|---|
@@ -133,10 +138,8 @@ platforms genuinely diverge.
 | `settings.png` | `guide/settings.adoc` | iPhone |
 | `notifications.png` | `guide/notifications.adoc` | iPhone |
 | `clients.png` | `guide/clients.adoc` | **iPad** — see below |
-| `sync-ios.png` | `guide/sync.adoc` | iPhone |
-| `sync-android.png` | `guide/sync.adoc` | Android |
-| `nav-ios.png` | `platform-differences.adoc` | iPhone |
-| `nav-android.png` | `platform-differences.adoc` | Android |
+| `sync.png` | `guide/sync.adoc` | iPhone |
+| `nav.png` | `platform-differences.adoc` | iPhone |
 
 **The clients page must be shot on an iPad.** The roster and detail screens are
 reachable only via the desktop nav rail at ≥600dp; on a phone they do not exist.
@@ -147,13 +150,12 @@ active-client switcher instead would illustrate the wrong feature. `iPad Pro
 The hero reuses the heart-rate, workout-logging and analytics captures rather
 than shooting three more, so it can never drift from the images below it.
 
-Devices: `iPhone 16 Pro`, `iPad Pro 11-inch (M4)`, and the `Medium_Phone_API_36.1`
-AVD — all confirmed present.
+Devices: `iPhone 16 Pro` and `iPad Pro 11-inch (M4)`.
 
 ## 8. Success criteria
 
 - [ ] `tools/screenshots.sh` regenerates every image from a clean checkout.
-- [ ] All 20 images are committed, under 200KB each, and dark-themed.
+- [ ] All 18 images are committed, under 200KB each, and dark-themed.
 - [ ] Every `image::` macro carries meaningful alt text.
 - [ ] Each screenshot shows populated data, never an empty state.
 - [ ] `gradle21w antora` passes at `--log-failure-level=warn` — a missing image

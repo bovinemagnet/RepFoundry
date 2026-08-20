@@ -7,7 +7,7 @@ RepFoundry lets you record body weight over time, alongside an optional body
 fat percentage and a note, so you can track how your body is changing outside
 of the numbers on the bar.
 
-image::body-metrics.png["The Body Metrics screen showing body weight falling from 82.5 kg to 80.6 kg over three weeks, the latest entry with 18.3% body fat, and the full history beneath it"]
+image::body-metrics.png["The Body Metrics screen showing body weight falling from 82.5 kg to 80.6 kg over three weeks, the latest entry with 18.3% body fat, and the full history beneath it",380]
 
 == What you can record
 

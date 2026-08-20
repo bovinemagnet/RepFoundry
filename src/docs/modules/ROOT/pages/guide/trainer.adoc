@@ -5,7 +5,7 @@ Paul Snow
 
 Coach mode is a spoken voice that talks you through a workout: it opens the session, counts down your rests, calls out a completed set or a personal record, and closes things out at the end. It speaks through your device's text-to-speech voice, so no internet connection or extra download is needed.
 
-image::coach-mode.png["The Virtual Trainer settings with the coach enabled, the Steady voice chosen from Steady, Hype and Sergeant, a speech rate slider, and toggles for rest countdowns, encouragement and inspirational quotes"]
+image::coach-mode.png["The Virtual Trainer settings with the coach enabled, the Steady voice chosen from Steady, Hype and Sergeant, a speech rate slider, and toggles for rest countdowns, encouragement and inspirational quotes",380]
 
 IMPORTANT: The coach is a companion to help you stay on track — it is not a personal trainer and not medical advice. It does not know your form, your injuries, or your limits. Stop exercising and seek medical help if you feel pain, dizziness, or chest discomfort.
 

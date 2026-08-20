@@ -5,7 +5,7 @@ Paul Snow
 
 Open *Templates* from *Settings* to create and manage your templates.
 
-image::templates.png["The Templates screen listing three saved templates: Push Day and Pull & Legs with three exercises each, and Upper Body Volume with four"]
+image::templates.png["The Templates screen listing three saved templates: Push Day and Pull & Legs with three exercises each, and Upper Body Volume with four",380]
 
 == What is a template?
 

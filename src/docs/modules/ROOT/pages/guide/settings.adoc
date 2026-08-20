@@ -5,7 +5,7 @@ Paul Snow
 
 The *Settings* screen is where you bring history in from another app, back your data out, configure the health profile behind your heart rate zones, and adjust how RepFoundry looks and alerts you.
 
-image::settings.png["The Settings screen showing the health profile: age, resting heart rate, measured maximum heart rate, beta blocker and heart condition toggles, and the heart rate zone method"]
+image::settings.png["The Settings screen showing the health profile: age, resting heart rate, measured maximum heart rate, beta blocker and heart condition toggles, and the heart rate zone method",380]
 
 == Importing workout history from another app
 

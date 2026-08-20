@@ -5,7 +5,7 @@ Paul Snow
 
 Every set you log, every template you build, and every cardio session you start draws on RepFoundry's exercise library — 21 built-in exercises plus any custom ones you add.
 
-image::exercise-library.png["The Choose Exercise library with a search box, muscle group filter chips, and exercises listed alphabetically, each showing its muscle group and equipment"]
+image::exercise-library.png["The Choose Exercise library with a search box, muscle group filter chips, and exercises listed alphabetically, each showing its muscle group and equipment",380]
 
 == Opening the library
 
