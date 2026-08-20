@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
 import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
+import 'package:rep_foundry/features/workout/presentation/widgets/rest_timer_widget.dart';
 
 import '../helpers/fakes.dart';
 import '../helpers/screenshot_seed.dart';
@@ -78,6 +79,27 @@ void main() {
     // and pumpAndSettle would time out rather than return.
     await tester.pump(const Duration(seconds: 2));
     await tester.pump(const Duration(milliseconds: 500));
+
+    final logSet = find.text('LOG SET');
+    await scrollClearOfFab(tester, logSet);
+    // Once the card is clear of the FAB the rest timer band no longer fits
+    // above it, and a band sliced through the middle at the top edge reads as
+    // a rendering fault rather than a scrolled list. Push it fully out of
+    // frame; the running timer is described in the prose beside this image.
+    await scrollPastTop(tester, find.byType(RestTimerWidget));
+    await tester.pump(const Duration(milliseconds: 500));
+
+    // The whole point of this shot is a beginner's first logged set, so the
+    // button they press next cannot be half hidden behind the Add Exercise
+    // FAB. Asserted rather than eyeballed: a capture test photographs an
+    // obscured button just as happily as a clear one.
+    expect(
+      tester.getRect(logSet).bottom,
+      lessThanOrEqualTo(
+        tester.getRect(find.byType(FloatingActionButton)).top,
+      ),
+      reason: 'the Add Exercise button is covering the LOG SET call to action',
+    );
 
     await binding.takeScreenshot('first-workout');
     await testApp.database.close();

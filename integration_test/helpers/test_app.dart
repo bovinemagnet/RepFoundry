@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,6 +80,51 @@ Future<void> goTo(WidgetTester tester, String location) async {
 Future<void> settleForCapture(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await tester.pump(const Duration(milliseconds: 500));
+}
+
+/// Scrolls just far enough that [subject] clears the floating action button.
+///
+/// The "Add Exercise" FAB floats over the bottom of the active workout list,
+/// so with the session scrolled to the top the set card's LOG SET call to
+/// action sits underneath it — the app only hides the FAB while the keyboard
+/// is up, and there is no keyboard in a capture. The overlap is measured
+/// rather than guessed: a hardcoded offset would quietly start cutting
+/// something else off the moment the layout moved.
+Future<void> scrollClearOfFab(WidgetTester tester, Finder subject) async {
+  final fab = find.byType(FloatingActionButton);
+  final overlap = tester.getRect(subject).bottom - tester.getRect(fab).top;
+  if (overlap <= 0) return;
+
+  final scrollable =
+      find.ancestor(of: subject, matching: find.byType(Scrollable)).first;
+  final position = tester.state<ScrollableState>(scrollable).position;
+  // A little clear air below the button, so it does not sit flush against
+  // the one it was hiding behind.
+  position.jumpTo(
+    math.min(position.pixels + overlap + 24, position.maxScrollExtent),
+  );
+  // jumpTo does not animate, and a running rest timer means the tree never
+  // settles, so one pump is both enough and all that will return.
+  await tester.pump();
+}
+
+/// Scrolls until [subject] sits entirely above the top of its scroll view.
+///
+/// Used when something tall will not fit alongside the real subject of a
+/// capture: half of it clipped against the top edge reads as a rendering
+/// fault, where none of it reads as a scrolled list.
+Future<void> scrollPastTop(WidgetTester tester, Finder subject) async {
+  final scrollable =
+      find.ancestor(of: subject, matching: find.byType(Scrollable)).first;
+  final overshoot =
+      tester.getRect(subject).bottom - tester.getRect(scrollable).top;
+  if (overshoot <= 0) return;
+
+  final position = tester.state<ScrollableState>(scrollable).position;
+  position.jumpTo(
+    math.min(position.pixels + overshoot, position.maxScrollExtent),
+  );
+  await tester.pump();
 }
 
 /// Jumps the scroll view that contains [anchor] back to its top.
