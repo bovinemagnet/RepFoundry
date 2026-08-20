@@ -1512,6 +1512,18 @@ abstract class S {
   /// **'{count} sets'**
   String setsCount(int count);
 
+  /// Set count in the active session meta line. Upper case to match the mono styling of that line.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 SET} other{{count} SETS}}'**
+  String activeSessionSetCount(int count);
+
+  /// Exercise count in the active session meta line. Upper case to match the mono styling of that line.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 EXERCISE} other{{count} EXERCISES}}'**
+  String activeSessionExerciseCount(int count);
+
   /// No description provided for @prBadge.
   ///
   /// In en, this message translates to:

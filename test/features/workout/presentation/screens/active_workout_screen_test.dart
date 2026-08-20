@@ -703,4 +703,74 @@ void main() {
       expect(sets.last.weight, 80.0); // 80% of 100
     });
   });
+
+  group('active session meta line', () {
+    /// Logs one set against a freshly added exercise, which is what makes the
+    /// populated session header render at all.
+    Future<void> logOneSet(WidgetTester tester) async {
+      await tester.tap(find.text('Start Workout'));
+      await tester.pumpAndSettle();
+
+      final state = tester
+          .state<ActiveWorkoutScreenState>(find.byType(ActiveWorkoutScreen));
+      await state.handleAddExercise(makeExercise('ex-a', 'Exercise A'));
+      await tester.pumpAndSettle();
+
+      final fields = find.byType(TextFormField);
+      await tester.enterText(fields.at(0), '60');
+      await tester.enterText(fields.at(1), '10');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('LOG SET'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('reads singular for one set of one exercise', (tester) async {
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+
+      await logOneSet(tester);
+
+      // "1 SETS · 1 EXERCISES" is what a beginner sees on their very first
+      // logged set, and it is the frame the documentation photographs.
+      expect(find.text('1 SET · 1 EXERCISE'), findsOneWidget);
+    });
+
+    testWidgets('reads plural for a second set of the same exercise',
+        (tester) async {
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+
+      await logOneSet(tester);
+
+      // Driven through the controller rather than the card: the first set of
+      // a session sets a personal record, and that celebration overlay
+      // absorbs the pointer events a second LOG SET tap would need. This
+      // test is about what the meta line says, not about tapping.
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(ActiveWorkoutScreen)),
+      );
+      await container
+          .read(activeWorkoutControllerProvider.notifier)
+          .logSet(exerciseId: 'ex-a', weight: 62.5, reps: 8);
+      await tester.pumpAndSettle();
+
+      expect(find.text('2 SETS · 1 EXERCISE'), findsOneWidget);
+    });
+
+    testWidgets('pluralises each half independently', (tester) async {
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+
+      await logOneSet(tester);
+
+      final state = tester
+          .state<ActiveWorkoutScreenState>(find.byType(ActiveWorkoutScreen));
+      await state.handleAddExercise(makeExercise('ex-b', 'Exercise B'));
+      await tester.pumpAndSettle();
+
+      // One set across two exercises: the two halves of the line do not
+      // share a count, so a single plural rule for both would be wrong.
+      expect(find.text('1 SET · 2 EXERCISES'), findsOneWidget);
+    });
+  });
 }

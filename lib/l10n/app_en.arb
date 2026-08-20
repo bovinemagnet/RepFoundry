@@ -401,6 +401,17 @@
   "@setsCount": {
     "placeholders": { "count": { "type": "int" } }
   },
+
+  "activeSessionSetCount": "{count, plural, =1{1 SET} other{{count} SETS}}",
+  "@activeSessionSetCount": {
+    "description": "Set count in the active session meta line. Upper case to match the mono styling of that line.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "activeSessionExerciseCount": "{count, plural, =1{1 EXERCISE} other{{count} EXERCISES}}",
+  "@activeSessionExerciseCount": {
+    "description": "Exercise count in the active session meta line. Upper case to match the mono styling of that line.",
+    "placeholders": { "count": { "type": "int" } }
+  },
   "prBadge": "PR!",
 
   "workoutDetailTitle": "Workout Detail",

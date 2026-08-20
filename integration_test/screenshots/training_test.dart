@@ -70,6 +70,15 @@ void main() {
     // advances under this binding, so tap it away instead.
     await tester.tap(find.text('Barbell Bench Press').last);
     await tester.pumpAndSettle();
+
+    // A second set, so the volume sparkline draws a line rather than a lone
+    // dot floating in an otherwise empty band. One set is the smallest
+    // session that is not an empty state; it is not the most useful one to
+    // photograph.
+    await _logSet(tester, weight: '60', reps: '8');
+    await tester.tap(find.text('Barbell Bench Press').last);
+    await tester.pumpAndSettle();
+
     await scrollToTop(
       tester,
       find.text('Barbell Bench Press', skipOffstage: false),
