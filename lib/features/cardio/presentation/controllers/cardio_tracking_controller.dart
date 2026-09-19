@@ -360,6 +360,10 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       _syncForegroundService();
     } on SaveCardioSessionException catch (e) {
       state = state.copyWith(isSaving: false, error: e.message);
+    } catch (e) {
+      // A database or platform failure must not leave the save button
+      // disabled behind a permanent isSaving flag.
+      state = state.copyWith(isSaving: false, error: e.toString());
     }
   }
 }

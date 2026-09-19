@@ -17,6 +17,20 @@ import '../../data/fake_foreground_session_service.dart';
 import '../../data/fake_heart_rate_service.dart';
 import '../../data/fake_location_service.dart';
 
+/// Simulates a database/platform failure that is not a validation error.
+class _ThrowingSaveUseCase extends SaveCardioSessionUseCase {
+  _ThrowingSaveUseCase()
+      : super(
+          cardioRepository: InMemoryCardioSessionRepository(),
+          workoutRepository: InMemoryWorkoutRepository(),
+        );
+
+  @override
+  Future<SaveCardioSessionResult> execute(SaveCardioSessionInput input) async {
+    throw StateError('disk full');
+  }
+}
+
 void main() {
   late InMemoryCardioSessionRepository cardioRepo;
   late InMemoryWorkoutRepository workoutRepo;
@@ -226,6 +240,37 @@ void main() {
         final sessions =
             await cardioRepo.getSessionsForExercise('e1', kSelfClientId);
         expect(sessions, hasLength(1));
+      });
+
+      test('a storage failure clears isSaving and reports the error', () async {
+        final failing = ProviderContainer(
+          overrides: [
+            cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
+            saveCardioSessionUseCaseProvider
+                .overrideWithValue(_ThrowingSaveUseCase()),
+            locationServiceProvider.overrideWithValue(locationService),
+            heartRateServiceProvider.overrideWithValue(heartRateService),
+            foregroundSessionServiceProvider
+                .overrideWithValue(foregroundService),
+            healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+            healthSyncSettingsProvider
+                .overrideWith(() => HealthSyncSettingsNotifier()),
+          ],
+        );
+        addTearDown(failing.dispose);
+        final failingController = failing.read(cardioTrackingProvider.notifier);
+
+        await failingController.selectExercise('e1', 'Treadmill');
+        failingController.start();
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        failingController.pause();
+
+        await failingController.save();
+
+        expect(failingController.state.isSaving, isFalse);
+        expect(failingController.state.error, isNotNull);
+        expect(failingController.state.savedSuccessfully, isFalse);
       });
 
       test('sets error on validation failure', () async {

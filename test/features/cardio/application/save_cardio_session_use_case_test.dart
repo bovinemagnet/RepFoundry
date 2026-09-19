@@ -1,8 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/cardio/application/save_cardio_session_use_case.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
+
+/// Fails the child insert so the test can check the parent workout is not
+/// left behind as an empty completed session.
+class _FailingCardioSessionRepository extends InMemoryCardioSessionRepository {
+  @override
+  Future<CardioSession> createSession(CardioSession session) async {
+    throw StateError('storage failure');
+  }
+}
 
 void main() {
   late InMemoryCardioSessionRepository cardioRepo;
@@ -113,6 +123,29 @@ void main() {
           ),
           throwsA(isA<SaveCardioSessionException>()),
         );
+      });
+    });
+
+    group('failed save', () {
+      test('does not leave an orphan workout when the session insert fails',
+          () async {
+        final failing = SaveCardioSessionUseCase(
+          cardioRepository: _FailingCardioSessionRepository(),
+          workoutRepository: workoutRepo,
+        );
+
+        await expectLater(
+          failing.execute(const SaveCardioSessionInput(
+            exerciseId: 'e1',
+            exerciseName: 'Treadmill',
+            durationSeconds: 600,
+          )),
+          throwsA(isA<StateError>()),
+        );
+
+        final history =
+            await workoutRepo.getWorkoutHistory(clientId: kSelfClientId);
+        expect(history, isEmpty);
       });
     });
 

@@ -79,7 +79,14 @@ class SaveCardioSessionUseCase {
       clientId: createdWorkout.clientId,
     );
 
-    await _cardioRepository.createSession(session);
+    try {
+      await _cardioRepository.createSession(session);
+    } catch (_) {
+      // The pair is written through two repositories, so compensate rather
+      // than leave an empty completed workout in history.
+      await _workoutRepository.deleteWorkout(createdWorkout.id);
+      rethrow;
+    }
 
     return SaveCardioSessionResult(
       session: session,
