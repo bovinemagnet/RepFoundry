@@ -6,12 +6,14 @@ import '../domain/sync_service.dart';
 /// service throws `UnimplementedError` from the platform-interface
 /// placeholder when sync runs.
 ///
-/// All methods succeed silently. [isAvailable] returns false so any
-/// caller that gates on it short-circuits cleanly. [downloadSnapshot]
-/// returns null so the orchestrator merges against an empty remote and
-/// produces a no-op upload that this service then discards.
+/// [isSupported] and [isAvailable] both return false so the orchestrator
+/// refuses to sync and the settings UI can disable the toggle, rather than
+/// reporting a success whose upload was silently discarded.
 class NoopCloudSyncService implements CloudSyncService {
   const NoopCloudSyncService();
+
+  @override
+  bool get isSupported => false;
 
   @override
   Future<bool> isAvailable() async => false;

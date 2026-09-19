@@ -1690,6 +1690,10 @@ class SJa extends S {
   String get syncEnabledSubtitle => 'デバイス間でワークアウトデータを同期';
 
   @override
+  String get syncUnsupportedPlatform =>
+      'Cloud sync is not available on this platform';
+
+  @override
   String syncLastSynced(String time) {
     return '最終同期：$time';
   }

@@ -3096,6 +3096,12 @@ abstract class S {
   /// **'Sync your workout data across devices'**
   String get syncEnabledSubtitle;
 
+  /// No description provided for @syncUnsupportedPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud sync is not available on this platform'**
+  String get syncUnsupportedPlatform;
+
   /// No description provided for @syncLastSynced.
   ///
   /// In en, this message translates to:

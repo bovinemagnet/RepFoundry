@@ -3,6 +3,9 @@ import '../domain/sync_service.dart';
 
 /// CloudKit-based sync service for iOS, communicating via platform channel.
 class CloudKitSyncService implements CloudSyncService {
+  @override
+  bool get isSupported => true;
+
   static const _channel = MethodChannel('com.repfoundry.app/cloudkit_sync');
 
   @override

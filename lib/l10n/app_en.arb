@@ -832,6 +832,7 @@
   "syncSectionTitle": "Cross-Device Sync",
   "syncEnabled": "Enable Cross-Device Sync",
   "syncEnabledSubtitle": "Sync your workout data across devices",
+  "syncUnsupportedPlatform": "Cloud sync is not available on this platform",
   "syncLastSynced": "Last synced: {time}",
   "@syncLastSynced": {
     "placeholders": { "time": { "type": "String" } }

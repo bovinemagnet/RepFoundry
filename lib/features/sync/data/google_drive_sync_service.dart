@@ -11,6 +11,9 @@ const _syncFileName = 'repfoundry_sync.json';
 const _driveScopes = [drive.DriveApi.driveAppdataScope];
 
 class GoogleDriveSyncService implements CloudSyncService {
+  @override
+  bool get isSupported => true;
+
   GoogleDriveSyncService() : _injectedApi = null;
 
   /// Bypasses Google sign-in and uses [api] directly, so the Drive file

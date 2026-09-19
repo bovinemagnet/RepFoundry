@@ -9,6 +9,7 @@ import 'package:rep_foundry/features/workout/data/drift_workout_repository.dart'
 import 'package:rep_foundry/features/workout/domain/models/workout.dart'
     as domain;
 import 'package:rep_foundry/features/sync/application/sync_orchestrator.dart';
+import 'package:rep_foundry/features/sync/data/noop_cloud_sync_service.dart';
 import 'package:rep_foundry/features/sync/data/sync_snapshot_serialiser.dart';
 import 'package:rep_foundry/features/sync/domain/models/sync_snapshot.dart';
 import 'package:rep_foundry/features/sync/domain/sync_service.dart';
@@ -16,6 +17,9 @@ import 'package:rep_foundry/features/sync/domain/sync_service.dart';
 // ── Fakes ──────────────────────────────────────────────────────────────
 
 class FakeCloudSyncService implements CloudSyncService {
+  @override
+  bool get isSupported => true;
+
   String? storedJson;
   bool available = true;
   bool throwOnUpload = false;
@@ -299,6 +303,22 @@ void main() {
             ..where((t) => t.id.equals(workout.id)))
           .getSingle();
       expect(row.notes, 'mid-sync edit');
+    });
+
+    test('unsupported cloud backend fails instead of reporting success',
+        () async {
+      const noop = NoopCloudSyncService();
+      final unsupported = SyncOrchestrator(
+        database: db,
+        cloudService: noop,
+        deviceId: 'test-device',
+        connectivity: connectivity,
+      );
+
+      final result = await unsupported.sync();
+
+      expect(result.success, isFalse);
+      expect(result.errorMessage, isNotEmpty);
     });
 
     test('deleteCloudData delegates to cloud service', () async {

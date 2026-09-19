@@ -24,14 +24,21 @@ class _RecordingSyncOrchestrator extends SyncOrchestrator {
           deviceId: 'test-device',
         );
 
-  factory _RecordingSyncOrchestrator({required SyncResult result}) =>
+  factory _RecordingSyncOrchestrator({
+    required SyncResult result,
+    bool supported = true,
+  }) =>
       _RecordingSyncOrchestrator._(
         AppDatabase.forTesting(NativeDatabase.memory()),
         result: result,
-      );
+      ).._supported = supported;
 
   final AppDatabase _database;
   final SyncResult result;
+  bool _supported = true;
+
+  @override
+  bool get isSupported => _supported;
   int syncCalls = 0;
   final List<bool> interactiveValues = [];
 
@@ -105,6 +112,27 @@ void main() {
     await tester.tapAt(Offset(850, labelCenter.dy));
     await tester.pumpAndSettle();
   }
+
+  testWidgets('sync toggle is disabled when the platform has no cloud backend',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    orchestrator = _RecordingSyncOrchestrator(
+      result: SyncResult(
+        success: true,
+        entitiesMerged: 0,
+        syncedAt: DateTime.utc(2026, 6, 8, 12),
+      ),
+      supported: false,
+    );
+
+    await tester.pumpWidget(buildScreen(orchestrator));
+    await tester.pumpAndSettle();
+    await tapSyncToggle(tester);
+
+    expect(orchestrator.syncCalls, 0);
+    expect(find.text('Cloud sync is not available on this platform'),
+        findsOneWidget);
+  });
 
   testWidgets('page header shows the installed package version',
       (tester) async {

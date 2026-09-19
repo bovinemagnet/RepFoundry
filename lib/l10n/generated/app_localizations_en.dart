@@ -1732,6 +1732,10 @@ class SEn extends S {
   String get syncEnabledSubtitle => 'Sync your workout data across devices';
 
   @override
+  String get syncUnsupportedPlatform =>
+      'Cloud sync is not available on this platform';
+
+  @override
   String syncLastSynced(String time) {
     return 'Last synced: $time';
   }

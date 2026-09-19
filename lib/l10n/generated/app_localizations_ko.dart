@@ -1689,6 +1689,10 @@ class SKo extends S {
   String get syncEnabledSubtitle => '기기 간 운동 데이터 동기화';
 
   @override
+  String get syncUnsupportedPlatform =>
+      'Cloud sync is not available on this platform';
+
+  @override
   String syncLastSynced(String time) {
     return '마지막 동기화: $time';
   }

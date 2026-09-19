@@ -28,6 +28,9 @@ import '../../../cardio/data/fake_heart_rate_service.dart';
 
 class _FakeCloudSyncService implements CloudSyncService {
   @override
+  bool get isSupported => true;
+
+  @override
   Future<void> deleteCloudData({bool interactive = false}) async {}
 
   @override

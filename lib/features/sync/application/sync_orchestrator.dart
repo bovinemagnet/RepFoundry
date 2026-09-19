@@ -38,7 +38,14 @@ class SyncOrchestrator {
 
   bool get isSyncing => _isSyncing;
 
+  /// Whether this host has a real cloud backend. See
+  /// [CloudSyncService.isSupported].
+  bool get isSupported => _cloudService.isSupported;
+
   Future<SyncResult> sync({bool interactive = false}) async {
+    if (!isSupported) {
+      return SyncResult.error('Cloud sync is not available on this platform');
+    }
     if (_isSyncing) {
       return SyncResult.error('Sync already in progress');
     }

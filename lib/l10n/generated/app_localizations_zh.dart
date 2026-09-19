@@ -1684,6 +1684,10 @@ class SZh extends S {
   String get syncEnabledSubtitle => '跨设备同步你的训练数据';
 
   @override
+  String get syncUnsupportedPlatform =>
+      'Cloud sync is not available on this platform';
+
+  @override
   String syncLastSynced(String time) {
     return '上次同步：$time';
   }

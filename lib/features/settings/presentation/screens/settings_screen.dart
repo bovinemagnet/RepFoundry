@@ -998,6 +998,7 @@ class _SyncRemindersCard extends ConsumerWidget {
 
     // Cloud sync
     final syncSettings = ref.watch(syncSettingsProvider);
+    final syncSupported = ref.watch(syncOrchestratorProvider).isSupported;
     final syncState = ref.watch(syncStateProvider);
 
     final List<Widget> rows = [
@@ -1090,10 +1091,12 @@ class _SyncRemindersCard extends ConsumerWidget {
       _Set2Row(
         icon: Icons.sync,
         title: s.syncEnabled,
-        subtitle: s.syncEnabledSubtitle,
+        subtitle:
+            syncSupported ? s.syncEnabledSubtitle : s.syncUnsupportedPlatform,
         trailing: _KineticToggle(
           value: syncSettings.enabled,
           onChanged: (_) async {
+            if (!syncSupported) return;
             if (!syncSettings.enabled) {
               if (!syncSettings.consentGiven) {
                 final accepted = await SyncConsentDialog.show(context);
