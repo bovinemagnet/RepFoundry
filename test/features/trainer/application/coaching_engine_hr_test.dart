@@ -315,11 +315,13 @@ void main() {
     });
   });
 
-  group('reset clears the new heart-rate state', () {
-    // Fix round 1, Important 3: without this, reset() runs inside other
-    // tests and its lines count as "covered" while nothing asserts the
-    // fields it clears actually unblock the engine afterwards.
-    test('reset lifts above-cap suppression', () {
+  group('reset keeps live heart-rate state', () {
+    // The HR event source outlives the workout and announces only
+    // transitions, so a reset that dropped this state would leave the coach
+    // encouraging a user who is still above cap or in zone 5, with no later
+    // event able to tell it otherwise. Only session phrase/cadence state is
+    // per-workout.
+    test('reset keeps above-cap suppression', () {
       final engine =
           _engine(encouragementEverySets: 1, cooldown: Duration.zero);
       engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
@@ -331,32 +333,11 @@ void main() {
         now: t0.add(const Duration(seconds: 1)),
       );
 
-      expect(cue, isNotNull);
-      expect(engine.isAboveCap, isFalse);
+      expect(cue, isNull);
+      expect(engine.isAboveCap, isTrue);
     });
 
-    test('reset clears the cap-warning repeat timer', () {
-      // Fix round 2, Important 2: reset() clears _lastCapWarningAt, but
-      // nothing re-issued HeartRateAboveCap afterwards to prove it. Live
-      // consequence: coach_bridge.dart calls reset() on both WorkoutStarted
-      // and WorkoutFinished, so a session ending above cap followed by a new
-      // one starting within 30s would have its first safety warning
-      // swallowed by a stale repeat window.
-      final engine = _engine();
-      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
-
-      engine.reset();
-
-      final cue = engine.onEvent(
-        const HeartRateAboveCap(bpm: 180, cap: 170),
-        now: t0.add(const Duration(seconds: 5)),
-      );
-
-      expect(cue, isNotNull);
-      expect(cue!.priority, SpeechPriority.safety);
-    });
-
-    test('reset lifts zone-5 suppression', () {
+    test('reset keeps zone-5 suppression', () {
       final engine =
           _engine(encouragementEverySets: 1, cooldown: Duration.zero);
       engine.onEvent(
@@ -370,6 +351,22 @@ void main() {
       final cue = engine.onEvent(
         const SetLogged(setNumber: 1, isPersonalRecord: false),
         now: t0.add(const Duration(seconds: 1)),
+      );
+
+      expect(cue, isNull);
+    });
+
+    test('a genuine recovery after reset still lifts suppression', () {
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
+      engine.reset();
+      engine.onEvent(const HeartRateBackBelowCap(),
+          now: t0.add(const Duration(seconds: 30)));
+
+      final cue = engine.onEvent(
+        const SetLogged(setNumber: 1, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 31)),
       );
 
       expect(cue, isNotNull);

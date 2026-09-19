@@ -87,15 +87,21 @@ class CoachingEngine {
   /// the reading above the user's safe maximum.
   bool get isAboveCap => _aboveCap;
 
-  /// Clears per-session state. Call when a workout starts or finishes.
+  /// Clears per-session phrase and cadence state. Call when a workout
+  /// starts or finishes.
+  ///
+  /// Live heart-rate state — `_aboveCap`, `_lastCapWarningAt`,
+  /// `_currentZone` — is deliberately kept. The HR event source outlives the
+  /// workout and only announces *transitions*, so a user still above cap or
+  /// in zone 5 at a workout boundary would otherwise have suppression
+  /// lifted with nothing able to restore it until the reading changed.
+  /// Only a measured recovery ([HeartRateBackBelowCap]), a zone change, or
+  /// signal loss may clear that state.
   void reset() {
     _spokenPhrases.clear();
     _lastSpokenAt = null;
     _setsSinceEncouragement = 0;
     _encouragementQuota = _pickEncouragementQuota();
-    _aboveCap = false;
-    _lastCapWarningAt = null;
-    _currentZone = null;
   }
 
   /// Decides whether and what to say.
