@@ -87,6 +87,7 @@ void main() {
     String id = 'w-guard',
     String? notes,
     required DateTime updatedAt,
+    DateTime? deletedAt,
   }) {
     return Workout(
       id: id,
@@ -94,6 +95,7 @@ void main() {
       notes: notes,
       clientId: kSelfClientId,
       updatedAt: updatedAt,
+      deletedAt: deletedAt,
     );
   }
 
@@ -275,6 +277,56 @@ void main() {
       );
 
       expect(await workoutNotes('w-guard'), 'local');
+    });
+
+    // The apply guard must agree with SyncMergeEngine, otherwise a row the
+    // merge selected is silently rejected and the two devices never converge.
+    test('an older tombstone still overwrites a newer live row', () async {
+      await serialiser.applyToDatabase(
+        database,
+        snapshotWithWorkouts([buildWorkout(notes: 'live', updatedAt: t2)]),
+      );
+
+      await serialiser.applyToDatabase(
+        database,
+        snapshotWithWorkouts([buildWorkout(updatedAt: t1, deletedAt: t1)]),
+      );
+
+      final rows = await database.select(database.workouts).get();
+      expect(rows.single.deletedAt, isNotNull);
+    });
+
+    test('a live row never resurrects a local tombstone', () async {
+      await serialiser.applyToDatabase(
+        database,
+        snapshotWithWorkouts([buildWorkout(updatedAt: t1, deletedAt: t1)]),
+      );
+
+      await serialiser.applyToDatabase(
+        database,
+        snapshotWithWorkouts(
+            [buildWorkout(notes: 'resurrected', updatedAt: t3)]),
+      );
+
+      final rows = await database.select(database.workouts).get();
+      expect(rows.single.deletedAt, isNotNull);
+      expect(rows.single.notes, isNull);
+    });
+
+    test('between two tombstones the later deletion wins', () async {
+      await serialiser.applyToDatabase(
+        database,
+        snapshotWithWorkouts(
+            [buildWorkout(notes: 'first', updatedAt: t1, deletedAt: t1)]),
+      );
+
+      await serialiser.applyToDatabase(
+        database,
+        snapshotWithWorkouts(
+            [buildWorkout(notes: 'second', updatedAt: t2, deletedAt: t2)]),
+      );
+
+      expect(await workoutNotes('w-guard'), 'second');
     });
 
     test('a strictly newer incoming row still overwrites', () async {

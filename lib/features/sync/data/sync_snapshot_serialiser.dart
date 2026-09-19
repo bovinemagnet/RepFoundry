@@ -383,9 +383,12 @@ class SyncSnapshotSerialiser {
   // ── Helpers ──────────────────────────────────────────────────────────
 
   /// Upsert [rows] into [table], overwriting an existing row only when the
-  /// incoming `updated_at` is strictly newer. Every synced table stores
-  /// `updatedAt` in an `updated_at` column, so the guard is expressed once
-  /// as raw SQL against SQLite's `excluded` upsert alias.
+  /// incoming row would also win in [SyncMergeEngine]: a tombstone beats a
+  /// live row, a later tombstone beats an earlier one, and between two live
+  /// rows the strictly newer `updated_at` wins (so an edit made while the
+  /// sync was in flight is kept). Every synced table stores these in
+  /// `updated_at` / `deleted_at` columns, so the guard is expressed once as
+  /// raw SQL against SQLite's `excluded` upsert alias.
   void _guardedUpsertAll<T extends Table, D>(
     Batch batch,
     TableInfo<T, D> table,
@@ -398,7 +401,11 @@ class SyncSnapshotSerialiser {
         onConflict: DoUpdate(
           (_) => row,
           where: (_) => const CustomExpression<bool>(
-            'excluded.updated_at > updated_at',
+            '(excluded.deleted_at IS NOT NULL AND deleted_at IS NULL) OR '
+            '(excluded.deleted_at IS NOT NULL AND deleted_at IS NOT NULL '
+            'AND excluded.deleted_at > deleted_at) OR '
+            '(excluded.deleted_at IS NULL AND deleted_at IS NULL '
+            'AND excluded.updated_at > updated_at)',
           ),
         ),
       );
