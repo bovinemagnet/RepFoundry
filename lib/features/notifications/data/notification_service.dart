@@ -23,6 +23,11 @@ class NotificationService {
     tzdata.initializeTimeZones();
     await _configureLocalTimeZone();
 
+    // Windows and web are not shipped targets and have no initialisation
+    // settings below; the plugin throws for them, which would block
+    // startup because main() awaits init() before runApp.
+    if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) return;
+
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
