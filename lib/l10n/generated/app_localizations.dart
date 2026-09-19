@@ -3702,6 +3702,12 @@ abstract class S {
   /// **'Viewing {name}'**
   String viewingClient(String name);
 
+  /// No description provided for @sessionClientLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Logging for {client} — fixed for this session'**
+  String sessionClientLocked(String client);
+
   /// No description provided for @assignedPlans.
   ///
   /// In en, this message translates to:

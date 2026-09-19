@@ -19,6 +19,10 @@ class CardioTrackingState {
   final List<int> heartRateReadings;
   final String? hrDeviceName;
 
+  /// The client this session is being recorded for, fixed when it starts so
+  /// switching the roster mid-run cannot move it to someone else.
+  final String? sessionClientId;
+
   const CardioTrackingState({
     this.isRunning = false,
     this.elapsedSeconds = 0,
@@ -37,6 +41,7 @@ class CardioTrackingState {
     this.currentHeartRate,
     this.heartRateReadings = const [],
     this.hrDeviceName,
+    this.sessionClientId,
   });
 
   CardioTrackingState copyWith({
@@ -61,6 +66,7 @@ class CardioTrackingState {
     List<int>? heartRateReadings,
     String? hrDeviceName,
     bool clearHrDeviceName = false,
+    String? sessionClientId,
   }) {
     return CardioTrackingState(
       isRunning: isRunning ?? this.isRunning,
@@ -83,6 +89,7 @@ class CardioTrackingState {
       heartRateReadings: heartRateReadings ?? this.heartRateReadings,
       hrDeviceName:
           clearHrDeviceName ? null : (hrDeviceName ?? this.hrDeviceName),
+      sessionClientId: sessionClientId ?? this.sessionClientId,
     );
   }
 }

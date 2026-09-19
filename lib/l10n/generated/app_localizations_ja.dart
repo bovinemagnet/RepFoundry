@@ -2017,6 +2017,11 @@ class SJa extends S {
   }
 
   @override
+  String sessionClientLocked(String client) {
+    return 'Logging for $client — fixed for this session';
+  }
+
+  @override
   String get assignedPlans => 'Assigned plans';
 
   @override

@@ -80,13 +80,19 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
           const KineticAppHeader(),
 
           // ── Screen title (pagehead eyebrow) ─────────────────
-          // Active client badge alongside it — so the coach can't log a
-          // session for the wrong client without noticing.
+          // Client badge alongside it — so the coach can't log a session
+          // for the wrong client without noticing. Once a session has
+          // started it shows (and fixes) that session's owner.
           Row(
             children: [
               KineticEyebrow(s.cardioTitle),
               const Spacer(),
-              const ActiveClientIndicator(),
+              ActiveClientIndicator(
+                sessionClientId:
+                    cardioState.isRunning || cardioState.elapsedSeconds > 0
+                        ? cardioState.sessionClientId
+                        : null,
+              ),
             ],
           ),
           const SizedBox(height: 12),

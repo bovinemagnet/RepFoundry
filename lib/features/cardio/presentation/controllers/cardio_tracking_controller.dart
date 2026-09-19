@@ -96,6 +96,8 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       isRunning: true,
       savedSuccessfully: false,
       heartRateReadings: isFreshSession ? const [] : state.heartRateReadings,
+      // Pin the owner at the start of a fresh session.
+      sessionClientId: isFreshSession ? _activeClientId : state.sessionClientId,
     );
     _runningSince = clock.now();
     if (isFreshSession) _sessionStartedAt = DateTime.now().toUtc();
@@ -354,7 +356,7 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
           distanceMeters: effectiveDistance,
           incline: incline,
           avgHeartRate: effectiveHeartRate,
-          clientId: _activeClientId,
+          clientId: state.sessionClientId ?? _activeClientId,
         ),
       );
 

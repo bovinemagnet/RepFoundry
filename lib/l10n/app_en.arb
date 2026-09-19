@@ -964,6 +964,14 @@
   "@viewingClient": {
     "placeholders": { "name": { "type": "String" } }
   },
+  "sessionClientLocked": "Logging for {client} — fixed for this session",
+  "@sessionClientLocked": {
+    "placeholders": {
+      "client": {
+        "type": "String"
+      }
+    }
+  },
   "assignedPlans": "Assigned plans",
   "assignPlan": "Assign plan",
   "unassignPlan": "Unassign",

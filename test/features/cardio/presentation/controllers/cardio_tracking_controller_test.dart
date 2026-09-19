@@ -66,6 +66,11 @@ class _FixedActiveClientNotifier extends ActiveClientNotifier {
 
   @override
   Future<Client> build() async => _client;
+
+  @override
+  Future<void> setActive(Client client) async {
+    state = AsyncData(client);
+  }
 }
 
 void main() {
@@ -239,6 +244,47 @@ void main() {
       test('sets lastSession to null when no previous session', () async {
         await controller.selectExercise('e2', 'Bike');
         expect(controller.state.lastSession, isNull);
+      });
+    });
+
+    group('session ownership', () {
+      test('a session belongs to the client active when it started', () async {
+        final alice = Client.create(name: 'Alice', colour: 0);
+        final bob = Client.create(name: 'Bob', colour: 1);
+        final c = ProviderContainer(
+          overrides: [
+            cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
+            saveCardioSessionUseCaseProvider.overrideWithValue(useCase),
+            locationServiceProvider.overrideWithValue(locationService),
+            heartRateServiceProvider.overrideWithValue(heartRateService),
+            foregroundSessionServiceProvider
+                .overrideWithValue(foregroundService),
+            healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+            healthSyncSettingsProvider
+                .overrideWith(() => HealthSyncSettingsNotifier()),
+            activeClientProvider
+                .overrideWith(() => _FixedActiveClientNotifier(alice)),
+          ],
+        );
+        addTearDown(c.dispose);
+        c.listen(activeClientProvider, (_, __) {});
+        await c.read(activeClientProvider.future);
+        final controller = c.read(cardioTrackingProvider.notifier);
+
+        await controller.selectExercise('e1', 'Treadmill');
+        controller.start();
+        expect(controller.state.sessionClientId, alice.id);
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        // The coach switches the roster to Bob while Alice is still running.
+        await c.read(activeClientProvider.notifier).setActive(bob);
+        controller.pause();
+        await controller.save();
+
+        final sessions =
+            await cardioRepo.getSessionsForExercise('e1', alice.id);
+        expect(sessions, hasLength(1));
+        expect(await workoutRepo.getWorkoutHistory(clientId: bob.id), isEmpty);
       });
     });
 

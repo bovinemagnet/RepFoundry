@@ -405,6 +405,7 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
           padding: const EdgeInsets.fromLTRB(22, 8, 22, 0),
           child: _KineticWorkoutHeader(
             startedAt: state.activeWorkout!.startedAt,
+            clientId: state.activeWorkout!.clientId,
             onFinish: () => _confirmFinish(context, controller),
             isLoading: state.isLoading,
           ),
@@ -466,6 +467,7 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
           padding: const EdgeInsets.fromLTRB(22, 8, 22, 0),
           child: _KineticWorkoutHeader(
             startedAt: state.activeWorkout!.startedAt,
+            clientId: state.activeWorkout!.clientId,
             onFinish: () => _confirmFinish(context, controller),
             isLoading: state.isLoading,
           ),
@@ -1125,11 +1127,16 @@ class _KineticStartRow extends StatelessWidget {
 class _KineticWorkoutHeader extends StatelessWidget {
   const _KineticWorkoutHeader({
     required this.startedAt,
+    required this.clientId,
     required this.onFinish,
     this.isLoading = false,
   });
 
   final DateTime startedAt;
+
+  /// Owner of the workout in progress — shown in the badge, since the
+  /// roster's selection can no longer change who these sets belong to.
+  final String clientId;
   final VoidCallback onFinish;
   final bool isLoading;
 
@@ -1164,9 +1171,9 @@ class _KineticWorkoutHeader extends StatelessWidget {
             style: KineticText.display(size: 16, color: cs.onSurface),
           ),
           const Spacer(),
-          // Active client badge — so the coach can't log a set for the
+          // Session owner badge — so the coach can't log a set for the
           // wrong client without noticing.
-          const ActiveClientIndicator(),
+          ActiveClientIndicator(sessionClientId: clientId),
           const SizedBox(width: 10),
           // Finish pill — keeps the "Finish" text widget for tests
           GestureDetector(
