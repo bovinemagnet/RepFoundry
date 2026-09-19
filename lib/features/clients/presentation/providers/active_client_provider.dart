@@ -10,6 +10,15 @@ class ActiveClientNotifier extends AsyncNotifier<Client> {
   @override
   Future<Client> build() async {
     final repo = ref.watch(clientRepositoryProvider);
+    // A deleted active client must fall back to Me straight away rather
+    // than staying selected (and accepting new workouts) until restart.
+    ref.listen(clientsProvider, (_, next) {
+      final current = state.value;
+      final roster = next.value;
+      if (current == null || roster == null) return;
+      if (roster.any((c) => c.id == current.id)) return;
+      _fallBackToSelf();
+    });
     final prefs = await SharedPreferences.getInstance();
     final savedId = prefs.getString(_activeClientKey);
     if (savedId != null) {
@@ -17,6 +26,14 @@ class ActiveClientNotifier extends AsyncNotifier<Client> {
       if (saved != null && saved.deletedAt == null) return saved;
     }
     return repo.getSelfClient();
+  }
+
+  Future<void> _fallBackToSelf() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_activeClientKey);
+    final self = await ref.read(clientRepositoryProvider).getSelfClient();
+    if (!ref.mounted) return;
+    state = AsyncData(self);
   }
 
   Future<void> setActive(Client client) async {

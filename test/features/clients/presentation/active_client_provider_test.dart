@@ -40,4 +40,31 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('active_client_id'), sarah.id);
   });
+
+  test('falls back to Me when the active client is deleted', () async {
+    final database = db.AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final container = ProviderContainer(
+      overrides: [databaseProvider.overrideWithValue(database)],
+    );
+    addTearDown(container.dispose);
+    container.listen(activeClientProvider, (_, __) {});
+
+    await container.read(activeClientProvider.future);
+    final repo = container.read(clientRepositoryProvider);
+    final sarah = await repo.createClient(
+      Client.create(name: 'Sarah', colour: 0xFF000000),
+    );
+    await container.read(activeClientProvider.notifier).setActive(sarah);
+    expect((await container.read(activeClientProvider.future)).id, sarah.id);
+
+    await repo.softDeleteClient(sarah.id);
+    // Drift delivers the change on a later microtask.
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(
+        (await container.read(activeClientProvider.future)).id, kSelfClientId);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('active_client_id'), isNot(sarah.id));
+  });
 }
