@@ -10,15 +10,6 @@ class ActiveClientNotifier extends AsyncNotifier<Client> {
   @override
   Future<Client> build() async {
     final repo = ref.watch(clientRepositoryProvider);
-    // A deleted active client must fall back to Me straight away rather
-    // than staying selected (and accepting new workouts) until restart.
-    ref.listen(clientsProvider, (_, next) {
-      final current = state.value;
-      final roster = next.value;
-      if (current == null || roster == null) return;
-      if (roster.any((c) => c.id == current.id)) return;
-      _fallBackToSelf();
-    });
     final prefs = await SharedPreferences.getInstance();
     final savedId = prefs.getString(_activeClientKey);
     if (savedId != null) {
@@ -28,18 +19,24 @@ class ActiveClientNotifier extends AsyncNotifier<Client> {
     return repo.getSelfClient();
   }
 
-  Future<void> _fallBackToSelf() async {
+  Future<void> setActive(Client client) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_activeClientKey, client.id);
+    state = AsyncData(client);
+  }
+
+  /// Called by the roster after soft-deleting [clientId]. If that client was
+  /// active it falls back to Me at once, rather than staying selected (and
+  /// accepting new workouts) until restart. An explicit hook rather than a
+  /// watch on the roster stream: every Drift-backed widget test would
+  /// otherwise inherit Drift's deferred stream-close timer.
+  Future<void> clientDeleted(String clientId) async {
+    if (state.value?.id != clientId) return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_activeClientKey);
     final self = await ref.read(clientRepositoryProvider).getSelfClient();
     if (!ref.mounted) return;
     state = AsyncData(self);
-  }
-
-  Future<void> setActive(Client client) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_activeClientKey, client.id);
-    state = AsyncData(client);
   }
 }
 

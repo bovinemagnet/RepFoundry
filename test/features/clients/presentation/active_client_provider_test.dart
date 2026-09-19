@@ -48,7 +48,6 @@ void main() {
       overrides: [databaseProvider.overrideWithValue(database)],
     );
     addTearDown(container.dispose);
-    container.listen(activeClientProvider, (_, __) {});
 
     await container.read(activeClientProvider.future);
     final repo = container.read(clientRepositoryProvider);
@@ -58,9 +57,9 @@ void main() {
     await container.read(activeClientProvider.notifier).setActive(sarah);
     expect((await container.read(activeClientProvider.future)).id, sarah.id);
 
+    // The roster screen calls clientDeleted straight after the soft delete.
     await repo.softDeleteClient(sarah.id);
-    // Drift delivers the change on a later microtask.
-    await Future<void>.delayed(const Duration(milliseconds: 50));
+    await container.read(activeClientProvider.notifier).clientDeleted(sarah.id);
 
     expect(
         (await container.read(activeClientProvider.future)).id, kSelfClientId);

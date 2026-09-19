@@ -5,6 +5,7 @@ import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/providers.dart';
 import '../../domain/models/client.dart';
+import '../providers/active_client_provider.dart';
 
 /// Palette offered in the create-client colour picker.
 const List<int> _clientColourChoices = [
@@ -54,9 +55,15 @@ class ClientRosterScreen extends ConsumerWidget {
                   final client = clients[index];
                   return _ClientTile(
                     client: client,
-                    onDelete: () => ref
-                        .read(clientRepositoryProvider)
-                        .softDeleteClient(client.id),
+                    onDelete: () async {
+                      await ref
+                          .read(clientRepositoryProvider)
+                          .softDeleteClient(client.id);
+                      // A deleted client must not stay active.
+                      await ref
+                          .read(activeClientProvider.notifier)
+                          .clientDeleted(client.id);
+                    },
                   );
                 },
               ),
