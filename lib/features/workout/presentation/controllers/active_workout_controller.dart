@@ -173,6 +173,7 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
   }
 
   Future<void> _loadSets(Workout workout) async {
+    _startHeartRateRecording();
     final sets = await _workoutRepository.getSetsForWorkout(workout.id);
     final Map<String, List<WorkoutSet>> byExercise = {};
     for (final s in sets) {
@@ -199,11 +200,17 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     );
   }
 
+  /// Mounts the heart-rate recorder so it buffers readings from the moment
+  /// a session is live. Its only other consumer reads it at log time, which
+  /// would leave the first logged set with no readings to summarise.
+  void _startHeartRateRecording() => ref.read(hrSessionRecorderProvider);
+
   Future<void> startWorkout() async {
     state = state.copyWith(isLoading: true);
     try {
       final useCase = ref.read(startWorkoutUseCaseProvider);
       final workout = await useCase.execute(clientId: _activeClientId);
+      _startHeartRateRecording();
       state = state.copyWith(
         activeWorkout: workout,
         setsByExercise: {},

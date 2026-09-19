@@ -228,8 +228,9 @@ void main() {
             heartRateServiceProvider.overrideWithValue(hrService),
           ],
         );
-        // Start the recorder buffering before any readings arrive.
-        container.read(hrSessionRecorderProvider.notifier);
+        // Deliberately no manual read of hrSessionRecorderProvider here:
+        // the controller must mount the recorder itself when the workout
+        // starts, or readings before the first logged set are lost.
 
         await waitForInit();
         final controller = readController();
