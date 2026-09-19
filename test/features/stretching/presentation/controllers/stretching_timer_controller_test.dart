@@ -1,3 +1,4 @@
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
@@ -47,6 +48,33 @@ void main() {
       controller.start();
       expect(controller.state.isRunning, isTrue);
       expect(controller.state.startedAt, isNotNull);
+    });
+
+    test('elapsed time survives a suspension with no ticks delivered', () {
+      fakeAsync((async) {
+        controller.start();
+        async.elapse(const Duration(seconds: 1));
+        expect(controller.state.elapsedSeconds, 1);
+
+        async.elapseBlocking(const Duration(minutes: 10));
+        async.elapse(const Duration(seconds: 1));
+
+        expect(controller.state.elapsedSeconds, 602);
+      });
+    });
+
+    test('pause keeps the elapsed time and resume continues from it', () {
+      fakeAsync((async) {
+        controller.start();
+        async.elapse(const Duration(seconds: 5));
+        controller.pause();
+        async.elapse(const Duration(seconds: 30));
+        expect(controller.state.elapsedSeconds, 5);
+
+        controller.start();
+        async.elapse(const Duration(seconds: 3));
+        expect(controller.state.elapsedSeconds, 8);
+      });
     });
 
     test('pause stops the timer', () {

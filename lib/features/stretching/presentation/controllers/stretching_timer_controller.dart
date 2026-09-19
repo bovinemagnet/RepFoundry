@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/providers.dart';
@@ -12,6 +13,12 @@ import 'stretching_timer_state.dart';
 /// minimise the bottom sheet (or switch tabs) while the timer runs.
 class StretchingTimerController extends Notifier<StretchingTimerState> {
   Timer? _timer;
+
+  /// Elapsed time is clock-based (time since the current run started plus
+  /// time accumulated over earlier runs), as the cardio controller does,
+  /// because suspended periodic ticks are never delivered.
+  DateTime? _runningSince;
+  Duration _accumulated = Duration.zero;
 
   SaveStretchingSessionUseCase get _saveUseCase =>
       ref.read(saveStretchingSessionUseCaseProvider);
@@ -66,6 +73,7 @@ class StretchingTimerController extends Notifier<StretchingTimerState> {
   void start() {
     if (state.isRunning) return;
     final isFreshSession = state.elapsedSeconds == 0;
+    _runningSince = clock.now();
     state = state.copyWith(
       isRunning: true,
       savedSuccessfully: false,
@@ -73,20 +81,35 @@ class StretchingTimerController extends Notifier<StretchingTimerState> {
       startedAt: isFreshSession ? DateTime.now().toUtc() : state.startedAt,
     );
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
+      state = state.copyWith(elapsedSeconds: _elapsed().inSeconds);
     });
+  }
+
+  Duration _elapsed() {
+    final runningSince = _runningSince;
+    final live = runningSince == null
+        ? Duration.zero
+        : clock.now().difference(runningSince);
+    return _accumulated + live;
   }
 
   void pause() {
     _timer?.cancel();
     _timer = null;
-    state = state.copyWith(isRunning: false);
+    _accumulated = _elapsed();
+    _runningSince = null;
+    state = state.copyWith(
+      isRunning: false,
+      elapsedSeconds: _accumulated.inSeconds,
+    );
   }
 
   /// Reset elapsed time without clearing the selected stretch.
   void reset() {
     _timer?.cancel();
     _timer = null;
+    _runningSince = null;
+    _accumulated = Duration.zero;
     state = state.copyWith(
       elapsedSeconds: 0,
       manualSeconds: 0,
@@ -99,6 +122,8 @@ class StretchingTimerController extends Notifier<StretchingTimerState> {
   void discard() {
     _timer?.cancel();
     _timer = null;
+    _runningSince = null;
+    _accumulated = Duration.zero;
     state = const StretchingTimerState();
   }
 
@@ -106,6 +131,11 @@ class StretchingTimerController extends Notifier<StretchingTimerState> {
     required String workoutId,
     required StretchingEntryMethod entryMethod,
   }) async {
+    // Reconcile with the clock first: a save straight after a suspension
+    // may arrive before the next tick has refreshed elapsedSeconds.
+    if (state.isRunning) {
+      state = state.copyWith(elapsedSeconds: _elapsed().inSeconds);
+    }
     final type = state.selectedType;
     final duration = entryMethod == StretchingEntryMethod.untimed
         ? 0
@@ -126,6 +156,8 @@ class StretchingTimerController extends Notifier<StretchingTimerState> {
 
     _timer?.cancel();
     _timer = null;
+    _runningSince = null;
+    _accumulated = Duration.zero;
 
     state = state.copyWith(isSaving: true, isRunning: false, clearError: true);
     try {
