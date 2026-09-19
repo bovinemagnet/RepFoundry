@@ -137,12 +137,11 @@ class CoachBridge {
     // suppressed because the reading is still above the safety cap — in
     // which case a SpeechPriority.safety warning is the most likely thing
     // still playing, and cutting it off mid-sentence is the one truncation
-    // this feature must never produce. Read isAboveCap before reset() clears
-    // it.
+    // this feature must never produce. reset() leaves isAboveCap alone (the
+    // HR source outlives the workout), so it can be read after it.
     if (event is WorkoutFinished) {
-      final aboveCapAtFinish = _engine.isAboveCap;
       _engine.reset();
-      if (cue == null && !aboveCapAtFinish) {
+      if (cue == null && !_engine.isAboveCap) {
         unawaited(_ref.read(speechServiceProvider).stop());
       }
     }
