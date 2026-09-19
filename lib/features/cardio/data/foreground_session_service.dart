@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
@@ -49,7 +50,7 @@ class FlutterForegroundSessionService implements ForegroundSessionService {
     required bool gpsEnabled,
     required bool hrConnected,
   }) async {
-    if (!Platform.isAndroid) return;
+    if (kIsWeb || !Platform.isAndroid) return;
     // Android 14+ requires a permitted service type; without GPS or an HR
     // monitor there is nothing to keep alive (the elapsed timer is
     // wall-clock based and self-corrects on resume).

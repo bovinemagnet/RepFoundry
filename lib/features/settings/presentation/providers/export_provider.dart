@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -61,7 +62,7 @@ class ExportNotifier extends Notifier<ExportState> {
   }
 
   Future<Directory> _exportDirectory() async {
-    if (Platform.isLinux || Platform.isWindows) {
+    if (!kIsWeb && (Platform.isLinux || Platform.isWindows)) {
       final downloads = await getDownloadsDirectory();
       if (downloads != null) return downloads;
     }
@@ -69,7 +70,7 @@ class ExportNotifier extends Notifier<ExportState> {
   }
 
   Future<void> _shareOrSave(List<XFile> files, String dirPath) async {
-    if (Platform.isLinux || Platform.isWindows) {
+    if (!kIsWeb && (Platform.isLinux || Platform.isWindows)) {
       state = ExportState(
         status: ExportStatus.completed,
         savedPath: dirPath,

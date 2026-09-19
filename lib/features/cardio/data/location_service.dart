@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 
 import 'package:geolocator/geolocator.dart';
@@ -36,7 +37,7 @@ class GeolocatorLocationService implements LocationService {
     // indicator); Android relies on the cardio foreground service to keep
     // the process alive instead.
     final LocationSettings settings;
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       settings = AppleSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 5,

@@ -26,6 +26,14 @@ void main() {
       expect(service, isA<NoopCloudSyncService>());
     });
 
+    test('web routes to Noop before any dart:io Platform check', () {
+      // On web the Platform getters throw, so the web flag must short-
+      // circuit the routing on its own.
+      final service =
+          pickCloudSyncService(isWeb: true, isIOS: true, isAndroid: true);
+      expect(service, isA<NoopCloudSyncService>());
+    });
+
     test('iOS takes precedence over Android (defensive)', () {
       // Both flags can never be true on a real device, but the routing
       // must be deterministic if a test forces both.
