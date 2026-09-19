@@ -234,7 +234,10 @@ void main() {
 
     /// Seeds an exercise with a completed prior session at 100 kg so ghost
     /// sets exist, plus a template containing that exercise.
-    Future<void> seedHistoryAndTemplate() async {
+    Future<void> seedHistoryAndTemplate({
+      Duration sessionAgo = const Duration(days: 2),
+      double weight = 100.0,
+    }) async {
       exercise = Exercise.create(
         name: 'Bench Press',
         category: ExerciseCategory.strength,
@@ -243,21 +246,19 @@ void main() {
       );
       await exerciseRepo.createExercise(exercise);
 
-      final twoDaysAgo = DateTime.now().toUtc().subtract(
-            const Duration(days: 2),
-          );
+      final sessionAt = DateTime.now().toUtc().subtract(sessionAgo);
       final pastWorkout = Workout.create().copyWith(
-        startedAt: twoDaysAgo,
-        completedAt: twoDaysAgo,
+        startedAt: sessionAt,
+        completedAt: sessionAt,
       );
       await workoutRepo.createWorkout(pastWorkout);
       await workoutRepo.addSet(WorkoutSet.create(
         workoutId: pastWorkout.id,
         exerciseId: exercise.id,
         setOrder: 0,
-        weight: 100.0,
+        weight: weight,
         reps: 5,
-      ));
+      ).copyWith(timestamp: sessionAt));
 
       template = WorkoutTemplate.create(name: 'Bench Day');
       template = template.copyWith(exercises: [
@@ -338,6 +339,27 @@ void main() {
 
       expect(started, isTrue);
       expect(ghostWeight(), 100.0);
+    });
+
+    test('a second session in the same on-week does not progress again',
+        () async {
+      await waitForInit();
+      // Week 3 started two days ago; the first session of that week was
+      // yesterday and already lifted the progressed 102.5 kg. Today's
+      // session must suggest 102.5 again, not 105.
+      await seedHistoryAndTemplate(
+        sessionAgo: const Duration(days: 1),
+        weight: 102.5,
+      );
+      final programme = buildProgrammeWithRule(
+        startedAt: DateTime.now().toUtc().subtract(const Duration(days: 16)),
+        frequencyWeeks: 2,
+      );
+
+      final started = await readController().startFromProgramme(programme);
+
+      expect(started, isTrue);
+      expect(ghostWeight(), 102.5);
     });
 
     test('on week (week 3 of a fortnightly rule) progresses ghost weights',

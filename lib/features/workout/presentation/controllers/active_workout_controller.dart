@@ -246,6 +246,24 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     }
   }
 
+  /// Whether the most recent completed session for [exerciseId] started on
+  /// or after [weekStart], i.e. this week's progression step has already
+  /// been taken.
+  Future<bool> _lastSessionFallsInWeek(
+    String exerciseId,
+    String clientId,
+    DateTime weekStart,
+  ) async {
+    final lastSets = await _workoutRepository.getSetsFromLastSession(
+      exerciseId,
+      clientId,
+    );
+    if (lastSets.isEmpty) return false;
+    final latest =
+        lastSets.map((s) => s.timestamp).reduce((a, b) => a.isAfter(b) ? a : b);
+    return !latest.isBefore(weekStart);
+  }
+
   Future<void> startFromTemplate(WorkoutTemplate template) async {
     state = state.copyWith(isLoading: true);
     try {
@@ -334,12 +352,23 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     await startFromTemplate(template);
 
     // Apply progression rules to ghost set weights, but only in weeks where
-    // the rule's frequencyWeeks says a progression step is due.
+    // the rule's frequencyWeeks says a progression step is due — and only
+    // once per week: ghosts come from the last completed session, so if
+    // that session already fell in this week it already carries the step,
+    // and applying it again would compound on every extra session.
     if (programme.rules.isNotEmpty) {
+      final weekStart = tentativeStartedAt.add(
+        Duration(days: 7 * (currentWeek - 1)),
+      );
+      final clientId = state.activeWorkout?.clientId ?? _activeClientId;
       final updatedGhosts =
           Map<String, List<GhostSet>>.from(state.ghostSetsByExercise);
       for (final rule in programme.rules) {
         if (!rule.appliesInWeek(currentWeek)) continue;
+        if (await _lastSessionFallsInWeek(
+            rule.exerciseId, clientId, weekStart)) {
+          continue;
+        }
         final ghosts = updatedGhosts[rule.exerciseId];
         if (ghosts != null && ghosts.isNotEmpty) {
           updatedGhosts[rule.exerciseId] = ghosts
