@@ -2,6 +2,7 @@ import '../models/personal_record.dart';
 
 abstract class PersonalRecordRepository {
   Future<PersonalRecord> createRecord(PersonalRecord record);
+  Future<PersonalRecord?> getRecord(String id);
   Future<List<PersonalRecord>> getRecordsForExercise(
     String exerciseId,
     String clientId,

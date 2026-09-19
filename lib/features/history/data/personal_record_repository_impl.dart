@@ -16,6 +16,10 @@ class InMemoryPersonalRecordRepository implements PersonalRecordRepository {
   }
 
   @override
+  Future<PersonalRecord?> getRecord(String id) async =>
+      _records.where((r) => r.id == id).firstOrNull;
+
+  @override
   Future<List<PersonalRecord>> getRecordsForExercise(
     String exerciseId,
     String clientId,

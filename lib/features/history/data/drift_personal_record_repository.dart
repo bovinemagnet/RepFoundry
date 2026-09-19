@@ -28,6 +28,14 @@ class DriftPersonalRecordRepository implements PersonalRecordRepository {
   }
 
   @override
+  Future<PersonalRecord?> getRecord(String id) async {
+    final row = await (_db.select(_db.personalRecords)
+          ..where((t) => t.id.equals(id) & t.deletedAt.isNull()))
+        .getSingleOrNull();
+    return row == null ? null : _toDomain(row);
+  }
+
+  @override
   Future<List<PersonalRecord>> getRecordsForExercise(
     String exerciseId,
     String clientId,

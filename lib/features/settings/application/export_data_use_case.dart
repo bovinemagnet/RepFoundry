@@ -4,17 +4,33 @@ import '../../body_metrics/domain/models/body_metric.dart';
 import '../../body_metrics/domain/repositories/body_metric_repository.dart';
 import '../../cardio/domain/models/cardio_session.dart';
 import '../../cardio/domain/repositories/cardio_session_repository.dart';
+import 'package:hr_zones/hr_zones.dart';
+
 import '../../clients/domain/models/client.dart';
 import '../../clients/domain/repositories/client_repository.dart';
+import '../../clients/domain/repositories/health_profile_repository.dart';
 import '../../exercises/domain/models/exercise.dart';
 import '../../exercises/domain/repositories/exercise_repository.dart';
 import '../../history/domain/models/personal_record.dart';
 import '../../history/domain/repositories/personal_record_repository.dart';
+import '../../programmes/domain/models/programme.dart';
+import '../../programmes/domain/repositories/programme_repository.dart';
 import '../../stretching/domain/models/stretching_session.dart';
 import '../../stretching/domain/repositories/stretching_session_repository.dart';
+import '../../templates/domain/models/workout_template.dart';
+import '../../templates/domain/repositories/workout_template_repository.dart';
 import '../../workout/domain/models/workout.dart';
 import '../../workout/domain/models/workout_set.dart';
 import '../../workout/domain/repositories/workout_repository.dart';
+
+/// Version of the JSON backup written by [ExportDataUseCase.exportAsJson].
+///
+/// - 1: workouts, sets, cardio, PRs, body metrics, stretching; client ids
+///   present on records but no roster, so restores collapsed onto Me.
+/// - 2: adds the client roster with health profiles, templates and
+///   programmes, per-set heart-rate fields, and a restore that keeps each
+///   record's owner.
+const int kBackupFormatVersion = 2;
 
 class ExportDataUseCase {
   final WorkoutRepository workoutRepository;
@@ -24,7 +40,13 @@ class ExportDataUseCase {
   final StretchingSessionRepository stretchingSessionRepository;
   final ClientRepository clientRepository;
   final BodyMetricRepository bodyMetricRepository;
+  final HealthProfileRepository? healthProfileRepository;
+  final WorkoutTemplateRepository? workoutTemplateRepository;
+  final ProgrammeRepository? programmeRepository;
 
+  /// The last three are optional so the CSV-only paths and older call
+  /// sites need not supply them; a JSON backup without them simply omits
+  /// those sections.
   const ExportDataUseCase({
     required this.workoutRepository,
     required this.exerciseRepository,
@@ -33,13 +55,14 @@ class ExportDataUseCase {
     required this.stretchingSessionRepository,
     required this.clientRepository,
     required this.bodyMetricRepository,
+    this.healthProfileRepository,
+    this.workoutTemplateRepository,
+    this.programmeRepository,
   });
 
   /// "Export All Data" is a full backup, so it must cover every client in
   /// the roster — not just Me — otherwise a restore silently drops other
-  /// clients' history. NOTE (v1 limitation): the import/restore side still
-  /// consolidates everything onto Me; full client-aware restore is deferred
-  /// to the roster-sync spec.
+  /// clients' history.
   Future<List<Client>> _allClients() => clientRepository.watchClients().first;
 
   Future<String> exportAsJson() async {
@@ -79,9 +102,23 @@ class ExportDataUseCase {
       });
     }
 
+    final clientMaps = <Map<String, dynamic>>[];
+    for (final client in clients) {
+      final profile = await healthProfileRepository?.getForClient(client.id);
+      clientMaps.add(_clientToMap(client, profile));
+    }
+    final templates =
+        await workoutTemplateRepository?.getAllTemplates() ?? const [];
+    final programmes =
+        await programmeRepository?.getAllProgrammes() ?? const [];
+
     final data = {
+      'formatVersion': kBackupFormatVersion,
       'exportedAt': DateTime.now().toUtc().toIso8601String(),
+      'clients': clientMaps,
       'exercises': exercises.map(_exerciseToMap).toList(),
+      'workoutTemplates': templates.map(_templateToMap).toList(),
+      'programmes': programmes.map(_programmeToMap).toList(),
       'workouts': workoutsWithSets,
       'cardioSessions': cardioSessions.map(_cardioToMap).toList(),
       'personalRecords': personalRecords.map(_prToMap).toList(),
@@ -229,6 +266,69 @@ class ExportDataUseCase {
     return value;
   }
 
+  Map<String, dynamic> _clientToMap(Client c, HealthProfile? profile) => {
+        'id': c.id,
+        'name': c.name,
+        'colour': c.colour,
+        'notes': c.notes,
+        'isSelf': c.isSelf,
+        'createdAt': c.createdAt.toIso8601String(),
+        if (profile != null)
+          'healthProfile': {
+            'age': profile.age,
+            'restingHr': profile.restingHr,
+            'measuredMaxHr': profile.measuredMaxHr,
+            'clinicianMaxHr': profile.clinicianMaxHr,
+            'betaBlocker': profile.betaBlocker,
+            'heartCondition': profile.heartCondition,
+          },
+      };
+
+  Map<String, dynamic> _templateToMap(WorkoutTemplate t) => {
+        'id': t.id,
+        'name': t.name,
+        'createdAt': t.createdAt.toIso8601String(),
+        'exercises': [
+          for (final e in t.exercises)
+            {
+              'id': e.id,
+              'exerciseId': e.exerciseId,
+              'exerciseName': e.exerciseName,
+              'targetSets': e.targetSets,
+              'targetReps': e.targetReps,
+              'orderIndex': e.orderIndex,
+            },
+        ],
+      };
+
+  Map<String, dynamic> _programmeToMap(Programme p) => {
+        'id': p.id,
+        'name': p.name,
+        'durationWeeks': p.durationWeeks,
+        'createdAt': p.createdAt.toIso8601String(),
+        'startedAt': p.startedAt?.toIso8601String(),
+        'days': [
+          for (final d in p.days)
+            {
+              'id': d.id,
+              'weekNumber': d.weekNumber,
+              'dayOfWeek': d.dayOfWeek,
+              'templateId': d.templateId,
+              'templateName': d.templateName,
+            },
+        ],
+        'rules': [
+          for (final r in p.rules)
+            {
+              'id': r.id,
+              'exerciseId': r.exerciseId,
+              'type': r.type.name,
+              'value': r.value,
+              'frequencyWeeks': r.frequencyWeeks,
+            },
+        ],
+      };
+
   Map<String, dynamic> _exerciseToMap(Exercise e) => {
         'id': e.id,
         'name': e.name,
@@ -259,6 +359,8 @@ class ExportDataUseCase {
         'estimatedOneRepMax': s.estimatedOneRepMax,
         'isWarmUp': s.isWarmUp,
         'groupId': s.groupId,
+        'avgHeartRate': s.avgHeartRate,
+        'peakHeartRate': s.peakHeartRate,
       };
 
   Map<String, dynamic> _cardioToMap(CardioSession c) => {

@@ -170,6 +170,9 @@ class _FakePersonalRecordRepository implements PersonalRecordRepository {
   }
 
   @override
+  Future<PersonalRecord?> getRecord(String id) async => _records[id];
+
+  @override
   Future<PersonalRecord> createRecord(PersonalRecord record) async {
     if (_records.containsKey(record.id)) {
       throw StateError('Duplicate personal record id: ${record.id}');
@@ -450,14 +453,16 @@ void main() {
     );
 
     test(
-      'importFromJson_duplicateWorkout_workoutAndItsSetsAreSkipped',
+      'importFromJson_duplicateWorkout_parentCountedOnceButMissingSetsLand',
       () async {
-        // Arrange — two workouts with the same id; second has 1 set
+        // Arrange — two entries with the same workout id, each with a
+        // different set. An existing parent must still receive sets it
+        // does not yet have, otherwise a retry after a partial restore can
+        // never complete.
         final json = jsonEncode({
           'exercises': [],
           'workouts': [
             _workoutMap(id: 'w-1', sets: [_setMap(id: 's-1')]),
-            // duplicate workout — its sets must also be skipped via continue
             _workoutMap(id: 'w-1', sets: [_setMap(id: 's-2')]),
           ],
           'personalRecords': [],
@@ -468,10 +473,10 @@ void main() {
 
         // Assert
         expect(result.workoutsImported, 1);
-        // Only the set belonging to the first (accepted) workout was inserted
-        expect(result.setsImported, 1);
+        expect(result.duplicatesSkipped, 1);
+        expect(result.setsImported, 2);
         expect(workoutRepo._sets.containsKey('s-1'), isTrue);
-        expect(workoutRepo._sets.containsKey('s-2'), isFalse);
+        expect(workoutRepo._sets.containsKey('s-2'), isTrue);
       },
     );
 
