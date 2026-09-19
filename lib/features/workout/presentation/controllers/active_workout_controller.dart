@@ -588,12 +588,16 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
   }
 
   Future<void> updateSet(WorkoutSet updatedSet) async {
+    final workout = state.activeWorkout;
+    if (workout == null) return;
     try {
-      await _workoutRepository.updateSet(updatedSet);
+      final result = await ref
+          .read(reviseSetUseCaseProvider)
+          .update(updatedSet, clientId: workout.clientId);
       final updated = Map<String, List<WorkoutSet>>.from(state.setsByExercise);
       final exerciseSets = updated[updatedSet.exerciseId] ?? [];
       updated[updatedSet.exerciseId] = exerciseSets
-          .map((s) => s.id == updatedSet.id ? updatedSet : s)
+          .map((s) => s.id == updatedSet.id ? result.set : s)
           .toList();
       state = state.copyWith(setsByExercise: updated);
     } catch (e) {
@@ -603,7 +607,7 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
 
   Future<void> deleteSet(String setId, String exerciseId) async {
     try {
-      await _workoutRepository.deleteSet(setId);
+      await ref.read(reviseSetUseCaseProvider).delete(setId);
       final updated = Map<String, List<WorkoutSet>>.from(state.setsByExercise);
       updated[exerciseId] =
           (updated[exerciseId] ?? []).where((s) => s.id != setId).toList();

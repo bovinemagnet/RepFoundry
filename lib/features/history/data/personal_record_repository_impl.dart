@@ -54,6 +54,12 @@ class InMemoryPersonalRecordRepository implements PersonalRecordRepository {
   }
 
   @override
+  Future<void> deleteRecordsForSet(String workoutSetId) async {
+    _records.removeWhere((r) => r.workoutSetId == workoutSetId);
+    _controller.add(null);
+  }
+
+  @override
   Stream<List<PersonalRecord>> watchRecordsForExercise(String exerciseId) {
     return _controller.stream.map(
       (_) => _records.where((r) => r.exerciseId == exerciseId).toList(),

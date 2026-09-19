@@ -76,6 +76,19 @@ class DriftPersonalRecordRepository implements PersonalRecordRepository {
   }
 
   @override
+  Future<void> deleteRecordsForSet(String workoutSetId) async {
+    final now = dateTimeToEpochMs(DateTime.now().toUtc());
+    await (_db.update(_db.personalRecords)
+          ..where(
+            (t) => t.workoutSetId.equals(workoutSetId) & t.deletedAt.isNull(),
+          ))
+        .write(db.PersonalRecordsCompanion(
+      deletedAt: Value(now),
+      updatedAt: Value(now),
+    ));
+  }
+
+  @override
   Stream<List<PersonalRecord>> watchRecordsForExercise(String exerciseId) {
     final q = _db.select(_db.personalRecords)
       ..where((t) => t.exerciseId.equals(exerciseId) & t.deletedAt.isNull())

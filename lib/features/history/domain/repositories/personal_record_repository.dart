@@ -17,4 +17,8 @@ abstract class PersonalRecordRepository {
   });
 
   Stream<List<PersonalRecord>> watchRecordsForExercise(String exerciseId);
+
+  /// Withdraws every record earned by [workoutSetId], for when that set is
+  /// deleted or corrected.
+  Future<void> deleteRecordsForSet(String workoutSetId);
 }

@@ -13,6 +13,7 @@ import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dar
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
+import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
 import 'package:rep_foundry/features/sync/application/sync_orchestrator.dart';
 import 'package:rep_foundry/features/sync/domain/models/sync_result.dart';
 import 'package:rep_foundry/features/sync/domain/sync_service.dart';
@@ -302,6 +303,26 @@ void main() {
     });
 
     group('updateSet', () {
+      test('re-evaluates personal records for the corrected set', () async {
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+
+        final exercise = (await exerciseRepo.getAllExercises()).first;
+        await controller.addExercise(exercise);
+        await controller.logSet(exerciseId: exercise.id, weight: 1000, reps: 5);
+
+        final mistake = readState().setsByExercise[exercise.id]!.first;
+        await controller.updateSet(mistake.copyWith(weight: 90));
+
+        final best = await prRepo.getBestRecord(
+          exercise.id,
+          RecordType.maxWeight,
+          kSelfClientId,
+        );
+        expect(best?.value, 90);
+      });
+
       test('modifies set weight in state', () async {
         await waitForInit();
         final controller = readController();
@@ -327,6 +348,27 @@ void main() {
     });
 
     group('deleteSet', () {
+      test('withdraws the personal records the deleted set earned', () async {
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+
+        final exercise = (await exerciseRepo.getAllExercises()).first;
+        await controller.addExercise(exercise);
+        await controller.logSet(exerciseId: exercise.id, weight: 100, reps: 5);
+        await controller.logSet(exerciseId: exercise.id, weight: 1000, reps: 5);
+
+        final mistake = readState().setsByExercise[exercise.id]!.last;
+        await controller.deleteSet(mistake.id, exercise.id);
+
+        final best = await prRepo.getBestRecord(
+          exercise.id,
+          RecordType.maxWeight,
+          kSelfClientId,
+        );
+        expect(best?.value, 100);
+      });
+
       test('removes set from state', () async {
         await waitForInit();
         final controller = readController();

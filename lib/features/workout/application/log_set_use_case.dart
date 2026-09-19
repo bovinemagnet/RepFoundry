@@ -3,6 +3,7 @@ import '../domain/repositories/workout_repository.dart';
 import '../../clients/domain/models/client.dart';
 import '../../history/domain/models/personal_record.dart';
 import '../../history/domain/repositories/personal_record_repository.dart';
+import 'personal_record_detection.dart';
 
 class LogSetResult {
   final WorkoutSet set;
@@ -73,9 +74,16 @@ class LogSetUseCase {
     final savedSet = await _workoutRepository.addSet(set);
 
     // Warm-up sets do not count towards personal records.
-    final prs = input.isWarmUp
+    // Without a record store there is no authoritative all-time best to
+    // compare against, so PR detection is skipped.
+    final repository = _personalRecordRepository;
+    final prs = input.isWarmUp || repository == null
         ? <PersonalRecord>[]
-        : await _checkForPersonalRecords(savedSet, input.clientId);
+        : await detectPersonalRecords(
+            set: savedSet,
+            clientId: input.clientId,
+            repository: repository,
+          );
 
     for (final pr in prs) {
       await _personalRecordRepository?.createRecord(pr);
@@ -94,42 +102,5 @@ class LogSetUseCase {
     if (input.rpe != null && (input.rpe! < 1 || input.rpe! > 10)) {
       throw const LogSetException('RPE must be between 1 and 10');
     }
-  }
-
-  Future<List<PersonalRecord>> _checkForPersonalRecords(
-    WorkoutSet set,
-    String clientId,
-  ) async {
-    final repository = _personalRecordRepository;
-    // Without a record store there is no authoritative all-time best to
-    // compare against, so PR detection is skipped.
-    if (repository == null) return const [];
-
-    final candidates = <(RecordType, double)>[
-      (RecordType.estimatedOneRepMax, set.estimatedOneRepMax),
-      (RecordType.maxWeight, set.weight),
-      (RecordType.maxReps, set.reps.toDouble()),
-      (RecordType.maxVolume, set.volume),
-    ];
-
-    final records = <PersonalRecord>[];
-    for (final (recordType, value) in candidates) {
-      final best = await repository.getBestRecord(
-        set.exerciseId,
-        recordType,
-        clientId,
-      );
-      if (best == null || value > best.value) {
-        records.add(PersonalRecord.create(
-          exerciseId: set.exerciseId,
-          recordType: recordType,
-          value: value,
-          workoutSetId: set.id,
-          clientId: clientId,
-        ));
-      }
-    }
-
-    return records;
   }
 }

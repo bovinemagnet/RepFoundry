@@ -5,6 +5,9 @@ import 'package:rep_foundry/core/database/app_database.dart' as db;
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/history/data/drift_personal_record_repository.dart';
 import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
+import 'package:rep_foundry/features/workout/data/drift_workout_repository.dart';
+import 'package:rep_foundry/features/workout/domain/models/workout.dart';
+import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
 
 void main() {
   late db.AppDatabase database;
@@ -187,6 +190,43 @@ void main() {
         final all = await repo.getAllRecords(clientId: kSelfClientId);
         expect(all, hasLength(1));
         expect(all.single.id, live.id);
+      });
+    });
+
+    group('deleteRecordsForSet', () {
+      test('tombstones only the records earned by that set', () async {
+        final workout = await DriftWorkoutRepository(database)
+            .createWorkout(Workout.create());
+        final workoutRepo = DriftWorkoutRepository(database);
+        final kept = await workoutRepo.addSet(WorkoutSet.create(
+            workoutId: workout.id,
+            exerciseId: '1',
+            setOrder: 1,
+            weight: 100,
+            reps: 5));
+        final mistake = await workoutRepo.addSet(WorkoutSet.create(
+            workoutId: workout.id,
+            exerciseId: '1',
+            setOrder: 2,
+            weight: 1000,
+            reps: 5));
+        await repo.createRecord(newRecord(
+            recordType: RecordType.maxWeight,
+            value: 100,
+            workoutSetId: kept.id));
+        await repo.createRecord(newRecord(
+            recordType: RecordType.maxWeight,
+            value: 1000,
+            workoutSetId: mistake.id));
+
+        await repo.deleteRecordsForSet(mistake.id);
+
+        final best =
+            await repo.getBestRecord('1', RecordType.maxWeight, kSelfClientId);
+        expect(best?.value, 100);
+        // Soft-deleted so the withdrawal syncs as a tombstone.
+        final rows = await database.select(database.personalRecords).get();
+        expect(rows.where((r) => r.deletedAt != null), hasLength(1));
       });
     });
 

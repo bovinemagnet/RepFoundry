@@ -165,6 +165,11 @@ class _FakePersonalRecordRepository implements PersonalRecordRepository {
   final Map<String, PersonalRecord> _records = {};
 
   @override
+  Future<void> deleteRecordsForSet(String workoutSetId) async {
+    _records.removeWhere((_, r) => r.workoutSetId == workoutSetId);
+  }
+
+  @override
   Future<PersonalRecord> createRecord(PersonalRecord record) async {
     if (_records.containsKey(record.id)) {
       throw StateError('Duplicate personal record id: ${record.id}');
