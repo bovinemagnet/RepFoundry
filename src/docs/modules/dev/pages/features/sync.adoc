@@ -27,13 +27,17 @@ Platform selection is handled by `SyncServiceFactory`: `Platform.isIOS` returns 
 A `_isSyncing` guard prevents concurrent runs.
 
 . *Check connectivity* — query `connectivity_plus`; bail with error status if offline
-. *Create local snapshot* — read all local DB rows (including soft-deleted) into a `SyncSnapshot` via `SyncSnapshotSerialiser.createFromDatabase()`
+. *Create local snapshot* — build a `SyncSnapshot` via `SyncSnapshotSerialiser.createFromDatabase()`, including soft-deleted rows. Client-scoped tables — workouts, sets (via their parent workout), cardio sessions, personal records, body metrics, and stretching sessions (via their parent workout) — are read for the Me client (`kSelfClientId`) only; workout templates and programmes are not client-scoped and are read in full
 . *Download remote snapshot* — call `CloudSyncService.downloadSnapshot()`; returns `null` on first sync
 . *Merge* — pass local and remote snapshots to `SyncMergeEngine.merge()`; if no remote exists, use local as-is
 . *Upload merged snapshot to cloud* — `CloudSyncService.uploadSnapshot()` serialises the merged snapshot as JSON
-. *Apply merged snapshot to local DB* — `SyncSnapshotSerialiser.applyToDatabase()` writes all entities in a single Drift transaction using `insertOnConflictUpdate`
+. *Apply merged snapshot to local DB* — `SyncSnapshotSerialiser.applyToDatabase()` writes all entities in a single Drift batch/transaction using a guarded upsert. On conflict a row is only overwritten when the incoming row would also win under `SyncMergeEngine`'s own rule — a tombstone beats a live row, a later tombstone beats an earlier one, and between two live rows the strictly newer `updated_at` wins, with ties keeping the existing local row
 
 The upload happens before the local apply step. If the cloud upload fails, local state is left unchanged relative to the pre-sync database and a later retry can merge again from a fresh snapshot.
+
+The client-scoping in step 2 exists because the snapshot carries no client roster and no per-row owner field, and `applyToDatabase()` gives every new row it writes the Me client on the receiving device — including another client's rows would silently re-own them as Me's once applied elsewhere. The guarded upsert in step 6 mirrors `SyncMergeEngine`'s conflict rule so a slow upload can't let an edit made mid-sync get reverted by a merge that was computed before it happened.
+
+`CloudSyncService.isSupported` is `false` for `NoopCloudSyncService` (see below) — the implementation used on desktop and web platforms with no real cloud backend. `SyncOrchestrator.sync()` checks this before doing any work and returns an error result immediately rather than attempting an upload that would be silently discarded. `SyncOrchestrator.deleteCloudData()` waits for any in-flight `sync()` call to finish before deleting the cloud copy, so a sync that's already mid-flight can't upload and recreate the data the user just asked to delete.
 
 == SyncMergeEngine — Conflict Resolution
 

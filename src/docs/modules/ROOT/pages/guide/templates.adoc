@@ -67,11 +67,20 @@ the list (see xref:first-workout.adoc[] for the other ways a workout can
 start). RepFoundry begins a new workout and adds every exercise from the
 template to it, ready for you to log.
 
+Each exercise arrives with a set of suggestion rows shaped by the template:
+one row for each target set, all prescribed at the template's target rep
+count. Weight and RPE for those rows come from your last session for that
+exercise, matched set by set, where you've trained it before — if that last
+session had fewer sets than the template now asks for, the extra rows carry
+its last weight forward. An exercise you've never logged before simply shows
+the target reps with no weight suggested.
+
 Target sets and reps are your plan for the session, not a hard limit —
 nothing stops you from logging more or fewer sets than the template
-suggests. As with adding any exercise, the weight, reps, and RPE fields are
-pre-filled with suggestions from your last session for that exercise, where
-one exists.
+suggests. This template-shaped suggestion only applies to exercises brought
+in from the template itself; any exercise you add separately during the
+workout is still pre-filled the usual way, from your last session for that
+exercise, where one exists.
 
 == Editing and deleting templates
 

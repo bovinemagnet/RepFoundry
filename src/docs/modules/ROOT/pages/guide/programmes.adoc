@@ -69,9 +69,13 @@ The first week of a programme is always the baseline — no progression is
 applied yet. From then on, a step is applied at the frequency you chose (for
 example, every second week). Each step is calculated from the weight you
 actually lifted last time, so increases carry forward on their own; you
-don't need to update anything by hand. If an exercise has no progression
-rule, RepFoundry just carries your last logged weight forward unchanged, the
-same as it does for any workout without a programme.
+don't need to update anything by hand. A step is applied once per week —
+if an exercise is scheduled on two different days in a week that's due for
+a step, only the first of those sessions gets the progressed weight; the
+second session that week suggests that same weight rather than adding the
+step again on top. If an exercise has no progression rule, RepFoundry just
+carries your last logged weight forward unchanged, the same as it does for
+any workout without a programme.
 
 A weight can never be pushed down to zero — if a reduction would take it
 that low, RepFoundry leaves the weight unchanged instead.

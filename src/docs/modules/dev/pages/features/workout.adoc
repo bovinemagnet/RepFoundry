@@ -217,6 +217,14 @@ estimatedOneRepMax = weight × (1 + reps / 30.0)
 
 *Example:* 100 kg × 5 reps → `100 × (1 + 5/30)` = **116.7 kg**
 
+== Set Revision
+
+`ReviseSetUseCase` handles edits and deletions of an already-logged set, keeping personal records in step with the correction.
+
+On an edit, it withdraws (soft-deletes) the `PersonalRecord` rows the original set earned via `PersonalRecordRepository.deleteRecordsForSet()`, then re-evaluates the edited set against the remaining bests using the same shared `detectPersonalRecords()` helper `LogSetUseCase` uses for a newly logged set. An edited set can therefore earn a fresh PR, and a set edited down below a remaining best loses the record it previously held.
+
+On a delete, the set is removed and whatever records it earned are withdrawn; nothing is re-evaluated, since there is no longer a set to hold a new record.
+
 == Templates
 
 Templates are reusable workout blueprints stored as `WorkoutTemplate` records.
@@ -255,6 +263,7 @@ Each `TemplateExercise` stores:
 == Active Workout State Flow
 
 . `ActiveWorkoutController.startWorkout` creates a `Workout` record in the repository
+. `ActiveWorkoutController` mounts `hrSessionRecorderProvider` as soon as a workout starts or is restored, so it is already buffering heart-rate readings from the first moment of the session — the recorder's only other consumer reads it when a set is logged, which would otherwise leave the very first logged set with no readings to summarise
 . Adding an exercise triggers a load of ghost sets from the last session
 . Ghost rows render beneath confirmed sets until consumed
 . `SetInputCard` pre-fills the next ghost's weight / reps / RPE
@@ -281,6 +290,9 @@ Each `TemplateExercise` stores:
 
 | `lib/features/workout/application/log_set_use_case.dart`
 | Validates, persists, and checks PRs
+
+| `lib/features/workout/application/revise_set_use_case.dart`
+| Handles set edits and deletions, withdraws and re-evaluates PRs
 
 | `lib/features/workout/application/start_workout_use_case.dart`
 | Creates workout record and loads template

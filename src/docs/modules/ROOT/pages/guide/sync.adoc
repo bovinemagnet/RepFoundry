@@ -26,6 +26,13 @@ device only sees another device's changes the next time it syncs, and there
 is no dedicated RepFoundry server in the middle — your data goes straight to
 your own cloud storage and nowhere else.
 
+NOTE: Cross-device sync currently carries only your own ("You") workout
+data. If you xref:guide/clients.adoc[coach other clients], their workouts,
+cardio sessions, records, body metrics, and stretches stay on the device
+they were logged on rather than travelling with sync. Your workout templates
+and programmes aren't tied to a particular client, so they *are* carried
+across by sync as normal.
+
 == Which cloud service your platform uses
 
 RepFoundry uses each platform's own cloud service rather than a server it
@@ -34,6 +41,9 @@ runs itself:
 * *iOS* syncs via iCloud.
 * *Android* syncs via Google Drive, using a private storage area that does
   not appear alongside your other Drive files.
+* *Desktop* (macOS and Linux) has no cloud backend wired up, so the
+  Cross-Device Sync toggle isn't available there — there's no equivalent of
+  iCloud or Google Drive for RepFoundry to sync through on these platforms.
 
 This has one important consequence: *sync does not cross platforms.* Two
 iPhones on the same iCloud account can sync with each other, and two Android

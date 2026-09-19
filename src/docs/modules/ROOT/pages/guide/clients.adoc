@@ -27,7 +27,7 @@ From the roster, use *New client* to add someone. Give them a name and pick an a
 
 Your own roster always contains one client you can't delete: a "You" entry, badged accordingly, representing your own training. If you used RepFoundry before client management existed, your existing workouts, cardio sessions, and body metrics were carried into this entry, so nothing you'd already logged is lost.
 
-Deleting a client removes them from the roster but keeps their logged data — it's hidden, not erased. The self client can't be deleted at all.
+Deleting a client removes them from the roster but keeps their logged data — it's hidden, not erased. The self client can't be deleted at all. If the client you delete was your active client, RepFoundry switches the active client back to your own "You" entry immediately, since the active client can never point at someone no longer in the roster.
 
 == Assigning plans to a client
 
@@ -53,8 +53,8 @@ At any time, exactly one client is your *active* client. This matters because Re
 Getting this wrong means logging a session, a set, or a body metric entry against the wrong person, so RepFoundry keeps the active client visible wherever it matters:
 
 * On a tablet or desktop-sized window, a switcher chip sits in the navigation rail at all times, showing the active client's colour and name (or the "You" badge). Tapping it opens a sheet listing every client; tapping a client there makes them active immediately.
-* On any screen size, while you're on the active workout screen or the cardio tracking screen, a compact badge shows the active client and opens the same switcher sheet when tapped — this is the one place the switcher reaches a phone.
+* On any screen size, while you're on the active workout screen or the cardio tracking screen, a compact badge shows the active client — this is the one place the switcher reaches a phone. Before a session has started, this badge behaves like the rail switcher: it shows the active client and tapping it opens the same switcher sheet. Once a workout or cardio session is under way, the badge instead shows who that session was started for and is no longer tappable — the session stays attributed to that client for its whole duration, even if you change the active client elsewhere, for example from the rail switcher on a tablet.
 
-Switching the active client only changes who new activity is attributed to and which existing data you're viewing. It does not move, copy, or delete anything already logged.
+Switching the active client only changes who new activity is attributed to and which existing data you're viewing. It does not move, copy, or delete anything already logged, and it cannot retroactively move a session that's already running.
 
-TIP: Before you start a session for a client who isn't currently active, check the badge or the rail switcher first. There's no confirmation prompt when a set is saved — it's simply attributed to whoever was active at the time.
+TIP: Check the badge or the rail switcher *before* you tap Start — that's the moment a session's owner is fixed for good. There's no confirmation prompt when a set is saved, and once a session is under way, switching the active client elsewhere no longer changes who it belongs to.
