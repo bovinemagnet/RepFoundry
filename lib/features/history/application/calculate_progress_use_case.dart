@@ -22,9 +22,13 @@ class CalculateProgressUseCase {
     required WorkoutRepository workoutRepository,
   }) : _workoutRepository = workoutRepository;
 
-  Future<ExerciseProgress> execute(String exerciseId) async {
+  Future<ExerciseProgress> execute(
+    String exerciseId, {
+    required String clientId,
+  }) async {
     final sets = await _workoutRepository.getSetsForExercise(
       exerciseId,
+      clientId: clientId,
       limit: 200,
     );
 

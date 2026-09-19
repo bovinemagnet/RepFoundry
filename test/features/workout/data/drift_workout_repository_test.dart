@@ -302,7 +302,8 @@ void main() {
         await repo.addSet(s1);
         await repo.addSet(s2);
 
-        final sets = await repo.getSetsForExercise('1');
+        final sets =
+            await repo.getSetsForExercise('1', clientId: kSelfClientId);
         expect(sets, hasLength(2));
         // Newest first (by timestamp).
         expect(
@@ -320,8 +321,31 @@ void main() {
           await repo.addSet(newSet(workoutId: workout.id, setOrder: i));
         }
 
-        final sets = await repo.getSetsForExercise('1', limit: 3);
+        final sets = await repo.getSetsForExercise('1',
+            clientId: kSelfClientId, limit: 3);
         expect(sets, hasLength(3));
+      });
+    });
+
+    group('getSetsForExercise scoping', () {
+      test('excludes other clients and sets under deleted workouts', () async {
+        await database.into(database.clients).insert(
+              db.ClientsCompanion.insert(
+                  id: 'alice', name: 'Alice', colour: 0, createdAt: 0),
+            );
+        final mine = await repo.createWorkout(newWorkout());
+        final alices =
+            await repo.createWorkout(Workout.create(clientId: 'alice'));
+        final deleted = await repo.createWorkout(newWorkout());
+        await repo.addSet(newSet(workoutId: mine.id, weight: 100));
+        await repo.addSet(newSet(workoutId: alices.id, weight: 200));
+        await repo.addSet(newSet(workoutId: deleted.id, weight: 300));
+        await repo.deleteWorkout(deleted.id);
+
+        final sets =
+            await repo.getSetsForExercise('1', clientId: kSelfClientId);
+
+        expect(sets.map((s) => s.weight), [100]);
       });
     });
 

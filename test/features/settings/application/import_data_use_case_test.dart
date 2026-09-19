@@ -99,7 +99,7 @@ class _FakeWorkoutRepository implements WorkoutRepository {
       {};
   @override
   Future<List<WorkoutSet>> getSetsForExercise(String exerciseId,
-          {int limit = 50}) async =>
+          {required String clientId, int limit = 50}) async =>
       [];
   @override
   Future<WorkoutSet?> getLastSetForExercise(String exerciseId) async => null;

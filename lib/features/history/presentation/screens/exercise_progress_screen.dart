@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
+import '../../../clients/presentation/providers/active_client_provider.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../history/application/calculate_progress_use_case.dart';
 import '../../../../core/providers.dart';
@@ -14,7 +15,8 @@ final _exerciseProgressProvider =
     FutureProvider.autoDispose.family<ExerciseProgress, String>(
   (ref, exerciseId) async {
     final useCase = ref.watch(calculateProgressUseCaseProvider);
-    return useCase.execute(exerciseId);
+    final clientId = (await ref.watch(activeClientProvider.future)).id;
+    return useCase.execute(exerciseId, clientId: clientId);
   },
 );
 

@@ -108,9 +108,17 @@ class InMemoryWorkoutRepository implements WorkoutRepository {
   @override
   Future<List<WorkoutSet>> getSetsForExercise(
     String exerciseId, {
+    required String clientId,
     int limit = 50,
   }) async {
-    final results = _sets.where((s) => s.exerciseId == exerciseId).toList()
+    final liveWorkoutIds = _workouts
+        .where((w) => w.clientId == clientId && w.deletedAt == null)
+        .map((w) => w.id)
+        .toSet();
+    final results = _sets
+        .where((s) =>
+            s.exerciseId == exerciseId && liveWorkoutIds.contains(s.workoutId))
+        .toList()
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
     return results.length > limit ? results.sublist(0, limit) : results;
   }

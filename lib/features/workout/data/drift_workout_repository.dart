@@ -152,14 +152,26 @@ class DriftWorkoutRepository implements WorkoutRepository {
   @override
   Future<List<WorkoutSet>> getSetsForExercise(
     String exerciseId, {
+    required String clientId,
     int limit = 50,
   }) async {
-    final q = _db.select(_db.workoutSets)
-      ..where((t) => t.exerciseId.equals(exerciseId) & t.deletedAt.isNull())
-      ..orderBy([(t) => OrderingTerm.desc(t.timestamp)])
+    // Join the parent so sets from other clients' workouts and from deleted
+    // workouts (whose sets are not individually tombstoned) stay out of
+    // progress views.
+    final q = _db.select(_db.workoutSets).join([
+      innerJoin(
+        _db.workouts,
+        _db.workouts.id.equalsExp(_db.workoutSets.workoutId),
+      ),
+    ])
+      ..where(_db.workoutSets.exerciseId.equals(exerciseId) &
+          _db.workoutSets.deletedAt.isNull() &
+          _db.workouts.clientId.equals(clientId) &
+          _db.workouts.deletedAt.isNull())
+      ..orderBy([OrderingTerm.desc(_db.workoutSets.timestamp)])
       ..limit(limit);
     final rows = await q.get();
-    return rows.map(_setToDomain).toList();
+    return rows.map((r) => _setToDomain(r.readTable(_db.workoutSets))).toList();
   }
 
   @override

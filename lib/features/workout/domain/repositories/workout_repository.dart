@@ -21,8 +21,12 @@ abstract class WorkoutRepository {
   Future<Map<String, List<WorkoutSet>>> getSetsForWorkouts(
     List<String> workoutIds,
   );
+
+  /// Sets of [exerciseId] logged by [clientId] under non-deleted workouts,
+  /// newest first.
   Future<List<WorkoutSet>> getSetsForExercise(
     String exerciseId, {
+    required String clientId,
     int limit = 50,
   });
   Future<WorkoutSet?> getLastSetForExercise(String exerciseId);
