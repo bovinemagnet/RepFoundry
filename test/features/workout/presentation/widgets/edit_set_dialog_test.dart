@@ -109,6 +109,25 @@ void main() {
       expect(result!.rpe, 7.5);
     });
 
+    testWidgets('clearing the RPE field saves a set with no RPE',
+        (tester) async {
+      WorkoutSet? result;
+      await tester.pumpWidget(buildHost(
+        sampleSet(weight: 100, reps: 5, rpe: 8),
+        onResult: (r) => result = r,
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextFormField).at(2), '');
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(result, isNotNull);
+      expect(result!.rpe, isNull);
+    });
+
     testWidgets('rpe validation rejects values outside 1..10', (tester) async {
       WorkoutSet? result;
       var resolved = false;
