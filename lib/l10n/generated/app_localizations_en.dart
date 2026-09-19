@@ -1729,7 +1729,8 @@ class SEn extends S {
   String get syncEnabled => 'Enable Cross-Device Sync';
 
   @override
-  String get syncEnabledSubtitle => 'Sync your workout data across devices';
+  String get syncEnabledSubtitle =>
+      'Sync your own workout data across devices. Other clients\' records stay on this device.';
 
   @override
   String get syncUnsupportedPlatform =>

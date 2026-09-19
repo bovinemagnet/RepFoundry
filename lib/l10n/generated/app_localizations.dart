@@ -3093,7 +3093,7 @@ abstract class S {
   /// No description provided for @syncEnabledSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Sync your workout data across devices'**
+  /// **'Sync your own workout data across devices. Other clients\' records stay on this device.'**
   String get syncEnabledSubtitle;
 
   /// No description provided for @syncUnsupportedPlatform.
