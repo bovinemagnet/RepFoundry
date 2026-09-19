@@ -110,10 +110,19 @@ class DriftProgrammeRepository implements ProgrammeRepository {
 
   @override
   Stream<List<Programme>> watchAllProgrammes() {
-    final q = _db.select(_db.programmes)
-      ..where((t) => t.deletedAt.isNull())
-      ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
-    return q.watch().asyncMap(_toDomainList);
+    // The projection includes days and rules, which are fetched with get()
+    // inside _toDomainList, so the stream must also re-run when those child
+    // tables change — not only the parent.
+    return _db
+        .customSelect(
+          'SELECT * FROM programmes WHERE deleted_at IS NULL '
+          'ORDER BY created_at DESC',
+          readsFrom: {_db.programmes, _db.programmeDays, _db.progressionRules},
+        )
+        .watch()
+        .asyncMap((rows) => _toDomainList(
+              rows.map((r) => _db.programmes.map(r.data)).toList(),
+            ));
   }
 
   @override
