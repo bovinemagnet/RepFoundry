@@ -17,3 +17,5 @@ analyzer:
   errors:
     missing_required_param: error
     missing_return: error
+  exclude:
+    - build/**
