@@ -24,18 +24,19 @@ final streakProvider = FutureProvider.autoDispose<StreakData>((ref) async {
     return const StreakData(currentStreak: 0, longestStreak: 0);
   }
 
-  // Collect unique workout days (local time, normalised to midnight).
+  // Collect unique local calendar days. Each is held as a UTC DateTime
+  // built from the local year/month/day, so days are always exactly 24h
+  // apart: a local midnight converted with toUtc() is 23 or 25 hours from
+  // its neighbour across a DST change and breaks the streak.
   final uniqueDays = <DateTime>{};
   for (final w in workouts) {
-    final local = w.startedAt.toLocal();
-    uniqueDays.add(DateTime(local.year, local.month, local.day));
+    uniqueDays.add(_calendarDay(w.startedAt.toLocal()));
   }
 
   final sortedDays = uniqueDays.toList()..sort((a, b) => b.compareTo(a));
 
   // Current streak: start from today (or yesterday) and count backwards.
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
+  final today = _calendarDay(DateTime.now());
   final yesterday = today.subtract(const Duration(days: 1));
 
   int currentStreak = 0;
@@ -51,8 +52,7 @@ final streakProvider = FutureProvider.autoDispose<StreakData>((ref) async {
     var current = checkDate;
     while (sortedDays.contains(current)) {
       currentStreak++;
-      // Use calendar-day arithmetic to avoid DST drift.
-      current = DateTime(current.year, current.month, current.day - 1);
+      current = current.subtract(const Duration(days: 1));
     }
   }
 
@@ -61,13 +61,7 @@ final streakProvider = FutureProvider.autoDispose<StreakData>((ref) async {
   int runningStreak = 1;
 
   for (int i = 1; i < sortedDays.length; i++) {
-    // Compare calendar days to avoid DST-related drift.
-    final a = sortedDays[i - 1];
-    final b = sortedDays[i];
-    final dayDiff = DateTime(a.year, a.month, a.day)
-        .toUtc()
-        .difference(DateTime(b.year, b.month, b.day).toUtc())
-        .inDays;
+    final dayDiff = sortedDays[i - 1].difference(sortedDays[i]).inDays;
     if (dayDiff == 1) {
       runningStreak++;
     } else {
@@ -82,3 +76,8 @@ final streakProvider = FutureProvider.autoDispose<StreakData>((ref) async {
     longestStreak: longestStreak,
   );
 });
+
+/// The local calendar day of [local] as a UTC midnight, so day arithmetic
+/// is immune to the local zone's DST transitions.
+DateTime _calendarDay(DateTime local) =>
+    DateTime.utc(local.year, local.month, local.day);

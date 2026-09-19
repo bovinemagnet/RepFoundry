@@ -79,6 +79,41 @@ void main() {
       expect(data.longestStreak, 3);
     });
 
+    test('consecutive days across a DST change still count as a streak',
+        () async {
+      // Melbourne springs forward on 2025-10-05, so local midnight on the
+      // 5th and 6th are 23 hours apart. Only meaningful in a DST zone; run
+      // with TZ=Australia/Melbourne to exercise it.
+      final first = DateTime(2025, 10, 5);
+      final second = DateTime(2025, 10, 6);
+      if (second.difference(first).inHours == 24) {
+        markTestSkipped('Local timezone has no DST change on these dates');
+        return;
+      }
+
+      final repo = InMemoryWorkoutRepository();
+      for (final (i, day) in [first, second].indexed) {
+        await repo.createWorkout(Workout(
+          id: 'dst$i',
+          startedAt: day.add(const Duration(hours: 9)).toUtc(),
+          completedAt: day.add(const Duration(hours: 10)).toUtc(),
+          clientId: kSelfClientId,
+          updatedAt: DateTime.utc(2024),
+        ));
+      }
+      final container = ProviderContainer(
+        overrides: [
+          workoutRepositoryProvider.overrideWithValue(repo),
+          activeClientProvider
+              .overrideWith(() => _FixedActiveClientNotifier(_meClient)),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final data = await container.read(streakProvider.future);
+      expect(data.longestStreak, 2);
+    });
+
     test('current streak breaks on gap day', () async {
       final repo = InMemoryWorkoutRepository();
       final now = DateTime.now();
