@@ -557,7 +557,34 @@ void main() {
 
         async.elapse(const Duration(seconds: 1));
         expect(received, hasLength(2));
-        expect(received.last, isA<HeartRateBackBelowCap>());
+        expect(received.last, isA<HeartRateSignalLost>(),
+            reason: 'silence is not a measured recovery, so it must not be '
+                'reported as one');
+      });
+    });
+
+    test('zero readings while above cap are not a recovery', () {
+      fakeAsync((async) {
+        final hr = FakeHeartRateService();
+        final container = buildContainer(heartRateService: hr);
+        container.read(_sourceUnderTest);
+
+        hr.emitHeartRate(190);
+        async.flushMicrotasks();
+        expect(received, hasLength(1));
+
+        // A strap that has lost skin contact often reports 0 rather than
+        // going quiet. That must neither clear the cap nor keep the
+        // signal-loss timer alive.
+        for (var i = 0; i < 20; i++) {
+          async.elapse(const Duration(seconds: 1));
+          hr.emitHeartRate(0);
+          async.flushMicrotasks();
+        }
+        expect(received.whereType<HeartRateBackBelowCap>(), isEmpty);
+
+        async.elapse(const Duration(seconds: 6));
+        expect(received.last, isA<HeartRateSignalLost>());
       });
     });
 
@@ -576,10 +603,11 @@ void main() {
         async.elapse(const Duration(seconds: 30));
 
         expect(received.whereType<HeartRateBackBelowCap>(), isEmpty);
+        expect(received.whereType<HeartRateSignalLost>(), isEmpty);
       });
     });
 
-    test('the stream closing while above cap emits back-below', () {
+    test('the stream closing while above cap emits signal lost', () {
       fakeAsync((async) {
         final hr = FakeHeartRateService();
         final container = buildContainer(heartRateService: hr);
@@ -593,11 +621,11 @@ void main() {
         async.flushMicrotasks();
 
         expect(received, hasLength(2));
-        expect(received.last, isA<HeartRateBackBelowCap>());
+        expect(received.last, isA<HeartRateSignalLost>());
       });
     });
 
-    test('the stream erroring while above cap emits back-below', () {
+    test('the stream erroring while above cap emits signal lost', () {
       fakeAsync((async) {
         final hr = _ErroringHeartRateService();
         final container = buildContainer(heartRateService: hr);
@@ -611,7 +639,33 @@ void main() {
         async.flushMicrotasks();
 
         expect(received, hasLength(2));
-        expect(received.last, isA<HeartRateBackBelowCap>());
+        expect(received.last, isA<HeartRateSignalLost>());
+      });
+    });
+
+    test('the zone is re-announced once the signal returns', () {
+      fakeAsync((async) {
+        final hr = FakeHeartRateService();
+        final container = buildContainer(heartRateService: hr);
+        container.read(_sourceUnderTest);
+
+        hr.emitHeartRate(130);
+        async.flushMicrotasks();
+        async.elapse(const Duration(seconds: 10));
+        hr.emitHeartRate(130);
+        async.flushMicrotasks();
+        expect(received.whereType<HeartRateZoneChanged>(), hasLength(1));
+
+        async.elapse(const Duration(seconds: 30)); // signal lost
+
+        hr.emitHeartRate(130);
+        async.flushMicrotasks();
+        async.elapse(const Duration(seconds: 10));
+        hr.emitHeartRate(130);
+        async.flushMicrotasks();
+        expect(received.whereType<HeartRateZoneChanged>(), hasLength(2),
+            reason: 'the engine forgot the zone on signal loss, so the same '
+                'zone must be re-established rather than assumed');
       });
     });
   });
@@ -667,7 +721,7 @@ void main() {
                 'of the session with no event able to lift it, and nothing '
                 'short of the (much longer) signal-loss timeout would ever '
                 'clear it');
-        expect(received.last, isA<HeartRateBackBelowCap>());
+        expect(received.last, isA<HeartRateSignalLost>());
 
         // And it must not then repeat on every further null-config reading —
         // _aboveCap is already false, so there is nothing left to clear.
@@ -997,7 +1051,10 @@ void main() {
         // callout is expected somewhere in here too — filtering keeps this
         // test's assertions about only the parameters it's actually probing.
         List<TrainerEvent> capEvents() => received
-            .where((e) => e is HeartRateAboveCap || e is HeartRateBackBelowCap)
+            .where((e) =>
+                e is HeartRateAboveCap ||
+                e is HeartRateBackBelowCap ||
+                e is HeartRateSignalLost)
             .toList();
 
         // Zone dwell: 2s instead of the 10s default.
@@ -1040,7 +1097,7 @@ void main() {
         expect(capEvents(), hasLength(4));
         async.elapse(const Duration(seconds: 3));
         expect(capEvents(), hasLength(5));
-        expect(capEvents().last, isA<HeartRateBackBelowCap>());
+        expect(capEvents().last, isA<HeartRateSignalLost>());
       });
     });
   });

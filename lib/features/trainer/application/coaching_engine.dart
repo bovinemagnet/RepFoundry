@@ -147,6 +147,7 @@ class CoachingEngine {
       HeartRateAboveCap(:final bpm, :final cap) =>
         _onAboveCap(bpm, cap, now, hrSafetyWarningsEnabled),
       HeartRateBackBelowCap() => _onBackBelowCap(now, hrSafetyWarningsEnabled),
+      HeartRateSignalLost() => _onSignalLost(),
     };
   }
 
@@ -243,6 +244,18 @@ class CoachingEngine {
       now,
       encouragement: false,
     );
+  }
+
+  /// No measurement means no recovery cue — but also no basis for keeping
+  /// suppression, which would otherwise hold for the rest of the session
+  /// with nothing able to lift it. The zone is forgotten too, so a stale
+  /// zone 5 cannot gate encouragement; the event source re-announces the
+  /// zone once readings return.
+  CoachingCue? _onSignalLost() {
+    _aboveCap = false;
+    _lastCapWarningAt = null;
+    _currentZone = null;
+    return null;
   }
 
   CoachingCue? _onSetLogged(DateTime now) {

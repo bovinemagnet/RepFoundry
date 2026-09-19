@@ -112,7 +112,13 @@ class HrEventSource {
   DateTime? _lastCapWarningAt;
   DateTime? _belowCapSince;
 
+  /// Below this a reading is a lost-contact artefact (straps often report 0
+  /// off the skin), not a heart rate; it must not count as a recovery, nor
+  /// keep the signal-loss timer alive.
+  static const int _minValidBpm = 30;
+
   void _onReading(int bpm) {
+    if (bpm < _minValidBpm) return;
     _resetSignalLossTimer();
 
     final config = _ref.read(zoneConfigurationProvider);
@@ -269,19 +275,23 @@ class HrEventSource {
   /// Always clears any pending zone candidate: a candidate zone recorded
   /// just before a gap must not be promoted on the first reading afterwards
   /// with credit for time it was never actually, continuously observed in.
-  /// Only clears the cap state and emits [HeartRateBackBelowCap] while
-  /// actually above cap — otherwise there is no stuck suppression to clear.
+  /// Emits [HeartRateSignalLost] — never [HeartRateBackBelowCap], which
+  /// would have the coach announce a recovery it has no reading for — only
+  /// while there is live state to clear: an above-cap episode or an
+  /// established zone. The zone is forgotten so it is re-announced, rather
+  /// than assumed, once readings return.
   void _onSignalLoss() {
     _candidateZone = null;
     _candidateZoneSince = null;
 
-    if (!_aboveCap) return;
+    if (!_aboveCap && _currentZone == null) return;
     _aboveCap = false;
     _lastCapWarningAt = null;
     _belowCapSince = null;
+    _currentZone = null;
     _pendingAboveCapAnnouncement?.cancel();
     _pendingAboveCapAnnouncement = null;
-    _emit(const HeartRateBackBelowCap());
+    _emit(const HeartRateSignalLost());
   }
 
   void _emit(TrainerEvent event) {

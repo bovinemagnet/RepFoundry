@@ -112,6 +112,72 @@ void main() {
     expect(engine.isAboveCap, isFalse);
   });
 
+  group('signal lost', () {
+    // Losing the strap is not a measured recovery: the coach must never say
+    // "you're back under your maximum" on the strength of no data at all.
+    test('never speaks a recovery line', () {
+      final engine = _engine();
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
+
+      final cue = engine.onEvent(
+        const HeartRateSignalLost(),
+        now: t0.add(const Duration(seconds: 30)),
+      );
+
+      expect(cue, isNull);
+      expect(engine.isAboveCap, isFalse);
+    });
+
+    test('lifts above-cap suppression so it cannot stick without a signal', () {
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
+      engine.onEvent(const HeartRateSignalLost(),
+          now: t0.add(const Duration(seconds: 30)));
+
+      final cue = engine.onEvent(
+        const SetLogged(setNumber: 1, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 35)),
+      );
+
+      expect(cue, isNotNull);
+    });
+
+    test('forgets the zone so a stale zone 5 cannot suppress for ever', () {
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+      engine.onEvent(
+        const HeartRateZoneChanged(
+            zoneNumber: 5, effortLabel: 'Max', descriptiveLabel: 'VO2'),
+        now: t0,
+      );
+      engine.onEvent(const HeartRateSignalLost(),
+          now: t0.add(const Duration(seconds: 30)));
+
+      final cue = engine.onEvent(
+        const SetLogged(setNumber: 1, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 35)),
+      );
+
+      expect(cue, isNotNull);
+    });
+
+    test('a later genuine recovery still speaks', () {
+      final engine = _engine();
+      engine.onEvent(const HeartRateSignalLost(), now: t0);
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170),
+          now: t0.add(const Duration(seconds: 5)));
+
+      final cue = engine.onEvent(
+        const HeartRateBackBelowCap(),
+        now: t0.add(const Duration(seconds: 40)),
+      );
+
+      expect(cue, isNotNull);
+      expect(cue!.phraseKey, 'backbelow1');
+    });
+  });
+
   test('a personal record is still suppressed above cap', () {
     // PRs are milestone priority and normally bypass the cooldown, so they are
     // the most likely cue to escape the safety suppression.
