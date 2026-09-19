@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:csv/csv.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/settings/application/import/repfoundry_csv_adapter.dart';
 import 'package:rep_foundry/features/body_metrics/domain/models/body_metric.dart';
 import 'package:rep_foundry/features/body_metrics/domain/repositories/body_metric_repository.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
@@ -313,6 +315,37 @@ void main() {
       expect(lines.length, greaterThan(1));
       expect(lines[1], contains('Barbell Bench Press'));
       expect(lines[1], contains('100.0'));
+    });
+
+    test('sets.csv timestamps are ISO-8601 in UTC and round-trip exactly',
+        () async {
+      final instant = DateTime.utc(2026, 1, 15, 12);
+      await workoutRepo.createWorkout(Workout(
+        id: 'w-tz',
+        startedAt: instant,
+        completedAt: instant.add(const Duration(hours: 1)),
+        clientId: kSelfClientId,
+        updatedAt: instant,
+      ));
+      await workoutRepo.addSet(WorkoutSet(
+        id: 's-tz',
+        workoutId: 'w-tz',
+        exerciseId: '1',
+        setOrder: 1,
+        weight: 50,
+        reps: 5,
+        timestamp: instant,
+        updatedAt: instant,
+      ));
+
+      final csv = (await useCase.exportAsCsv())['sets.csv']!;
+      expect(csv.split('\n')[1],
+          startsWith('$kSelfClientId,2026-01-15T12:00:00.000Z,'));
+
+      // The app's own importer must read back the same instant whatever
+      // timezone the device is in.
+      final parsed = RepFoundryCsvAdapter().parse(Csv().decode(csv));
+      expect(parsed.workouts.single.sets.single.timestamp, instant);
     });
 
     test('escapes commas in exercise names', () async {

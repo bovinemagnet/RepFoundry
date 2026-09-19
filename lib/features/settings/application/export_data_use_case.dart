@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:intl/intl.dart';
-
 import '../../body_metrics/domain/models/body_metric.dart';
 import '../../body_metrics/domain/repositories/body_metric_repository.dart';
 import '../../cardio/domain/models/cardio_session.dart';
@@ -124,7 +122,10 @@ class ExportDataUseCase {
     final stretchingSessions =
         await stretchingSessionRepository.getAllSessions();
 
-    final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
+    // ISO-8601 in UTC with an explicit Z: the value is an unambiguous
+    // instant, so the app's own importer (and any other consumer) reads it
+    // back identically whatever timezone the device is in.
+    String stamp(DateTime t) => t.toUtc().toIso8601String();
 
     // sets.csv — client_id is the parent workout's, since WorkoutSet itself
     // is not directly client-scoped.
@@ -135,7 +136,7 @@ class ExportDataUseCase {
       for (final set in sets) {
         final name =
             _escapeCsv(exerciseNames[set.exerciseId] ?? set.exerciseId);
-        final date = dateFormat.format(set.timestamp);
+        final date = stamp(set.timestamp);
         final rpe = set.rpe?.toStringAsFixed(1) ?? '';
         setLines.writeln(
           '${workout.clientId},$date,$name,${set.weight},${set.reps},$rpe,${set.volume},${set.estimatedOneRepMax.toStringAsFixed(1)}',
@@ -152,7 +153,7 @@ class ExportDataUseCase {
           _escapeCsv(exerciseNames[session.exerciseId] ?? session.exerciseId);
       // Find workout date
       final workout = await workoutRepository.getWorkout(session.workoutId);
-      final date = workout != null ? dateFormat.format(workout.startedAt) : '';
+      final date = workout != null ? stamp(workout.startedAt) : '';
       final durationMin = (session.durationSeconds / 60).toStringAsFixed(1);
       final distanceKm = session.distanceMeters != null
           ? (session.distanceMeters! / 1000).toStringAsFixed(2)
@@ -168,7 +169,7 @@ class ExportDataUseCase {
       ..writeln('client_id,date,exercise,record_type,value');
     for (final pr in personalRecords) {
       final name = _escapeCsv(exerciseNames[pr.exerciseId] ?? pr.exerciseId);
-      final date = dateFormat.format(pr.achievedAt);
+      final date = stamp(pr.achievedAt);
       prLines.writeln(
           '${pr.clientId},$date,$name,${pr.recordType.name},${pr.value}');
     }
@@ -177,7 +178,7 @@ class ExportDataUseCase {
     final bodyMetricLines = StringBuffer()
       ..writeln('client_id,date,weight,body_fat_percent,notes');
     for (final metric in bodyMetrics) {
-      final date = dateFormat.format(metric.date);
+      final date = stamp(metric.date);
       final bodyFat = metric.bodyFatPercent?.toString() ?? '';
       bodyMetricLines.writeln(
         '${metric.clientId},$date,${metric.weight},$bodyFat,${_escapeCsv(metric.notes ?? '')}',
@@ -193,8 +194,7 @@ class ExportDataUseCase {
       );
     for (final s in stretchingSessions) {
       final parent = await workoutRepository.getWorkout(s.workoutId);
-      final workoutDate =
-          parent != null ? dateFormat.format(parent.startedAt) : '';
+      final workoutDate = parent != null ? stamp(parent.startedAt) : '';
       final startedAt =
           s.startedAt != null ? s.startedAt!.toUtc().toIso8601String() : '';
       final endedAt =

@@ -168,7 +168,9 @@ void main() {
       expect(history.source, 'repfoundry');
       expect(history.workouts, hasLength(2));
       final day1 = history.workouts.first;
-      expect(day1.startedAt, DateTime(2024, 3, 15, 9, 10).toUtc());
+      // Legacy exports wrote the repository's UTC timestamps without an
+      // offset, so they are read back as UTC.
+      expect(day1.startedAt, DateTime.utc(2024, 3, 15, 9, 10));
       expect(day1.sets, hasLength(2));
       // Completed at the last set of the day.
       expect(day1.completedAt.isAfter(day1.startedAt), isTrue);
@@ -179,8 +181,25 @@ void main() {
       final history =
           RepFoundryCsvAdapter().parse(loadFixture('repfoundry_sets.csv'));
       final sets = history.workouts.first.sets;
-      expect(sets[0].timestamp, DateTime(2024, 3, 15, 9, 10).toUtc());
-      expect(sets[1].timestamp, DateTime(2024, 3, 15, 9, 15).toUtc());
+      expect(sets[0].timestamp, DateTime.utc(2024, 3, 15, 9, 10));
+      expect(sets[1].timestamp, DateTime.utc(2024, 3, 15, 9, 15));
+    });
+
+    test('reads ISO-8601 timestamps with Z or an offset as exact instants', () {
+      final history = RepFoundryCsvAdapter().parse([
+        ['client_id', 'date', 'exercise', 'weight', 'reps', 'rpe'],
+        ['me', '2026-01-15T12:00:00.000Z', 'Squat', '100', '5', ''],
+        ['me', '2026-01-15T23:30:00.000+11:00', 'Squat', '100', '5', ''],
+      ]);
+
+      final stamps = history.workouts
+          .expand((w) => w.sets)
+          .map((s) => s.timestamp)
+          .toList();
+      expect(stamps, [
+        DateTime.utc(2026, 1, 15, 12),
+        DateTime.utc(2026, 1, 15, 12, 30),
+      ]);
     });
   });
 

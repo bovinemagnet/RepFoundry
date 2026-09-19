@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:drift/native.dart';
 import 'package:rep_foundry/core/database/app_database.dart' show AppDatabase;
-import 'package:rep_foundry/core/heart_rate/hr_session_recorder.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
