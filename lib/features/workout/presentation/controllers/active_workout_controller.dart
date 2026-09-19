@@ -71,6 +71,29 @@ Map<String, List<String>> getSupersetGroups(
   return groups;
 }
 
+/// Fits a template prescription over what the last session suggests:
+/// [targetSets] entries of [targetReps] each, weighted from [history] set
+/// by set, with the last known weight carried into any extra sets and a
+/// zero weight (the input card's "no suggestion" value) when there is no
+/// history at all.
+List<GhostSet> applyPrescription(
+  List<GhostSet> history, {
+  required int targetSets,
+  required int targetReps,
+}) {
+  return [
+    for (var i = 0; i < targetSets; i++)
+      GhostSet(
+        weight: i < history.length
+            ? history[i].weight
+            : (history.isEmpty ? 0 : history.last.weight),
+        reps: targetReps,
+        rpe: i < history.length ? history[i].rpe : null,
+        setOrder: i + 1,
+      ),
+  ];
+}
+
 class ActiveWorkoutState {
   final Workout? activeWorkout;
   final Map<String, List<WorkoutSet>> setsByExercise;
@@ -246,9 +269,18 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
 
       for (final templateExercise in template.exercises) {
         final exercise = exercisesById[templateExercise.exerciseId];
-        if (exercise != null) {
-          await addExercise(exercise);
-        }
+        if (exercise == null) continue;
+        await addExercise(exercise);
+        // Shape the suggestions to the template's prescription: history
+        // supplies the weights, the template the number of sets and reps.
+        final ghosts =
+            Map<String, List<GhostSet>>.from(state.ghostSetsByExercise);
+        ghosts[exercise.id] = applyPrescription(
+          ghosts[exercise.id] ?? const [],
+          targetSets: templateExercise.targetSets,
+          targetReps: templateExercise.targetReps,
+        );
+        state = state.copyWith(ghostSetsByExercise: ghosts);
       }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

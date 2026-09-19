@@ -634,6 +634,76 @@ void main() {
         expect(readState().exerciseIds, contains('1'));
         expect(readState().exerciseIds, contains('2'));
       });
+
+      test('an untrained exercise gets the template\'s sets and reps',
+          () async {
+        await waitForInit();
+        final controller = readController();
+        final template = WorkoutTemplate.create(
+          name: '5x5',
+          exercises: [
+            TemplateExercise(
+              id: 'te1',
+              templateId: '',
+              exerciseId: '1',
+              exerciseName: 'Barbell Bench Press',
+              targetSets: 5,
+              targetReps: 5,
+              orderIndex: 0,
+              updatedAt: DateTime.now().toUtc(),
+            ),
+          ],
+        );
+
+        await controller.startFromTemplate(template);
+
+        final ghosts = readState().ghostSetsByExercise['1'];
+        expect(ghosts, hasLength(5));
+        expect(ghosts!.map((g) => g.reps), everyElement(5));
+        expect(readState().nextGhostSet('1')?.reps, 5);
+      });
+
+      test('history supplies the weights, the template the shape', () async {
+        await waitForInit();
+        final controller = readController();
+        // Last session: 3 sets of 10 at 60 kg.
+        final previous = await workoutRepo.createWorkout(
+          Workout.create().copyWith(
+            completedAt: DateTime.now().toUtc(),
+          ),
+        );
+        for (var i = 1; i <= 3; i++) {
+          await workoutRepo.addSet(WorkoutSet.create(
+            workoutId: previous.id,
+            exerciseId: '1',
+            setOrder: i,
+            weight: 60,
+            reps: 10,
+          ));
+        }
+        final template = WorkoutTemplate.create(
+          name: '5x5',
+          exercises: [
+            TemplateExercise(
+              id: 'te1',
+              templateId: '',
+              exerciseId: '1',
+              exerciseName: 'Barbell Bench Press',
+              targetSets: 5,
+              targetReps: 5,
+              orderIndex: 0,
+              updatedAt: DateTime.now().toUtc(),
+            ),
+          ],
+        );
+
+        await controller.startFromTemplate(template);
+
+        final ghosts = readState().ghostSetsByExercise['1']!;
+        expect(ghosts, hasLength(5));
+        expect(ghosts.map((g) => g.weight), everyElement(60));
+        expect(ghosts.map((g) => g.reps), everyElement(5));
+      });
     });
 
     group('linkSuperset & unlinkSuperset', () {
