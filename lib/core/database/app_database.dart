@@ -307,7 +307,8 @@ class AppDatabase extends _$AppDatabase {
       );
 
   /// Permanently deletes every row from every table, then re-seeds the
-  /// default exercises. Used by the "Clear All Data" setting.
+  /// default exercises and the mandatory Me client. Used by the
+  /// "Clear All Data" setting.
   Future<void> clearAllData() async {
     await transaction(() async {
       // Tables are declared parents-first in @DriftDatabase, so deleting in
@@ -317,6 +318,7 @@ class AppDatabase extends _$AppDatabase {
       }
       await batch((b) {
         b.insertAll(exercises, _defaultExercises);
+        b.insert(clients, _selfClientCompanion());
       });
     });
   }

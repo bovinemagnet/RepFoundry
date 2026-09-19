@@ -159,6 +159,9 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
   Future<void> _init() async {
     try {
       final workout = await _workoutRepository.getActiveWorkout();
+      // The provider may have been invalidated (e.g. Clear All Data) while
+      // the query was in flight.
+      if (!ref.mounted) return;
       if (workout != null) {
         await _loadSets(workout);
       } else {
