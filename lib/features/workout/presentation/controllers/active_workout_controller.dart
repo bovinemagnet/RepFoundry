@@ -338,10 +338,14 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
       final completed = workout.copyWith(completedAt: now, updatedAt: now);
       await _workoutRepository.updateWorkout(completed);
 
-      // Sync to health store if enabled
+      // Sync to health store if enabled. The platform health store is the
+      // operator's own, so only Me's workouts may be written to it — a
+      // client's session must never land in the coach's health account.
       try {
         final healthSettings = ref.read(healthSyncSettingsProvider);
-        if (healthSettings.enabled && healthSettings.writeWorkouts) {
+        if (healthSettings.enabled &&
+            healthSettings.writeWorkouts &&
+            workout.clientId == kSelfClientId) {
           final healthService = ref.read(healthSyncServiceProvider);
           final sets = await _workoutRepository.getSetsForWorkout(workout.id);
           final totalVolume = sets

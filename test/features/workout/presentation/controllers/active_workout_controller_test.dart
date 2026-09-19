@@ -8,6 +8,7 @@ import 'package:drift/native.dart';
 import 'package:rep_foundry/core/database/app_database.dart' show AppDatabase;
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
+import 'package:rep_foundry/features/clients/presentation/providers/active_client_provider.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
@@ -44,6 +45,37 @@ class _FakeCloudSyncService implements CloudSyncService {
     String jsonData, {
     bool interactive = false,
   }) async {}
+}
+
+class _WorkoutSyncOnNotifier extends HealthSyncSettingsNotifier {
+  @override
+  HealthSyncSettings build() =>
+      const HealthSyncSettings(enabled: true, writeWorkouts: true);
+}
+
+class _RecordingHealthSyncService extends HealthSyncService {
+  int workoutsWritten = 0;
+
+  @override
+  Future<bool> writeWorkout({
+    required DateTime startTime,
+    required DateTime endTime,
+    required int totalCalories,
+    bool isCardio = false,
+    double? distanceMeters,
+  }) async {
+    workoutsWritten++;
+    return true;
+  }
+}
+
+class _FixedActiveClientNotifier extends ActiveClientNotifier {
+  _FixedActiveClientNotifier(this._client);
+
+  final Client _client;
+
+  @override
+  Future<Client> build() async => _client;
 }
 
 class _NoOpHealthSyncSettingsNotifier extends HealthSyncSettingsNotifier {
@@ -408,6 +440,62 @@ void main() {
 
         await controller.finishWorkout();
         expect(readState().hasActiveWorkout, isFalse);
+      });
+
+      test('does not write another client\'s workout to the health store',
+          () async {
+        final health = _RecordingHealthSyncService();
+        final alice = Client.create(name: 'Alice', colour: 0);
+        container.dispose();
+        container = ProviderContainer(
+          overrides: [
+            workoutRepositoryProvider.overrideWithValue(workoutRepo),
+            exerciseRepositoryProvider.overrideWithValue(exerciseRepo),
+            personalRecordRepositoryProvider.overrideWithValue(prRepo),
+            workoutTemplateRepositoryProvider.overrideWithValue(templateRepo),
+            healthSyncServiceProvider.overrideWithValue(health),
+            healthSyncSettingsProvider
+                .overrideWith(() => _WorkoutSyncOnNotifier()),
+            syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
+            syncOrchestratorProvider.overrideWithValue(syncOrchestrator),
+            activeClientProvider
+                .overrideWith(() => _FixedActiveClientNotifier(alice)),
+          ],
+        );
+        await waitForInit();
+        await container.read(activeClientProvider.future);
+        final controller = readController();
+        await controller.startWorkout();
+        expect(readState().activeWorkout?.clientId, alice.id);
+
+        await controller.finishWorkout();
+
+        expect(health.workoutsWritten, 0);
+      });
+
+      test('writes Me\'s workout to the health store', () async {
+        final health = _RecordingHealthSyncService();
+        container.dispose();
+        container = ProviderContainer(
+          overrides: [
+            workoutRepositoryProvider.overrideWithValue(workoutRepo),
+            exerciseRepositoryProvider.overrideWithValue(exerciseRepo),
+            personalRecordRepositoryProvider.overrideWithValue(prRepo),
+            workoutTemplateRepositoryProvider.overrideWithValue(templateRepo),
+            healthSyncServiceProvider.overrideWithValue(health),
+            healthSyncSettingsProvider
+                .overrideWith(() => _WorkoutSyncOnNotifier()),
+            syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
+            syncOrchestratorProvider.overrideWithValue(syncOrchestrator),
+          ],
+        );
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+
+        await controller.finishWorkout();
+
+        expect(health.workoutsWritten, 1);
       });
 
       test('syncs to cloud when persisted sync is enabled', () async {

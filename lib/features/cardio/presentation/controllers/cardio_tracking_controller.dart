@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../../../../core/heart_rate/hr_session_recorder.dart';
 import '../../../../core/providers.dart';
 import '../../../clients/domain/models/client.dart';
 import '../../../clients/presentation/providers/active_client_provider.dart';
@@ -38,6 +39,34 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
   HeartRateService get _heartRateService => ref.read(heartRateServiceProvider);
   HealthSyncService get _healthSyncService =>
       ref.read(healthSyncServiceProvider);
+
+  /// Wall-clock start of the current session, for selecting its heart-rate
+  /// samples from the shared recorder at save time.
+  DateTime? _sessionStartedAt;
+
+  /// Minimum spacing between exported heart-rate samples, so an hour-long
+  /// session becomes a few hundred health-store writes rather than
+  /// thousands.
+  static const _heartRateExportInterval = Duration(seconds: 10);
+
+  Future<void> _writeHeartRateSamples({
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    final samples = selectSamplesForExport(
+      ref.read(hrSessionRecorderProvider),
+      from: from,
+      to: to,
+      minGap: _heartRateExportInterval,
+    );
+    for (final sample in samples) {
+      await _healthSyncService.writeHeartRate(
+        bpm: sample.bpm,
+        dateTime: sample.timestamp,
+      );
+    }
+  }
+
   HealthSyncSettings get _healthSyncSettings =>
       ref.read(healthSyncSettingsProvider);
 
@@ -69,6 +98,9 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       heartRateReadings: isFreshSession ? const [] : state.heartRateReadings,
     );
     _runningSince = clock.now();
+    if (isFreshSession) _sessionStartedAt = DateTime.now().toUtc();
+    // Buffer timestamped samples for the health-store export at save time.
+    ref.read(hrSessionRecorderProvider);
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       state = state.copyWith(elapsedSeconds: _wallClockElapsedSeconds);
     });
@@ -326,9 +358,13 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
         ),
       );
 
-      // Sync to health store if enabled
+      // Sync to health store if enabled. The platform health store belongs
+      // to the operator, so only Me's sessions may be written to it — a
+      // client's run must never land in the coach's health account.
+      final settings = _healthSyncSettings;
+      final ownedByMe = result.workout.clientId == kSelfClientId;
       try {
-        if (_healthSyncSettings.enabled && _healthSyncSettings.writeWorkouts) {
+        if (settings.enabled && settings.writeWorkouts && ownedByMe) {
           // Rough calorie estimate: ~8 kcal/min for moderate cardio
           final calories = (state.elapsedSeconds / 60.0 * 8).round();
           await _healthSyncService.writeWorkout(
@@ -339,9 +375,16 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
             distanceMeters: effectiveDistance,
           );
         }
+        if (settings.enabled && settings.writeHeartRate && ownedByMe) {
+          await _writeHeartRateSamples(
+            from: _sessionStartedAt ?? result.workout.startedAt,
+            to: result.workout.completedAt!,
+          );
+        }
       } catch (_) {
         // Health sync is best-effort — don't fail the save
       }
+      _sessionStartedAt = null;
 
       _timer?.cancel();
       _runningSince = null;

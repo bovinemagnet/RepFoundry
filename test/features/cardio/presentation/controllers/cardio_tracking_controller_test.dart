@@ -8,6 +8,7 @@ import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.
 import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
+import 'package:rep_foundry/features/clients/presentation/providers/active_client_provider.dart';
 import 'package:rep_foundry/features/cardio/presentation/controllers/cardio_tracking_controller.dart';
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
@@ -29,6 +30,42 @@ class _ThrowingSaveUseCase extends SaveCardioSessionUseCase {
   Future<SaveCardioSessionResult> execute(SaveCardioSessionInput input) async {
     throw StateError('disk full');
   }
+}
+
+/// Records outbound health-store writes instead of touching the platform.
+class _RecordingHealthSyncService extends HealthSyncService {
+  final List<({DateTime start, DateTime end})> workouts = [];
+  final List<({int bpm, DateTime at})> heartRates = [];
+
+  @override
+  Future<bool> writeWorkout({
+    required DateTime startTime,
+    required DateTime endTime,
+    required int totalCalories,
+    bool isCardio = false,
+    double? distanceMeters,
+  }) async {
+    workouts.add((start: startTime, end: endTime));
+    return true;
+  }
+
+  @override
+  Future<bool> writeHeartRate({
+    required int bpm,
+    required DateTime dateTime,
+  }) async {
+    heartRates.add((bpm: bpm, at: dateTime));
+    return true;
+  }
+}
+
+class _FixedActiveClientNotifier extends ActiveClientNotifier {
+  _FixedActiveClientNotifier(this._client);
+
+  final Client _client;
+
+  @override
+  Future<Client> build() async => _client;
 }
 
 void main() {
@@ -202,6 +239,103 @@ void main() {
       test('sets lastSession to null when no previous session', () async {
         await controller.selectExercise('e2', 'Bike');
         expect(controller.state.lastSession, isNull);
+      });
+    });
+
+    group('health store writes on save', () {
+      late _RecordingHealthSyncService health;
+
+      ProviderContainer healthContainer({Client? activeClient}) {
+        health = _RecordingHealthSyncService();
+        final c = ProviderContainer(
+          overrides: [
+            cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
+            saveCardioSessionUseCaseProvider.overrideWithValue(useCase),
+            locationServiceProvider.overrideWithValue(locationService),
+            heartRateServiceProvider.overrideWithValue(heartRateService),
+            foregroundSessionServiceProvider
+                .overrideWithValue(foregroundService),
+            healthSyncServiceProvider.overrideWithValue(health),
+            healthSyncSettingsProvider
+                .overrideWith(() => HealthSyncSettingsNotifier()),
+            if (activeClient != null)
+              activeClientProvider
+                  .overrideWith(() => _FixedActiveClientNotifier(activeClient)),
+          ],
+        );
+        addTearDown(c.dispose);
+        return c;
+      }
+
+      /// The settings notifier reads SharedPreferences asynchronously on
+      /// first access, so touch it and let that load land.
+      Future<CardioTrackingController> controllerOf(ProviderContainer c) async {
+        c.read(healthSyncSettingsProvider);
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        return c.read(cardioTrackingProvider.notifier);
+      }
+
+      Future<void> runSession(CardioTrackingController c) async {
+        await c.selectExercise('e1', 'Treadmill');
+        await c.connectHeartRate('dev', 'Strap');
+        c.start();
+        await Future<void>.delayed(const Duration(milliseconds: 600));
+        heartRateService.emitHeartRate(140);
+        await Future<void>.delayed(const Duration(milliseconds: 600));
+        heartRateService.emitHeartRate(150);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        c.pause();
+        await c.save();
+        expect(c.state.error, isNull);
+      }
+
+      test('writes the session heart-rate samples when the toggle is on',
+          () async {
+        SharedPreferences.setMockInitialValues({
+          'health_sync_enabled': true,
+          'health_sync_write_heart_rate': true,
+        });
+        final c = healthContainer();
+        final controller = await controllerOf(c);
+
+        await runSession(controller);
+
+        // The two readings are well under the 10 s export spacing, so only
+        // the first is written; selectSamplesForExport covers the spacing.
+        expect(health.heartRates.map((s) => s.bpm), [140]);
+        expect(health.workouts, hasLength(1));
+      });
+
+      test('writes no heart-rate samples when the toggle is off', () async {
+        SharedPreferences.setMockInitialValues({
+          'health_sync_enabled': true,
+          'health_sync_write_heart_rate': false,
+        });
+        final c = healthContainer();
+        final controller = await controllerOf(c);
+
+        await runSession(controller);
+
+        expect(health.heartRates, isEmpty);
+        expect(health.workouts, hasLength(1));
+      });
+
+      test('writes nothing to the health store for another client\'s session',
+          () async {
+        SharedPreferences.setMockInitialValues({
+          'health_sync_enabled': true,
+          'health_sync_write_heart_rate': true,
+        });
+        final alice = Client.create(name: 'Alice', colour: 0);
+        final c = healthContainer(activeClient: alice);
+        final controller = await controllerOf(c);
+
+        await runSession(controller);
+
+        expect(health.workouts, isEmpty,
+            reason: 'the coach\'s health account must not receive a '
+                'client\'s workout');
+        expect(health.heartRates, isEmpty);
       });
     });
 
