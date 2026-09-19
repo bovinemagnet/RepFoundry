@@ -1172,10 +1172,12 @@ class _SyncRemindersCard extends ConsumerWidget {
               ),
             );
             if (confirmed == true) {
+              // Disable first so no automatic sync can start while the
+              // deletion is waiting on an in-flight one.
+              await ref.read(syncSettingsProvider.notifier).disableAndClear();
               await ref
                   .read(syncOrchestratorProvider)
                   .deleteCloudData(interactive: true);
-              ref.read(syncSettingsProvider.notifier).disableAndClear();
               ref.read(syncStateProvider.notifier).setStatus(SyncStatus.idle);
             }
           },

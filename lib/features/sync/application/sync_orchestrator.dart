@@ -19,8 +19,9 @@ class SyncOrchestrator {
   final String _deviceId;
 
   // Static so the guard survives provider rebuilds (the orchestrator is
-  // recreated whenever sync settings change).
-  static bool _isSyncing = false;
+  // recreated whenever sync settings change). Holds the in-flight run so
+  // deleteCloudData can wait for it rather than race its upload.
+  static Future<SyncResult>? _inFlight;
 
   SyncOrchestrator({
     required AppDatabase database,
@@ -36,7 +37,7 @@ class SyncOrchestrator {
         _mergeEngine = mergeEngine ?? SyncMergeEngine(),
         _connectivity = connectivity ?? Connectivity();
 
-  bool get isSyncing => _isSyncing;
+  bool get isSyncing => _inFlight != null;
 
   /// Whether this host has a real cloud backend. See
   /// [CloudSyncService.isSupported].
@@ -46,11 +47,16 @@ class SyncOrchestrator {
     if (!isSupported) {
       return SyncResult.error('Cloud sync is not available on this platform');
     }
-    if (_isSyncing) {
+    if (_inFlight != null) {
       return SyncResult.error('Sync already in progress');
     }
 
-    _isSyncing = true;
+    final run = _run(interactive: interactive);
+    _inFlight = run;
+    return run;
+  }
+
+  Future<SyncResult> _run({required bool interactive}) async {
     try {
       // 1. Check connectivity
       final connectivityResult = await _connectivity.checkConnectivity();
@@ -121,12 +127,17 @@ class SyncOrchestrator {
     } catch (e) {
       return SyncResult.error(e.toString());
     } finally {
-      _isSyncing = false;
+      _inFlight = null;
     }
   }
 
   /// Delete all cloud data and reset sync state.
+  ///
+  /// Waits for any in-flight sync first: its upload would otherwise land
+  /// after the delete and silently recreate the data the user just removed.
   Future<void> deleteCloudData({bool interactive = false}) async {
+    // sync() never throws — _run catches everything — so awaiting is safe.
+    await _inFlight;
     await _cloudService.deleteCloudData(interactive: interactive);
   }
 }

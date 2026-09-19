@@ -321,6 +321,28 @@ void main() {
       expect(result.errorMessage, isNotEmpty);
     });
 
+    test(
+        'deleteCloudData waits for an in-flight sync so nothing is re-uploaded',
+        () async {
+      cloudService.downloadCompleter = Completer<String?>();
+      final syncing = orchestrator.sync();
+      // Let the sync reach its download step.
+      await Future<void>.delayed(Duration.zero);
+      expect(orchestrator.isSyncing, isTrue);
+
+      final deleting = orchestrator.deleteCloudData();
+      await Future<void>.delayed(Duration.zero);
+      expect(cloudService.deleteInteractiveValues, isEmpty,
+          reason: 'deletion must not run while the sync is still in flight');
+
+      cloudService.downloadCompleter!.complete(null);
+      expect((await syncing).success, isTrue);
+      await deleting;
+
+      expect(cloudService.storedJson, isNull,
+          reason: 'the sync upload must land before the delete, not after');
+    });
+
     test('deleteCloudData delegates to cloud service', () async {
       // Pre-populate cloud data.
       cloudService.storedJson = '{"some": "data"}';
