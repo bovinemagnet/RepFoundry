@@ -14,6 +14,7 @@ import '../features/templates/presentation/screens/template_edit_screen.dart';
 import '../features/exercises/presentation/screens/exercise_picker_screen.dart';
 import '../features/cardio/presentation/screens/cardio_tracking_screen.dart';
 import '../features/heart_rate/presentation/screens/heart_rate_panel_screen.dart';
+import '../features/heart_rate/presentation/screens/weekly_heart_report_screen.dart';
 import '../features/history/presentation/screens/pr_history_screen.dart';
 import '../features/analytics/presentation/screens/analytics_screen.dart';
 import '../features/programmes/presentation/screens/programme_list_screen.dart';
@@ -85,6 +86,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/heart-rate',
             builder: (context, state) => const HeartRatePanelScreen(),
+            routes: [
+              GoRoute(
+                path: 'weekly-report',
+                builder: (context, state) => const WeeklyHeartReportScreen(),
+              ),
+            ],
           ),
           GoRoute(
             path: '/analytics',

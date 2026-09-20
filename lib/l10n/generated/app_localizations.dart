@@ -930,6 +930,84 @@ abstract class S {
   /// **'Recent'**
   String get recentChart;
 
+  /// No description provided for @weeklyHeartReportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Heart Report'**
+  String get weeklyHeartReportTitle;
+
+  /// No description provided for @weeklyHeartReportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cardiovascular adaptation, last 7 days'**
+  String get weeklyHeartReportSubtitle;
+
+  /// No description provided for @weeklyHeartReportRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Weekly Heart Report'**
+  String get weeklyHeartReportRow;
+
+  /// No description provided for @weeklyHeartReportEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No heart rate data this week'**
+  String get weeklyHeartReportEmpty;
+
+  /// No description provided for @weeklyHeartReportEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect a monitor during a workout or cardio session and it will be summarised here.'**
+  String get weeklyHeartReportEmptyHint;
+
+  /// No description provided for @weeklyHeartReportSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get weeklyHeartReportSessions;
+
+  /// No description provided for @weeklyHeartReportAvg.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg HR'**
+  String get weeklyHeartReportAvg;
+
+  /// No description provided for @weeklyHeartReportPeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Peak HR'**
+  String get weeklyHeartReportPeak;
+
+  /// No description provided for @weeklyHeartReportDailyPeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily peak'**
+  String get weeklyHeartReportDailyPeak;
+
+  /// No description provided for @weeklyHeartReportTimeInZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Time in zone'**
+  String get weeklyHeartReportTimeInZone;
+
+  /// No description provided for @weeklyHeartReportSessionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get weeklyHeartReportSessionsTitle;
+
+  /// No description provided for @weeklyHeartReportStrengthSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Strength workout'**
+  String get weeklyHeartReportStrengthSession;
+
+  /// No description provided for @weeklyHeartReportAvgPeak.
+  ///
+  /// In en, this message translates to:
+  /// **'avg {avg} · peak {peak}'**
+  String weeklyHeartReportAvgPeak(int avg, int peak);
+
   /// No description provided for @fullSessionChart.
   ///
   /// In en, this message translates to:
