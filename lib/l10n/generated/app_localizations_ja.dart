@@ -912,6 +912,9 @@ class SJa extends S {
   String get cardioSessionSaved => '有酸素セッションを保存しました';
 
   @override
+  String get hrMonitorConnected => 'Connected';
+
+  @override
   String get viewSavedSession => 'View';
 
   @override

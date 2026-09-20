@@ -247,6 +247,82 @@ void main() {
       });
     });
 
+    group('sharing the monitor with the heart-rate panel', () {
+      // The HR service is a singleton shared with the Heart Rate tab. A
+      // strap connected there must show as connected here too, otherwise
+      // cardio offers "Connect" for a device that is already streaming.
+      test('adopts a connection that already exists when built', () async {
+        await heartRateService.connectToDevice('strap');
+        heartRateService.emitConnectionState(HrConnectionState.connected);
+        container.dispose();
+        container = ProviderContainer(
+          overrides: [
+            cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
+            saveCardioSessionUseCaseProvider.overrideWithValue(useCase),
+            locationServiceProvider.overrideWithValue(locationService),
+            heartRateServiceProvider.overrideWithValue(heartRateService),
+            foregroundSessionServiceProvider
+                .overrideWithValue(foregroundService),
+            healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+            healthSyncSettingsProvider
+                .overrideWith(() => HealthSyncSettingsNotifier()),
+          ],
+        );
+        controller = container.read(cardioTrackingProvider.notifier);
+
+        expect(controller.state.hrConnected, isTrue);
+
+        heartRateService.emitHeartRate(128);
+        await Future<void>.delayed(Duration.zero);
+        expect(controller.state.currentHeartRate, 128);
+      });
+
+      test('picks up a connection made later from the panel', () async {
+        expect(controller.state.hrConnected, isFalse);
+
+        // What the real service does when the panel connects the strap.
+        await heartRateService.connectToDevice('strap');
+        heartRateService.emitConnectionState(HrConnectionState.connected);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(controller.state.hrConnected, isTrue);
+        heartRateService.emitHeartRate(131);
+        await Future<void>.delayed(Duration.zero);
+        expect(controller.state.currentHeartRate, 131);
+      });
+
+      test('the monitor stays connected after a session is saved', () async {
+        await controller.selectExercise('e1', 'Treadmill');
+        await controller.connectHeartRate('dev', 'Strap');
+        controller.start();
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+
+        await controller.save();
+
+        expect(controller.state.savedSuccessfully, isTrue);
+        expect(controller.state.hrConnected, isTrue);
+        heartRateService.emitHeartRate(120);
+        await Future<void>.delayed(Duration.zero);
+        expect(controller.state.currentHeartRate, 120);
+      });
+
+      test('a disconnect made elsewhere clears the connection here', () async {
+        await heartRateService.connectToDevice('strap');
+        heartRateService.emitConnectionState(HrConnectionState.connected);
+        await Future<void>.delayed(Duration.zero);
+        expect(controller.state.hrConnected, isTrue);
+
+        heartRateService.simulateDisconnection();
+        heartRateService.emitConnectionState(HrConnectionState.disconnected);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(controller.state.hrConnected, isFalse);
+        expect(controller.state.currentHeartRate, isNull);
+      });
+    });
+
     group('review after save', () {
       test('the saved workout id is exposed so the UI can link to it',
           () async {
@@ -790,13 +866,15 @@ void main() {
         controller.pause();
         await controller.save();
 
-        // Late-arriving samples after save must not pollute the next session.
+        // Late-arriving samples after save must not pollute the next
+        // session's readings. The live BPM still shows, since the strap is
+        // still connected and cardio keeps following it (#119).
         heartRateService.emitHeartRate(220);
         await Future<void>.delayed(const Duration(milliseconds: 50));
 
         expect(controller.state.heartRateReadings, isEmpty);
-        expect(controller.state.currentHeartRate, isNull);
-        expect(controller.state.hrConnected, isFalse);
+        expect(controller.state.currentHeartRate, 220);
+        expect(controller.state.hrConnected, isTrue);
         // The HR service is a singleton shared with the dedicated HR panel —
         // saving cardio must not disconnect the underlying BLE device.
         expect(heartRateService.isConnected, isTrue);

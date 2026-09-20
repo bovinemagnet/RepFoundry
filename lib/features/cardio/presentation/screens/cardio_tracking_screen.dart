@@ -331,7 +331,9 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  cardioState.hrDeviceName ?? '',
+                  // Null when the strap was connected from the Heart Rate
+                  // tab, whose name this screen does not know.
+                  cardioState.hrDeviceName ?? s.hrMonitorConnected,
                   style: KineticText.mono(
                     size: 10,
                     weight: FontWeight.w600,

@@ -931,6 +931,9 @@ class SEn extends S {
   String get cardioSessionSaved => 'Cardio session saved';
 
   @override
+  String get hrMonitorConnected => 'Connected';
+
+  @override
   String get viewSavedSession => 'View';
 
   @override

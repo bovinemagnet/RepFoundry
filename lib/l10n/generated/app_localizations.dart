@@ -1764,6 +1764,12 @@ abstract class S {
   /// **'Cardio session saved'**
   String get cardioSessionSaved;
 
+  /// No description provided for @hrMonitorConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get hrMonitorConnected;
+
   /// No description provided for @viewSavedSession.
   ///
   /// In en, this message translates to:

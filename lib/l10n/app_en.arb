@@ -460,6 +460,7 @@
   "gpsSubtitle": "Track distance via GPS for outdoor runs",
   "saveSession": "Save Session",
   "cardioSessionSaved": "Cardio session saved",
+  "hrMonitorConnected": "Connected",
   "viewSavedSession": "View",
   "cardioSectionTitle": "Cardio",
   "cardioRecordingCounts": "{points} GPS points · {samples} heart rate readings",
