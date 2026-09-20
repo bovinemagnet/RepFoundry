@@ -79,7 +79,9 @@ Tap *Save Session* to finish. The session is saved with its recorded start and e
 
 While a session is running, RepFoundry keeps every GPS position it receives if *GPS Distance Tracking* is switched on, and every heart-rate reading it receives from a connected monitor. Both are stored alongside the session when you save it, so you can come back to them later — GPS points and heart-rate readings are only recorded for the time the session was actually running and connected, so a session started without GPS or without a monitor connected simply has nothing to show for that part.
 
-Open the session afterwards from xref:guide/history.adoc[History] — find it in the workout list and tap in. It shows as a Cardio card with the exercise name, duration, distance, pace, and average heart rate, plus a line such as "742 GPS points · 118 heart rate readings" telling you how much was captured.
+Open the session afterwards from xref:guide/history.adoc[History] — find it in the workout list and tap in. It shows as a Cardio card with the exercise name, duration, distance, pace, and average heart rate, plus a line such as "742 GPS points · 118 heart rate readings" telling you how much was captured. When a route was recorded, the card draws it as a line sketch — a scaled outline of the GPS track with start and end markers, not a map — and when heart-rate readings were captured, it shows a heart-rate trace over the session with the peak called out.
+
+To browse every saved cardio session in one place, with six-week distance, pace and heart-rate trends, open xref:guide/history.adoc#the-cardio-tab[the Cardio tab] on the History screen.
 
 Tap *Export* on the card to share the recordings through your device's share sheet, as two files:
 

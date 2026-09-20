@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,6 +14,7 @@ import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dar
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
 import 'package:rep_foundry/features/history/presentation/screens/workout_detail_screen.dart';
+import 'package:rep_foundry/features/history/presentation/widgets/cardio_route_sketch.dart';
 import 'package:rep_foundry/features/stretching/data/in_memory_stretching_session_repository.dart';
 import 'package:rep_foundry/features/templates/data/workout_template_repository_impl.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
@@ -337,6 +339,29 @@ void main() {
       expect(gpx, contains('<trkpt lat="51.501" lon="-0.101">'));
       final csv = shared.firstWhere((f) => f.name.endsWith('.csv')).content;
       expect(csv, contains('2026-05-01T07:30:01.000Z,150'));
+    });
+
+    testWidgets('draws the route and heart-rate trace from the recordings',
+        (tester) async {
+      final seeded = await seedCardio();
+      await tester.pumpWidget(
+          buildCardioScreen(seeded.workouts, seeded.cardio, shared: []));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CardioRouteSketch), findsOneWidget);
+      expect(find.byType(LineChart), findsOneWidget);
+      expect(find.textContaining('max 150'), findsOneWidget);
+    });
+
+    testWidgets('shows neither route nor trace without recordings',
+        (tester) async {
+      final seeded = await seedCardio(withRecordings: false);
+      await tester.pumpWidget(
+          buildCardioScreen(seeded.workouts, seeded.cardio, shared: []));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CardioRouteSketch), findsNothing);
+      expect(find.byType(LineChart), findsNothing);
     });
 
     testWidgets('Export is unavailable when nothing was recorded',
