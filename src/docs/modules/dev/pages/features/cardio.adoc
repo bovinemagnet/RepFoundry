@@ -118,6 +118,62 @@ final session = CardioSession.create(
 await cardioRepo.saveSession(session);
 ----
 
+== Recordings and export
+
+Alongside the `CardioSession` summary, RepFoundry persists the raw GPS track and heart-rate stream captured while the session was running, so a session can be reviewed and exported after the fact.
+
+=== Domain models
+
+[source,dart]
+----
+class CardioTrackPoint {
+  final String id;                 // UUID v4
+  final String cardioSessionId;    // FK → CardioSession.id
+  final double latitude;
+  final double longitude;
+  final double? altitudeMeters;
+  final DateTime recordedAt;
+}
+
+class CardioHeartRateSample {
+  final String id;                 // UUID v4
+  final String cardioSessionId;    // FK → CardioSession.id
+  final int bpm;
+  final DateTime recordedAt;
+}
+----
+
+=== Storage
+
+Two Drift tables back these models, added in schema v14 (migration step guarded by `from < 14`): `cardio_track_points` and `cardio_heart_rate_samples`, each keyed by UUID and foreign-keyed to `cardio_sessions`. See xref:database.adoc[Database] for the full column reference.
+
+`CardioSessionRepository` exposes them independently of the session itself:
+
+[source,dart]
+----
+Future<void> saveTrackPoints(String cardioSessionId, List<CardioTrackPoint> points);
+Future<List<CardioTrackPoint>> getTrackPoints(String cardioSessionId);
+
+Future<void> saveHeartRateSamples(String cardioSessionId, List<CardioHeartRateSample> samples);
+Future<List<CardioHeartRateSample>> getHeartRateSamples(String cardioSessionId);
+----
+
+=== Capture
+
+`CardioTrackingController` accumulates a `CardioTrackPoint` for every position the GPS stream emits while the session is running. Heart-rate samples are not captured from the live BPM stream directly — at save time, the controller reads the session's start/end window from `hrSessionRecorderProvider`, which has been recording every BPM reading from the connected monitor independently (shared with the heart rate panel), and turns the readings in that window into `CardioHeartRateSample` records.
+
+Both lists are passed through `SaveCardioSessionInput.trackPoints` and `SaveCardioSessionInput.heartRateSamples` into `SaveCardioSessionUseCase.execute()`, which persists them via the repository methods above alongside the `CardioSession` itself. A session saved with GPS off, or with no heart rate monitor connected, simply has an empty list for the corresponding recording.
+
+=== Export
+
+`CardioSessionExporter` (`lib/features/cardio/application/cardio_session_exporter.dart`) is a pure function module with no Flutter or platform dependencies — it builds a GPX 1.1 document from a list of `CardioTrackPoint`s and a `timestamp,bpm` CSV (ISO-8601 UTC timestamps) from a list of `CardioHeartRateSample`s, which keeps both builders trivially unit-testable.
+
+`CardioSessionExport`, exposed via `cardioSessionExportProvider`, loads a session's recordings, runs them through `CardioSessionExporter`, and hands the resulting files to `shareFilesProvider` (`lib/core/share/share_files_provider.dart`) to invoke the platform share sheet. `shareFilesProvider` is overridable in widget tests so the share sheet itself is never exercised. File names are passed separately as `fileNameOverrides` rather than relying on the `XFile`'s own name, because `XFile.fromData` drops its name on web.
+
+Only recordings that are non-empty are exported; when both are empty, `_CardioCard` on the workout detail screen (`ROOT` History → workout detail) disables its *Export* action rather than sharing empty files. Sessions saved before schema v14 have no rows in either table, so they behave the same way — Export stays disabled.
+
+NOTE: These recordings are included in the full JSON export/import (`ExportDataUseCase` / `ImportDataUseCase`) but are **not** part of the sync snapshot — `SyncSnapshot` carries the `CardioSession` summary only. See xref:features/sync.adoc[Cloud sync internals].
+
 == Key Files
 
 [cols="1,2"]
@@ -156,6 +212,12 @@ await cardioRepo.saveSession(session);
 
 | `lib/features/cardio/presentation/widgets/hr_setup_guide_dialog.dart`
 | Device pairing instructions
+
+| `lib/features/cardio/application/cardio_session_exporter.dart`
+| Pure GPX/CSV builders for `CardioSessionExporter`
+
+| `lib/core/share/share_files_provider.dart`
+| `shareFilesProvider` — platform share sheet, overridable in widget tests
 |===
 
 == Related Features

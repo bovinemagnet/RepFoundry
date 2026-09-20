@@ -72,7 +72,23 @@ Once you pick an exercise, RepFoundry shows a summary of your most recent sessio
 
 == Saving a session
 
-Tap *Save Session* to finish. The session is saved with its recorded start and end time and becomes part of your workout history alongside your strength sessions.
+Tap *Save Session* to finish. The session is saved with its recorded start and end time and becomes part of your workout history alongside your strength sessions. A "Cardio session saved" message confirms this, with a *View* action that takes you straight to the session's entry in History.
+
+[[reviewing-and-exporting-a-session]]
+== Reviewing and exporting a session
+
+While a session is running, RepFoundry keeps every GPS position it receives if *GPS Distance Tracking* is switched on, and every heart-rate reading it receives from a connected monitor. Both are stored alongside the session when you save it, so you can come back to them later — GPS points and heart-rate readings are only recorded for the time the session was actually running and connected, so a session started without GPS or without a monitor connected simply has nothing to show for that part.
+
+Open the session afterwards from xref:guide/history.adoc[History] — find it in the workout list and tap in. It shows as a Cardio card with the exercise name, duration, distance, pace, and average heart rate, plus a line such as "742 GPS points · 118 heart rate readings" telling you how much was captured.
+
+Tap *Export* on the card to share the recordings through your device's share sheet, as two files:
+
+* A GPX 1.1 track — named something like `cardio-outdoor-run-2026-05-01-1730.gpx` — that opens directly in map and route tools such as Strava, Garmin Connect, and Google Earth.
+* A heart-rate CSV — named to match, with `-heart-rate` added, for example `cardio-outdoor-run-2026-05-01-1730-heart-rate.csv` — listing a timestamp and BPM for each reading.
+
+Only the files that actually have something recorded are shared. *Export* is disabled altogether when neither a GPS track nor heart-rate readings were captured — for example, a treadmill session run without GPS and without a heart rate monitor connected. Sessions saved before this feature was added have no recordings stored for them, so their Export is disabled too.
+
+These recordings are included in a full *Export as JSON* backup and restored with it — see xref:guide/settings.adoc[Settings]. They are not carried by xref:guide/sync.adoc[cross-device sync]; only the session's summary figures travel between your devices.
 
 [NOTE]
 ====

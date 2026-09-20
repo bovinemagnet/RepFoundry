@@ -44,7 +44,7 @@ Re-importing the same file a second time is safe — matching rows are recognise
 
 === Restoring a full JSON backup
 
-Importing a `.json` file (via *Import from File*) or pasted JSON text (via *Import from JSON*) is the only route that restores a full backup taken with *Export as JSON*. On top of workouts, sets and custom exercises, it also restores cardio sessions, stretching sessions, and body-metric entries — none of which CSV import carries. It also restores your client roster, with each client's health profile, along with your workout templates and programmes.
+Importing a `.json` file (via *Import from File*) or pasted JSON text (via *Import from JSON*) is the only route that restores a full backup taken with *Export as JSON*. On top of workouts, sets and custom exercises, it also restores cardio sessions — including any GPS track and heart-rate readings recorded for them — stretching sessions, and body-metric entries — none of which CSV import carries. It also restores your client roster, with each client's health profile, along with your workout templates and programmes.
 
 Each record is restored to the client it belonged to. A backup taken with an older version of the app, from before the roster was included, has no roster to place records into, so restoring it lands everything on your own "You" entry instead.
 
@@ -54,7 +54,7 @@ Re-importing the same backup, or retrying after a restore that was interrupted p
 
 Two export options live under *Settings → Data*.
 
-*Export as JSON* produces one file containing everything: exercises, workouts with their sets and per-set heart-rate summaries, cardio sessions, personal records, body-metric entries, stretching sessions, your client roster with each client's health profile, and your workout templates and programmes — timestamped at export time. This is the format *Import from JSON* and *Import from File* restore, so it's the option to use for a full backup or for moving your history to a new install.
+*Export as JSON* produces one file containing everything: exercises, workouts with their sets and per-set heart-rate summaries, cardio sessions with their GPS tracks and heart-rate readings, personal records, body-metric entries, stretching sessions, your client roster with each client's health profile, and your workout templates and programmes — timestamped at export time. This is the format *Import from JSON* and *Import from File* restore, so it's the option to use for a full backup or for moving your history to a new install.
 
 NOTE: If you track more than one client, the JSON export includes every client in your roster, not just your own history — and re-importing it restores clients and their history individually, rather than collapsing everything onto your own profile.
 

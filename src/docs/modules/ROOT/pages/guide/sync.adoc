@@ -31,7 +31,10 @@ data. If you xref:guide/clients.adoc[coach other clients], their workouts,
 cardio sessions, records, body metrics, and stretches stay on the device
 they were logged on rather than travelling with sync. Your workout templates
 and programmes aren't tied to a particular client, so they *are* carried
-across by sync as normal.
+across by sync as normal. A cardio session's GPS track and heart-rate
+readings — see xref:guide/cardio.adoc#reviewing-and-exporting-a-session[Reviewing and exporting a session] —
+are not carried by sync either way; only the session's summary figures
+(duration, distance, pace, average heart rate) travel with it.
 
 == Which cloud service your platform uses
 
