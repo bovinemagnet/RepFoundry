@@ -603,7 +603,7 @@ class _WeeklyDistanceChart extends StatelessWidget {
               ),
             ),
           ),
-          barTouchData: BarTouchData(enabled: false),
+          barTouchData: const BarTouchData(enabled: false),
           barGroups: [
             for (var i = 0; i < weekly.length; i++)
               BarChartGroupData(
