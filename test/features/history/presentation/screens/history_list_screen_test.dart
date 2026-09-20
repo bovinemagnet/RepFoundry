@@ -54,14 +54,15 @@ void main() {
 
   group('HistoryListScreen', () {
     testWidgets(
-        'renders the two-tab shell and the empty state with no workouts',
+        'renders the three-tab shell and the empty state with no workouts',
         (tester) async {
       await tester.pumpWidget(buildScreen(InMemoryWorkoutRepository()));
       await tester.pumpAndSettle();
 
-      // The History / Progress tab shell is always present.
+      // The History / Progress / Cardio tab shell is always present.
       expect(find.byType(TabBar), findsOneWidget);
-      expect(find.byType(Tab), findsNWidgets(2));
+      expect(find.byType(Tab), findsNWidgets(3));
+      expect(find.widgetWithText(Tab, 'Cardio'), findsOneWidget);
 
       // With no completed workouts, the History tab shows the empty state.
       expect(find.text('No workouts yet'), findsOneWidget);

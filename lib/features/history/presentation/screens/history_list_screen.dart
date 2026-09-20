@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../providers/volume_sparkline_provider.dart';
 import '../widgets/history_desktop_view.dart';
+import '../widgets/cardio_history_view.dart';
 import '../widgets/progress_view.dart';
 import '../../../../core/responsive/breakpoints.dart';
 import '../../../workout/domain/models/workout.dart';
@@ -72,7 +73,7 @@ class _HistoryListScreenState extends State<HistoryListScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -108,6 +109,7 @@ class _HistoryListScreenState extends State<HistoryListScreen>
           tabs: [
             Tab(text: s.historyTab),
             Tab(text: s.progressTab),
+            Tab(text: s.cardioTab),
           ],
         ),
       ),
@@ -116,6 +118,7 @@ class _HistoryListScreenState extends State<HistoryListScreen>
         children: [
           _HistoryTab(),
           const ProgressView(),
+          const CardioHistoryView(),
         ],
       ),
     );

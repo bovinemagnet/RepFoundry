@@ -2178,6 +2178,102 @@ abstract class S {
   /// **'Progress'**
   String get progressTab;
 
+  /// No description provided for @cardioTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Cardio'**
+  String get cardioTab;
+
+  /// No description provided for @cardioHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cardio History'**
+  String get cardioHistoryTitle;
+
+  /// No description provided for @cardioProgressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cardio Progress'**
+  String get cardioProgressTitle;
+
+  /// No description provided for @allSports.
+  ///
+  /// In en, this message translates to:
+  /// **'All sports'**
+  String get allSports;
+
+  /// No description provided for @noCardioSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No cardio sessions yet'**
+  String get noCardioSessions;
+
+  /// No description provided for @noCardioSessionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Save a session from the Cardio tab and it will appear here.'**
+  String get noCardioSessionsHint;
+
+  /// No description provided for @cardioSessionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get cardioSessionsLabel;
+
+  /// No description provided for @cardioTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get cardioTimeLabel;
+
+  /// No description provided for @cardioDistanceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get cardioDistanceLabel;
+
+  /// No description provided for @cardioBestPaceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Best pace'**
+  String get cardioBestPaceLabel;
+
+  /// No description provided for @cardioAvgHrLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg HR'**
+  String get cardioAvgHrLabel;
+
+  /// No description provided for @cardioWeeklyDistanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly distance'**
+  String get cardioWeeklyDistanceTitle;
+
+  /// No description provided for @cardioAveragePaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Average pace'**
+  String get cardioAveragePaceTitle;
+
+  /// No description provided for @cardioPaceLowerIsFaster.
+  ///
+  /// In en, this message translates to:
+  /// **'lower is faster'**
+  String get cardioPaceLowerIsFaster;
+
+  /// No description provided for @cardioLastWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'{weeks} weeks'**
+  String cardioLastWeeks(int weeks);
+
+  /// No description provided for @cardioNoPaceData.
+  ///
+  /// In en, this message translates to:
+  /// **'Log a session with a distance to see your pace trend.'**
+  String get cardioNoPaceData;
+
   /// No description provided for @volumeTrendTitle.
   ///
   /// In en, this message translates to:

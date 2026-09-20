@@ -1177,6 +1177,58 @@ class SEn extends S {
   String get progressTab => 'Progress';
 
   @override
+  String get cardioTab => 'Cardio';
+
+  @override
+  String get cardioHistoryTitle => 'Cardio History';
+
+  @override
+  String get cardioProgressTitle => 'Cardio Progress';
+
+  @override
+  String get allSports => 'All sports';
+
+  @override
+  String get noCardioSessions => 'No cardio sessions yet';
+
+  @override
+  String get noCardioSessionsHint =>
+      'Save a session from the Cardio tab and it will appear here.';
+
+  @override
+  String get cardioSessionsLabel => 'Sessions';
+
+  @override
+  String get cardioTimeLabel => 'Time';
+
+  @override
+  String get cardioDistanceLabel => 'Distance';
+
+  @override
+  String get cardioBestPaceLabel => 'Best pace';
+
+  @override
+  String get cardioAvgHrLabel => 'Avg HR';
+
+  @override
+  String get cardioWeeklyDistanceTitle => 'Weekly distance';
+
+  @override
+  String get cardioAveragePaceTitle => 'Average pace';
+
+  @override
+  String get cardioPaceLowerIsFaster => 'lower is faster';
+
+  @override
+  String cardioLastWeeks(int weeks) {
+    return '$weeks weeks';
+  }
+
+  @override
+  String get cardioNoPaceData =>
+      'Log a session with a distance to see your pace trend.';
+
+  @override
   String get volumeTrendTitle => 'Volume Trend';
 
   @override
