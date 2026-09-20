@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
+import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/widgets/kinetic.dart';
 import '../../../clients/presentation/widgets/client_switcher.dart';
 import '../../../exercises/domain/models/exercise.dart';
+import '../../domain/models/cardio_session.dart';
 import '../controllers/cardio_tracking_controller.dart';
 import '../controllers/cardio_tracking_state.dart';
 import '../widgets/hr_device_picker_dialog.dart';
@@ -853,7 +855,9 @@ class _GpsCard extends StatelessWidget {
 class _LastSessionCard extends StatelessWidget {
   const _LastSessionCard({required this.session});
 
-  final dynamic session;
+  // Typed, not dynamic: the Duration formatting below is an extension, which
+  // cannot resolve on a dynamic receiver and threw at runtime.
+  final CardioSession session;
 
   @override
   Widget build(BuildContext context) {
