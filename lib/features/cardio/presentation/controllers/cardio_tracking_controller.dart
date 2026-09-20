@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../../../../core/foreground/foreground_keep_alive.dart';
 import '../../../../core/heart_rate/hr_session_recorder.dart';
 import '../../../../core/providers.dart';
 import '../../../clients/domain/models/client.dart';
@@ -11,7 +12,6 @@ import '../../../clients/presentation/providers/active_client_provider.dart';
 import '../../../health_sync/data/health_sync_service.dart';
 import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../../application/save_cardio_session_use_case.dart';
-import '../../data/foreground_session_service.dart';
 import '../../data/heart_rate_service.dart';
 import '../../data/location_service.dart';
 import '../../domain/models/cardio_heart_rate_sample.dart';
@@ -41,8 +41,6 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
   SaveCardioSessionUseCase get _saveUseCase =>
       ref.read(saveCardioSessionUseCaseProvider);
   LocationService get _locationService => ref.read(locationServiceProvider);
-  ForegroundSessionService get _foregroundService =>
-      ref.read(foregroundSessionServiceProvider);
   HeartRateService get _heartRateService => ref.read(heartRateServiceProvider);
   HealthSyncService get _healthSyncService =>
       ref.read(healthSyncServiceProvider);
@@ -206,11 +204,11 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
   /// Best-effort reconciliation of the Android foreground service that
   /// keeps GPS/HR streams alive while the phone is locked.
   void _syncForegroundService() {
-    unawaited(_foregroundService.update(
-      sessionRunning: state.isRunning,
-      gpsEnabled: state.gpsEnabled,
-      hrConnected: state.hrConnected,
-    ));
+    unawaited(ref.read(foregroundKeepAliveProvider).setCardio(
+          sessionRunning: state.isRunning,
+          gpsEnabled: state.gpsEnabled,
+          hrConnected: state.hrConnected,
+        ));
   }
 
   int get _wallClockElapsedSeconds {

@@ -5,18 +5,22 @@ import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/controllers/heart_rate_panel_controller.dart';
 
+import '../../../cardio/data/fake_foreground_session_service.dart';
 import '../../../cardio/data/fake_heart_rate_service.dart';
 
 void main() {
   late FakeHeartRateService heartRateService;
+  late FakeForegroundSessionService foregroundService;
   late ProviderContainer container;
   late HeartRatePanelController controller;
 
   setUp(() {
     heartRateService = FakeHeartRateService();
+    foregroundService = FakeForegroundSessionService();
     container = ProviderContainer(
       overrides: [
         heartRateServiceProvider.overrideWithValue(heartRateService),
+        foregroundSessionServiceProvider.overrideWithValue(foregroundService),
       ],
     );
     controller = container.read(heartRatePanelProvider.notifier);
@@ -28,6 +32,48 @@ void main() {
   });
 
   group('HeartRatePanelController', () {
+    // Without a foreground service Android suspends a backgrounded app's
+    // Bluetooth work, so the trace goes blank while the phone is away
+    // (#117). Cardio already holds one during a session; the panel must
+    // too while it is monitoring a connected strap.
+    test('monitoring a connected strap holds the foreground service', () async {
+      await controller.connectAndStart('dev1', 'Polar H9');
+
+      expect(foregroundService.last?.sessionRunning, isTrue);
+      expect(foregroundService.last?.hrConnected, isTrue);
+    });
+
+    test('stopping monitoring releases the foreground service', () async {
+      await controller.connectAndStart('dev1', 'Polar H9');
+
+      controller.stopMonitoring();
+
+      expect(foregroundService.last?.sessionRunning, isFalse);
+    });
+
+    test('a strap that drops and reconnects re-holds the foreground service',
+        () async {
+      await controller.connectAndStart('dev1', 'Polar H9');
+      heartRateService.emitConnectionState(HrConnectionState.disconnected);
+      await Future<void>.delayed(Duration.zero);
+      expect(foregroundService.last?.sessionRunning, isFalse);
+
+      heartRateService.emitConnectionState(HrConnectionState.connected);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(foregroundService.last?.sessionRunning, isTrue);
+      expect(foregroundService.last?.hrConnected, isTrue);
+    });
+
+    test('disconnecting releases the foreground service', () async {
+      await controller.connectAndStart('dev1', 'Polar H9');
+
+      await controller.disconnectHeartRate();
+
+      expect(foregroundService.last?.sessionRunning, isFalse);
+      expect(foregroundService.last?.hrConnected, isFalse);
+    });
+
     test('initial state is not monitoring and not connected', () {
       expect(controller.state.isMonitoring, isFalse);
       expect(controller.state.hrConnected, isFalse);
