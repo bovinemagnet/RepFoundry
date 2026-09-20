@@ -106,7 +106,8 @@ ShellRoute with bottom nav (Workout, History, Cardio, Heart Rate, Settings). Rou
 - **PR detection**: runs on each logged set in `LogSetUseCase` via the shared `detectPersonalRecords()` helper. `ReviseSetUseCase` handles set edits/deletions: it withdraws the set's records (`PersonalRecordRepository.deleteRecordsForSet()`) and re-evaluates an edited set against the remaining bests.
 - **Health-store writes are Me-only**: strength, cardio and body-metric saves write to Apple Health / Health Connect only when the saved entity's `clientId == kSelfClientId`.
 - **Session ownership**: a workout or cardio session belongs to the client active when it started (`CardioTrackingState.sessionClientId`); `ActiveClientIndicator(sessionClientId:)` shows that owner and is not tappable mid-session.
-- **JSON backup**: `kBackupFormatVersion` 2 covers clients + health profiles, templates, programmes, per-set HR fields; `ImportDataUseCase.importFromJson` checks existence before every insert (idempotent retries) and lets genuine storage errors propagate.
+- **Cardio recordings**: `CardioTrackingController` keeps every GPS fix while running and, on save, the shared recorder's readings for the session; `SaveCardioSessionUseCase` stores them via `CardioSessionRepository.saveTrackPoints/saveHeartRateSamples` (tables `cardio_track_points`, `cardio_heart_rate_samples`, schema v14). The workout detail screen shows a cardio card per session; `CardioSessionExport` shares a GPX track and a heart-rate CSV through `shareFilesProvider` (overridable in widget tests). Not part of the sync snapshot.
+- **JSON backup**: `kBackupFormatVersion` 2 covers clients + health profiles, templates, programmes, per-set HR fields, cardio GPS/HR recordings; `ImportDataUseCase.importFromJson` checks existence before every insert (idempotent retries) and lets genuine storage errors propagate.
 - **Input validation**: weight >= 0, reps > 0, RPE 1–10 (optional)
 
 ## Testing
