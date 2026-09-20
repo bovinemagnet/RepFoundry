@@ -247,6 +247,77 @@ void main() {
       });
     });
 
+    group('recordings', () {
+      test('the saved session carries the GPS track that was received',
+          () async {
+        await controller.selectExercise('e1', 'Run');
+        await controller.toggleGps();
+        controller.start();
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        locationService.emitPosition(latitude: 51.5074, longitude: -0.1278);
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        locationService.emitPosition(latitude: 51.5080, longitude: -0.1290);
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+
+        await controller.save();
+        expect(controller.state.error, isNull);
+
+        final session = (await cardioRepo.getAllSessions(kSelfClientId)).single;
+        final points = await cardioRepo.getTrackPoints(session.id);
+        expect(points.map((p) => p.latitude), [51.5074, 51.5080]);
+        expect(points.map((p) => p.longitude), [-0.1278, -0.1290]);
+        expect(points.first.timestamp.isBefore(points.last.timestamp), isTrue);
+      });
+
+      test('the saved session carries the heart-rate readings received',
+          () async {
+        await controller.selectExercise('e1', 'Run');
+        await controller.connectHeartRate('dev', 'Strap');
+        controller.start();
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        heartRateService.emitHeartRate(131);
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        heartRateService.emitHeartRate(142);
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+
+        await controller.save();
+        expect(controller.state.error, isNull);
+
+        final session = (await cardioRepo.getAllSessions(kSelfClientId)).single;
+        final samples = await cardioRepo.getHeartRateSamples(session.id);
+        expect(samples.map((s) => s.bpm), [131, 142]);
+      });
+
+      test('recordings from a previous session do not leak into the next',
+          () async {
+        await controller.selectExercise('e1', 'Run');
+        await controller.toggleGps();
+        controller.start();
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        locationService.emitPosition(latitude: 51.5, longitude: -0.1);
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+        await controller.save();
+
+        await controller.selectExercise('e1', 'Run');
+        controller.start();
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+        await controller.save();
+
+        final sessions = await cardioRepo.getAllSessions(kSelfClientId);
+        expect(sessions, hasLength(2));
+        final second = sessions.last;
+        expect(await cardioRepo.getTrackPoints(second.id), isEmpty);
+      });
+    });
+
     group('session ownership', () {
       test('a session belongs to the client active when it started', () async {
         final alice = Client.create(name: 'Alice', colour: 0);

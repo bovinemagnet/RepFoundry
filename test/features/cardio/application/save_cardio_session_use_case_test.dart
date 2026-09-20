@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/cardio/application/save_cardio_session_use_case.dart';
 import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_heart_rate_sample.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_track_point.dart';
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 
@@ -123,6 +125,49 @@ void main() {
           ),
           throwsA(isA<SaveCardioSessionException>()),
         );
+      });
+    });
+
+    group('recordings', () {
+      final t0 = DateTime.utc(2026, 5, 1, 7);
+
+      test('stores the GPS track and heart-rate readings with the session',
+          () async {
+        final result = await useCase.execute(SaveCardioSessionInput(
+          exerciseId: 'e1',
+          exerciseName: 'Run',
+          durationSeconds: 600,
+          trackPoints: [
+            CardioTrackPoint(timestamp: t0, latitude: 51.5, longitude: -0.1),
+            CardioTrackPoint(
+                timestamp: t0.add(const Duration(seconds: 5)),
+                latitude: 51.501,
+                longitude: -0.101),
+          ],
+          heartRateSamples: [
+            CardioHeartRateSample(timestamp: t0, bpm: 130),
+          ],
+        ));
+
+        expect(
+            await cardioRepo.getTrackPoints(result.session.id), hasLength(2));
+        expect(
+            (await cardioRepo.getHeartRateSamples(result.session.id))
+                .single
+                .bpm,
+            130);
+      });
+
+      test('a session without recordings stores none', () async {
+        final result = await useCase.execute(const SaveCardioSessionInput(
+          exerciseId: 'e1',
+          exerciseName: 'Bike',
+          durationSeconds: 600,
+        ));
+
+        expect(await cardioRepo.getTrackPoints(result.session.id), isEmpty);
+        expect(
+            await cardioRepo.getHeartRateSamples(result.session.id), isEmpty);
       });
     });
 

@@ -1,7 +1,9 @@
 import 'package:uuid/uuid.dart';
 
 import '../../clients/domain/models/client.dart';
+import '../domain/models/cardio_heart_rate_sample.dart';
 import '../domain/models/cardio_session.dart';
+import '../domain/models/cardio_track_point.dart';
 import '../domain/repositories/cardio_session_repository.dart';
 import '../../workout/domain/models/workout.dart';
 import '../../workout/domain/repositories/workout_repository.dart';
@@ -15,6 +17,10 @@ class SaveCardioSessionInput {
   final int? avgHeartRate;
   final String clientId;
 
+  /// Recordings captured during the session, kept for review and export.
+  final List<CardioTrackPoint> trackPoints;
+  final List<CardioHeartRateSample> heartRateSamples;
+
   const SaveCardioSessionInput({
     required this.exerciseId,
     required this.exerciseName,
@@ -23,6 +29,8 @@ class SaveCardioSessionInput {
     this.incline,
     this.avgHeartRate,
     this.clientId = kSelfClientId,
+    this.trackPoints = const [],
+    this.heartRateSamples = const [],
   });
 }
 
@@ -81,6 +89,15 @@ class SaveCardioSessionUseCase {
 
     try {
       await _cardioRepository.createSession(session);
+      if (input.trackPoints.isNotEmpty) {
+        await _cardioRepository.saveTrackPoints(session.id, input.trackPoints);
+      }
+      if (input.heartRateSamples.isNotEmpty) {
+        await _cardioRepository.saveHeartRateSamples(
+          session.id,
+          input.heartRateSamples,
+        );
+      }
     } catch (_) {
       // The pair is written through two repositories, so compensate rather
       // than leave an empty completed workout in history.
