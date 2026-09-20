@@ -75,9 +75,11 @@ This is the same BLE layer shared with the xref:features/heart-rate.adoc[Heart R
 === Connection Flow
 
 . Tap the *HR Monitor* button to open the device picker (`HrDevicePickerDialog`).
-. `FlutterBlueHeartRateService` scans for devices advertising service `0x180D`.
+. `FlutterBlueHeartRateService.scanDevices` streams devices advertising service `0x180D` as they're discovered, so the picker renders the growing list mid-scan rather than waiting for it to finish — see xref:features/heart-rate.adoc#device-scanning[Device Scanning] for the stream API.
 . On selection, the service connects and subscribes to HR Measurement characteristic `0x2A37`.
 . Live BPM readings stream to `CardioTrackingController.heartRateStream`.
+
+A connection doesn't have to start from this screen. `CardioTrackingController.build()` checks `HeartRateService.isConnected` and, if a monitor is already connected — typically from the heart rate panel — subscribes to its readings synchronously and returns `CardioTrackingState(hrConnected: true)` immediately. `_listenToConnectionState()` keeps watching afterwards: if the service later transitions to `connected` from another screen it subscribes then too, and on `disconnected` it cancels the readings subscription and clears the connection state. `connectHeartRate` is now just `connectToDevice` followed by that same subscribe step. After a successful save, the controller re-adopts the existing connection rather than resetting to disconnected, so the strap stays connected for the next session or for the heart rate panel.
 
 === Connection State
 
@@ -88,6 +90,10 @@ This is the same BLE layer shared with the xref:features/heart-rate.adoc[Heart R
 === Setup Help
 
 `HrSetupGuideDialog` renders the device-specific pairing steps for Apple Watch, Samsung Galaxy Watch, and chest straps (sourced from the `appleWatchStep*` / `samsungWatchStep*` / `chestStrapStep*` ARB entries), opened via `showHrSetupGuide()`.
+
+=== Foreground Keep-Alive
+
+`CardioTrackingController._syncForegroundService()` does not call `ForegroundSessionService` directly — it goes through `ForegroundKeepAlive`, which reconciles cardio's demand for the foreground notification with the heart rate panel's, so the two features share one notification instead of fighting over it. See xref:features/heart-rate.adoc#background-keep-alive[Background Keep-Alive].
 
 == Save Flow
 
@@ -241,6 +247,9 @@ final cardioProgressProvider =
 
 | `lib/features/cardio/data/flutter_blue_heart_rate_service.dart`
 | BLE HR implementation
+
+| `lib/core/foreground/foreground_keep_alive.dart`
+| `ForegroundKeepAlive` — reconciles cardio and heart-rate-panel demand into one foreground notification
 
 | `lib/features/cardio/presentation/screens/cardio_tracking_screen.dart`
 | Live tracking dashboard

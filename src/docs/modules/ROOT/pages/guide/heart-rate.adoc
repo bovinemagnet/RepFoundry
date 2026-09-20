@@ -15,9 +15,11 @@ Open the *Heart Rate* tab from the bottom navigation bar at any time — it work
 
 == Connecting a monitor
 
-Tap *Connect HR Monitor* to scan for nearby devices. If Bluetooth is off, RepFoundry offers to turn it on for you. RepFoundry asks for Bluetooth permission (and, on Android, location permission) the first time it needs to scan — see xref:permissions.adoc[] for what's requested and why, and what stops working if you decline.
+Tap *Connect HR Monitor* to scan for nearby devices. Matching devices appear in the list the moment they're found — you don't need to wait for the scan to finish before tapping one — and a "Scanning for devices…" indicator stays visible above the list until the ten-second scan ends. If Bluetooth is off, RepFoundry offers to turn it on for you. RepFoundry asks for Bluetooth permission (and, on Android, location permission) the first time it needs to scan — see xref:permissions.adoc[] for what's requested and why, and what stops working if you decline.
 
 Once you pick a device from the scan results, RepFoundry connects and starts monitoring straight away. While connected, a *Disconnect* control is available from the heart rate screen's top bar, along with a setup-guide shortcut.
+
+This monitor is shared with the Cardio tab: connect it here and it shows as connected — by name, where known — on a cardio session too, and saving a cardio session doesn't drop the connection. Connecting from the Cardio tab works the same way in reverse, showing up here without you having to reconnect.
 
 === Supported devices
 
@@ -34,6 +36,10 @@ If a monitor disconnects unexpectedly — out of range, interference — RepFoun
 Tapping *Disconnect* yourself ends the connection deliberately; RepFoundry will not try to reconnect after that.
 
 If coach mode is speaking for you (see xref:guide/trainer.adoc[]) and your heart rate was above your maximum when the monitor goes quiet, disconnects, or stops producing usable readings, the coach will not announce that you're back below it — that would be a false all-clear with no real reading behind it. It stays silent on that front until genuine readings resume, and your current training zone is re-announced once they do, rather than assumed to be unchanged from before the gap.
+
+=== Monitoring in the background
+
+On Android, while the heart rate panel is actively monitoring a connected strap, RepFoundry shows an ongoing notification and keeps running in the background, so your readings and the trend chart keep going even if your phone is locked or you switch to another app.
 
 == The first time you use it
 
@@ -127,6 +133,12 @@ While monitoring, RepFoundry shows:
 * Average, minimum, and maximum BPM for the session
 * Time spent in each zone, plus total time spent at a moderate effort or higher
 * Your heart rate drop in the minute after you stop monitoring — a rough indicator of recovery
+
+== Weekly heart report
+
+Once the panel is showing readings from a connected monitor, a *Full Weekly Heart Report* row appears below the charts. Tap it for a rundown of the last seven days: how many sessions carried heart-rate data, your average and peak BPM across the week, a bar chart of the highest BPM reached each day, time spent in each training zone, and a list of your sessions — newest first, each showing its average and peak BPM, and opening straight into History if you tap it. Cardio sessions are named after the exercise; strength sessions are labelled as strength sessions.
+
+If nothing in the last week carried heart-rate data, the report explains that sessions logged with a connected monitor will start appearing here.
 
 [NOTE]
 ====

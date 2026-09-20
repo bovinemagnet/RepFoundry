@@ -18,6 +18,11 @@ Zone calculation, health profile modelling, and time-in-zone analysis are not im
 
 Heart rate data is streamed from any device advertising the standard BLE Heart Rate Service (`0x180D`) via `FlutterBlueHeartRateService` (`lib/features/cardio/data/flutter_blue_heart_rate_service.dart`).
 
+[[device-scanning]]
+=== Device Scanning
+
+`HeartRateService.scanDevices({Duration timeout})` returns a `Stream<List<DiscoveredHrDevice>>`. `FlutterBlueHeartRateService.scanDevices` is an `async*` method that listens to `FlutterBluePlus.onScanResults` and yields the growing device list as each new device is found, rather than waiting for the whole scan to finish; `scanForDevices` now consumes this stream. `HrDevicePickerDialog._startScan` does `await for` over it and calls `setState` on every emission, so its `_DeviceList` widget can render the list mid-scan as well as once scanning completes. The test double `FakeHeartRateService` (`test/features/cardio/data/fake_heart_rate_service.dart`) exposes `streamScanResults`, `emitScanResult(device)`, and `completeScan()` to drive incremental scans in widget tests.
+
 === HR Measurement Parsing
 
 The service subscribes to characteristic `0x2A37` and parses both 8-bit and 16-bit heart rate value formats per the BLE specification (`_parseHeartRate`).
@@ -150,6 +155,20 @@ Percentages are of the resolved `maxHr` for max-HR-based methods, of heart rate 
 
 `MaxHrAlertNotifier` (`lib/features/heart_rate/presentation/providers/max_hr_alert_provider.dart`) holds `vibrationEnabled` / `soundEnabled` / `cooldownSeconds` (default 15 s), persisted via SharedPreferences (`hr_max_alert_*` keys). `HeartRatePanelScreen._checkMaxHrAlert()` fires `HapticFeedback.heavyImpact()` and/or plays `sounds/timer_complete.wav` when `panelState.currentHeartRate >= zoneConfig.maxHr`, throttled by the cooldown.
 
+[[background-keep-alive]]
+== Background Keep-Alive
+
+On Android, `ForegroundKeepAlive` (`lib/core/foreground/foreground_keep_alive.dart`, provider `foregroundKeepAliveProvider`) reconciles the demands of the heart rate panel and cardio tracking into a single `ForegroundSessionService.update()` call, so the two features never fight over separate foreground notifications: `setCardio({sessionRunning, gpsEnabled, hrConnected})` and `setHeartRatePanel({monitoring, hrConnected})`. The service runs whenever either cardio wants it running or the heart rate panel is monitoring with a connected strap; only cardio ever requests GPS. `HeartRatePanelController._syncKeepAlive()` calls into it after start/stop/disconnect and on connection-state changes, as does `CardioTrackingController._syncForegroundService()` (see xref:features/cardio.adoc[Cardio Tracking]). `FlutterForegroundSessionService` chooses the notification wording from `gpsEnabled`: a cardio session with GPS on keeps the existing "RepFoundry is tracking your workout" text, while the heart-rate-only case reads "RepFoundry is monitoring your heart rate" / "Heart rate monitor connected". The test double is `FakeForegroundSessionService`; see `test/core/foreground/foreground_keep_alive_test.dart`.
+
+[[weekly-heart-report]]
+== Weekly Heart Report
+
+`lib/features/heart_rate/application/weekly_heart_report.dart` defines `HeartSessionKind` (`strength`, `cardio`), `HeartSessionSummary` (`workoutId`, `kind`, `title`, `startedAt`, `avgBpm`, `peakBpm`), and `WeeklyHeartReport` (`sessions`, `avgBpm`, `peakBpm`, `dailyPeakBpm` — 7 entries, oldest first — `secondsInZone` — `Map<int, int>`), with an `isEmpty` getter.
+
+`BuildWeeklyHeartReportUseCase.execute({clientId, now, ZoneConfiguration? zones})` (`build_weekly_heart_report_use_case.dart`) reads `WorkoutRepository.getWorkoutHistory` for the last seven days and, per workout, takes `CardioSessionRepository.getHeartRateSamples` — converting zone seconds via `currentZoneFromConfig(bpm, zones)?.zoneNumber`, with the title resolved from `ExerciseRepository` — or falls back to the logged sets' `avgHeartRate`/`peakHeartRate` for a strength session. `buildWeeklyHeartReportUseCaseProvider` lives in `lib/core/providers.dart`; `weeklyHeartReportProvider` (`presentation/providers/weekly_heart_report_provider.dart`) is a `FutureProvider.autoDispose` watching `activeClientProvider` and `zoneConfigurationProvider`.
+
+`WeeklyHeartReportScreen` (`presentation/screens/weekly_heart_report_screen.dart`) is routed as a nested `GoRoute(path: 'weekly-report')` under `/heart-rate` in `lib/app/router.dart`, giving the URL `/heart-rate/weekly-report`; `_WeeklyReportRow` pushes it via `context.push('/heart-rate/weekly-report')`. ARB strings are prefixed `weeklyHeartReport*`. Tests: `test/features/heart_rate/application/build_weekly_heart_report_use_case_test.dart` and `test/features/heart_rate/presentation/screens/weekly_heart_report_screen_test.dart`.
+
 == Screen Layout
 
 Top to bottom in `HeartRatePanelScreen.build()`:
@@ -163,7 +182,7 @@ Top to bottom in `HeartRatePanelScreen.build()`:
 . `_ZonesSection` — zone rows with reliability indicator and time-in-zone summary
 . `_TrendChartSection` — windowed and full-session charts
 . `SymptomReportButton` (while monitoring)
-. `_WeeklyReportRow` — links to a weekly heart report; navigation is not yet implemented
+. `_WeeklyReportRow` — links to the weekly heart report; pushes `/heart-rate/weekly-report`
 . `HeartRateZoneLegend`, or a prompt card to set up a profile when `zoneConfig` is `null`
 
 == Settings Integration
@@ -214,6 +233,21 @@ HR-related analytics events (`HrAnalyticsEvent`, `lib/features/heart_rate/domain
 
 | `lib/features/heart_rate/domain/warning_messages.dart`
 | Static warning and disclaimer string constants (non-l10n fallback)
+
+| `lib/features/heart_rate/application/weekly_heart_report.dart`
+| `HeartSessionKind`, `HeartSessionSummary`, `WeeklyHeartReport` models
+
+| `lib/features/heart_rate/application/build_weekly_heart_report_use_case.dart`
+| `BuildWeeklyHeartReportUseCase` — assembles the last seven days' heart-rate data
+
+| `lib/features/heart_rate/presentation/providers/weekly_heart_report_provider.dart`
+| `weeklyHeartReportProvider` — `FutureProvider.autoDispose` over the use case
+
+| `lib/features/heart_rate/presentation/screens/weekly_heart_report_screen.dart`
+| Weekly heart report screen, routed at `/heart-rate/weekly-report`
+
+| `lib/core/foreground/foreground_keep_alive.dart`
+| `ForegroundKeepAlive` — reconciles cardio and heart-rate-panel demand into one foreground notification
 
 | `lib/features/heart_rate/presentation/providers/health_profile_provider.dart`
 | `HealthProfileNotifier` — per-client, repository-backed state
