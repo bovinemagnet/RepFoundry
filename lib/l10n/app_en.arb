@@ -469,6 +469,11 @@
       "samples": { "type": "int" }
     }
   },
+  "cardioHeartRateTitle": "Heart rate",
+  "cardioHeartRateMax": "max {bpm} bpm",
+  "@cardioHeartRateMax": {
+    "placeholders": { "bpm": { "type": "int" } }
+  },
   "exportCardioSession": "Export",
   "exportCardioSessionHint": "Share the GPS track as GPX and the heart rate readings as CSV",
   "heartRateMonitorCard": "Heart Rate Monitor",

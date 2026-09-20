@@ -6,7 +6,12 @@ import '../../../workout/domain/models/workout.dart';
 import '../../../workout/domain/models/workout_set.dart';
 import '../../../workout/presentation/controllers/active_workout_controller.dart';
 import '../../../templates/application/convert_workout_to_template_use_case.dart';
+import 'package:fl_chart/fl_chart.dart';
+import '../../../../core/widgets/kinetic.dart';
+import '../../../cardio/domain/models/cardio_heart_rate_sample.dart';
 import '../../../cardio/domain/models/cardio_session.dart';
+import '../../../cardio/domain/models/cardio_track_point.dart';
+import '../widgets/cardio_route_sketch.dart';
 import '../../../cardio/presentation/providers/cardio_session_export_provider.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../stretching/domain/models/stretching_session.dart';
@@ -23,15 +28,17 @@ import '../../../../core/extensions/datetime_extensions.dart';
 /// something to export.
 class _CardioSessionSummary {
   final CardioSession session;
-  final int trackPointCount;
-  final int heartRateSampleCount;
+  final List<CardioTrackPoint> trackPoints;
+  final List<CardioHeartRateSample> heartRateSamples;
 
   const _CardioSessionSummary({
     required this.session,
-    required this.trackPointCount,
-    required this.heartRateSampleCount,
+    required this.trackPoints,
+    required this.heartRateSamples,
   });
 
+  int get trackPointCount => trackPoints.length;
+  int get heartRateSampleCount => heartRateSamples.length;
   bool get hasRecordings => trackPointCount > 0 || heartRateSampleCount > 0;
 }
 
@@ -95,9 +102,8 @@ final _workoutDetailProvider =
       for (final session in await cardioRepo.getSessionsForWorkout(workoutId))
         _CardioSessionSummary(
           session: session,
-          trackPointCount: (await cardioRepo.getTrackPoints(session.id)).length,
-          heartRateSampleCount:
-              (await cardioRepo.getHeartRateSamples(session.id)).length,
+          trackPoints: await cardioRepo.getTrackPoints(session.id),
+          heartRateSamples: await cardioRepo.getHeartRateSamples(session.id),
         ),
     ];
 
@@ -395,6 +401,14 @@ class _CardioCard extends ConsumerWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
+            if (summary.trackPoints.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              CardioRouteSketch(points: summary.trackPoints),
+            ],
+            if (summary.heartRateSamples.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _HeartRateTrace(samples: summary.heartRateSamples),
+            ],
           ],
         ),
       ),
@@ -405,6 +419,100 @@ class _CardioCard extends ConsumerWidget {
     final mins = minutesPerKm.floor();
     final secs = ((minutesPerKm - mins) * 60).round();
     return '$mins:${secs.toString().padLeft(2, '0')}';
+  }
+}
+
+/// The session's heart-rate readings over time, with its peak called out.
+class _HeartRateTrace extends StatelessWidget {
+  const _HeartRateTrace({required this.samples});
+
+  final List<CardioHeartRateSample> samples;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context)!;
+    final cs = Theme.of(context).colorScheme;
+    final start = samples.first.timestamp;
+    final bpms = samples.map((x) => x.bpm).toList();
+    final maxBpm = bpms.reduce((a, b) => a > b ? a : b);
+    final minBpm = bpms.reduce((a, b) => a < b ? a : b);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                s.cardioHeartRateTitle.toUpperCase(),
+                style: KineticText.mono(
+                  size: 11,
+                  letterSpacing: 1.9,
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ),
+            Text(
+              s.cardioHeartRateMax(maxBpm),
+              style: KineticText.mono(size: 11, color: cs.onSurfaceVariant),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 110,
+          child: LineChart(
+            LineChartData(
+              minY: (minBpm - 10).toDouble(),
+              maxY: (maxBpm + 10).toDouble(),
+              gridData: FlGridData(
+                drawVerticalLine: false,
+                getDrawingHorizontalLine: (_) =>
+                    FlLine(color: cs.surfaceContainer, strokeWidth: 1),
+              ),
+              borderData: FlBorderData(show: false),
+              titlesData: FlTitlesData(
+                rightTitles: const AxisTitles(),
+                topTitles: const AxisTitles(),
+                bottomTitles: const AxisTitles(),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 30,
+                    getTitlesWidget: (v, _) => Text(
+                      v.toInt().toString(),
+                      style: KineticText.mono(
+                        size: 9,
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              lineTouchData: const LineTouchData(enabled: false),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: [
+                    for (final x in samples)
+                      FlSpot(
+                        x.timestamp.difference(start).inSeconds.toDouble(),
+                        x.bpm.toDouble(),
+                      ),
+                  ],
+                  color: cs.primary,
+                  barWidth: 2,
+                  dotData: const FlDotData(show: false),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    color: cs.primary.withValues(alpha: 0.08),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 

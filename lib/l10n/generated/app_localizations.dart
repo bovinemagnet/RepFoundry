@@ -1782,6 +1782,18 @@ abstract class S {
   /// **'{points} GPS points · {samples} heart rate readings'**
   String cardioRecordingCounts(int points, int samples);
 
+  /// No description provided for @cardioHeartRateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart rate'**
+  String get cardioHeartRateTitle;
+
+  /// No description provided for @cardioHeartRateMax.
+  ///
+  /// In en, this message translates to:
+  /// **'max {bpm} bpm'**
+  String cardioHeartRateMax(int bpm);
+
   /// No description provided for @exportCardioSession.
   ///
   /// In en, this message translates to:

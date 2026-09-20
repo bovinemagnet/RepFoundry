@@ -920,6 +920,14 @@ class SZh extends S {
   }
 
   @override
+  String get cardioHeartRateTitle => 'Heart rate';
+
+  @override
+  String cardioHeartRateMax(int bpm) {
+    return 'max $bpm bpm';
+  }
+
+  @override
   String get exportCardioSession => 'Export';
 
   @override
