@@ -12,7 +12,9 @@ import '../../clients/domain/repositories/client_repository.dart';
 import '../../clients/domain/repositories/health_profile_repository.dart';
 import 'import/csv_format_adapter.dart';
 import 'import/csv_import_engine.dart';
+import '../../cardio/domain/models/cardio_heart_rate_sample.dart';
 import '../../cardio/domain/models/cardio_session.dart';
+import '../../cardio/domain/models/cardio_track_point.dart';
 import '../../cardio/domain/repositories/cardio_session_repository.dart';
 import '../../exercises/domain/models/exercise.dart';
 import '../../exercises/domain/repositories/exercise_repository.dart';
@@ -415,6 +417,31 @@ class ImportDataUseCase {
         clientId: ownerOf(map),
         updatedAt: now,
       ));
+      final points = [
+        for (final p in map['trackPoints'] as List<dynamic>? ?? const [])
+          CardioTrackPoint(
+            timestamp: DateTime.parse(
+                (p as Map<String, dynamic>)['timestamp'] as String),
+            latitude: (p['latitude'] as num).toDouble(),
+            longitude: (p['longitude'] as num).toDouble(),
+            altitude: (p['altitude'] as num?)?.toDouble(),
+            accuracy: (p['accuracy'] as num?)?.toDouble(),
+          ),
+      ];
+      if (points.isNotEmpty) {
+        await cardioSessionRepository.saveTrackPoints(id, points);
+      }
+      final samples = [
+        for (final h in map['heartRateSamples'] as List<dynamic>? ?? const [])
+          CardioHeartRateSample(
+            timestamp: DateTime.parse(
+                (h as Map<String, dynamic>)['timestamp'] as String),
+            bpm: h['bpm'] as int,
+          ),
+      ];
+      if (samples.isNotEmpty) {
+        await cardioSessionRepository.saveHeartRateSamples(id, samples);
+      }
       cardioSessionsImported++;
     }
 

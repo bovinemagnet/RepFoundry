@@ -7,7 +7,9 @@ import 'package:rep_foundry/core/database/app_database.dart' as db;
 import 'package:rep_foundry/features/body_metrics/data/drift_body_metric_repository.dart';
 import 'package:rep_foundry/features/body_metrics/domain/models/body_metric.dart';
 import 'package:rep_foundry/features/cardio/data/drift_cardio_session_repository.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_heart_rate_sample.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_track_point.dart';
 import 'package:rep_foundry/features/clients/data/drift_client_repository.dart';
 import 'package:rep_foundry/features/clients/data/drift_health_profile_repository.dart';
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
@@ -206,6 +208,18 @@ void main() {
       clientId: alice.id,
       updatedAt: t0,
     ));
+    await r.cardio.saveTrackPoints('c-alice', [
+      CardioTrackPoint(
+        timestamp: t0,
+        latitude: 51.5,
+        longitude: -0.1,
+        altitude: 10,
+        accuracy: 3,
+      ),
+    ]);
+    await r.cardio.saveHeartRateSamples('c-alice', [
+      CardioHeartRateSample(timestamp: t0, bpm: 138),
+    ]);
     await r.prs.createRecord(PersonalRecord(
       id: 'pr-alice',
       exerciseId: '1',
@@ -284,6 +298,13 @@ void main() {
     final cardio = await target.cardio.getSession('c-alice');
     expect(cardio?.clientId, alice.id);
     expect(cardio?.incline, 1.5);
+    final point = (await target.cardio.getTrackPoints('c-alice')).single;
+    expect(point.latitude, 51.5);
+    expect(point.altitude, 10);
+    expect(point.accuracy, 3);
+    expect(point.timestamp, t0);
+    expect(
+        (await target.cardio.getHeartRateSamples('c-alice')).single.bpm, 138);
 
     final pr =
         await target.prs.getBestRecord('1', RecordType.maxWeight, alice.id);

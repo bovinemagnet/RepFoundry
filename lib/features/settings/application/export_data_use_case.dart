@@ -112,6 +112,30 @@ class ExportDataUseCase {
     final programmes =
         await programmeRepository?.getAllProgrammes() ?? const [];
 
+    final cardioMaps = <Map<String, dynamic>>[];
+    for (final session in cardioSessions) {
+      final points = await cardioSessionRepository.getTrackPoints(session.id);
+      final samples =
+          await cardioSessionRepository.getHeartRateSamples(session.id);
+      cardioMaps.add({
+        ..._cardioToMap(session),
+        'trackPoints': [
+          for (final p in points)
+            {
+              'timestamp': p.timestamp.toIso8601String(),
+              'latitude': p.latitude,
+              'longitude': p.longitude,
+              'altitude': p.altitude,
+              'accuracy': p.accuracy,
+            },
+        ],
+        'heartRateSamples': [
+          for (final h in samples)
+            {'timestamp': h.timestamp.toIso8601String(), 'bpm': h.bpm},
+        ],
+      });
+    }
+
     final data = {
       'formatVersion': kBackupFormatVersion,
       'exportedAt': DateTime.now().toUtc().toIso8601String(),
@@ -120,7 +144,7 @@ class ExportDataUseCase {
       'workoutTemplates': templates.map(_templateToMap).toList(),
       'programmes': programmes.map(_programmeToMap).toList(),
       'workouts': workoutsWithSets,
-      'cardioSessions': cardioSessions.map(_cardioToMap).toList(),
+      'cardioSessions': cardioMaps,
       'personalRecords': personalRecords.map(_prToMap).toList(),
       'bodyMetrics': bodyMetrics.map(_bodyMetricToMap).toList(),
       'stretchingSessions': stretchingSessions.map(_stretchingToMap).toList(),
