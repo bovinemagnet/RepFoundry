@@ -204,6 +204,20 @@ void main() {
       expect(find.text('Rowing'), findsOneWidget);
     });
 
+    testWidgets('selects the first cardio exercise by default', (tester) async {
+      await tester.pumpWidget(buildScreen(cardioExercises: [
+        cardioExercise('Treadmill'),
+        cardioExercise('Rowing'),
+      ]));
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(CardioTrackingScreen)),
+      );
+      expect(container.read(cardioTrackingProvider).selectedExerciseName,
+          'Treadmill');
+    });
+
     testWidgets('initial timer reads 00:00 with no elapsed time',
         (tester) async {
       await tester.pumpWidget(buildScreen());

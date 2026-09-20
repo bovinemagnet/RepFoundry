@@ -47,6 +47,21 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
     final controller = ref.read(cardioTrackingProvider.notifier);
     final exercisesAsync = ref.watch(_cardioExercisesProvider);
 
+    // Pre-select the first sport so a session started straight away can be
+    // saved; Save refuses without a selection. Deferred past this build,
+    // when a provider must not be modified, and re-checked then because a
+    // rebuild may have raced it.
+    final loadedExercises = exercisesAsync.value;
+    if (cardioState.selectedExerciseId == null &&
+        loadedExercises != null &&
+        loadedExercises.isNotEmpty) {
+      final first = loadedExercises.first;
+      Future.microtask(() {
+        if (ref.read(cardioTrackingProvider).selectedExerciseId != null) return;
+        controller.selectExercise(first.id, first.name);
+      });
+    }
+
     ref.listen(cardioTrackingProvider, (prev, next) {
       if (next.savedSuccessfully && !(prev?.savedSuccessfully ?? false)) {
         _distanceController.clear();

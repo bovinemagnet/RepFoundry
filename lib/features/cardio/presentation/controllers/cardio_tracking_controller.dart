@@ -363,7 +363,13 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
     if (_runningSince != null || _accumulated > Duration.zero) {
       state = state.copyWith(elapsedSeconds: _wallClockElapsedSeconds);
     }
-    if (state.selectedExerciseId == null || state.elapsedSeconds <= 0) return;
+    if (state.elapsedSeconds <= 0) return;
+    if (state.selectedExerciseId == null) {
+      // Never drop a session silently: the user has just run it and needs
+      // to know why Save did nothing.
+      state = state.copyWith(error: 'Select an exercise before saving');
+      return;
+    }
 
     // Use GPS distance if GPS is enabled and has data.
     final effectiveDistance = state.gpsEnabled && state.gpsDistanceMeters > 0

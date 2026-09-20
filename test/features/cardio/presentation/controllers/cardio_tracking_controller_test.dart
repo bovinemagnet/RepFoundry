@@ -475,9 +475,20 @@ void main() {
     });
 
     group('save()', () {
-      test('does nothing when no exercise selected', () async {
+      test('reports why it did not save when no exercise is selected',
+          () async {
+        controller.start();
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+
         await controller.save();
+
         expect(controller.state.savedSuccessfully, isFalse);
+        expect(controller.state.error, isNotNull,
+            reason: 'a silent no-op looks like a lost session');
+        expect(controller.state.elapsedSeconds, greaterThan(0),
+            reason: 'the session must survive so the user can fix it');
       });
 
       test('does nothing when elapsed is zero', () async {
