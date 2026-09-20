@@ -1,4 +1,6 @@
+import '../models/cardio_heart_rate_sample.dart';
 import '../models/cardio_session.dart';
+import '../models/cardio_track_point.dart';
 
 abstract class CardioSessionRepository {
   Future<CardioSession> createSession(CardioSession session);
@@ -17,4 +19,14 @@ abstract class CardioSessionRepository {
   );
 
   Stream<List<CardioSession>> watchSessionsForWorkout(String workoutId);
+
+  /// Recordings captured during the session, kept so it can be reviewed
+  /// and exported afterwards. Reads return points in timestamp order.
+  Future<void> saveTrackPoints(String sessionId, List<CardioTrackPoint> points);
+  Future<List<CardioTrackPoint>> getTrackPoints(String sessionId);
+  Future<void> saveHeartRateSamples(
+    String sessionId,
+    List<CardioHeartRateSample> samples,
+  );
+  Future<List<CardioHeartRateSample>> getHeartRateSamples(String sessionId);
 }

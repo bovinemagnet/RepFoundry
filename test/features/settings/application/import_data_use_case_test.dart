@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_heart_rate_sample.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_track_point.dart';
 import 'package:rep_foundry/features/cardio/domain/repositories/cardio_session_repository.dart';
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
@@ -122,6 +124,19 @@ class _FakeWorkoutRepository implements WorkoutRepository {
 }
 
 class _FakeCardioSessionRepository implements CardioSessionRepository {
+  @override
+  Future<void> saveTrackPoints(
+      String sessionId, List<CardioTrackPoint> points) async {}
+  @override
+  Future<List<CardioTrackPoint>> getTrackPoints(String sessionId) async => [];
+  @override
+  Future<void> saveHeartRateSamples(
+      String sessionId, List<CardioHeartRateSample> samples) async {}
+  @override
+  Future<List<CardioHeartRateSample>> getHeartRateSamples(
+          String sessionId) async =>
+      [];
+
   final Map<String, CardioSession> _sessions = {};
 
   @override
