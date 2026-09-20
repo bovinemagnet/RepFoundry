@@ -174,6 +174,47 @@ Only recordings that are non-empty are exported; when both are empty, `_CardioCa
 
 NOTE: These recordings are included in the full JSON export/import (`ExportDataUseCase` / `ImportDataUseCase`) but are **not** part of the sync snapshot — `SyncSnapshot` carries the `CardioSession` summary only. See xref:features/sync.adoc[Cloud sync internals].
 
+== Cardio history and progress
+
+The History screen's *Cardio* tab is `CardioHistoryView` (`lib/features/history/presentation/widgets/cardio_history_view.dart`), a `History | Progress` segmented view over the active client's saved sessions, filtered by sport.
+
+=== Providers
+
+Four providers in `lib/features/history/presentation/providers/cardio_history_provider.dart` drive it:
+
+[source,dart]
+----
+final cardioHistoryProvider =
+    FutureProvider.autoDispose<List<CardioHistoryEntry>>(...);
+
+final cardioSportFilterProvider =
+    NotifierProvider<CardioSportFilter, String?>(CardioSportFilter.new);
+
+final filteredCardioHistoryProvider =
+    FutureProvider.autoDispose<List<CardioHistoryEntry>>(...);
+
+final cardioProgressProvider =
+    FutureProvider.autoDispose<CardioProgress>(...);
+----
+
+`cardioHistoryProvider` loads every session for the active client via `BuildCardioHistoryUseCase`. `cardioSportFilterProvider` holds the selected sport chip (`null` for *All sports*). `filteredCardioHistoryProvider` applies that filter and feeds both the History and Progress segments; `cardioProgressProvider` derives `CardioProgress` from the filtered list.
+
+=== Building entries
+
+`BuildCardioHistoryUseCase` and its output `CardioHistoryEntry` live in `lib/features/cardio/application/`. The use case reads every `CardioSession` for the client from `CardioSessionRepository`, resolves each one's enclosing `Workout` (for `startedAt`) and its exercise name from `ExerciseRepository`, and returns the results newest first. A session whose workout can no longer be found is skipped.
+
+=== Progress computation
+
+`CardioProgress.compute()` is a pure function — no clock, no repository — that reduces a list of `CardioHistoryEntry` over the last `weeks` calendar weeks (Monday-based, local time) into total distance, session count, total duration, a `weeklyDistanceKm` bucket per week, best pace, average heart rate, and a `paceTrend` of one `PacePoint` per session with a distance. Week boundaries are computed from calendar date components (`DateTime.utc(year, month, day)` differences), not raw `Duration` division, so a daylight-saving transition can't shift a session into the wrong week's bucket.
+
+=== Route sketch
+
+`CardioRouteSketch` and its `projectTrack()` function (`lib/features/history/presentation/widgets/cardio_route_sketch.dart`) draw the session's recorded `CardioTrackPoint`s as a line, with start and end markers, on a plain background — no map tiles. `projectTrack()` scales longitude by `cos(latitude)` of the track's mean latitude so the route isn't squashed east–west, then fits the result to the widget's bounds on its longer axis and centres it on the other.
+
+=== Heart-rate trace
+
+`_HeartRateTrace`, a private widget in `workout_detail_screen.dart` alongside `_CardioCard`, renders the session's `CardioHeartRateSample`s as an fl_chart `LineChart`, with the peak BPM called out above the chart. Both the route sketch and the heart-rate trace only render when the corresponding recording is non-empty.
+
 == Key Files
 
 [cols="1,2"]
@@ -218,6 +259,24 @@ NOTE: These recordings are included in the full JSON export/import (`ExportDataU
 
 | `lib/core/share/share_files_provider.dart`
 | `shareFilesProvider` — platform share sheet, overridable in widget tests
+
+| `lib/features/cardio/application/cardio_history_entry.dart`
+| `CardioHistoryEntry` — a session with its workout start time and sport name
+
+| `lib/features/cardio/application/build_cardio_history_use_case.dart`
+| `BuildCardioHistoryUseCase` — assembles the cardio history for a client
+
+| `lib/features/cardio/application/cardio_progress.dart`
+| `CardioProgress.compute()` — pure six-week progress figures
+
+| `lib/features/history/presentation/widgets/cardio_history_view.dart`
+| `CardioHistoryView` — the History screen's Cardio tab
+
+| `lib/features/history/presentation/providers/cardio_history_provider.dart`
+| `cardioHistoryProvider`, `cardioSportFilterProvider`, `filteredCardioHistoryProvider`, `cardioProgressProvider`
+
+| `lib/features/history/presentation/widgets/cardio_route_sketch.dart`
+| `CardioRouteSketch` / `projectTrack()` — map-free route sketch
 |===
 
 == Related Features
