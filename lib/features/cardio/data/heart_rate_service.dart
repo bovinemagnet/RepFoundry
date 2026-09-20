@@ -8,6 +8,13 @@ abstract class HeartRateService {
   /// Asks the OS to enable the Bluetooth adapter (system dialog on
   /// Android). Returns true once the adapter reports on.
   Future<bool> turnOnBluetooth();
+
+  /// Every device found so far, re-emitted as the list grows, so a picker
+  /// can show a strap the moment it is seen rather than after the whole
+  /// scan. Completes when the scan ends.
+  Stream<List<DiscoveredHrDevice>> scanDevices({Duration timeout});
+
+  /// The devices found by a complete scan.
   Future<List<DiscoveredHrDevice>> scanForDevices({Duration timeout});
   Future<void> connectToDevice(String deviceId);
   Future<void> disconnect();

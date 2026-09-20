@@ -42,6 +42,34 @@ class FakeHeartRateService implements HeartRateService {
     return devicesToReturn;
   }
 
+  /// When true, [scanDevices] stays open until [completeScan] and emits
+  /// whatever [emitScanResult] adds; otherwise it emits [devicesToReturn]
+  /// once and completes, like a scan that found everything at once.
+  bool streamScanResults = false;
+  final List<DiscoveredHrDevice> _found = [];
+  StreamController<List<DiscoveredHrDevice>>? _scanController;
+
+  @override
+  Stream<List<DiscoveredHrDevice>> scanDevices({
+    Duration timeout = const Duration(seconds: 10),
+  }) {
+    final scanError = this.scanError;
+    if (scanError != null) return Stream.error(scanError);
+    if (!streamScanResults) return Stream.value(devicesToReturn);
+    _found.clear();
+    _scanController = StreamController<List<DiscoveredHrDevice>>();
+    return _scanController!.stream;
+  }
+
+  void emitScanResult(DiscoveredHrDevice device) {
+    _found.add(device);
+    _scanController?.add(List.unmodifiable(_found));
+  }
+
+  void completeScan() {
+    _scanController?.close();
+  }
+
   @override
   Future<void> connectToDevice(String deviceId) async {
     if (shouldThrowOnConnect) {
