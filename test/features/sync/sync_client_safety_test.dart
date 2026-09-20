@@ -5,7 +5,17 @@ import 'package:rep_foundry/core/database/app_database.dart' as db;
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/sync/data/sync_snapshot_serialiser.dart';
 import 'package:rep_foundry/features/sync/domain/models/sync_snapshot.dart';
+import 'package:rep_foundry/features/body_metrics/data/drift_body_metric_repository.dart';
+import 'package:rep_foundry/features/body_metrics/domain/models/body_metric.dart';
+import 'package:rep_foundry/features/cardio/data/drift_cardio_session_repository.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
+import 'package:rep_foundry/features/history/data/drift_personal_record_repository.dart';
+import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
+import 'package:rep_foundry/features/stretching/data/drift_stretching_session_repository.dart';
+import 'package:rep_foundry/features/stretching/domain/models/stretching_session.dart';
+import 'package:rep_foundry/features/workout/data/drift_workout_repository.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
+import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
 
 /// Locks in the sync-safety guarantee: the sync companions in
 /// [SyncSnapshotSerialiser.applyToDatabase] deliberately omit `clientId`, so
@@ -131,6 +141,62 @@ void main() {
       await serialiser.applyToDatabase(database, snapshotWith([incoming]));
 
       expect(await clientIdOf('w2'), kSelfClientId);
+    });
+  });
+
+  group('SyncSnapshotSerialiser.createFromDatabase – Me only', () {
+    // The snapshot carries no roster and no ownership, so any other
+    // client's rows would be re-owned by Me on the receiving device. Until
+    // the snapshot can carry ownership, only Me's scoped rows leave the
+    // device.
+    test('leaves other clients\' scoped rows out of the snapshot', () async {
+      await database.into(database.clients).insert(db.ClientsCompanion.insert(
+          id: 'alice', name: 'Alice', colour: 0, createdAt: 0));
+      final workouts = DriftWorkoutRepository(database);
+      final mine = await workouts.createWorkout(Workout.create());
+      final hers =
+          await workouts.createWorkout(Workout.create(clientId: 'alice'));
+      for (final w in [mine, hers]) {
+        await workouts.addSet(WorkoutSet.create(
+            workoutId: w.id, exerciseId: '1', setOrder: 1, weight: 1, reps: 1));
+        await DriftStretchingSessionRepository(database).createSession(
+          StretchingSession.create(
+            workoutId: w.id,
+            type: 'pigeon',
+            durationSeconds: 30,
+            entryMethod: StretchingEntryMethod.manual,
+          ),
+        );
+      }
+      final cardio = DriftCardioSessionRepository(database);
+      await cardio.createSession(CardioSession.create(
+          workoutId: mine.id, exerciseId: '1', durationSeconds: 60));
+      await cardio.createSession(CardioSession.create(
+          workoutId: hers.id,
+          exerciseId: '1',
+          durationSeconds: 60,
+          clientId: 'alice'));
+      final prs = DriftPersonalRecordRepository(database);
+      await prs.createRecord(PersonalRecord.create(
+          exerciseId: '1', recordType: RecordType.maxWeight, value: 1));
+      await prs.createRecord(PersonalRecord.create(
+          exerciseId: '1',
+          recordType: RecordType.maxWeight,
+          value: 1,
+          clientId: 'alice'));
+      final metrics = DriftBodyMetricRepository(database);
+      await metrics.create(BodyMetric.create(weight: 70));
+      await metrics.create(BodyMetric.create(weight: 60, clientId: 'alice'));
+
+      final snapshot =
+          await serialiser.createFromDatabase(database, deviceId: 'd');
+
+      expect(snapshot.workouts.map((w) => w.id), [mine.id]);
+      expect(snapshot.workoutSets.map((s) => s.workoutId), [mine.id]);
+      expect(snapshot.stretchingSessions.map((s) => s.workoutId), [mine.id]);
+      expect(snapshot.cardioSessions.map((c) => c.workoutId), [mine.id]);
+      expect(snapshot.personalRecords.map((p) => p.clientId), [kSelfClientId]);
+      expect(snapshot.bodyMetrics.map((m) => m.clientId), [kSelfClientId]);
     });
   });
 }

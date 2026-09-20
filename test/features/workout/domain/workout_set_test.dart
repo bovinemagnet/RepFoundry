@@ -113,6 +113,13 @@ void main() {
       expect(updated.groupId, isNull);
     });
 
+    test('copyWith_clearRpeTrue_nullifiesRpe', () {
+      final original = makeSet(rpe: 8.0);
+      final updated = original.copyWith(clearRpe: true);
+
+      expect(updated.rpe, isNull);
+    });
+
     test('copyWith_clearGroupIdFalse_preservesGroupId', () {
       final original = makeSet(groupId: 'group-abc');
       // clearGroupId defaults to false, so groupId must be retained.

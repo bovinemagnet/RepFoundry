@@ -28,6 +28,14 @@ class DriftPersonalRecordRepository implements PersonalRecordRepository {
   }
 
   @override
+  Future<PersonalRecord?> getRecord(String id) async {
+    final row = await (_db.select(_db.personalRecords)
+          ..where((t) => t.id.equals(id) & t.deletedAt.isNull()))
+        .getSingleOrNull();
+    return row == null ? null : _toDomain(row);
+  }
+
+  @override
   Future<List<PersonalRecord>> getRecordsForExercise(
     String exerciseId,
     String clientId,
@@ -73,6 +81,19 @@ class DriftPersonalRecordRepository implements PersonalRecordRepository {
       ..limit(limit);
     final rows = await q.get();
     return rows.map(_toDomain).toList();
+  }
+
+  @override
+  Future<void> deleteRecordsForSet(String workoutSetId) async {
+    final now = dateTimeToEpochMs(DateTime.now().toUtc());
+    await (_db.update(_db.personalRecords)
+          ..where(
+            (t) => t.workoutSetId.equals(workoutSetId) & t.deletedAt.isNull(),
+          ))
+        .write(db.PersonalRecordsCompanion(
+      deletedAt: Value(now),
+      updatedAt: Value(now),
+    ));
   }
 
   @override

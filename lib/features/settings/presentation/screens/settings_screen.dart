@@ -7,14 +7,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hr_zones/hr_zones.dart';
 import '../../../heart_rate/presentation/providers/health_profile_provider.dart';
 import '../../../heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_bands_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../../heart_rate/presentation/widgets/health_profile_onboarding.dart';
-import '../../../../core/database/database_provider.dart';
 import '../../../../core/entitlements/entitlement.dart';
 import '../../../../core/entitlements/entitlement_provider.dart';
 import '../../../../core/providers.dart'
@@ -31,6 +29,7 @@ import '../../../health_sync/presentation/providers/health_sync_settings_provide
 import '../providers/export_provider.dart';
 import '../providers/import_file_picker_provider.dart';
 import '../providers/rest_timer_settings_provider.dart';
+import '../providers/clear_all_data_provider.dart';
 import '../providers/layout_mode_provider.dart';
 import '../providers/show_exercise_images_provider.dart';
 import '../providers/theme_mode_provider.dart';
@@ -999,6 +998,7 @@ class _SyncRemindersCard extends ConsumerWidget {
 
     // Cloud sync
     final syncSettings = ref.watch(syncSettingsProvider);
+    final syncSupported = ref.watch(syncOrchestratorProvider).isSupported;
     final syncState = ref.watch(syncStateProvider);
 
     final List<Widget> rows = [
@@ -1091,10 +1091,12 @@ class _SyncRemindersCard extends ConsumerWidget {
       _Set2Row(
         icon: Icons.sync,
         title: s.syncEnabled,
-        subtitle: s.syncEnabledSubtitle,
+        subtitle:
+            syncSupported ? s.syncEnabledSubtitle : s.syncUnsupportedPlatform,
         trailing: _KineticToggle(
           value: syncSettings.enabled,
           onChanged: (_) async {
+            if (!syncSupported) return;
             if (!syncSettings.enabled) {
               if (!syncSettings.consentGiven) {
                 final accepted = await SyncConsentDialog.show(context);
@@ -1170,10 +1172,12 @@ class _SyncRemindersCard extends ConsumerWidget {
               ),
             );
             if (confirmed == true) {
+              // Disable first so no automatic sync can start while the
+              // deletion is waiting on an in-flight one.
+              await ref.read(syncSettingsProvider.notifier).disableAndClear();
               await ref
                   .read(syncOrchestratorProvider)
                   .deleteCloudData(interactive: true);
-              ref.read(syncSettingsProvider.notifier).disableAndClear();
               ref.read(syncStateProvider.notifier).setStatus(SyncStatus.idle);
             }
           },
@@ -1362,9 +1366,7 @@ class _DataCard extends ConsumerWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      await ref.read(databaseProvider).clearAllData();
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
+      await ref.read(clearAllDataProvider)();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(s.allDataCleared)),

@@ -24,6 +24,20 @@ class ActiveClientNotifier extends AsyncNotifier<Client> {
     await prefs.setString(_activeClientKey, client.id);
     state = AsyncData(client);
   }
+
+  /// Called by the roster after soft-deleting [clientId]. If that client was
+  /// active it falls back to Me at once, rather than staying selected (and
+  /// accepting new workouts) until restart. An explicit hook rather than a
+  /// watch on the roster stream: every Drift-backed widget test would
+  /// otherwise inherit Drift's deferred stream-close timer.
+  Future<void> clientDeleted(String clientId) async {
+    if (state.value?.id != clientId) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_activeClientKey);
+    final self = await ref.read(clientRepositoryProvider).getSelfClient();
+    if (!ref.mounted) return;
+    state = AsyncData(self);
+  }
 }
 
 final activeClientProvider =

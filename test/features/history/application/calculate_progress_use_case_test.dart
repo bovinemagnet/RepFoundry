@@ -6,14 +6,17 @@ import 'package:rep_foundry/features/workout/domain/repositories/workout_reposit
 
 class _FakeWorkoutRepository implements WorkoutRepository {
   final List<WorkoutSet> _sets;
+  String? requestedClientId;
 
   _FakeWorkoutRepository(this._sets);
 
   @override
   Future<List<WorkoutSet>> getSetsForExercise(
     String exerciseId, {
+    required String clientId,
     int limit = 50,
   }) async {
+    requestedClientId = clientId;
     return _sets.where((s) => s.exerciseId == exerciseId).take(limit).toList();
   }
 
@@ -85,11 +88,20 @@ WorkoutSet _makeSet({
 
 void main() {
   group('CalculateProgressUseCase', () {
+    test('scopes the query to the requested client', () async {
+      final repo = _FakeWorkoutRepository(const []);
+      final useCase = CalculateProgressUseCase(workoutRepository: repo);
+
+      await useCase.execute('e1', clientId: 'alice');
+
+      expect(repo.requestedClientId, 'alice');
+    });
+
     test('returns empty progress when no sets exist', () async {
       final useCase = CalculateProgressUseCase(
         workoutRepository: _FakeWorkoutRepository([]),
       );
-      final progress = await useCase.execute('e1');
+      final progress = await useCase.execute('e1', clientId: 'me');
       expect(progress.sets, isEmpty);
       expect(progress.maxEstimated1RM, isNull);
       expect(progress.totalVolume, isNull);
@@ -104,7 +116,7 @@ void main() {
       final useCase = CalculateProgressUseCase(
         workoutRepository: _FakeWorkoutRepository(sets),
       );
-      final progress = await useCase.execute('e1');
+      final progress = await useCase.execute('e1', clientId: 'me');
       // 120 * (1 + 3/30) = 132
       expect(progress.maxEstimated1RM, closeTo(132.0, 0.1));
     });
@@ -117,7 +129,7 @@ void main() {
       final useCase = CalculateProgressUseCase(
         workoutRepository: _FakeWorkoutRepository(sets),
       );
-      final progress = await useCase.execute('e1');
+      final progress = await useCase.execute('e1', clientId: 'me');
       // 100*5 + 100*5 = 1000
       expect(progress.totalVolume, closeTo(1000.0, 0.001));
     });
@@ -130,7 +142,7 @@ void main() {
       final useCase = CalculateProgressUseCase(
         workoutRepository: _FakeWorkoutRepository(sets),
       );
-      final progress = await useCase.execute('e1');
+      final progress = await useCase.execute('e1', clientId: 'me');
       expect(progress.sets, hasLength(1));
       expect(progress.sets.first.exerciseId, 'e1');
     });

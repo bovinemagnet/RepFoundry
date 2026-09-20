@@ -910,6 +910,24 @@ class SKo extends S {
   String get cardioSessionSaved => '유산소 세션이 저장되었습니다';
 
   @override
+  String get viewSavedSession => 'View';
+
+  @override
+  String get cardioSectionTitle => 'Cardio';
+
+  @override
+  String cardioRecordingCounts(int points, int samples) {
+    return '$points GPS points · $samples heart rate readings';
+  }
+
+  @override
+  String get exportCardioSession => 'Export';
+
+  @override
+  String get exportCardioSessionHint =>
+      'Share the GPS track as GPX and the heart rate readings as CSV';
+
+  @override
   String get heartRateMonitorCard => '심박수 모니터';
 
   @override
@@ -1689,6 +1707,10 @@ class SKo extends S {
   String get syncEnabledSubtitle => '기기 간 운동 데이터 동기화';
 
   @override
+  String get syncUnsupportedPlatform =>
+      'Cloud sync is not available on this platform';
+
+  @override
   String syncLastSynced(String time) {
     return '마지막 동기화: $time';
   }
@@ -2009,6 +2031,11 @@ class SKo extends S {
   @override
   String viewingClient(String name) {
     return 'Viewing $name';
+  }
+
+  @override
+  String sessionClientLocked(String client) {
+    return 'Logging for $client — fixed for this session';
   }
 
   @override

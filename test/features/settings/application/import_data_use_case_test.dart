@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_heart_rate_sample.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_track_point.dart';
 import 'package:rep_foundry/features/cardio/domain/repositories/cardio_session_repository.dart';
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
@@ -99,7 +101,7 @@ class _FakeWorkoutRepository implements WorkoutRepository {
       {};
   @override
   Future<List<WorkoutSet>> getSetsForExercise(String exerciseId,
-          {int limit = 50}) async =>
+          {required String clientId, int limit = 50}) async =>
       [];
   @override
   Future<WorkoutSet?> getLastSetForExercise(String exerciseId) async => null;
@@ -122,6 +124,19 @@ class _FakeWorkoutRepository implements WorkoutRepository {
 }
 
 class _FakeCardioSessionRepository implements CardioSessionRepository {
+  @override
+  Future<void> saveTrackPoints(
+      String sessionId, List<CardioTrackPoint> points) async {}
+  @override
+  Future<List<CardioTrackPoint>> getTrackPoints(String sessionId) async => [];
+  @override
+  Future<void> saveHeartRateSamples(
+      String sessionId, List<CardioHeartRateSample> samples) async {}
+  @override
+  Future<List<CardioHeartRateSample>> getHeartRateSamples(
+          String sessionId) async =>
+      [];
+
   final Map<String, CardioSession> _sessions = {};
 
   @override
@@ -163,6 +178,14 @@ class _FakeCardioSessionRepository implements CardioSessionRepository {
 
 class _FakePersonalRecordRepository implements PersonalRecordRepository {
   final Map<String, PersonalRecord> _records = {};
+
+  @override
+  Future<void> deleteRecordsForSet(String workoutSetId) async {
+    _records.removeWhere((_, r) => r.workoutSetId == workoutSetId);
+  }
+
+  @override
+  Future<PersonalRecord?> getRecord(String id) async => _records[id];
 
   @override
   Future<PersonalRecord> createRecord(PersonalRecord record) async {
@@ -445,14 +468,16 @@ void main() {
     );
 
     test(
-      'importFromJson_duplicateWorkout_workoutAndItsSetsAreSkipped',
+      'importFromJson_duplicateWorkout_parentCountedOnceButMissingSetsLand',
       () async {
-        // Arrange — two workouts with the same id; second has 1 set
+        // Arrange — two entries with the same workout id, each with a
+        // different set. An existing parent must still receive sets it
+        // does not yet have, otherwise a retry after a partial restore can
+        // never complete.
         final json = jsonEncode({
           'exercises': [],
           'workouts': [
             _workoutMap(id: 'w-1', sets: [_setMap(id: 's-1')]),
-            // duplicate workout — its sets must also be skipped via continue
             _workoutMap(id: 'w-1', sets: [_setMap(id: 's-2')]),
           ],
           'personalRecords': [],
@@ -463,10 +488,10 @@ void main() {
 
         // Assert
         expect(result.workoutsImported, 1);
-        // Only the set belonging to the first (accepted) workout was inserted
-        expect(result.setsImported, 1);
+        expect(result.duplicatesSkipped, 1);
+        expect(result.setsImported, 2);
         expect(workoutRepo._sets.containsKey('s-1'), isTrue);
-        expect(workoutRepo._sets.containsKey('s-2'), isFalse);
+        expect(workoutRepo._sets.containsKey('s-2'), isTrue);
       },
     );
 

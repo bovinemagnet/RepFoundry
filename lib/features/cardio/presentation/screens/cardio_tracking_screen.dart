@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
+import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/widgets/kinetic.dart';
 import '../../../clients/presentation/widgets/client_switcher.dart';
 import '../../../exercises/domain/models/exercise.dart';
+import '../../domain/models/cardio_session.dart';
 import '../controllers/cardio_tracking_controller.dart';
 import '../controllers/cardio_tracking_state.dart';
 import '../widgets/hr_device_picker_dialog.dart';
@@ -46,13 +49,39 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
     final controller = ref.read(cardioTrackingProvider.notifier);
     final exercisesAsync = ref.watch(_cardioExercisesProvider);
 
+    // Pre-select the first sport so a session started straight away can be
+    // saved; Save refuses without a selection. Deferred past this build,
+    // when a provider must not be modified, and re-checked then because a
+    // rebuild may have raced it.
+    final loadedExercises = exercisesAsync.value;
+    if (cardioState.selectedExerciseId == null &&
+        loadedExercises != null &&
+        loadedExercises.isNotEmpty) {
+      final first = loadedExercises.first;
+      Future.microtask(() {
+        if (ref.read(cardioTrackingProvider).selectedExerciseId != null) return;
+        controller.selectExercise(first.id, first.name);
+      });
+    }
+
     ref.listen(cardioTrackingProvider, (prev, next) {
       if (next.savedSuccessfully && !(prev?.savedSuccessfully ?? false)) {
         _distanceController.clear();
         _inclineController.clear();
         _heartRateController.clear();
+        final savedWorkoutId = next.savedWorkoutId;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.cardioSessionSaved)),
+          SnackBar(
+            content: Text(s.cardioSessionSaved),
+            // The session is reviewed (and exported) from History; point
+            // there so the save is not a dead end.
+            action: savedWorkoutId == null
+                ? null
+                : SnackBarAction(
+                    label: s.viewSavedSession,
+                    onPressed: () => context.go('/history/$savedWorkoutId'),
+                  ),
+          ),
         );
       }
       if (next.error != null && next.error != prev?.error) {
@@ -80,13 +109,19 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
           const KineticAppHeader(),
 
           // ── Screen title (pagehead eyebrow) ─────────────────
-          // Active client badge alongside it — so the coach can't log a
-          // session for the wrong client without noticing.
+          // Client badge alongside it — so the coach can't log a session
+          // for the wrong client without noticing. Once a session has
+          // started it shows (and fixes) that session's owner.
           Row(
             children: [
               KineticEyebrow(s.cardioTitle),
               const Spacer(),
-              const ActiveClientIndicator(),
+              ActiveClientIndicator(
+                sessionClientId:
+                    cardioState.isRunning || cardioState.elapsedSeconds > 0
+                        ? cardioState.sessionClientId
+                        : null,
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -820,7 +855,9 @@ class _GpsCard extends StatelessWidget {
 class _LastSessionCard extends StatelessWidget {
   const _LastSessionCard({required this.session});
 
-  final dynamic session;
+  // Typed, not dynamic: the Duration formatting below is an extension, which
+  // cannot resolve on a dynamic receiver and threw at runtime.
+  final CardioSession session;
 
   @override
   Widget build(BuildContext context) {

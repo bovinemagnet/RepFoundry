@@ -47,6 +47,26 @@ HrWindowSummary? summariseSamples(
   );
 }
 
+/// Picks the samples inside `[from, to]` worth exporting to a health store:
+/// each kept sample is at least [minGap] after the previous kept one, so an
+/// hour of one-second readings becomes a few hundred writes, not thousands.
+List<HrSample> selectSamplesForExport(
+  List<HrSample> samples, {
+  required DateTime from,
+  required DateTime to,
+  required Duration minGap,
+}) {
+  final kept = <HrSample>[];
+  DateTime? last;
+  for (final s in samples) {
+    if (s.timestamp.isBefore(from) || s.timestamp.isAfter(to)) continue;
+    if (last != null && s.timestamp.difference(last) < minGap) continue;
+    kept.add(s);
+    last = s.timestamp;
+  }
+  return kept;
+}
+
 /// Buffers timestamped heart-rate samples from the shared [HeartRateService]
 /// for as long as a monitor is connected, regardless of which screen started
 /// the connection. Consumers ask for a window summary via [summarise].

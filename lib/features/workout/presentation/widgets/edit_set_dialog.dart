@@ -78,6 +78,7 @@ class _EditSetDialogState extends State<_EditSetDialog> {
       weight: weight,
       reps: reps,
       rpe: rpe,
+      clearRpe: rpe == null,
       updatedAt: DateTime.now().toUtc(),
     );
     Navigator.of(context).pop(updated);

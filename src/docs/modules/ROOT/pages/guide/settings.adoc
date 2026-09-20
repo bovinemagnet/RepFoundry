@@ -44,15 +44,19 @@ Re-importing the same file a second time is safe — matching rows are recognise
 
 === Restoring a full JSON backup
 
-Importing a `.json` file (via *Import from File*) or pasted JSON text (via *Import from JSON*) is the only route that restores a full backup taken with *Export as JSON*. On top of workouts, sets and custom exercises, it also restores cardio sessions and stretching sessions — neither of which CSV import carries. Body-metric entries are included in a JSON export but are not currently restored on import, even though they were exported.
+Importing a `.json` file (via *Import from File*) or pasted JSON text (via *Import from JSON*) is the only route that restores a full backup taken with *Export as JSON*. On top of workouts, sets and custom exercises, it also restores cardio sessions — including any GPS track and heart-rate readings recorded for them — stretching sessions, and body-metric entries — none of which CSV import carries. It also restores your client roster, with each client's health profile, along with your workout templates and programmes.
+
+Each record is restored to the client it belonged to. A backup taken with an older version of the app, from before the roster was included, has no roster to place records into, so restoring it lands everything on your own "You" entry instead.
+
+Re-importing the same backup, or retrying after a restore that was interrupted partway through, only adds what's missing — nothing already present is duplicated. A genuine storage failure now stops the import with an error, rather than being silently skipped.
 
 == Exporting your data
 
 Two export options live under *Settings → Data*.
 
-*Export as JSON* produces one file containing everything: exercises, workouts with their sets, cardio sessions, personal records, body-metric entries, and stretching sessions, timestamped at export time. This is the format *Import from JSON* and *Import from File* restore, so it's the option to use for a full backup or for moving your history to a new install.
+*Export as JSON* produces one file containing everything: exercises, workouts with their sets and per-set heart-rate summaries, cardio sessions with their GPS tracks and heart-rate readings, personal records, body-metric entries, stretching sessions, your client roster with each client's health profile, and your workout templates and programmes — timestamped at export time. This is the format *Import from JSON* and *Import from File* restore, so it's the option to use for a full backup or for moving your history to a new install.
 
-NOTE: If you track more than one client, the JSON export includes every client in your roster, not just your own history — though re-importing it currently attaches everything back to your own profile rather than restoring individual clients separately.
+NOTE: If you track more than one client, the JSON export includes every client in your roster, not just your own history — and re-importing it restores clients and their history individually, rather than collapsing everything onto your own profile.
 
 *Export as CSV* produces five separate files for spreadsheet analysis rather than a single re-importable backup:
 
@@ -62,6 +66,8 @@ client_id,date,exercise,weight,reps,rpe,volume,e1rm
 ----
 
 `sets.csv`, `cardio.csv`, `personal_records.csv`, `body_metrics.csv`, and `stretching.csv`. Of these, `sets.csv` uses RepFoundry's own re-importable layout — the header shown above — so your strength history can round-trip out to CSV and back in again through *Import from File*. The other four files are for analysis outside the app; they aren't a format RepFoundry itself imports.
+
+Timestamps in these files are written as ISO-8601 in UTC (for example `2026-01-15T12:00:00.000Z`), so a file re-imported on a device in a different time zone still lands on the same instants it was exported from. Files exported by older versions of the app, which wrote a bare `yyyy-MM-dd HH:mm` timestamp with no time zone, are still accepted on import.
 
 == Health profile and heart rate zones
 
@@ -121,6 +127,6 @@ Health sync and cross-device sync sit alongside workout reminders under *Setting
 Clearing all data is permanent and cannot be undone. RepFoundry does not export or back up your data automatically before doing this — if you might want your history back later, use *Export as JSON* first.
 ====
 
-*Clear All Data*, under *Settings → Data*, deletes every workout, set, cardio session, personal record, template, programme, body-metric entry, stretching session, and client profile — along with any custom exercises you've created. The default exercise library is reseeded afterwards, and all app preferences (theme, layout, health profile, rest timer and notification settings, and everything else stored in app settings) are reset to their defaults at the same time.
+*Clear All Data*, under *Settings → Data*, deletes every workout, set, cardio session, personal record, template, programme, body-metric entry, stretching session, and client profile — along with any custom exercises you've created, and any workout currently in progress. The default exercise library is reseeded afterwards, and your own "You" entry is recreated too, so you can start logging straight away. All app preferences (theme, layout, health profile, rest timer and notification settings, and everything else stored in app settings) are reset to their defaults at the same time.
 
 A confirmation dialog asks you to confirm before anything is deleted.

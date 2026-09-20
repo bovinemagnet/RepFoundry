@@ -14,6 +14,7 @@ enum TrainerEventKind {
   hrZoneChanged,
   hrAboveCap,
   hrBackBelowCap,
+  hrSignalLost,
 }
 
 /// Something that happened in the workout that the coach may react to.
@@ -130,4 +131,15 @@ class HeartRateBackBelowCap extends TrainerEvent {
 
   @override
   TrainerEventKind get kind => TrainerEventKind.hrBackBelowCap;
+}
+
+/// The monitor went quiet, disconnected, or stopped producing usable
+/// readings. Distinct from [HeartRateBackBelowCap]: it carries no
+/// measurement, so the coach must not treat it as a recovery — it only
+/// clears live state that would otherwise stick with no data to lift it.
+class HeartRateSignalLost extends TrainerEvent {
+  const HeartRateSignalLost();
+
+  @override
+  TrainerEventKind get kind => TrainerEventKind.hrSignalLost;
 }

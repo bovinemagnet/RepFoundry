@@ -33,6 +33,8 @@ If a monitor disconnects unexpectedly — out of range, interference — RepFoun
 
 Tapping *Disconnect* yourself ends the connection deliberately; RepFoundry will not try to reconnect after that.
 
+If coach mode is speaking for you (see xref:guide/trainer.adoc[]) and your heart rate was above your maximum when the monitor goes quiet, disconnects, or stops producing usable readings, the coach will not announce that you're back below it — that would be a false all-clear with no real reading behind it. It stays silent on that front until genuine readings resume, and your current training zone is re-announced once they do, rather than assumed to be unchanged from before the gap.
+
 == The first time you use it
 
 The first time you open the heart rate panel, a one-time disclaimer confirms that zones are exercise guidance, not medical advice. If you haven't entered your age yet, a guided setup then walks you through your health profile in four steps — each step can be skipped. You can re-launch this setup at any time from *Settings → Health Profile → Set Up Heart Rate Zones*.

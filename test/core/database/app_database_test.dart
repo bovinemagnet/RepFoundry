@@ -1,6 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart' as db;
+import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/workout/data/drift_workout_repository.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
@@ -38,6 +39,19 @@ void main() {
 
       final reseeded = await database.select(database.exercises).get();
       expect(reseeded.length, seeded.length);
+    });
+
+    test('re-seeds the Me client so the next workout can be created', () async {
+      final repo = DriftWorkoutRepository(database);
+      await repo.createWorkout(Workout.create());
+
+      await database.clearAllData();
+
+      final clients = await database.select(database.clients).get();
+      expect(clients.map((c) => c.id), [kSelfClientId]);
+
+      final workout = await repo.createWorkout(Workout.create());
+      expect(workout.clientId, kSelfClientId);
     });
   });
 }

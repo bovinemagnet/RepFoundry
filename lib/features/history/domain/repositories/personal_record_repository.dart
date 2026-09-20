@@ -2,6 +2,7 @@ import '../models/personal_record.dart';
 
 abstract class PersonalRecordRepository {
   Future<PersonalRecord> createRecord(PersonalRecord record);
+  Future<PersonalRecord?> getRecord(String id);
   Future<List<PersonalRecord>> getRecordsForExercise(
     String exerciseId,
     String clientId,
@@ -17,4 +18,8 @@ abstract class PersonalRecordRepository {
   });
 
   Stream<List<PersonalRecord>> watchRecordsForExercise(String exerciseId);
+
+  /// Withdraws every record earned by [workoutSetId], for when that set is
+  /// deleted or corrected.
+  Future<void> deleteRecordsForSet(String workoutSetId);
 }

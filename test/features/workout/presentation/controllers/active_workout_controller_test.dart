@@ -6,13 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:drift/native.dart';
 import 'package:rep_foundry/core/database/app_database.dart' show AppDatabase;
-import 'package:rep_foundry/core/heart_rate/hr_session_recorder.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
+import 'package:rep_foundry/features/clients/presentation/providers/active_client_provider.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
+import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
 import 'package:rep_foundry/features/sync/application/sync_orchestrator.dart';
 import 'package:rep_foundry/features/sync/domain/models/sync_result.dart';
 import 'package:rep_foundry/features/sync/domain/sync_service.dart';
@@ -28,6 +29,9 @@ import '../../../cardio/data/fake_heart_rate_service.dart';
 
 class _FakeCloudSyncService implements CloudSyncService {
   @override
+  bool get isSupported => true;
+
+  @override
   Future<void> deleteCloudData({bool interactive = false}) async {}
 
   @override
@@ -41,6 +45,37 @@ class _FakeCloudSyncService implements CloudSyncService {
     String jsonData, {
     bool interactive = false,
   }) async {}
+}
+
+class _WorkoutSyncOnNotifier extends HealthSyncSettingsNotifier {
+  @override
+  HealthSyncSettings build() =>
+      const HealthSyncSettings(enabled: true, writeWorkouts: true);
+}
+
+class _RecordingHealthSyncService extends HealthSyncService {
+  int workoutsWritten = 0;
+
+  @override
+  Future<bool> writeWorkout({
+    required DateTime startTime,
+    required DateTime endTime,
+    required int totalCalories,
+    bool isCardio = false,
+    double? distanceMeters,
+  }) async {
+    workoutsWritten++;
+    return true;
+  }
+}
+
+class _FixedActiveClientNotifier extends ActiveClientNotifier {
+  _FixedActiveClientNotifier(this._client);
+
+  final Client _client;
+
+  @override
+  Future<Client> build() async => _client;
 }
 
 class _NoOpHealthSyncSettingsNotifier extends HealthSyncSettingsNotifier {
@@ -224,8 +259,9 @@ void main() {
             heartRateServiceProvider.overrideWithValue(hrService),
           ],
         );
-        // Start the recorder buffering before any readings arrive.
-        container.read(hrSessionRecorderProvider.notifier);
+        // Deliberately no manual read of hrSessionRecorderProvider here:
+        // the controller must mount the recorder itself when the workout
+        // starts, or readings before the first logged set are lost.
 
         await waitForInit();
         final controller = readController();
@@ -299,6 +335,26 @@ void main() {
     });
 
     group('updateSet', () {
+      test('re-evaluates personal records for the corrected set', () async {
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+
+        final exercise = (await exerciseRepo.getAllExercises()).first;
+        await controller.addExercise(exercise);
+        await controller.logSet(exerciseId: exercise.id, weight: 1000, reps: 5);
+
+        final mistake = readState().setsByExercise[exercise.id]!.first;
+        await controller.updateSet(mistake.copyWith(weight: 90));
+
+        final best = await prRepo.getBestRecord(
+          exercise.id,
+          RecordType.maxWeight,
+          kSelfClientId,
+        );
+        expect(best?.value, 90);
+      });
+
       test('modifies set weight in state', () async {
         await waitForInit();
         final controller = readController();
@@ -324,6 +380,27 @@ void main() {
     });
 
     group('deleteSet', () {
+      test('withdraws the personal records the deleted set earned', () async {
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+
+        final exercise = (await exerciseRepo.getAllExercises()).first;
+        await controller.addExercise(exercise);
+        await controller.logSet(exerciseId: exercise.id, weight: 100, reps: 5);
+        await controller.logSet(exerciseId: exercise.id, weight: 1000, reps: 5);
+
+        final mistake = readState().setsByExercise[exercise.id]!.last;
+        await controller.deleteSet(mistake.id, exercise.id);
+
+        final best = await prRepo.getBestRecord(
+          exercise.id,
+          RecordType.maxWeight,
+          kSelfClientId,
+        );
+        expect(best?.value, 100);
+      });
+
       test('removes set from state', () async {
         await waitForInit();
         final controller = readController();
@@ -363,6 +440,62 @@ void main() {
 
         await controller.finishWorkout();
         expect(readState().hasActiveWorkout, isFalse);
+      });
+
+      test('does not write another client\'s workout to the health store',
+          () async {
+        final health = _RecordingHealthSyncService();
+        final alice = Client.create(name: 'Alice', colour: 0);
+        container.dispose();
+        container = ProviderContainer(
+          overrides: [
+            workoutRepositoryProvider.overrideWithValue(workoutRepo),
+            exerciseRepositoryProvider.overrideWithValue(exerciseRepo),
+            personalRecordRepositoryProvider.overrideWithValue(prRepo),
+            workoutTemplateRepositoryProvider.overrideWithValue(templateRepo),
+            healthSyncServiceProvider.overrideWithValue(health),
+            healthSyncSettingsProvider
+                .overrideWith(() => _WorkoutSyncOnNotifier()),
+            syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
+            syncOrchestratorProvider.overrideWithValue(syncOrchestrator),
+            activeClientProvider
+                .overrideWith(() => _FixedActiveClientNotifier(alice)),
+          ],
+        );
+        await waitForInit();
+        await container.read(activeClientProvider.future);
+        final controller = readController();
+        await controller.startWorkout();
+        expect(readState().activeWorkout?.clientId, alice.id);
+
+        await controller.finishWorkout();
+
+        expect(health.workoutsWritten, 0);
+      });
+
+      test('writes Me\'s workout to the health store', () async {
+        final health = _RecordingHealthSyncService();
+        container.dispose();
+        container = ProviderContainer(
+          overrides: [
+            workoutRepositoryProvider.overrideWithValue(workoutRepo),
+            exerciseRepositoryProvider.overrideWithValue(exerciseRepo),
+            personalRecordRepositoryProvider.overrideWithValue(prRepo),
+            workoutTemplateRepositoryProvider.overrideWithValue(templateRepo),
+            healthSyncServiceProvider.overrideWithValue(health),
+            healthSyncSettingsProvider
+                .overrideWith(() => _WorkoutSyncOnNotifier()),
+            syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
+            syncOrchestratorProvider.overrideWithValue(syncOrchestrator),
+          ],
+        );
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+
+        await controller.finishWorkout();
+
+        expect(health.workoutsWritten, 1);
       });
 
       test('syncs to cloud when persisted sync is enabled', () async {
@@ -500,6 +633,76 @@ void main() {
         expect(readState().hasActiveWorkout, isTrue);
         expect(readState().exerciseIds, contains('1'));
         expect(readState().exerciseIds, contains('2'));
+      });
+
+      test('an untrained exercise gets the template\'s sets and reps',
+          () async {
+        await waitForInit();
+        final controller = readController();
+        final template = WorkoutTemplate.create(
+          name: '5x5',
+          exercises: [
+            TemplateExercise(
+              id: 'te1',
+              templateId: '',
+              exerciseId: '1',
+              exerciseName: 'Barbell Bench Press',
+              targetSets: 5,
+              targetReps: 5,
+              orderIndex: 0,
+              updatedAt: DateTime.now().toUtc(),
+            ),
+          ],
+        );
+
+        await controller.startFromTemplate(template);
+
+        final ghosts = readState().ghostSetsByExercise['1'];
+        expect(ghosts, hasLength(5));
+        expect(ghosts!.map((g) => g.reps), everyElement(5));
+        expect(readState().nextGhostSet('1')?.reps, 5);
+      });
+
+      test('history supplies the weights, the template the shape', () async {
+        await waitForInit();
+        final controller = readController();
+        // Last session: 3 sets of 10 at 60 kg.
+        final previous = await workoutRepo.createWorkout(
+          Workout.create().copyWith(
+            completedAt: DateTime.now().toUtc(),
+          ),
+        );
+        for (var i = 1; i <= 3; i++) {
+          await workoutRepo.addSet(WorkoutSet.create(
+            workoutId: previous.id,
+            exerciseId: '1',
+            setOrder: i,
+            weight: 60,
+            reps: 10,
+          ));
+        }
+        final template = WorkoutTemplate.create(
+          name: '5x5',
+          exercises: [
+            TemplateExercise(
+              id: 'te1',
+              templateId: '',
+              exerciseId: '1',
+              exerciseName: 'Barbell Bench Press',
+              targetSets: 5,
+              targetReps: 5,
+              orderIndex: 0,
+              updatedAt: DateTime.now().toUtc(),
+            ),
+          ],
+        );
+
+        await controller.startFromTemplate(template);
+
+        final ghosts = readState().ghostSetsByExercise['1']!;
+        expect(ghosts, hasLength(5));
+        expect(ghosts.map((g) => g.weight), everyElement(60));
+        expect(ghosts.map((g) => g.reps), everyElement(5));
       });
     });
 

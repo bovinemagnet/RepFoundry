@@ -2,23 +2,39 @@ import 'dart:convert';
 
 import 'package:csv/csv.dart';
 
+import 'package:hr_zones/hr_zones.dart';
+
 import '../../../core/units/weight_unit.dart';
+import '../../body_metrics/domain/models/body_metric.dart';
+import '../../body_metrics/domain/repositories/body_metric_repository.dart';
 import '../../clients/domain/models/client.dart';
+import '../../clients/domain/repositories/client_repository.dart';
+import '../../clients/domain/repositories/health_profile_repository.dart';
 import 'import/csv_format_adapter.dart';
 import 'import/csv_import_engine.dart';
+import '../../cardio/domain/models/cardio_heart_rate_sample.dart';
 import '../../cardio/domain/models/cardio_session.dart';
+import '../../cardio/domain/models/cardio_track_point.dart';
 import '../../cardio/domain/repositories/cardio_session_repository.dart';
 import '../../exercises/domain/models/exercise.dart';
 import '../../exercises/domain/repositories/exercise_repository.dart';
 import '../../history/domain/models/personal_record.dart';
 import '../../history/domain/repositories/personal_record_repository.dart';
+import '../../programmes/domain/models/programme.dart';
+import '../../programmes/domain/repositories/programme_repository.dart';
 import '../../stretching/domain/models/stretching_session.dart';
 import '../../stretching/domain/repositories/stretching_session_repository.dart';
+import '../../templates/domain/models/workout_template.dart';
+import '../../templates/domain/repositories/workout_template_repository.dart';
 import '../../workout/domain/models/workout.dart';
 import '../../workout/domain/models/workout_set.dart';
 import '../../workout/domain/repositories/workout_repository.dart';
 
 class ImportResult {
+  final int clientsImported;
+  final int templatesImported;
+  final int programmesImported;
+  final int bodyMetricsImported;
   final int exercisesImported;
   final int workoutsImported;
   final int setsImported;
@@ -40,6 +56,10 @@ class ImportResult {
   final int duplicatesSkipped;
 
   const ImportResult({
+    this.clientsImported = 0,
+    this.templatesImported = 0,
+    this.programmesImported = 0,
+    this.bodyMetricsImported = 0,
     this.exercisesImported = 0,
     this.workoutsImported = 0,
     this.setsImported = 0,
@@ -72,13 +92,26 @@ class ImportDataUseCase {
   final CardioSessionRepository cardioSessionRepository;
   final PersonalRecordRepository personalRecordRepository;
   final StretchingSessionRepository stretchingSessionRepository;
+  final ClientRepository? clientRepository;
+  final HealthProfileRepository? healthProfileRepository;
+  final WorkoutTemplateRepository? workoutTemplateRepository;
+  final ProgrammeRepository? programmeRepository;
+  final BodyMetricRepository? bodyMetricRepository;
 
+  /// The optional repositories cover the sections a version-2 backup adds;
+  /// a section whose repository is absent is skipped. Without
+  /// [clientRepository] every record is restored to Me.
   const ImportDataUseCase({
     required this.workoutRepository,
     required this.exerciseRepository,
     required this.cardioSessionRepository,
     required this.personalRecordRepository,
     required this.stretchingSessionRepository,
+    this.clientRepository,
+    this.healthProfileRepository,
+    this.workoutTemplateRepository,
+    this.programmeRepository,
+    this.bodyMetricRepository,
   });
 
   /// Detects the CSV format of [content] for the confirmation dialog.
@@ -125,82 +158,226 @@ class ImportDataUseCase {
     }
   }
 
+  /// Restores a JSON backup. Parents are restored before children and
+  /// each record's owner is kept when that client is in the restored
+  /// roster (falling back to Me otherwise, which is all a version-1 file
+  /// can support).
+  ///
+  /// Every insert is preceded by an existence check, so re-running the same
+  /// file — or retrying after a partial restore — adds only what is
+  /// missing. Because duplicates never reach the repository, any error a
+  /// repository does throw is a genuine storage failure and propagates
+  /// rather than being mistaken for a duplicate.
   Future<ImportResult> importFromJson(String jsonString) async {
     final data = jsonDecode(jsonString) as Map<String, dynamic>;
+    final now = DateTime.now().toUtc();
 
-    int exercisesImported = 0;
-    int workoutsImported = 0;
-    int setsImported = 0;
-    int cardioSessionsImported = 0;
-    int prsImported = 0;
-    int stretchingImported = 0;
-    int stretchingSkipped = 0;
+    var clientsImported = 0;
+    var exercisesImported = 0;
+    var templatesImported = 0;
+    var programmesImported = 0;
+    var workoutsImported = 0;
+    var setsImported = 0;
+    var cardioSessionsImported = 0;
+    var prsImported = 0;
+    var bodyMetricsImported = 0;
+    var stretchingImported = 0;
+    var stretchingSkipped = 0;
+    var duplicatesSkipped = 0;
 
-    // Track which workout ids landed locally; stretching sessions that
-    // reference a missing parent are skipped rather than failing the whole
-    // import. Pre-load by querying each candidate; the per-row lookup is
-    // cheap on import which is a one-shot operation.
-    final landedWorkoutIds = <String>{};
+    // Clients and their health profiles first: everything else hangs off
+    // them.
+    final knownClientIds = <String>{kSelfClientId};
+    final clients = clientRepository;
+    if (clients != null) {
+      for (final entry in data['clients'] as List<dynamic>? ?? const []) {
+        final map = entry as Map<String, dynamic>;
+        final id = map['id'] as String;
+        final isSelf = map['isSelf'] as bool? ?? id == kSelfClientId;
+        if (!isSelf) {
+          if (await clients.getClient(id) == null) {
+            await clients.createClient(Client(
+              id: id,
+              name: map['name'] as String,
+              colour: map['colour'] as int,
+              notes: map['notes'] as String?,
+              isSelf: false,
+              createdAt: _dateOr(map['createdAt'], now),
+              updatedAt: now,
+              deletedAt: null,
+            ));
+            clientsImported++;
+          } else {
+            duplicatesSkipped++;
+          }
+        }
+        knownClientIds.add(isSelf ? kSelfClientId : id);
 
-    // Import custom exercises.
-    final exercisesList = data['exercises'] as List<dynamic>? ?? [];
-    for (final exerciseMap in exercisesList) {
-      final map = exerciseMap as Map<String, dynamic>;
-      if (map['isCustom'] == true) {
-        final exercise = Exercise(
-          id: map['id'] as String,
-          name: map['name'] as String,
-          category:
-              _parseEnum(ExerciseCategory.values, map['category'] as String),
-          muscleGroup:
-              _parseEnum(MuscleGroup.values, map['muscleGroup'] as String),
-          equipmentType:
-              _parseEnum(EquipmentType.values, map['equipmentType'] as String),
-          isCustom: true,
-          updatedAt: DateTime.now().toUtc(),
-        );
-        try {
-          await exerciseRepository.createExercise(exercise);
-          exercisesImported++;
-        } catch (_) {
-          // Skip duplicates.
+        final profileMap = map['healthProfile'] as Map<String, dynamic>?;
+        if (profileMap != null) {
+          await healthProfileRepository?.saveForClient(
+            isSelf ? kSelfClientId : id,
+            HealthProfile(
+              age: profileMap['age'] as int?,
+              restingHr: profileMap['restingHr'] as int?,
+              measuredMaxHr: profileMap['measuredMaxHr'] as int?,
+              clinicianMaxHr: profileMap['clinicianMaxHr'] as int?,
+              betaBlocker: profileMap['betaBlocker'] as bool? ?? false,
+              heartCondition: profileMap['heartCondition'] as bool? ?? false,
+            ),
+          );
         }
       }
     }
+    String ownerOf(Map<String, dynamic> map) {
+      final id = map['clientId'] as String?;
+      return id != null && knownClientIds.contains(id) ? id : kSelfClientId;
+    }
 
-    // Import workouts and their sets.
-    final workoutsList = data['workouts'] as List<dynamic>? ?? [];
-    for (final workoutMap in workoutsList) {
-      final map = workoutMap as Map<String, dynamic>;
-      final workout = Workout(
-        id: map['id'] as String,
-        startedAt: DateTime.parse(map['startedAt'] as String),
-        completedAt: map['completedAt'] != null
-            ? DateTime.parse(map['completedAt'] as String)
-            : null,
-        templateId: map['templateId'] as String?,
-        notes: map['notes'] as String?,
-        clientId: kSelfClientId,
-        updatedAt: DateTime.now().toUtc(),
-      );
-      try {
-        await workoutRepository.createWorkout(workout);
-        workoutsImported++;
-        landedWorkoutIds.add(workout.id);
-      } catch (_) {
-        // Duplicate parent: still treat its id as valid so child rows can
-        // attach to the existing workout (matches user expectation that a
-        // re-import doesn't orphan child entities).
-        landedWorkoutIds.add(workout.id);
+    // Custom exercises.
+    for (final entry in data['exercises'] as List<dynamic>? ?? const []) {
+      final map = entry as Map<String, dynamic>;
+      if (map['isCustom'] != true) continue;
+      final id = map['id'] as String;
+      if (await exerciseRepository.getExercise(id) != null) {
+        duplicatesSkipped++;
         continue;
       }
+      await exerciseRepository.createExercise(Exercise(
+        id: id,
+        name: map['name'] as String,
+        category:
+            _parseEnum(ExerciseCategory.values, map['category'] as String),
+        muscleGroup:
+            _parseEnum(MuscleGroup.values, map['muscleGroup'] as String),
+        equipmentType:
+            _parseEnum(EquipmentType.values, map['equipmentType'] as String),
+        isCustom: true,
+        updatedAt: now,
+      ));
+      exercisesImported++;
+    }
 
-      final setsList = map['sets'] as List<dynamic>? ?? [];
-      for (final setMap in setsList) {
-        final s = setMap as Map<String, dynamic>;
-        final workoutSet = WorkoutSet(
-          id: s['id'] as String,
-          workoutId: workout.id,
+    // Templates, then programmes (whose days reference templates).
+    final templates = workoutTemplateRepository;
+    if (templates != null) {
+      for (final entry
+          in data['workoutTemplates'] as List<dynamic>? ?? const []) {
+        final map = entry as Map<String, dynamic>;
+        final id = map['id'] as String;
+        if (await templates.getTemplate(id) != null) {
+          duplicatesSkipped++;
+          continue;
+        }
+        await templates.createTemplate(WorkoutTemplate(
+          id: id,
+          name: map['name'] as String,
+          createdAt: _dateOr(map['createdAt'], now),
+          updatedAt: now,
+          exercises: [
+            for (final e in map['exercises'] as List<dynamic>? ?? const [])
+              TemplateExercise(
+                id: (e as Map<String, dynamic>)['id'] as String,
+                templateId: id,
+                exerciseId: e['exerciseId'] as String,
+                exerciseName: e['exerciseName'] as String,
+                targetSets: e['targetSets'] as int,
+                targetReps: e['targetReps'] as int,
+                orderIndex: e['orderIndex'] as int,
+                updatedAt: now,
+              ),
+          ],
+        ));
+        templatesImported++;
+      }
+    }
+
+    final programmes = programmeRepository;
+    if (programmes != null) {
+      for (final entry in data['programmes'] as List<dynamic>? ?? const []) {
+        final map = entry as Map<String, dynamic>;
+        final id = map['id'] as String;
+        if (await programmes.getProgramme(id) != null) {
+          duplicatesSkipped++;
+          continue;
+        }
+        await programmes.createProgramme(Programme(
+          id: id,
+          name: map['name'] as String,
+          durationWeeks: map['durationWeeks'] as int,
+          createdAt: _dateOr(map['createdAt'], now),
+          updatedAt: now,
+          startedAt: map['startedAt'] != null
+              ? DateTime.parse(map['startedAt'] as String)
+              : null,
+        ));
+        for (final d in map['days'] as List<dynamic>? ?? const []) {
+          final dayMap = d as Map<String, dynamic>;
+          await programmes.addDay(ProgrammeDay(
+            id: dayMap['id'] as String,
+            programmeId: id,
+            weekNumber: dayMap['weekNumber'] as int,
+            dayOfWeek: dayMap['dayOfWeek'] as int,
+            templateId: dayMap['templateId'] as String,
+            templateName: dayMap['templateName'] as String,
+            updatedAt: now,
+          ));
+        }
+        for (final r in map['rules'] as List<dynamic>? ?? const []) {
+          final ruleMap = r as Map<String, dynamic>;
+          await programmes.addRule(ProgressionRule(
+            id: ruleMap['id'] as String,
+            programmeId: id,
+            exerciseId: ruleMap['exerciseId'] as String,
+            type: _parseEnum(ProgressionType.values, ruleMap['type'] as String),
+            value: (ruleMap['value'] as num).toDouble(),
+            frequencyWeeks: ruleMap['frequencyWeeks'] as int? ?? 1,
+            updatedAt: now,
+          ));
+        }
+        programmesImported++;
+      }
+    }
+
+    // Workouts and their sets. An existing parent is still walked so a
+    // retry after a partial restore can add its missing sets.
+    final landedWorkoutIds = <String>{};
+    for (final entry in data['workouts'] as List<dynamic>? ?? const []) {
+      final map = entry as Map<String, dynamic>;
+      final workoutId = map['id'] as String;
+      if (await workoutRepository.getWorkout(workoutId) == null) {
+        await workoutRepository.createWorkout(Workout(
+          id: workoutId,
+          startedAt: DateTime.parse(map['startedAt'] as String),
+          completedAt: map['completedAt'] != null
+              ? DateTime.parse(map['completedAt'] as String)
+              : null,
+          templateId: map['templateId'] as String?,
+          notes: map['notes'] as String?,
+          clientId: ownerOf(map),
+          updatedAt: now,
+        ));
+        workoutsImported++;
+      } else {
+        duplicatesSkipped++;
+      }
+      landedWorkoutIds.add(workoutId);
+
+      final existingSetIds = (await workoutRepository.getSetsForWorkout(
+        workoutId,
+      ))
+          .map((s) => s.id)
+          .toSet();
+      for (final setEntry in map['sets'] as List<dynamic>? ?? const []) {
+        final s = setEntry as Map<String, dynamic>;
+        final setId = s['id'] as String;
+        if (existingSetIds.contains(setId)) {
+          duplicatesSkipped++;
+          continue;
+        }
+        await workoutRepository.addSet(WorkoutSet(
+          id: setId,
+          workoutId: workoutId,
           exerciseId: s['exerciseId'] as String,
           setOrder: s['setOrder'] as int,
           weight: (s['weight'] as num).toDouble(),
@@ -209,23 +386,25 @@ class ImportDataUseCase {
           timestamp: DateTime.parse(s['timestamp'] as String),
           isWarmUp: s['isWarmUp'] as bool? ?? false,
           groupId: s['groupId'] as String?,
-          updatedAt: DateTime.now().toUtc(),
-        );
-        try {
-          await workoutRepository.addSet(workoutSet);
-          setsImported++;
-        } catch (_) {
-          // Skip duplicates.
-        }
+          avgHeartRate: s['avgHeartRate'] as int?,
+          peakHeartRate: s['peakHeartRate'] as int?,
+          updatedAt: now,
+        ));
+        existingSetIds.add(setId);
+        setsImported++;
       }
     }
 
-    // Import cardio sessions.
-    final cardioList = data['cardioSessions'] as List<dynamic>? ?? [];
-    for (final cardioMap in cardioList) {
-      final map = cardioMap as Map<String, dynamic>;
-      final session = CardioSession(
-        id: map['id'] as String,
+    // Cardio sessions.
+    for (final entry in data['cardioSessions'] as List<dynamic>? ?? const []) {
+      final map = entry as Map<String, dynamic>;
+      final id = map['id'] as String;
+      if (await cardioSessionRepository.getSession(id) != null) {
+        duplicatesSkipped++;
+        continue;
+      }
+      await cardioSessionRepository.createSession(CardioSession(
+        id: id,
         workoutId: map['workoutId'] as String,
         exerciseId: map['exerciseId'] as String,
         durationSeconds: map['durationSeconds'] as int,
@@ -235,70 +414,114 @@ class ImportDataUseCase {
         incline:
             map['incline'] != null ? (map['incline'] as num).toDouble() : null,
         avgHeartRate: map['avgHeartRate'] as int?,
-        clientId: kSelfClientId,
-        updatedAt: DateTime.now().toUtc(),
-      );
-      try {
-        await cardioSessionRepository.createSession(session);
-        cardioSessionsImported++;
-      } catch (_) {
-        // Skip duplicates.
+        clientId: ownerOf(map),
+        updatedAt: now,
+      ));
+      final points = [
+        for (final p in map['trackPoints'] as List<dynamic>? ?? const [])
+          CardioTrackPoint(
+            timestamp: DateTime.parse(
+                (p as Map<String, dynamic>)['timestamp'] as String),
+            latitude: (p['latitude'] as num).toDouble(),
+            longitude: (p['longitude'] as num).toDouble(),
+            altitude: (p['altitude'] as num?)?.toDouble(),
+            accuracy: (p['accuracy'] as num?)?.toDouble(),
+          ),
+      ];
+      if (points.isNotEmpty) {
+        await cardioSessionRepository.saveTrackPoints(id, points);
       }
+      final samples = [
+        for (final h in map['heartRateSamples'] as List<dynamic>? ?? const [])
+          CardioHeartRateSample(
+            timestamp: DateTime.parse(
+                (h as Map<String, dynamic>)['timestamp'] as String),
+            bpm: h['bpm'] as int,
+          ),
+      ];
+      if (samples.isNotEmpty) {
+        await cardioSessionRepository.saveHeartRateSamples(id, samples);
+      }
+      cardioSessionsImported++;
     }
 
-    // Import personal records.
-    final prsList = data['personalRecords'] as List<dynamic>? ?? [];
-    for (final prMap in prsList) {
-      final map = prMap as Map<String, dynamic>;
-      final pr = PersonalRecord(
-        id: map['id'] as String,
+    // Personal records.
+    for (final entry in data['personalRecords'] as List<dynamic>? ?? const []) {
+      final map = entry as Map<String, dynamic>;
+      final id = map['id'] as String;
+      if (await personalRecordRepository.getRecord(id) != null) {
+        duplicatesSkipped++;
+        continue;
+      }
+      await personalRecordRepository.createRecord(PersonalRecord(
+        id: id,
         exerciseId: map['exerciseId'] as String,
         recordType: _parseEnum(RecordType.values, map['recordType'] as String),
         value: (map['value'] as num).toDouble(),
         achievedAt: DateTime.parse(map['achievedAt'] as String),
         workoutSetId: map['workoutSetId'] as String?,
-        clientId: kSelfClientId,
-        updatedAt: DateTime.now().toUtc(),
-      );
-      try {
-        await personalRecordRepository.createRecord(pr);
-        prsImported++;
-      } catch (_) {
-        // Skip duplicates.
+        clientId: ownerOf(map),
+        updatedAt: now,
+      ));
+      prsImported++;
+    }
+
+    // Body metrics.
+    final bodyMetrics = bodyMetricRepository;
+    if (bodyMetrics != null) {
+      final existingMetricIds = <String>{};
+      for (final clientId in knownClientIds) {
+        final existing =
+            await bodyMetrics.getAll(clientId: clientId, limit: 100000);
+        existingMetricIds.addAll(existing.map((m) => m.id));
+      }
+      for (final entry in data['bodyMetrics'] as List<dynamic>? ?? const []) {
+        final map = entry as Map<String, dynamic>;
+        final id = map['id'] as String;
+        if (existingMetricIds.contains(id)) {
+          duplicatesSkipped++;
+          continue;
+        }
+        await bodyMetrics.create(BodyMetric(
+          id: id,
+          date: DateTime.parse(map['date'] as String),
+          weight: (map['weight'] as num).toDouble(),
+          bodyFatPercent: map['bodyFatPercent'] != null
+              ? (map['bodyFatPercent'] as num).toDouble()
+              : null,
+          notes: map['notes'] as String?,
+          clientId: ownerOf(map),
+          updatedAt: now,
+        ));
+        bodyMetricsImported++;
       }
     }
 
-    // Import stretching sessions.
-    //
-    // Older exports won't have this key — `?? []` handles that. Sessions
-    // whose parent workout did not land locally are skipped (counted in
-    // stretchingSessionsSkipped) rather than failing the whole import.
-    final stretchingList = data['stretchingSessions'] as List<dynamic>? ?? [];
-    for (final entry in stretchingList) {
+    // Stretching sessions. Older exports lack this key; sessions whose
+    // parent workout is absent are skipped rather than failing the import.
+    for (final entry
+        in data['stretchingSessions'] as List<dynamic>? ?? const []) {
       final map = entry as Map<String, dynamic>;
       final workoutId = map['workoutId'] as String;
-
-      // If the workout did not arrive in this import, also accept the
-      // case where it already existed locally before the import started.
       if (!landedWorkoutIds.contains(workoutId)) {
-        final existing = await workoutRepository.getWorkout(workoutId);
-        if (existing == null) {
+        if (await workoutRepository.getWorkout(workoutId) == null) {
           stretchingSkipped++;
           continue;
         }
         landedWorkoutIds.add(workoutId);
       }
-
-      final session = StretchingSession(
-        id: map['id'] as String,
+      final id = map['id'] as String;
+      if (await stretchingSessionRepository.getSession(id) != null) {
+        duplicatesSkipped++;
+        continue;
+      }
+      await stretchingSessionRepository.createSession(StretchingSession(
+        id: id,
         workoutId: workoutId,
         type: map['type'] as String,
         customName: map['customName'] as String?,
         bodyArea: map['bodyArea'] != null
-            ? _parseEnum(
-                StretchingBodyArea.values,
-                map['bodyArea'] as String,
-              )
+            ? _parseEnum(StretchingBodyArea.values, map['bodyArea'] as String)
             : null,
         side: map['side'] != null
             ? _parseEnum(StretchingSide.values, map['side'] as String)
@@ -315,17 +538,16 @@ class ImportDataUseCase {
           map['entryMethod'] as String,
         ),
         notes: map['notes'] as String?,
-        updatedAt: DateTime.now().toUtc(),
-      );
-      try {
-        await stretchingSessionRepository.createSession(session);
-        stretchingImported++;
-      } catch (_) {
-        // Skip duplicates.
-      }
+        updatedAt: now,
+      ));
+      stretchingImported++;
     }
 
     return ImportResult(
+      clientsImported: clientsImported,
+      templatesImported: templatesImported,
+      programmesImported: programmesImported,
+      bodyMetricsImported: bodyMetricsImported,
       exercisesImported: exercisesImported,
       workoutsImported: workoutsImported,
       setsImported: setsImported,
@@ -333,8 +555,12 @@ class ImportDataUseCase {
       personalRecordsImported: prsImported,
       stretchingSessionsImported: stretchingImported,
       stretchingSessionsSkipped: stretchingSkipped,
+      duplicatesSkipped: duplicatesSkipped,
     );
   }
+
+  DateTime _dateOr(Object? iso, DateTime fallback) =>
+      iso is String ? DateTime.parse(iso) : fallback;
 
   T _parseEnum<T extends Enum>(List<T> values, String name) {
     return values.firstWhere(

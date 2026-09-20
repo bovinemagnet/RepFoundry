@@ -771,4 +771,55 @@ void main() {
         reason: 'still above cap after the persona switch — no encouragement '
             'cue should have been able to speak');
   });
+
+  test('starting a workout while in zone 5 keeps encouragement suppressed',
+      () async {
+    // The HR event source outlives workouts and only announces zone
+    // *transitions*, so if the engine forgets the zone at WorkoutStarted
+    // nothing can ever tell it again while the reading stays put.
+    final container = buildContainer();
+    final bridge = container.read(_bridgeUnderTest);
+    bridge.strings = lookupS(const Locale('en'));
+
+    final bus = container.read(trainerEventBusProvider);
+    bus.emit(const HeartRateZoneChanged(
+        zoneNumber: 5, effortLabel: 'Maximum', descriptiveLabel: 'VO2 Max'));
+    await Future<void>.delayed(Duration.zero);
+    final spokenBeforeStart = speechService.spoken.length;
+
+    bus.emit(const WorkoutStarted());
+    await Future<void>.delayed(Duration.zero);
+    for (var setNumber = 1; setNumber <= 3; setNumber++) {
+      bus.emit(SetLogged(setNumber: setNumber, isPersonalRecord: false));
+      await Future<void>.delayed(Duration.zero);
+    }
+
+    expect(speechService.spoken, hasLength(spokenBeforeStart),
+        reason: 'still in zone 5 — neither the start milestone nor any '
+            'encouragement should have spoken');
+  });
+
+  test('finishing a workout while above cap keeps the next one suppressed',
+      () async {
+    final container = buildContainer();
+    final bridge = container.read(_bridgeUnderTest);
+    bridge.strings = lookupS(const Locale('en'));
+
+    final bus = container.read(trainerEventBusProvider);
+    bus.emit(const HeartRateAboveCap(bpm: 180, cap: 170));
+    await Future<void>.delayed(Duration.zero);
+    expect(speechService.spoken, hasLength(1));
+
+    bus.emit(const WorkoutFinished(totalSets: 3));
+    await Future<void>.delayed(Duration.zero);
+    bus.emit(const WorkoutStarted());
+    await Future<void>.delayed(Duration.zero);
+    for (var setNumber = 1; setNumber <= 3; setNumber++) {
+      bus.emit(SetLogged(setNumber: setNumber, isPersonalRecord: false));
+      await Future<void>.delayed(Duration.zero);
+    }
+
+    expect(speechService.spoken, hasLength(1),
+        reason: 'no reading has come back below the cap');
+  });
 }

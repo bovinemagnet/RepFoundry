@@ -9,6 +9,7 @@ import 'package:rep_foundry/features/body_metrics/domain/repositories/body_metri
 import 'package:rep_foundry/features/body_metrics/presentation/screens/body_metrics_screen.dart';
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/clients/presentation/providers/active_client_provider.dart';
+import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_weight_import_provider.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
@@ -23,6 +24,27 @@ class _FakeActiveClientNotifier extends ActiveClientNotifier {
 
   @override
   Future<Client> build() async => _client;
+}
+
+/// Records outbound health-store writes instead of touching the platform.
+class _RecordingHealthSyncService extends HealthSyncService {
+  final List<double> weightsWritten = [];
+
+  @override
+  Future<bool> writeWeight({
+    required double weightKg,
+    required DateTime dateTime,
+  }) async {
+    weightsWritten.add(weightKg);
+    return true;
+  }
+}
+
+/// Health sync switched on with weight writes enabled, without prefs.
+class _WeightSyncOnNotifier extends HealthSyncSettingsNotifier {
+  @override
+  HealthSyncSettings build() =>
+      const HealthSyncSettings(enabled: true, writeWeight: true);
 }
 
 /// Records created metrics so tests can assert on the persisted values.
@@ -336,6 +358,103 @@ void main() {
 
       expect(repository.created, hasLength(1));
       expect(repository.created.single.clientId, kSelfClientId);
+    });
+
+    testWidgets('a measurement for another client is not written to health',
+        (tester) async {
+      final repository = _RecordingBodyMetricRepository();
+      final health = _RecordingHealthSyncService();
+      final otherClient = Client(
+        id: 'client-alice',
+        name: 'Alice',
+        colour: 0xFF4C6EF5,
+        notes: null,
+        isSelf: false,
+        createdAt: DateTime.now().toUtc(),
+        updatedAt: DateTime.now().toUtc(),
+        deletedAt: null,
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          bodyMetricsStreamProvider.overrideWith(
+            (ref) => Stream.value(const []),
+          ),
+          healthSyncSettingsProvider.overrideWith(_WeightSyncOnNotifier.new),
+          healthSyncServiceProvider.overrideWithValue(health),
+          bodyMetricRepositoryProvider.overrideWithValue(repository),
+          activeClientProvider.overrideWith(
+            () => _FakeActiveClientNotifier(otherClient),
+          ),
+          healthWeightCheckProvider.overrideWith((ref) async => null),
+        ],
+      );
+      addTearDown(container.dispose);
+      // As in the app, the roster is already resolved before the dialog.
+      container.listen(activeClientProvider, (_, __) {});
+      await container.read(activeClientProvider.future);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
+            home: BodyMetricsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Add Measurement'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Body Weight'),
+        '70',
+      );
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(repository.created.single.clientId, otherClient.id);
+      expect(health.weightsWritten, isEmpty,
+          reason: "a client's weight must not land in the coach's health "
+              'account');
+    });
+
+    testWidgets('a measurement for Me is written to health', (tester) async {
+      final repository = _RecordingBodyMetricRepository();
+      final health = _RecordingHealthSyncService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            bodyMetricsStreamProvider.overrideWith(
+              (ref) => Stream.value(const []),
+            ),
+            healthSyncSettingsProvider.overrideWith(_WeightSyncOnNotifier.new),
+            healthSyncServiceProvider.overrideWithValue(health),
+            bodyMetricRepositoryProvider.overrideWithValue(repository),
+            healthWeightCheckProvider.overrideWith((ref) async => null),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
+            home: BodyMetricsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Add Measurement'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Body Weight'),
+        '70',
+      );
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(health.weightsWritten, [70]);
     });
   });
 }

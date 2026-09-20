@@ -931,6 +931,24 @@ class SEn extends S {
   String get cardioSessionSaved => 'Cardio session saved';
 
   @override
+  String get viewSavedSession => 'View';
+
+  @override
+  String get cardioSectionTitle => 'Cardio';
+
+  @override
+  String cardioRecordingCounts(int points, int samples) {
+    return '$points GPS points · $samples heart rate readings';
+  }
+
+  @override
+  String get exportCardioSession => 'Export';
+
+  @override
+  String get exportCardioSessionHint =>
+      'Share the GPS track as GPX and the heart rate readings as CSV';
+
+  @override
   String get heartRateMonitorCard => 'Heart Rate Monitor';
 
   @override
@@ -1729,7 +1747,12 @@ class SEn extends S {
   String get syncEnabled => 'Enable Cross-Device Sync';
 
   @override
-  String get syncEnabledSubtitle => 'Sync your workout data across devices';
+  String get syncEnabledSubtitle =>
+      'Sync your own workout data across devices. Other clients\' records stay on this device.';
+
+  @override
+  String get syncUnsupportedPlatform =>
+      'Cloud sync is not available on this platform';
 
   @override
   String syncLastSynced(String time) {
@@ -2057,6 +2080,11 @@ class SEn extends S {
   @override
   String viewingClient(String name) {
     return 'Viewing $name';
+  }
+
+  @override
+  String sessionClientLocked(String client) {
+    return 'Logging for $client — fixed for this session';
   }
 
   @override

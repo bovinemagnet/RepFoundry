@@ -1764,6 +1764,36 @@ abstract class S {
   /// **'Cardio session saved'**
   String get cardioSessionSaved;
 
+  /// No description provided for @viewSavedSession.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get viewSavedSession;
+
+  /// No description provided for @cardioSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cardio'**
+  String get cardioSectionTitle;
+
+  /// No description provided for @cardioRecordingCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} GPS points · {samples} heart rate readings'**
+  String cardioRecordingCounts(int points, int samples);
+
+  /// No description provided for @exportCardioSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get exportCardioSession;
+
+  /// No description provided for @exportCardioSessionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Share the GPS track as GPX and the heart rate readings as CSV'**
+  String get exportCardioSessionHint;
+
   /// No description provided for @heartRateMonitorCard.
   ///
   /// In en, this message translates to:
@@ -3093,8 +3123,14 @@ abstract class S {
   /// No description provided for @syncEnabledSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Sync your workout data across devices'**
+  /// **'Sync your own workout data across devices. Other clients\' records stay on this device.'**
   String get syncEnabledSubtitle;
+
+  /// No description provided for @syncUnsupportedPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud sync is not available on this platform'**
+  String get syncUnsupportedPlatform;
 
   /// No description provided for @syncLastSynced.
   ///
@@ -3695,6 +3731,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Viewing {name}'**
   String viewingClient(String name);
+
+  /// No description provided for @sessionClientLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Logging for {client} — fixed for this session'**
+  String sessionClientLocked(String client);
 
   /// No description provided for @assignedPlans.
   ///

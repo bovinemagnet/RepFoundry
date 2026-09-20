@@ -2,7 +2,9 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart' as db;
 import 'package:rep_foundry/features/cardio/data/drift_cardio_session_repository.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_heart_rate_sample.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_track_point.dart';
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/workout/data/drift_workout_repository.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
@@ -250,6 +252,65 @@ void main() {
         await pumpEventQueue();
 
         expect(emissions.last, hasLength(1));
+      });
+    });
+
+    group('track points and heart-rate samples', () {
+      final t0 = DateTime.utc(2026, 5, 1, 7);
+
+      test('round-trip a GPS track in timestamp order', () async {
+        final workout = await createParentWorkout();
+        final session = newSession(workoutId: workout.id);
+        await repo.createSession(session);
+
+        await repo.saveTrackPoints(session.id, [
+          CardioTrackPoint(
+            timestamp: t0.add(const Duration(seconds: 5)),
+            latitude: 51.5075,
+            longitude: -0.1279,
+            altitude: 12.5,
+            accuracy: 4,
+          ),
+          CardioTrackPoint(
+            timestamp: t0,
+            latitude: 51.5074,
+            longitude: -0.1278,
+          ),
+        ]);
+
+        final points = await repo.getTrackPoints(session.id);
+        expect(points.map((p) => p.timestamp), [
+          t0,
+          t0.add(const Duration(seconds: 5)),
+        ]);
+        expect(points.last.latitude, 51.5075);
+        expect(points.last.altitude, 12.5);
+        expect(points.last.accuracy, 4);
+        expect(points.first.altitude, isNull);
+      });
+
+      test('round-trip heart-rate samples in timestamp order', () async {
+        final workout = await createParentWorkout();
+        final session = newSession(workoutId: workout.id);
+        await repo.createSession(session);
+
+        await repo.saveHeartRateSamples(session.id, [
+          CardioHeartRateSample(
+              timestamp: t0.add(const Duration(seconds: 1)), bpm: 140),
+          CardioHeartRateSample(timestamp: t0, bpm: 130),
+        ]);
+
+        final samples = await repo.getHeartRateSamples(session.id);
+        expect(samples.map((s) => s.bpm), [130, 140]);
+      });
+
+      test('a session with no recordings returns empty lists', () async {
+        final workout = await createParentWorkout();
+        final session = newSession(workoutId: workout.id);
+        await repo.createSession(session);
+
+        expect(await repo.getTrackPoints(session.id), isEmpty);
+        expect(await repo.getHeartRateSamples(session.id), isEmpty);
       });
     });
   });

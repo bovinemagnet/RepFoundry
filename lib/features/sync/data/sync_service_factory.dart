@@ -1,4 +1,7 @@
 import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import '../domain/sync_service.dart';
 import 'cloudkit_sync_service.dart';
 import 'google_drive_sync_service.dart';
@@ -12,6 +15,8 @@ import 'noop_cloud_sync_service.dart';
 /// runs to completion without throwing `UnimplementedError` from the
 /// Google Sign-In platform-interface placeholder.
 CloudSyncService createCloudSyncService() {
+  // dart:io's Platform getters throw on web, so decide that first.
+  if (kIsWeb) return pickCloudSyncService(isWeb: true);
   return pickCloudSyncService(
     isIOS: Platform.isIOS,
     isAndroid: Platform.isAndroid,
@@ -22,9 +27,11 @@ CloudSyncService createCloudSyncService() {
 /// tests can drive the platform booleans directly without stubbing
 /// `dart:io`.
 CloudSyncService pickCloudSyncService({
-  required bool isIOS,
-  required bool isAndroid,
+  bool isWeb = false,
+  bool isIOS = false,
+  bool isAndroid = false,
 }) {
+  if (isWeb) return const NoopCloudSyncService();
   if (isIOS) return CloudKitSyncService();
   if (isAndroid) return GoogleDriveSyncService();
   return const NoopCloudSyncService();

@@ -32,7 +32,7 @@ Health sync is not all-or-nothing. Four settings toggles under *Settings → Rem
 | Sends body weight and, when you record it, body fat percentage entries to your health app.
 
 | *Write Heart Rate*
-| Sends each heart rate reading recorded during a monitoring session to your health app.
+| Sends heart rate readings from a cardio session to your health app when the session is saved, thinned to at most one reading every ten seconds — so an hour-long session doesn't produce thousands of individual health-store writes.
 
 | *Read Weight*
 | Looks for a newer weight entry in your health app than the one RepFoundry already has, and offers to import it.
@@ -43,6 +43,10 @@ Health sync is not all-or-nothing. Four settings toggles under *Settings → Rem
 Reading only applies to weight — RepFoundry does not pull workouts, body fat, or heart rate data back in from your health app. When a newer weight entry is found, you are prompted to import it the next time you visit the *Body Metrics* screen; it is not applied automatically.
 
 RepFoundry asks for write access to four data types — workouts, weight, body fat, and heart rate — but read access to only one: weight. It never reads your heart rate or workout history back out of your health app. The two platforms surface this differently: Android's Health Connect presents separate read and write permissions for each data type, while iOS's Apple Health uses two broader prompts instead — one covering everything RepFoundry reads, one covering everything it writes.
+
+On Android, turning on *Write Workouts* also asks Health Connect for permission to write total calories burned and distance. A workout is stored there as an exercise session together with those two supporting records, and Health Connect rejects the whole write unless both permissions are granted alongside the workout permission itself. iOS is unaffected — Apple Health carries calories and distance as attributes of the workout itself, so iOS needs only the one workout permission.
+
+NOTE: Health sync only ever writes *your own* data. If you coach other clients, their workouts, weights, and heart rate readings are never sent to your phone's health app — only your own "You" data is shared.
 
 == Granting access
 

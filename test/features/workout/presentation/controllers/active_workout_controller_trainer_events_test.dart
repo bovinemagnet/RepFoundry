@@ -37,6 +37,9 @@ class _NeverEntitled implements EntitlementService {
 
 class _FakeCloudSyncService implements CloudSyncService {
   @override
+  bool get isSupported => true;
+
+  @override
   Future<void> deleteCloudData({bool interactive = false}) async {}
 
   @override

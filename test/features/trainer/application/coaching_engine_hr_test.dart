@@ -112,6 +112,72 @@ void main() {
     expect(engine.isAboveCap, isFalse);
   });
 
+  group('signal lost', () {
+    // Losing the strap is not a measured recovery: the coach must never say
+    // "you're back under your maximum" on the strength of no data at all.
+    test('never speaks a recovery line', () {
+      final engine = _engine();
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
+
+      final cue = engine.onEvent(
+        const HeartRateSignalLost(),
+        now: t0.add(const Duration(seconds: 30)),
+      );
+
+      expect(cue, isNull);
+      expect(engine.isAboveCap, isFalse);
+    });
+
+    test('lifts above-cap suppression so it cannot stick without a signal', () {
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
+      engine.onEvent(const HeartRateSignalLost(),
+          now: t0.add(const Duration(seconds: 30)));
+
+      final cue = engine.onEvent(
+        const SetLogged(setNumber: 1, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 35)),
+      );
+
+      expect(cue, isNotNull);
+    });
+
+    test('forgets the zone so a stale zone 5 cannot suppress for ever', () {
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+      engine.onEvent(
+        const HeartRateZoneChanged(
+            zoneNumber: 5, effortLabel: 'Max', descriptiveLabel: 'VO2'),
+        now: t0,
+      );
+      engine.onEvent(const HeartRateSignalLost(),
+          now: t0.add(const Duration(seconds: 30)));
+
+      final cue = engine.onEvent(
+        const SetLogged(setNumber: 1, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 35)),
+      );
+
+      expect(cue, isNotNull);
+    });
+
+    test('a later genuine recovery still speaks', () {
+      final engine = _engine();
+      engine.onEvent(const HeartRateSignalLost(), now: t0);
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170),
+          now: t0.add(const Duration(seconds: 5)));
+
+      final cue = engine.onEvent(
+        const HeartRateBackBelowCap(),
+        now: t0.add(const Duration(seconds: 40)),
+      );
+
+      expect(cue, isNotNull);
+      expect(cue!.phraseKey, 'backbelow1');
+    });
+  });
+
   test('a personal record is still suppressed above cap', () {
     // PRs are milestone priority and normally bypass the cooldown, so they are
     // the most likely cue to escape the safety suppression.
@@ -249,11 +315,13 @@ void main() {
     });
   });
 
-  group('reset clears the new heart-rate state', () {
-    // Fix round 1, Important 3: without this, reset() runs inside other
-    // tests and its lines count as "covered" while nothing asserts the
-    // fields it clears actually unblock the engine afterwards.
-    test('reset lifts above-cap suppression', () {
+  group('reset keeps live heart-rate state', () {
+    // The HR event source outlives the workout and announces only
+    // transitions, so a reset that dropped this state would leave the coach
+    // encouraging a user who is still above cap or in zone 5, with no later
+    // event able to tell it otherwise. Only session phrase/cadence state is
+    // per-workout.
+    test('reset keeps above-cap suppression', () {
       final engine =
           _engine(encouragementEverySets: 1, cooldown: Duration.zero);
       engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
@@ -265,32 +333,11 @@ void main() {
         now: t0.add(const Duration(seconds: 1)),
       );
 
-      expect(cue, isNotNull);
-      expect(engine.isAboveCap, isFalse);
+      expect(cue, isNull);
+      expect(engine.isAboveCap, isTrue);
     });
 
-    test('reset clears the cap-warning repeat timer', () {
-      // Fix round 2, Important 2: reset() clears _lastCapWarningAt, but
-      // nothing re-issued HeartRateAboveCap afterwards to prove it. Live
-      // consequence: coach_bridge.dart calls reset() on both WorkoutStarted
-      // and WorkoutFinished, so a session ending above cap followed by a new
-      // one starting within 30s would have its first safety warning
-      // swallowed by a stale repeat window.
-      final engine = _engine();
-      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
-
-      engine.reset();
-
-      final cue = engine.onEvent(
-        const HeartRateAboveCap(bpm: 180, cap: 170),
-        now: t0.add(const Duration(seconds: 5)),
-      );
-
-      expect(cue, isNotNull);
-      expect(cue!.priority, SpeechPriority.safety);
-    });
-
-    test('reset lifts zone-5 suppression', () {
+    test('reset keeps zone-5 suppression', () {
       final engine =
           _engine(encouragementEverySets: 1, cooldown: Duration.zero);
       engine.onEvent(
@@ -304,6 +351,22 @@ void main() {
       final cue = engine.onEvent(
         const SetLogged(setNumber: 1, isPersonalRecord: false),
         now: t0.add(const Duration(seconds: 1)),
+      );
+
+      expect(cue, isNull);
+    });
+
+    test('a genuine recovery after reset still lifts suppression', () {
+      final engine =
+          _engine(encouragementEverySets: 1, cooldown: Duration.zero);
+      engine.onEvent(const HeartRateAboveCap(bpm: 180, cap: 170), now: t0);
+      engine.reset();
+      engine.onEvent(const HeartRateBackBelowCap(),
+          now: t0.add(const Duration(seconds: 30)));
+
+      final cue = engine.onEvent(
+        const SetLogged(setNumber: 1, isPersonalRecord: false),
+        now: t0.add(const Duration(seconds: 31)),
       );
 
       expect(cue, isNotNull);

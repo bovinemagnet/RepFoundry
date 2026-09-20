@@ -272,6 +272,76 @@ Repository: `DriftWorkoutRepository`
 
 Status: table defined; repository implementation deferred.
 
+=== cardio_track_points
+
+[cols="1,1,1,3",options="header"]
+|===
+| Column | Type | Constraints | Notes
+
+| id
+| TEXT
+| PK
+| UUID v4
+
+| cardio_session_id
+| TEXT
+| FK → cardio_sessions(id), NOT NULL
+|
+
+| latitude
+| REAL
+| NOT NULL
+|
+
+| longitude
+| REAL
+| NOT NULL
+|
+
+| altitude_meters
+| REAL
+| NULLABLE
+|
+
+| recorded_at
+| INTEGER
+| NOT NULL
+| Epoch ms
+|===
+
+Added in schema v14. Repository: `DriftCardioSessionRepository` (`saveTrackPoints`/`getTrackPoints`).
+
+=== cardio_heart_rate_samples
+
+[cols="1,1,1,3",options="header"]
+|===
+| Column | Type | Constraints | Notes
+
+| id
+| TEXT
+| PK
+| UUID v4
+
+| cardio_session_id
+| TEXT
+| FK → cardio_sessions(id), NOT NULL
+|
+
+| bpm
+| INTEGER
+| NOT NULL
+|
+
+| recorded_at
+| INTEGER
+| NOT NULL
+| Epoch ms
+|===
+
+Added in schema v14. Repository: `DriftCardioSessionRepository` (`saveHeartRateSamples`/`getHeartRateSamples`).
+
+See xref:features/cardio.adoc[Cardio tracking internals] for how these rows are captured and exported.
+
 === personal_records
 
 [cols="1,1,1,3",options="header"]
@@ -407,6 +477,9 @@ Each schema version increment adds a `MigrationStep` that applies the required D
 
 | v5
 | Added `rpe` column to `workout_sets`
+
+| v14
+| Added `cardio_track_points` and `cardio_heart_rate_samples` (migration step guarded by `from < 14`)
 |===
 
 NOTE: Always run `dart run build_runner build --delete-conflicting-outputs` after adding a new migration step to regenerate the schema version hash used by Drift's migration verification tests.

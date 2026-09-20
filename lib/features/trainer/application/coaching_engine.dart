@@ -87,15 +87,21 @@ class CoachingEngine {
   /// the reading above the user's safe maximum.
   bool get isAboveCap => _aboveCap;
 
-  /// Clears per-session state. Call when a workout starts or finishes.
+  /// Clears per-session phrase and cadence state. Call when a workout
+  /// starts or finishes.
+  ///
+  /// Live heart-rate state — `_aboveCap`, `_lastCapWarningAt`,
+  /// `_currentZone` — is deliberately kept. The HR event source outlives the
+  /// workout and only announces *transitions*, so a user still above cap or
+  /// in zone 5 at a workout boundary would otherwise have suppression
+  /// lifted with nothing able to restore it until the reading changed.
+  /// Only a measured recovery ([HeartRateBackBelowCap]), a zone change, or
+  /// signal loss may clear that state.
   void reset() {
     _spokenPhrases.clear();
     _lastSpokenAt = null;
     _setsSinceEncouragement = 0;
     _encouragementQuota = _pickEncouragementQuota();
-    _aboveCap = false;
-    _lastCapWarningAt = null;
-    _currentZone = null;
   }
 
   /// Decides whether and what to say.
@@ -147,6 +153,7 @@ class CoachingEngine {
       HeartRateAboveCap(:final bpm, :final cap) =>
         _onAboveCap(bpm, cap, now, hrSafetyWarningsEnabled),
       HeartRateBackBelowCap() => _onBackBelowCap(now, hrSafetyWarningsEnabled),
+      HeartRateSignalLost() => _onSignalLost(),
     };
   }
 
@@ -243,6 +250,18 @@ class CoachingEngine {
       now,
       encouragement: false,
     );
+  }
+
+  /// No measurement means no recovery cue — but also no basis for keeping
+  /// suppression, which would otherwise hold for the rest of the session
+  /// with nothing able to lift it. The zone is forgotten too, so a stale
+  /// zone 5 cannot gate encouragement; the event source re-announces the
+  /// zone once readings return.
+  CoachingCue? _onSignalLost() {
+    _aboveCap = false;
+    _lastCapWarningAt = null;
+    _currentZone = null;
+    return null;
   }
 
   CoachingCue? _onSetLogged(DateTime now) {

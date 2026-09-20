@@ -203,5 +203,59 @@ void main() {
       expect(rules, hasLength(1));
       expect(rules.first.type, ProgressionType.percentage);
     });
+
+    test('watchAllProgrammes re-emits when a rule is added', () async {
+      final p = Programme.create(name: 'PPL', durationWeeks: 4);
+      await repo.createProgramme(p);
+
+      final emissions = <List<Programme>>[];
+      final sub = repo.watchAllProgrammes().listen(emissions.add);
+      addTearDown(sub.cancel);
+      await _waitFor(() => emissions.isNotEmpty);
+      expect(emissions.single.single.rules, isEmpty);
+
+      await repo.addRule(ProgressionRule.create(
+        programmeId: p.id,
+        exerciseId: 'e1',
+        type: ProgressionType.fixedIncrement,
+        value: 2.5,
+      ));
+
+      await _waitFor(() => emissions.last.single.rules.isNotEmpty);
+      expect(emissions.last.single.rules.single.value, 2.5);
+    });
+
+    test('watchAllProgrammes re-emits when a day is added', () async {
+      final p = Programme.create(name: 'PPL', durationWeeks: 4);
+      await repo.createProgramme(p);
+
+      final emissions = <List<Programme>>[];
+      final sub = repo.watchAllProgrammes().listen(emissions.add);
+      addTearDown(sub.cancel);
+      await _waitFor(() => emissions.isNotEmpty);
+      expect(emissions.single.single.days, isEmpty);
+
+      await repo.addDay(ProgrammeDay.create(
+        programmeId: p.id,
+        weekNumber: 1,
+        dayOfWeek: 1,
+        templateId: 't1',
+        templateName: 'Push',
+      ));
+
+      await _waitFor(() => emissions.last.single.days.isNotEmpty);
+      expect(emissions.last.single.days.single.templateName, 'Push');
+    });
   });
+}
+
+/// Polls [condition] until it holds, failing after two seconds.
+Future<void> _waitFor(bool Function() condition) async {
+  final deadline = DateTime.now().add(const Duration(seconds: 2));
+  while (!condition()) {
+    if (DateTime.now().isAfter(deadline)) {
+      fail('Condition not met within 2 seconds');
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+  }
 }

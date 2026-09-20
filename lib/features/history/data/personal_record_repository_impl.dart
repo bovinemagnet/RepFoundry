@@ -16,6 +16,10 @@ class InMemoryPersonalRecordRepository implements PersonalRecordRepository {
   }
 
   @override
+  Future<PersonalRecord?> getRecord(String id) async =>
+      _records.where((r) => r.id == id).firstOrNull;
+
+  @override
   Future<List<PersonalRecord>> getRecordsForExercise(
     String exerciseId,
     String clientId,
@@ -51,6 +55,12 @@ class InMemoryPersonalRecordRepository implements PersonalRecordRepository {
     final sorted = _records.where((r) => r.clientId == clientId).toList()
       ..sort((a, b) => b.achievedAt.compareTo(a.achievedAt));
     return sorted.take(limit).toList();
+  }
+
+  @override
+  Future<void> deleteRecordsForSet(String workoutSetId) async {
+    _records.removeWhere((r) => r.workoutSetId == workoutSetId);
+    _controller.add(null);
   }
 
   @override

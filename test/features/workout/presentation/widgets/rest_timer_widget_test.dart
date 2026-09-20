@@ -134,9 +134,6 @@ void main() {
       expect(container.read(restTimerProvider), 1);
 
       await tester.pump(const Duration(seconds: 1));
-      expect(container.read(restTimerProvider), 0);
-
-      await tester.pump(const Duration(seconds: 1));
       expect(container.read(restTimerProvider), isNull);
     });
 
@@ -159,6 +156,54 @@ void main() {
 
       final finished = events.whereType<RestFinished>().single;
       expect(finished.restDuration, const Duration(seconds: 2));
+    });
+  });
+
+  group('suspension', () {
+    // While the app is backgrounded Dart does not deliver the missed
+    // periodic ticks, so a per-tick decrement shows almost a full rest after
+    // ten wall-clock minutes. Remaining time must come from the clock.
+    test('a suspended rest timer completes exactly once on resume', () async {
+      final bus = TrainerEventBus(() => true);
+      final events = <TrainerEvent>[];
+      final sub = bus.events.listen(events.add);
+      addTearDown(sub.cancel);
+      final container = ProviderContainer(
+        overrides: [trainerEventBusProvider.overrideWithValue(bus)],
+      );
+      addTearDown(container.dispose);
+
+      fakeAsync((async) {
+        container.read(restTimerProvider.notifier).start(60);
+        async.elapse(const Duration(seconds: 1));
+        expect(container.read(restTimerProvider), 59);
+
+        // Suspend: wall clock moves, no callbacks run.
+        async.elapseBlocking(const Duration(minutes: 10));
+        async.elapse(const Duration(seconds: 1));
+
+        expect(container.read(restTimerProvider), isNull);
+        expect(container.read(restTimerProvider.notifier).completedNaturally,
+            isTrue);
+        async.elapse(const Duration(seconds: 5));
+      });
+      await Future<void>.delayed(Duration.zero);
+
+      expect(events.whereType<RestFinished>(), hasLength(1));
+    });
+
+    test('a short suspension shows the true remaining time', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      fakeAsync((async) {
+        container.read(restTimerProvider.notifier).start(60);
+        async.elapse(const Duration(seconds: 1));
+        async.elapseBlocking(const Duration(seconds: 30));
+        async.elapse(const Duration(seconds: 1));
+
+        expect(container.read(restTimerProvider), 28);
+      });
     });
   });
 

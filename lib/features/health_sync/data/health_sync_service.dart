@@ -1,7 +1,59 @@
+import 'package:flutter/foundation.dart';
 import 'package:health/health.dart';
 
 /// A body-weight reading from the platform health store.
 typedef WeightSample = ({double weightKg, DateTime date});
+
+/// The data types and matching access levels to request for a set of
+/// sync settings.
+typedef HealthPermissionRequest = ({
+  List<HealthDataType> types,
+  List<HealthDataAccess> permissions,
+});
+
+/// Pure selection of what to ask the platform for, so the pairing can be
+/// tested without a device.
+///
+/// On Android the plugin writes a workout as an exercise session *plus* a
+/// `TotalCaloriesBurnedRecord` and, when a distance is given, a
+/// `DistanceRecord`; Health Connect rejects the whole insert unless those
+/// record types are granted too. HealthKit carries both as attributes of
+/// the workout itself, so iOS needs only the workout permission.
+HealthPermissionRequest healthPermissionsFor({
+  required bool writeWorkouts,
+  required bool writeWeight,
+  required bool writeHeartRate,
+  required bool readWeight,
+  required bool isAndroid,
+}) {
+  final types = <HealthDataType>[];
+  final permissions = <HealthDataAccess>[];
+
+  if (writeWorkouts) {
+    types.add(HealthDataType.WORKOUT);
+    permissions.add(HealthDataAccess.WRITE);
+    if (isAndroid) {
+      types.addAll([
+        HealthDataType.TOTAL_CALORIES_BURNED,
+        HealthDataType.DISTANCE_DELTA,
+      ]);
+      permissions.addAll([HealthDataAccess.WRITE, HealthDataAccess.WRITE]);
+    }
+  }
+  if (writeWeight) {
+    types.addAll([HealthDataType.WEIGHT, HealthDataType.BODY_FAT_PERCENTAGE]);
+    permissions.addAll([HealthDataAccess.READ_WRITE, HealthDataAccess.WRITE]);
+  }
+  if (writeHeartRate) {
+    types.add(HealthDataType.HEART_RATE);
+    permissions.add(HealthDataAccess.WRITE);
+  }
+  if (readWeight && !writeWeight) {
+    types.add(HealthDataType.WEIGHT);
+    permissions.add(HealthDataAccess.READ);
+  }
+  return (types: types, permissions: permissions);
+}
 
 class HealthSyncService {
   final Health _health = Health();
@@ -14,31 +66,19 @@ class HealthSyncService {
     bool writeHeartRate = true,
     bool readWeight = true,
   }) async {
-    final types = <HealthDataType>[];
-    final permissions = <HealthDataAccess>[];
+    final request = healthPermissionsFor(
+      writeWorkouts: writeWorkouts,
+      writeWeight: writeWeight,
+      writeHeartRate: writeHeartRate,
+      readWeight: readWeight,
+      isAndroid: defaultTargetPlatform == TargetPlatform.android,
+    );
 
-    if (writeWorkouts) {
-      types.add(HealthDataType.WORKOUT);
-      permissions.add(HealthDataAccess.WRITE);
-    }
-    if (writeWeight) {
-      types.addAll([HealthDataType.WEIGHT, HealthDataType.BODY_FAT_PERCENTAGE]);
-      permissions.addAll([HealthDataAccess.READ_WRITE, HealthDataAccess.WRITE]);
-    }
-    if (writeHeartRate) {
-      types.add(HealthDataType.HEART_RATE);
-      permissions.add(HealthDataAccess.WRITE);
-    }
-    if (readWeight && !writeWeight) {
-      types.add(HealthDataType.WEIGHT);
-      permissions.add(HealthDataAccess.READ);
-    }
-
-    if (types.isEmpty) return true;
+    if (request.types.isEmpty) return true;
 
     _isAuthorised = await _health.requestAuthorization(
-      types,
-      permissions: permissions,
+      request.types,
+      permissions: request.permissions,
     );
     return _isAuthorised;
   }

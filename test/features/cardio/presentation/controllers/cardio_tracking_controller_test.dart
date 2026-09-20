@@ -8,6 +8,7 @@ import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.
 import 'package:rep_foundry/features/cardio/data/heart_rate_service.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
+import 'package:rep_foundry/features/clients/presentation/providers/active_client_provider.dart';
 import 'package:rep_foundry/features/cardio/presentation/controllers/cardio_tracking_controller.dart';
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
@@ -16,6 +17,61 @@ import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import '../../data/fake_foreground_session_service.dart';
 import '../../data/fake_heart_rate_service.dart';
 import '../../data/fake_location_service.dart';
+
+/// Simulates a database/platform failure that is not a validation error.
+class _ThrowingSaveUseCase extends SaveCardioSessionUseCase {
+  _ThrowingSaveUseCase()
+      : super(
+          cardioRepository: InMemoryCardioSessionRepository(),
+          workoutRepository: InMemoryWorkoutRepository(),
+        );
+
+  @override
+  Future<SaveCardioSessionResult> execute(SaveCardioSessionInput input) async {
+    throw StateError('disk full');
+  }
+}
+
+/// Records outbound health-store writes instead of touching the platform.
+class _RecordingHealthSyncService extends HealthSyncService {
+  final List<({DateTime start, DateTime end})> workouts = [];
+  final List<({int bpm, DateTime at})> heartRates = [];
+
+  @override
+  Future<bool> writeWorkout({
+    required DateTime startTime,
+    required DateTime endTime,
+    required int totalCalories,
+    bool isCardio = false,
+    double? distanceMeters,
+  }) async {
+    workouts.add((start: startTime, end: endTime));
+    return true;
+  }
+
+  @override
+  Future<bool> writeHeartRate({
+    required int bpm,
+    required DateTime dateTime,
+  }) async {
+    heartRates.add((bpm: bpm, at: dateTime));
+    return true;
+  }
+}
+
+class _FixedActiveClientNotifier extends ActiveClientNotifier {
+  _FixedActiveClientNotifier(this._client);
+
+  final Client _client;
+
+  @override
+  Future<Client> build() async => _client;
+
+  @override
+  Future<void> setActive(Client client) async {
+    state = AsyncData(client);
+  }
+}
 
 void main() {
   late InMemoryCardioSessionRepository cardioRepo;
@@ -191,10 +247,248 @@ void main() {
       });
     });
 
-    group('save()', () {
-      test('does nothing when no exercise selected', () async {
+    group('review after save', () {
+      test('the saved workout id is exposed so the UI can link to it',
+          () async {
+        await controller.selectExercise('e1', 'Run');
+        controller.start();
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+
         await controller.save();
+
+        final history = await workoutRepo.getWorkoutHistory(
+          clientId: kSelfClientId,
+        );
+        expect(controller.state.savedWorkoutId, history.single.id);
+      });
+    });
+
+    group('recordings', () {
+      test('the saved session carries the GPS track that was received',
+          () async {
+        await controller.selectExercise('e1', 'Run');
+        await controller.toggleGps();
+        controller.start();
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        locationService.emitPosition(latitude: 51.5074, longitude: -0.1278);
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        locationService.emitPosition(latitude: 51.5080, longitude: -0.1290);
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+
+        await controller.save();
+        expect(controller.state.error, isNull);
+
+        final session = (await cardioRepo.getAllSessions(kSelfClientId)).single;
+        final points = await cardioRepo.getTrackPoints(session.id);
+        expect(points.map((p) => p.latitude), [51.5074, 51.5080]);
+        expect(points.map((p) => p.longitude), [-0.1278, -0.1290]);
+        expect(points.first.timestamp.isBefore(points.last.timestamp), isTrue);
+      });
+
+      test('the saved session carries the heart-rate readings received',
+          () async {
+        await controller.selectExercise('e1', 'Run');
+        await controller.connectHeartRate('dev', 'Strap');
+        controller.start();
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        heartRateService.emitHeartRate(131);
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        heartRateService.emitHeartRate(142);
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+
+        await controller.save();
+        expect(controller.state.error, isNull);
+
+        final session = (await cardioRepo.getAllSessions(kSelfClientId)).single;
+        final samples = await cardioRepo.getHeartRateSamples(session.id);
+        expect(samples.map((s) => s.bpm), [131, 142]);
+      });
+
+      test('recordings from a previous session do not leak into the next',
+          () async {
+        await controller.selectExercise('e1', 'Run');
+        await controller.toggleGps();
+        controller.start();
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        locationService.emitPosition(latitude: 51.5, longitude: -0.1);
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+        await controller.save();
+
+        await controller.selectExercise('e1', 'Run');
+        controller.start();
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+        await controller.save();
+
+        final sessions = await cardioRepo.getAllSessions(kSelfClientId);
+        expect(sessions, hasLength(2));
+        final second = sessions.last;
+        expect(await cardioRepo.getTrackPoints(second.id), isEmpty);
+      });
+    });
+
+    group('session ownership', () {
+      test('a session belongs to the client active when it started', () async {
+        final alice = Client.create(name: 'Alice', colour: 0);
+        final bob = Client.create(name: 'Bob', colour: 1);
+        final c = ProviderContainer(
+          overrides: [
+            cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
+            saveCardioSessionUseCaseProvider.overrideWithValue(useCase),
+            locationServiceProvider.overrideWithValue(locationService),
+            heartRateServiceProvider.overrideWithValue(heartRateService),
+            foregroundSessionServiceProvider
+                .overrideWithValue(foregroundService),
+            healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+            healthSyncSettingsProvider
+                .overrideWith(() => HealthSyncSettingsNotifier()),
+            activeClientProvider
+                .overrideWith(() => _FixedActiveClientNotifier(alice)),
+          ],
+        );
+        addTearDown(c.dispose);
+        c.listen(activeClientProvider, (_, __) {});
+        await c.read(activeClientProvider.future);
+        final controller = c.read(cardioTrackingProvider.notifier);
+
+        await controller.selectExercise('e1', 'Treadmill');
+        controller.start();
+        expect(controller.state.sessionClientId, alice.id);
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        // The coach switches the roster to Bob while Alice is still running.
+        await c.read(activeClientProvider.notifier).setActive(bob);
+        controller.pause();
+        await controller.save();
+
+        final sessions =
+            await cardioRepo.getSessionsForExercise('e1', alice.id);
+        expect(sessions, hasLength(1));
+        expect(await workoutRepo.getWorkoutHistory(clientId: bob.id), isEmpty);
+      });
+    });
+
+    group('health store writes on save', () {
+      late _RecordingHealthSyncService health;
+
+      ProviderContainer healthContainer({Client? activeClient}) {
+        health = _RecordingHealthSyncService();
+        final c = ProviderContainer(
+          overrides: [
+            cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
+            saveCardioSessionUseCaseProvider.overrideWithValue(useCase),
+            locationServiceProvider.overrideWithValue(locationService),
+            heartRateServiceProvider.overrideWithValue(heartRateService),
+            foregroundSessionServiceProvider
+                .overrideWithValue(foregroundService),
+            healthSyncServiceProvider.overrideWithValue(health),
+            healthSyncSettingsProvider
+                .overrideWith(() => HealthSyncSettingsNotifier()),
+            if (activeClient != null)
+              activeClientProvider
+                  .overrideWith(() => _FixedActiveClientNotifier(activeClient)),
+          ],
+        );
+        addTearDown(c.dispose);
+        return c;
+      }
+
+      /// The settings notifier reads SharedPreferences asynchronously on
+      /// first access, so touch it and let that load land.
+      Future<CardioTrackingController> controllerOf(ProviderContainer c) async {
+        c.read(healthSyncSettingsProvider);
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        return c.read(cardioTrackingProvider.notifier);
+      }
+
+      Future<void> runSession(CardioTrackingController c) async {
+        await c.selectExercise('e1', 'Treadmill');
+        await c.connectHeartRate('dev', 'Strap');
+        c.start();
+        await Future<void>.delayed(const Duration(milliseconds: 600));
+        heartRateService.emitHeartRate(140);
+        await Future<void>.delayed(const Duration(milliseconds: 600));
+        heartRateService.emitHeartRate(150);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        c.pause();
+        await c.save();
+        expect(c.state.error, isNull);
+      }
+
+      test('writes the session heart-rate samples when the toggle is on',
+          () async {
+        SharedPreferences.setMockInitialValues({
+          'health_sync_enabled': true,
+          'health_sync_write_heart_rate': true,
+        });
+        final c = healthContainer();
+        final controller = await controllerOf(c);
+
+        await runSession(controller);
+
+        // The two readings are well under the 10 s export spacing, so only
+        // the first is written; selectSamplesForExport covers the spacing.
+        expect(health.heartRates.map((s) => s.bpm), [140]);
+        expect(health.workouts, hasLength(1));
+      });
+
+      test('writes no heart-rate samples when the toggle is off', () async {
+        SharedPreferences.setMockInitialValues({
+          'health_sync_enabled': true,
+          'health_sync_write_heart_rate': false,
+        });
+        final c = healthContainer();
+        final controller = await controllerOf(c);
+
+        await runSession(controller);
+
+        expect(health.heartRates, isEmpty);
+        expect(health.workouts, hasLength(1));
+      });
+
+      test('writes nothing to the health store for another client\'s session',
+          () async {
+        SharedPreferences.setMockInitialValues({
+          'health_sync_enabled': true,
+          'health_sync_write_heart_rate': true,
+        });
+        final alice = Client.create(name: 'Alice', colour: 0);
+        final c = healthContainer(activeClient: alice);
+        final controller = await controllerOf(c);
+
+        await runSession(controller);
+
+        expect(health.workouts, isEmpty,
+            reason: 'the coach\'s health account must not receive a '
+                'client\'s workout');
+        expect(health.heartRates, isEmpty);
+      });
+    });
+
+    group('save()', () {
+      test('reports why it did not save when no exercise is selected',
+          () async {
+        controller.start();
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+
+        await controller.save();
+
         expect(controller.state.savedSuccessfully, isFalse);
+        expect(controller.state.error, isNotNull,
+            reason: 'a silent no-op looks like a lost session');
+        expect(controller.state.elapsedSeconds, greaterThan(0),
+            reason: 'the session must survive so the user can fix it');
       });
 
       test('does nothing when elapsed is zero', () async {
@@ -226,6 +520,37 @@ void main() {
         final sessions =
             await cardioRepo.getSessionsForExercise('e1', kSelfClientId);
         expect(sessions, hasLength(1));
+      });
+
+      test('a storage failure clears isSaving and reports the error', () async {
+        final failing = ProviderContainer(
+          overrides: [
+            cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
+            saveCardioSessionUseCaseProvider
+                .overrideWithValue(_ThrowingSaveUseCase()),
+            locationServiceProvider.overrideWithValue(locationService),
+            heartRateServiceProvider.overrideWithValue(heartRateService),
+            foregroundSessionServiceProvider
+                .overrideWithValue(foregroundService),
+            healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+            healthSyncSettingsProvider
+                .overrideWith(() => HealthSyncSettingsNotifier()),
+          ],
+        );
+        addTearDown(failing.dispose);
+        final failingController = failing.read(cardioTrackingProvider.notifier);
+
+        await failingController.selectExercise('e1', 'Treadmill');
+        failingController.start();
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        failingController.pause();
+
+        await failingController.save();
+
+        expect(failingController.state.isSaving, isFalse);
+        expect(failingController.state.error, isNotNull);
+        expect(failingController.state.savedSuccessfully, isFalse);
       });
 
       test('sets error on validation failure', () async {

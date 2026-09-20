@@ -6,6 +6,41 @@ import 'package:rep_foundry/core/providers.dart';
 import '../../features/cardio/data/fake_heart_rate_service.dart';
 
 void main() {
+  group('selectSamplesForExport', () {
+    final t0 = DateTime.utc(2026, 1, 1, 12);
+    HrSample at(int seconds, int bpm) =>
+        HrSample(bpm: bpm, timestamp: t0.add(Duration(seconds: seconds)));
+
+    test('keeps samples inside the window at least minGap apart', () {
+      final samples = [
+        at(-5, 100),
+        at(0, 110),
+        at(4, 120),
+        at(10, 130),
+        at(19, 140),
+        at(20, 150),
+        at(61, 160)
+      ];
+
+      final kept = selectSamplesForExport(
+        samples,
+        from: t0,
+        to: t0.add(const Duration(seconds: 60)),
+        minGap: const Duration(seconds: 10),
+      );
+
+      expect(kept.map((s) => s.bpm), [110, 130, 150]);
+    });
+
+    test('returns nothing for an empty window', () {
+      expect(
+        selectSamplesForExport(const [],
+            from: t0, to: t0, minGap: const Duration(seconds: 10)),
+        isEmpty,
+      );
+    });
+  });
+
   group('summariseSamples', () {
     final base = DateTime.utc(2026, 7, 18, 10, 0, 0);
 

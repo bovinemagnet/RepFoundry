@@ -76,4 +76,32 @@ void main() {
     expect(find.text('Alex'), findsOneWidget);
     expect(find.text('You'), findsNothing);
   });
+
+  testWidgets('the in-session badge shows the session owner and is fixed',
+      (tester) async {
+    final me = _client(id: kSelfClientId, name: 'Me', isSelf: true);
+    final alex = _client(id: 'alex', name: 'Alex', isSelf: false);
+
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        activeClientProvider.overrideWith(() => _FakeActiveClientNotifier(me)),
+        clientsProvider.overrideWith((ref) => Stream.value([me, alex])),
+      ],
+      child: const MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
+        home: Scaffold(body: ActiveClientIndicator(sessionClientId: 'alex')),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    // The roster says Me, but this session was started for Alex.
+    expect(find.text('Alex'), findsOneWidget);
+    expect(find.text('You'), findsNothing);
+
+    // Tapping must not offer to switch: the owner is fixed for the session.
+    await tester.tap(find.byType(ActiveClientIndicator));
+    await tester.pumpAndSettle();
+    expect(find.byType(BottomSheet), findsNothing);
+  });
 }

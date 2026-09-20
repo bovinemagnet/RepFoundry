@@ -9,6 +9,7 @@ import '../features/exercises/domain/repositories/exercise_repository.dart';
 import '../features/workout/data/drift_workout_repository.dart';
 import '../features/workout/domain/repositories/workout_repository.dart';
 import '../features/workout/application/log_set_use_case.dart';
+import '../features/workout/application/revise_set_use_case.dart';
 import '../features/workout/application/start_workout_use_case.dart';
 import '../features/history/application/calculate_progress_use_case.dart';
 import '../features/settings/application/export_data_use_case.dart';
@@ -151,6 +152,13 @@ final hrAnalyticsReporterProvider = Provider<HrAnalyticsReporter>((ref) {
 });
 
 // Use cases
+final reviseSetUseCaseProvider = Provider<ReviseSetUseCase>((ref) {
+  return ReviseSetUseCase(
+    workoutRepository: ref.watch(workoutRepositoryProvider),
+    personalRecordRepository: ref.watch(personalRecordRepositoryProvider),
+  );
+});
+
 final logSetUseCaseProvider = Provider<LogSetUseCase>((ref) {
   return LogSetUseCase(
     workoutRepository: ref.watch(workoutRepositoryProvider),
@@ -211,6 +219,9 @@ final exportDataUseCaseProvider = Provider<ExportDataUseCase>((ref) {
     stretchingSessionRepository: ref.watch(stretchingSessionRepositoryProvider),
     clientRepository: ref.watch(clientRepositoryProvider),
     bodyMetricRepository: ref.watch(bodyMetricRepositoryProvider),
+    healthProfileRepository: ref.watch(healthProfileRepositoryProvider),
+    workoutTemplateRepository: ref.watch(workoutTemplateRepositoryProvider),
+    programmeRepository: ref.watch(programmeRepositoryProvider),
   );
 });
 
@@ -221,6 +232,11 @@ final importDataUseCaseProvider = Provider<ImportDataUseCase>((ref) {
     cardioSessionRepository: ref.watch(cardioSessionRepositoryProvider),
     personalRecordRepository: ref.watch(personalRecordRepositoryProvider),
     stretchingSessionRepository: ref.watch(stretchingSessionRepositoryProvider),
+    clientRepository: ref.watch(clientRepositoryProvider),
+    healthProfileRepository: ref.watch(healthProfileRepositoryProvider),
+    workoutTemplateRepository: ref.watch(workoutTemplateRepositoryProvider),
+    programmeRepository: ref.watch(programmeRepositoryProvider),
+    bodyMetricRepository: ref.watch(bodyMetricRepositoryProvider),
   );
 });
 

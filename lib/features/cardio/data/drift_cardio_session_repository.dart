@@ -1,8 +1,11 @@
 import 'package:drift/drift.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart' as db;
 import '../../../core/database/converters.dart';
+import '../domain/models/cardio_heart_rate_sample.dart';
 import '../domain/models/cardio_session.dart';
+import '../domain/models/cardio_track_point.dart';
 import '../domain/repositories/cardio_session_repository.dart';
 
 class DriftCardioSessionRepository implements CardioSessionRepository {
@@ -26,6 +29,80 @@ class DriftCardioSessionRepository implements CardioSessionRepository {
           ),
         );
     return session;
+  }
+
+  @override
+  Future<void> saveTrackPoints(
+    String sessionId,
+    List<CardioTrackPoint> points,
+  ) async {
+    await _db.batch((b) {
+      b.insertAll(_db.cardioTrackPoints, [
+        for (final p in points)
+          db.CardioTrackPointsCompanion.insert(
+            id: const Uuid().v4(),
+            sessionId: sessionId,
+            timestamp: dateTimeToEpochMs(p.timestamp),
+            latitude: p.latitude,
+            longitude: p.longitude,
+            altitude: Value(p.altitude),
+            accuracy: Value(p.accuracy),
+          ),
+      ]);
+    });
+  }
+
+  @override
+  Future<List<CardioTrackPoint>> getTrackPoints(String sessionId) async {
+    final q = _db.select(_db.cardioTrackPoints)
+      ..where((t) => t.sessionId.equals(sessionId))
+      ..orderBy([(t) => OrderingTerm.asc(t.timestamp)]);
+    final rows = await q.get();
+    return [
+      for (final r in rows)
+        CardioTrackPoint(
+          timestamp: dateTimeFromEpochMs(r.timestamp),
+          latitude: r.latitude,
+          longitude: r.longitude,
+          altitude: r.altitude,
+          accuracy: r.accuracy,
+        ),
+    ];
+  }
+
+  @override
+  Future<void> saveHeartRateSamples(
+    String sessionId,
+    List<CardioHeartRateSample> samples,
+  ) async {
+    await _db.batch((b) {
+      b.insertAll(_db.cardioHeartRateSamples, [
+        for (final s in samples)
+          db.CardioHeartRateSamplesCompanion.insert(
+            id: const Uuid().v4(),
+            sessionId: sessionId,
+            timestamp: dateTimeToEpochMs(s.timestamp),
+            bpm: s.bpm,
+          ),
+      ]);
+    });
+  }
+
+  @override
+  Future<List<CardioHeartRateSample>> getHeartRateSamples(
+    String sessionId,
+  ) async {
+    final q = _db.select(_db.cardioHeartRateSamples)
+      ..where((t) => t.sessionId.equals(sessionId))
+      ..orderBy([(t) => OrderingTerm.asc(t.timestamp)]);
+    final rows = await q.get();
+    return [
+      for (final r in rows)
+        CardioHeartRateSample(
+          timestamp: dateTimeFromEpochMs(r.timestamp),
+          bpm: r.bpm,
+        ),
+    ];
   }
 
   @override

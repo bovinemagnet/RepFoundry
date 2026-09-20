@@ -3,6 +3,8 @@ import 'package:drift_flutter/drift_flutter.dart';
 
 import 'tables/body_metrics_table.dart';
 import 'tables/cardio_sessions_table.dart';
+import 'tables/cardio_heart_rate_samples_table.dart';
+import 'tables/cardio_track_points_table.dart';
 import 'tables/client_plan_assignments_table.dart';
 import 'tables/clients_table.dart';
 import 'tables/exercises_table.dart';
@@ -25,6 +27,8 @@ part 'app_database.g.dart';
   Workouts,
   WorkoutSets,
   CardioSessions,
+  CardioTrackPoints,
+  CardioHeartRateSamples,
   PersonalRecords,
   WorkoutTemplates,
   TemplateExercises,
@@ -44,7 +48,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// Static accessor for the schema version, usable from non-database code
   /// (e.g. the sync serialiser) without an `AppDatabase` instance.
-  static const int schemaVersionConst = 13;
+  static const int schemaVersionConst = 14;
 
   @override
   int get schemaVersion => schemaVersionConst;
@@ -303,11 +307,20 @@ class AppDatabase extends _$AppDatabase {
             }
             await m.createIndex(idxClientPlanAssignmentsUnique);
           }
+          if (from < 14) {
+            // GPS track and heart-rate readings per cardio session, so a
+            // saved session can be reviewed and exported (issue #124).
+            await m.createTable(cardioTrackPoints);
+            await m.createTable(cardioHeartRateSamples);
+            await m.createIndex(idxCardioTrackPointsSession);
+            await m.createIndex(idxCardioHeartRateSamplesSession);
+          }
         },
       );
 
   /// Permanently deletes every row from every table, then re-seeds the
-  /// default exercises. Used by the "Clear All Data" setting.
+  /// default exercises and the mandatory Me client. Used by the
+  /// "Clear All Data" setting.
   Future<void> clearAllData() async {
     await transaction(() async {
       // Tables are declared parents-first in @DriftDatabase, so deleting in
@@ -317,6 +330,7 @@ class AppDatabase extends _$AppDatabase {
       }
       await batch((b) {
         b.insertAll(exercises, _defaultExercises);
+        b.insert(clients, _selfClientCompanion());
       });
     });
   }

@@ -18,7 +18,13 @@ import '../domain/models/sync_snapshot.dart';
 import '../domain/sync_schema_version_exception.dart';
 
 class SyncSnapshotSerialiser {
-  /// Read all data from the database, including soft-deleted rows.
+  /// Read Me's data from the database, including soft-deleted rows.
+  ///
+  /// The snapshot carries neither the client roster nor per-row ownership,
+  /// and [applyToDatabase] gives every new row the Me client. Other
+  /// clients' scoped rows are therefore left out rather than being silently
+  /// re-owned by Me on the receiving device. Templates and programmes are
+  /// not client-scoped and sync in full.
   Future<SyncSnapshot> createFromDatabase(
     db.AppDatabase database, {
     required String deviceId,
@@ -27,20 +33,30 @@ class SyncSnapshotSerialiser {
     final exerciseRows = await database.select(database.exercises).get();
     final exercises = exerciseRows.map(_exerciseToDomain).toList();
 
-    // Workouts — include soft-deleted
-    final workoutRows = await database.select(database.workouts).get();
+    // Workouts — include soft-deleted, Me only
+    final workoutRows = await (database.select(database.workouts)
+          ..where((t) => t.clientId.equals(kSelfClientId)))
+        .get();
     final workouts = workoutRows.map(_workoutToDomain).toList();
+    final myWorkoutIds = workouts.map((w) => w.id).toSet();
 
-    // Workout sets
+    // Workout sets — scoped through their parent workout
     final setRows = await database.select(database.workoutSets).get();
-    final workoutSets = setRows.map(_setToDomain).toList();
+    final workoutSets = setRows
+        .where((r) => myWorkoutIds.contains(r.workoutId))
+        .map(_setToDomain)
+        .toList();
 
     // Cardio sessions
-    final cardioRows = await database.select(database.cardioSessions).get();
+    final cardioRows = await (database.select(database.cardioSessions)
+          ..where((t) => t.clientId.equals(kSelfClientId)))
+        .get();
     final cardioSessions = cardioRows.map(_cardioToDomain).toList();
 
     // Personal records
-    final prRows = await database.select(database.personalRecords).get();
+    final prRows = await (database.select(database.personalRecords)
+          ..where((t) => t.clientId.equals(kSelfClientId)))
+        .get();
     final personalRecords = prRows.map(_personalRecordToDomain).toList();
 
     // Workout templates
@@ -60,7 +76,9 @@ class SyncSnapshotSerialiser {
     final templateExercises = teRows.map(_templateExerciseToDomain).toList();
 
     // Body metrics
-    final bmRows = await database.select(database.bodyMetrics).get();
+    final bmRows = await (database.select(database.bodyMetrics)
+          ..where((t) => t.clientId.equals(kSelfClientId)))
+        .get();
     final bodyMetrics = bmRows.map(_bodyMetricToDomain).toList();
 
     // Programmes
@@ -87,10 +105,13 @@ class SyncSnapshotSerialiser {
     final ruleRows = await database.select(database.progressionRules).get();
     final progressionRules = ruleRows.map(_progressionRuleToDomain).toList();
 
-    // Stretching sessions — include soft-deleted (no WHERE filter)
+    // Stretching sessions — include soft-deleted, scoped through the parent
     final stretchingRows =
         await database.select(database.stretchingSessions).get();
-    final stretchingSessions = stretchingRows.map(_stretchingToDomain).toList();
+    final stretchingSessions = stretchingRows
+        .where((r) => myWorkoutIds.contains(r.workoutId))
+        .map(_stretchingToDomain)
+        .toList();
 
     return SyncSnapshot(
       snapshotAt: DateTime.now().toUtc(),
@@ -383,9 +404,12 @@ class SyncSnapshotSerialiser {
   // ── Helpers ──────────────────────────────────────────────────────────
 
   /// Upsert [rows] into [table], overwriting an existing row only when the
-  /// incoming `updated_at` is strictly newer. Every synced table stores
-  /// `updatedAt` in an `updated_at` column, so the guard is expressed once
-  /// as raw SQL against SQLite's `excluded` upsert alias.
+  /// incoming row would also win in [SyncMergeEngine]: a tombstone beats a
+  /// live row, a later tombstone beats an earlier one, and between two live
+  /// rows the strictly newer `updated_at` wins (so an edit made while the
+  /// sync was in flight is kept). Every synced table stores these in
+  /// `updated_at` / `deleted_at` columns, so the guard is expressed once as
+  /// raw SQL against SQLite's `excluded` upsert alias.
   void _guardedUpsertAll<T extends Table, D>(
     Batch batch,
     TableInfo<T, D> table,
@@ -398,7 +422,11 @@ class SyncSnapshotSerialiser {
         onConflict: DoUpdate(
           (_) => row,
           where: (_) => const CustomExpression<bool>(
-            'excluded.updated_at > updated_at',
+            '(excluded.deleted_at IS NOT NULL AND deleted_at IS NULL) OR '
+            '(excluded.deleted_at IS NOT NULL AND deleted_at IS NOT NULL '
+            'AND excluded.deleted_at > deleted_at) OR '
+            '(excluded.deleted_at IS NULL AND deleted_at IS NULL '
+            'AND excluded.updated_at > updated_at)',
           ),
         ),
       );

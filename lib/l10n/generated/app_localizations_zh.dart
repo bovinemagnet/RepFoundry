@@ -909,6 +909,24 @@ class SZh extends S {
   String get cardioSessionSaved => '有氧训练已保存';
 
   @override
+  String get viewSavedSession => 'View';
+
+  @override
+  String get cardioSectionTitle => 'Cardio';
+
+  @override
+  String cardioRecordingCounts(int points, int samples) {
+    return '$points GPS points · $samples heart rate readings';
+  }
+
+  @override
+  String get exportCardioSession => 'Export';
+
+  @override
+  String get exportCardioSessionHint =>
+      'Share the GPS track as GPX and the heart rate readings as CSV';
+
+  @override
   String get heartRateMonitorCard => '心率监测器';
 
   @override
@@ -1684,6 +1702,10 @@ class SZh extends S {
   String get syncEnabledSubtitle => '跨设备同步你的训练数据';
 
   @override
+  String get syncUnsupportedPlatform =>
+      'Cloud sync is not available on this platform';
+
+  @override
   String syncLastSynced(String time) {
     return '上次同步：$time';
   }
@@ -2003,6 +2025,11 @@ class SZh extends S {
   @override
   String viewingClient(String name) {
     return 'Viewing $name';
+  }
+
+  @override
+  String sessionClientLocked(String client) {
+    return 'Logging for $client — fixed for this session';
   }
 
   @override

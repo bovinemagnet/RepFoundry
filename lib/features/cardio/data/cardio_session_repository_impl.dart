@@ -1,12 +1,46 @@
 import 'dart:async';
 
+import '../domain/models/cardio_heart_rate_sample.dart';
 import '../domain/models/cardio_session.dart';
+import '../domain/models/cardio_track_point.dart';
 import '../domain/repositories/cardio_session_repository.dart';
 
 /// In-memory implementation for use-case tests.
 class InMemoryCardioSessionRepository implements CardioSessionRepository {
   final List<CardioSession> _sessions = [];
+  final Map<String, List<CardioTrackPoint>> _trackPoints = {};
+  final Map<String, List<CardioHeartRateSample>> _heartRateSamples = {};
   final _controller = StreamController<void>.broadcast();
+
+  @override
+  Future<void> saveTrackPoints(
+    String sessionId,
+    List<CardioTrackPoint> points,
+  ) async {
+    (_trackPoints[sessionId] ??= []).addAll(points);
+  }
+
+  @override
+  Future<List<CardioTrackPoint>> getTrackPoints(String sessionId) async {
+    return [...?_trackPoints[sessionId]]
+      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+  }
+
+  @override
+  Future<void> saveHeartRateSamples(
+    String sessionId,
+    List<CardioHeartRateSample> samples,
+  ) async {
+    (_heartRateSamples[sessionId] ??= []).addAll(samples);
+  }
+
+  @override
+  Future<List<CardioHeartRateSample>> getHeartRateSamples(
+    String sessionId,
+  ) async {
+    return [...?_heartRateSamples[sessionId]]
+      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+  }
 
   @override
   Future<CardioSession> createSession(CardioSession session) async {

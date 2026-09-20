@@ -56,27 +56,44 @@ class ClientSwitcher extends ConsumerWidget {
 
 /// Compact, always-visible badge for logging surfaces (active workout,
 /// cardio tracking) so the coach can't log a set under the wrong client.
-/// Tapping opens the same switcher sheet as [ClientSwitcher].
+///
+/// With no [sessionClientId] it shows the roster's active client and tapping
+/// opens the same switcher sheet as [ClientSwitcher]. While a session is in
+/// progress the surface passes the session's owner instead: the badge then
+/// shows who the records are actually being saved for — which the roster
+/// selection can no longer change — and is not tappable.
 class ActiveClientIndicator extends ConsumerWidget {
-  const ActiveClientIndicator({super.key});
+  const ActiveClientIndicator({super.key, this.sessionClientId});
+
+  final String? sessionClientId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeClient = ref.watch(activeClientProvider).value;
+    final sessionId = sessionClientId;
+    final Client? shown;
+    if (sessionId == null) {
+      shown = ref.watch(activeClientProvider).value;
+    } else {
+      final roster = ref.watch(clientsProvider).value;
+      shown = roster?.where((c) => c.id == sessionId).firstOrNull ??
+          ref.watch(activeClientProvider).value;
+    }
+    final activeClient = shown;
     if (activeClient == null) return const SizedBox.shrink();
 
     final cs = Theme.of(context).colorScheme;
     final s = S.of(context)!;
     final label = _clientLabel(activeClient, s);
+    final locked = sessionId != null;
 
     return Tooltip(
-      message: s.viewingClient(label),
+      message: locked ? s.sessionClientLocked(label) : s.viewingClient(label),
       child: Material(
         color: cs.surfaceContainerHighest.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: () => showClientSwitcherSheet(context),
+          onTap: locked ? null : () => showClientSwitcherSheet(context),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             child: Row(

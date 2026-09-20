@@ -10,6 +10,7 @@ import 'package:rep_foundry/features/cardio/data/cardio_session_repository_impl.
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/history/data/personal_record_repository_impl.dart';
+import 'package:rep_foundry/features/settings/application/import_data_use_case.dart';
 import 'package:rep_foundry/features/settings/presentation/providers/import_file_picker_provider.dart';
 import 'package:rep_foundry/features/settings/presentation/screens/settings_screen.dart';
 import 'package:rep_foundry/features/stretching/data/in_memory_stretching_session_repository.dart';
@@ -65,14 +66,16 @@ void main() {
       overrides: [
         syncOrchestratorProvider.overrideWithValue(orchestrator),
         workoutRepositoryProvider.overrideWithValue(workoutRepo),
-        exerciseRepositoryProvider
-            .overrideWithValue(InMemoryExerciseRepository()),
-        cardioSessionRepositoryProvider
-            .overrideWithValue(InMemoryCardioSessionRepository()),
-        personalRecordRepositoryProvider
-            .overrideWithValue(InMemoryPersonalRecordRepository()),
-        stretchingSessionRepositoryProvider
-            .overrideWithValue(InMemoryStretchingSessionRepository()),
+        // Built directly so the roster/template/programme repositories the
+        // production provider wires in (all Drift-backed) are not needed
+        // for a UI-flow test.
+        importDataUseCaseProvider.overrideWithValue(ImportDataUseCase(
+          workoutRepository: workoutRepo,
+          exerciseRepository: InMemoryExerciseRepository(),
+          cardioSessionRepository: InMemoryCardioSessionRepository(),
+          personalRecordRepository: InMemoryPersonalRecordRepository(),
+          stretchingSessionRepository: InMemoryStretchingSessionRepository(),
+        )),
         importFileContentPickerProvider
             .overrideWithValue(() async => pickedContent),
       ],

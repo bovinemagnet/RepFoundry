@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
+import 'package:rep_foundry/features/cardio/presentation/controllers/cardio_tracking_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/cardio/application/save_cardio_session_use_case.dart';
@@ -10,6 +12,7 @@ import 'package:rep_foundry/features/exercises/domain/repositories/exercise_repo
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
+import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -203,6 +206,41 @@ void main() {
       expect(find.text('Rowing'), findsOneWidget);
     });
 
+    testWidgets('selects the first cardio exercise by default', (tester) async {
+      await tester.pumpWidget(buildScreen(cardioExercises: [
+        cardioExercise('Treadmill'),
+        cardioExercise('Rowing'),
+      ]));
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(CardioTrackingScreen)),
+      );
+      expect(container.read(cardioTrackingProvider).selectedExerciseName,
+          'Treadmill');
+    });
+
+    testWidgets('shows the last saved session for the selected sport',
+        (tester) async {
+      final treadmill = cardioExercise('Treadmill');
+      final workout = await workoutRepo.createWorkout(Workout.create());
+      await cardioRepo.createSession(CardioSession.create(
+        workoutId: workout.id,
+        exerciseId: treadmill.id,
+        durationSeconds: 1800,
+        distanceMeters: 5000,
+        avgHeartRate: 140,
+      ));
+
+      await tester.pumpWidget(buildScreen(cardioExercises: [treadmill]));
+      await tester.pumpAndSettle();
+
+      expect(find.text('LAST SESSION'), findsOneWidget);
+      expect(find.text('30:00'), findsOneWidget);
+      expect(find.text('140'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('initial timer reads 00:00 with no elapsed time',
         (tester) async {
       await tester.pumpWidget(buildScreen());
@@ -220,5 +258,25 @@ void main() {
       // `_ActionButton` for start uses the play_arrow icon when not running.
       expect(find.byIcon(Icons.play_arrow), findsOneWidget);
     });
+  });
+
+  testWidgets('the saved snackbar offers to view the session in History',
+      (tester) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(CardioTrackingScreen)),
+    );
+    final controller = container.read(cardioTrackingProvider.notifier);
+    await controller.selectExercise('e1', 'Treadmill');
+    controller.start();
+    await tester.pump(const Duration(seconds: 2));
+    controller.pause();
+
+    await controller.save();
+    await tester.pump();
+
+    expect(find.text('Cardio session saved'), findsOneWidget);
+    expect(find.text('View'), findsOneWidget);
   });
 }

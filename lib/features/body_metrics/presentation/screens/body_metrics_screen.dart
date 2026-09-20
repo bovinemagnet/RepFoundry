@@ -122,10 +122,13 @@ class BodyMetricsScreen extends ConsumerWidget {
     if (result != null) {
       await ref.read(bodyMetricRepositoryProvider).create(result);
 
-      // Sync to health store if enabled
+      // Sync to health store if enabled. The platform health store is the
+      // operator's own, so only Me's measurements may be written to it.
       try {
         final healthSettings = ref.read(healthSyncSettingsProvider);
-        if (healthSettings.enabled && healthSettings.writeWeight) {
+        if (healthSettings.enabled &&
+            healthSettings.writeWeight &&
+            result.clientId == kSelfClientId) {
           final healthService = ref.read(healthSyncServiceProvider);
           await healthService.writeWeight(
             weightKg: result.weight,

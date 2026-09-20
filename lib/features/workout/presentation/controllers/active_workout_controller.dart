@@ -71,6 +71,29 @@ Map<String, List<String>> getSupersetGroups(
   return groups;
 }
 
+/// Fits a template prescription over what the last session suggests:
+/// [targetSets] entries of [targetReps] each, weighted from [history] set
+/// by set, with the last known weight carried into any extra sets and a
+/// zero weight (the input card's "no suggestion" value) when there is no
+/// history at all.
+List<GhostSet> applyPrescription(
+  List<GhostSet> history, {
+  required int targetSets,
+  required int targetReps,
+}) {
+  return [
+    for (var i = 0; i < targetSets; i++)
+      GhostSet(
+        weight: i < history.length
+            ? history[i].weight
+            : (history.isEmpty ? 0 : history.last.weight),
+        reps: targetReps,
+        rpe: i < history.length ? history[i].rpe : null,
+        setOrder: i + 1,
+      ),
+  ];
+}
+
 class ActiveWorkoutState {
   final Workout? activeWorkout;
   final Map<String, List<WorkoutSet>> setsByExercise;
@@ -159,6 +182,9 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
   Future<void> _init() async {
     try {
       final workout = await _workoutRepository.getActiveWorkout();
+      // The provider may have been invalidated (e.g. Clear All Data) while
+      // the query was in flight.
+      if (!ref.mounted) return;
       if (workout != null) {
         await _loadSets(workout);
       } else {
@@ -170,6 +196,7 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
   }
 
   Future<void> _loadSets(Workout workout) async {
+    _startHeartRateRecording();
     final sets = await _workoutRepository.getSetsForWorkout(workout.id);
     final Map<String, List<WorkoutSet>> byExercise = {};
     for (final s in sets) {
@@ -196,11 +223,17 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     );
   }
 
+  /// Mounts the heart-rate recorder so it buffers readings from the moment
+  /// a session is live. Its only other consumer reads it at log time, which
+  /// would leave the first logged set with no readings to summarise.
+  void _startHeartRateRecording() => ref.read(hrSessionRecorderProvider);
+
   Future<void> startWorkout() async {
     state = state.copyWith(isLoading: true);
     try {
       final useCase = ref.read(startWorkoutUseCaseProvider);
       final workout = await useCase.execute(clientId: _activeClientId);
+      _startHeartRateRecording();
       state = state.copyWith(
         activeWorkout: workout,
         setsByExercise: {},
@@ -211,6 +244,24 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
+  }
+
+  /// Whether the most recent completed session for [exerciseId] started on
+  /// or after [weekStart], i.e. this week's progression step has already
+  /// been taken.
+  Future<bool> _lastSessionFallsInWeek(
+    String exerciseId,
+    String clientId,
+    DateTime weekStart,
+  ) async {
+    final lastSets = await _workoutRepository.getSetsFromLastSession(
+      exerciseId,
+      clientId,
+    );
+    if (lastSets.isEmpty) return false;
+    final latest =
+        lastSets.map((s) => s.timestamp).reduce((a, b) => a.isAfter(b) ? a : b);
+    return !latest.isBefore(weekStart);
   }
 
   Future<void> startFromTemplate(WorkoutTemplate template) async {
@@ -236,9 +287,18 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
 
       for (final templateExercise in template.exercises) {
         final exercise = exercisesById[templateExercise.exerciseId];
-        if (exercise != null) {
-          await addExercise(exercise);
-        }
+        if (exercise == null) continue;
+        await addExercise(exercise);
+        // Shape the suggestions to the template's prescription: history
+        // supplies the weights, the template the number of sets and reps.
+        final ghosts =
+            Map<String, List<GhostSet>>.from(state.ghostSetsByExercise);
+        ghosts[exercise.id] = applyPrescription(
+          ghosts[exercise.id] ?? const [],
+          targetSets: templateExercise.targetSets,
+          targetReps: templateExercise.targetReps,
+        );
+        state = state.copyWith(ghostSetsByExercise: ghosts);
       }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -292,12 +352,23 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     await startFromTemplate(template);
 
     // Apply progression rules to ghost set weights, but only in weeks where
-    // the rule's frequencyWeeks says a progression step is due.
+    // the rule's frequencyWeeks says a progression step is due — and only
+    // once per week: ghosts come from the last completed session, so if
+    // that session already fell in this week it already carries the step,
+    // and applying it again would compound on every extra session.
     if (programme.rules.isNotEmpty) {
+      final weekStart = tentativeStartedAt.add(
+        Duration(days: 7 * (currentWeek - 1)),
+      );
+      final clientId = state.activeWorkout?.clientId ?? _activeClientId;
       final updatedGhosts =
           Map<String, List<GhostSet>>.from(state.ghostSetsByExercise);
       for (final rule in programme.rules) {
         if (!rule.appliesInWeek(currentWeek)) continue;
+        if (await _lastSessionFallsInWeek(
+            rule.exerciseId, clientId, weekStart)) {
+          continue;
+        }
         final ghosts = updatedGhosts[rule.exerciseId];
         if (ghosts != null && ghosts.isNotEmpty) {
           updatedGhosts[rule.exerciseId] = ghosts
@@ -328,10 +399,14 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
       final completed = workout.copyWith(completedAt: now, updatedAt: now);
       await _workoutRepository.updateWorkout(completed);
 
-      // Sync to health store if enabled
+      // Sync to health store if enabled. The platform health store is the
+      // operator's own, so only Me's workouts may be written to it — a
+      // client's session must never land in the coach's health account.
       try {
         final healthSettings = ref.read(healthSyncSettingsProvider);
-        if (healthSettings.enabled && healthSettings.writeWorkouts) {
+        if (healthSettings.enabled &&
+            healthSettings.writeWorkouts &&
+            workout.clientId == kSelfClientId) {
           final healthService = ref.read(healthSyncServiceProvider);
           final sets = await _workoutRepository.getSetsForWorkout(workout.id);
           final totalVolume = sets
@@ -585,12 +660,16 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
   }
 
   Future<void> updateSet(WorkoutSet updatedSet) async {
+    final workout = state.activeWorkout;
+    if (workout == null) return;
     try {
-      await _workoutRepository.updateSet(updatedSet);
+      final result = await ref
+          .read(reviseSetUseCaseProvider)
+          .update(updatedSet, clientId: workout.clientId);
       final updated = Map<String, List<WorkoutSet>>.from(state.setsByExercise);
       final exerciseSets = updated[updatedSet.exerciseId] ?? [];
       updated[updatedSet.exerciseId] = exerciseSets
-          .map((s) => s.id == updatedSet.id ? updatedSet : s)
+          .map((s) => s.id == updatedSet.id ? result.set : s)
           .toList();
       state = state.copyWith(setsByExercise: updated);
     } catch (e) {
@@ -600,7 +679,7 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
 
   Future<void> deleteSet(String setId, String exerciseId) async {
     try {
-      await _workoutRepository.deleteSet(setId);
+      await ref.read(reviseSetUseCaseProvider).delete(setId);
       final updated = Map<String, List<WorkoutSet>>.from(state.setsByExercise);
       updated[exerciseId] =
           (updated[exerciseId] ?? []).where((s) => s.id != setId).toList();

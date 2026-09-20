@@ -6,10 +6,13 @@ import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/clients/domain/models/client.dart';
 import 'package:rep_foundry/features/clients/domain/models/client_plan_assignment.dart';
 import 'package:rep_foundry/features/clients/domain/repositories/health_profile_repository.dart';
+import 'package:rep_foundry/features/clients/presentation/providers/active_client_provider.dart';
 import 'package:rep_foundry/features/clients/presentation/screens/client_detail_screen.dart';
+import 'package:rep_foundry/features/heart_rate/presentation/providers/health_profile_provider.dart';
 import 'package:rep_foundry/features/programmes/domain/models/programme.dart';
 import 'package:rep_foundry/features/templates/domain/models/workout_template.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// In-memory double for [HealthProfileRepository] keyed by client id, so
 /// tests can both seed initial values and assert what got saved for a
@@ -26,6 +29,15 @@ class _FakeHealthProfileRepository implements HealthProfileRepository {
   Future<void> saveForClient(String clientId, HealthProfile profile) async {
     _store[clientId] = profile;
   }
+}
+
+class _FakeActiveClientNotifier extends ActiveClientNotifier {
+  _FakeActiveClientNotifier(this._initial);
+
+  final Client _initial;
+
+  @override
+  Future<Client> build() async => _initial;
 }
 
 Client _client({required String id, required String name}) {
@@ -154,5 +166,64 @@ void main() {
     expect(saved.clinicianMaxHr, 170);
     expect(saved.betaBlocker, isTrue);
     expect(saved.heartCondition, isTrue);
+  });
+
+  testWidgets(
+      'saving the active client\'s profile refreshes the live health profile',
+      (tester) async {
+    final sarah = _client(id: 'sarah', name: 'Sarah');
+    final healthRepo = _FakeHealthProfileRepository();
+    await healthRepo.saveForClient(
+      sarah.id,
+      const HealthProfile(age: 40, clinicianMaxHr: 180),
+    );
+    SharedPreferences.setMockInitialValues({
+      'health_profile_migrated_v1': true,
+    });
+    final container = ProviderContainer(
+      overrides: [
+        activeClientProvider
+            .overrideWith(() => _FakeActiveClientNotifier(sarah)),
+        clientsProvider.overrideWith((ref) => Stream.value([sarah])),
+        clientAssignmentsProvider.overrideWith(
+          (ref, clientId) => Stream.value(const <ClientPlanAssignment>[]),
+        ),
+        clientDetailTemplatesProvider.overrideWith(
+          (ref) => Stream.value(const <WorkoutTemplate>[]),
+        ),
+        clientDetailProgrammesProvider.overrideWith(
+          (ref) => Stream.value(const <Programme>[]),
+        ),
+        healthProfileRepositoryProvider.overrideWithValue(healthRepo),
+      ],
+    );
+    addTearDown(container.dispose);
+    // Keep the live profile alive across the save, as the HR screens do.
+    container.listen(healthProfileProvider, (_, __) {});
+    expect((await container.read(healthProfileProvider.future)).clinicianMaxHr,
+        180);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+      container: container,
+      child: MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
+        home: ClientDetailScreen(clientId: sarah.id),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Clinician Max Heart Rate'),
+      '120',
+    );
+    final saveButton = find.widgetWithText(FilledButton, 'Save');
+    await tester.ensureVisible(saveButton);
+    await tester.pumpAndSettle();
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect((await container.read(healthProfileProvider.future)).clinicianMaxHr,
+        120);
   });
 }

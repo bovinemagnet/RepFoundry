@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../../../../core/heart_rate/hr_session_recorder.dart';
 import '../../../../core/providers.dart';
 import '../../../clients/domain/models/client.dart';
 import '../../../clients/presentation/providers/active_client_provider.dart';
@@ -13,6 +14,8 @@ import '../../application/save_cardio_session_use_case.dart';
 import '../../data/foreground_session_service.dart';
 import '../../data/heart_rate_service.dart';
 import '../../data/location_service.dart';
+import '../../domain/models/cardio_heart_rate_sample.dart';
+import '../../domain/models/cardio_track_point.dart';
 import '../../domain/repositories/cardio_session_repository.dart';
 import 'cardio_tracking_state.dart';
 
@@ -20,6 +23,11 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
   Timer? _timer;
   StreamSubscription<Position>? _positionSub;
   Position? _lastPosition;
+
+  /// GPS fixes received while the current session is running, stored with
+  /// the session on save so it can be reviewed and exported. Kept out of
+  /// [state] so each fix does not rebuild the screen.
+  final List<CardioTrackPoint> _trackPoints = [];
   StreamSubscription<int>? _hrSub;
   StreamSubscription<HrConnectionState>? _hrConnectionSub;
   // Elapsed time is derived from the wall clock rather than counted ticks,
@@ -38,6 +46,47 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
   HeartRateService get _heartRateService => ref.read(heartRateServiceProvider);
   HealthSyncService get _healthSyncService =>
       ref.read(healthSyncServiceProvider);
+
+  /// Wall-clock start of the current session, for selecting its heart-rate
+  /// samples from the shared recorder at save time.
+  DateTime? _sessionStartedAt;
+
+  /// Minimum spacing between exported heart-rate samples, so an hour-long
+  /// session becomes a few hundred health-store writes rather than
+  /// thousands.
+  static const _heartRateExportInterval = Duration(seconds: 10);
+
+  /// Every reading the shared recorder holds for this session, at full
+  /// resolution, for storage with the session.
+  List<CardioHeartRateSample> _sessionHeartRateSamples() {
+    final from = _sessionStartedAt;
+    if (from == null) return const [];
+    final to = DateTime.now().toUtc();
+    return [
+      for (final s in ref.read(hrSessionRecorderProvider))
+        if (!s.timestamp.isBefore(from) && !s.timestamp.isAfter(to))
+          CardioHeartRateSample(timestamp: s.timestamp, bpm: s.bpm),
+    ];
+  }
+
+  Future<void> _writeHeartRateSamples({
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    final samples = selectSamplesForExport(
+      ref.read(hrSessionRecorderProvider),
+      from: from,
+      to: to,
+      minGap: _heartRateExportInterval,
+    );
+    for (final sample in samples) {
+      await _healthSyncService.writeHeartRate(
+        bpm: sample.bpm,
+        dateTime: sample.timestamp,
+      );
+    }
+  }
+
   HealthSyncSettings get _healthSyncSettings =>
       ref.read(healthSyncSettingsProvider);
 
@@ -67,8 +116,16 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       isRunning: true,
       savedSuccessfully: false,
       heartRateReadings: isFreshSession ? const [] : state.heartRateReadings,
+      // Pin the owner at the start of a fresh session.
+      sessionClientId: isFreshSession ? _activeClientId : state.sessionClientId,
     );
     _runningSince = clock.now();
+    if (isFreshSession) {
+      _sessionStartedAt = DateTime.now().toUtc();
+      _trackPoints.clear();
+    }
+    // Buffer timestamped samples for the health-store export at save time.
+    ref.read(hrSessionRecorderProvider);
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       state = state.copyWith(elapsedSeconds: _wallClockElapsedSeconds);
     });
@@ -163,6 +220,15 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       (position) {
         if (state.gpsAcquiring) {
           state = state.copyWith(gpsAcquiring: false);
+        }
+        if (state.isRunning) {
+          _trackPoints.add(CardioTrackPoint(
+            timestamp: position.timestamp.toUtc(),
+            latitude: position.latitude,
+            longitude: position.longitude,
+            altitude: position.altitude,
+            accuracy: position.accuracy,
+          ));
         }
         if (_lastPosition != null) {
           final delta = _locationService.distanceBetween(
@@ -297,7 +363,13 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
     if (_runningSince != null || _accumulated > Duration.zero) {
       state = state.copyWith(elapsedSeconds: _wallClockElapsedSeconds);
     }
-    if (state.selectedExerciseId == null || state.elapsedSeconds <= 0) return;
+    if (state.elapsedSeconds <= 0) return;
+    if (state.selectedExerciseId == null) {
+      // Never drop a session silently: the user has just run it and needs
+      // to know why Save did nothing.
+      state = state.copyWith(error: 'Select an exercise before saving');
+      return;
+    }
 
     // Use GPS distance if GPS is enabled and has data.
     final effectiveDistance = state.gpsEnabled && state.gpsDistanceMeters > 0
@@ -322,13 +394,20 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
           distanceMeters: effectiveDistance,
           incline: incline,
           avgHeartRate: effectiveHeartRate,
-          clientId: _activeClientId,
+          clientId: state.sessionClientId ?? _activeClientId,
+          trackPoints: List.unmodifiable(_trackPoints),
+          heartRateSamples: _sessionHeartRateSamples(),
         ),
       );
+      _trackPoints.clear();
 
-      // Sync to health store if enabled
+      // Sync to health store if enabled. The platform health store belongs
+      // to the operator, so only Me's sessions may be written to it — a
+      // client's run must never land in the coach's health account.
+      final settings = _healthSyncSettings;
+      final ownedByMe = result.workout.clientId == kSelfClientId;
       try {
-        if (_healthSyncSettings.enabled && _healthSyncSettings.writeWorkouts) {
+        if (settings.enabled && settings.writeWorkouts && ownedByMe) {
           // Rough calorie estimate: ~8 kcal/min for moderate cardio
           final calories = (state.elapsedSeconds / 60.0 * 8).round();
           await _healthSyncService.writeWorkout(
@@ -339,9 +418,16 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
             distanceMeters: effectiveDistance,
           );
         }
+        if (settings.enabled && settings.writeHeartRate && ownedByMe) {
+          await _writeHeartRateSamples(
+            from: _sessionStartedAt ?? result.workout.startedAt,
+            to: result.workout.completedAt!,
+          );
+        }
       } catch (_) {
         // Health sync is best-effort — don't fail the save
       }
+      _sessionStartedAt = null;
 
       _timer?.cancel();
       _runningSince = null;
@@ -356,10 +442,17 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       _hrSub = null;
       _hrConnectionSub?.cancel();
       _hrConnectionSub = null;
-      state = const CardioTrackingState(savedSuccessfully: true);
+      state = CardioTrackingState(
+        savedSuccessfully: true,
+        savedWorkoutId: result.workout.id,
+      );
       _syncForegroundService();
     } on SaveCardioSessionException catch (e) {
       state = state.copyWith(isSaving: false, error: e.message);
+    } catch (e) {
+      // A database or platform failure must not leave the save button
+      // disabled behind a permanent isSaving flag.
+      state = state.copyWith(isSaving: false, error: e.toString());
     }
   }
 }

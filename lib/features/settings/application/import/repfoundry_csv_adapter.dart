@@ -22,22 +22,43 @@ class RepFoundryCsvAdapter extends CsvFormatAdapter with CsvRowParsing {
         index.containsKey('e1rm');
   }
 
+  static final _legacyFormat = DateFormat('yyyy-MM-dd HH:mm');
+
+  /// Current exports carry ISO-8601 with a Z or offset, which parses to an
+  /// exact instant. Older exports wrote `yyyy-MM-dd HH:mm` from the
+  /// repository's UTC timestamps without saying so, so that shape is read
+  /// as UTC — reading it as local time shifted every set by the device's
+  /// offset.
+  DateTime? _parseTimestamp(String raw) {
+    final text = raw.trim();
+    if (text.contains('T')) {
+      try {
+        return DateTime.parse(text).toUtc();
+      } on FormatException {
+        return null;
+      }
+    }
+    try {
+      return _legacyFormat.parse(text, true);
+    } on FormatException {
+      return null;
+    }
+  }
+
   @override
   ParsedHistory parse(
     List<List<dynamic>> rows, {
     WeightUnit fallbackUnit = WeightUnit.kg,
   }) {
     final index = headerIndex(rows.first);
-    final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
+    final dayFormat = DateFormat('yyyy-MM-dd');
 
     var skipped = 0;
     final byDay = <String, List<ParsedSet>>{};
     for (final row in rows.skip(1)) {
       if (row.every((c) => c.toString().trim().isEmpty)) continue;
-      final DateTime timestamp;
-      try {
-        timestamp = dateFormat.parse(cell(row, index['date'])).toUtc();
-      } on FormatException {
+      final timestamp = _parseTimestamp(cell(row, index['date']));
+      if (timestamp == null) {
         skipped++;
         continue;
       }
@@ -46,7 +67,7 @@ class RepFoundryCsvAdapter extends CsvFormatAdapter with CsvRowParsing {
         skipped++;
         continue;
       }
-      final day = cell(row, index['date']).split(' ').first;
+      final day = dayFormat.format(timestamp.toLocal());
       byDay.putIfAbsent(day, () => []).add(ParsedSet(
             exerciseName: cell(row, index['exercise']),
             weightKg: parseDouble(cell(row, index['weight'])) ?? 0,

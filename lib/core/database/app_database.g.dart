@@ -2983,6 +2983,670 @@ class CardioSessionsCompanion extends UpdateCompanion<CardioSession> {
   }
 }
 
+class $CardioTrackPointsTable extends CardioTrackPoints
+    with TableInfo<$CardioTrackPointsTable, CardioTrackPoint> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CardioTrackPointsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _sessionIdMeta =
+      const VerificationMeta('sessionId');
+  @override
+  late final GeneratedColumn<String> sessionId = GeneratedColumn<String>(
+      'session_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES cardio_sessions (id)'));
+  static const VerificationMeta _timestampMeta =
+      const VerificationMeta('timestamp');
+  @override
+  late final GeneratedColumn<int> timestamp = GeneratedColumn<int>(
+      'timestamp', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _latitudeMeta =
+      const VerificationMeta('latitude');
+  @override
+  late final GeneratedColumn<double> latitude = GeneratedColumn<double>(
+      'latitude', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _longitudeMeta =
+      const VerificationMeta('longitude');
+  @override
+  late final GeneratedColumn<double> longitude = GeneratedColumn<double>(
+      'longitude', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _altitudeMeta =
+      const VerificationMeta('altitude');
+  @override
+  late final GeneratedColumn<double> altitude = GeneratedColumn<double>(
+      'altitude', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _accuracyMeta =
+      const VerificationMeta('accuracy');
+  @override
+  late final GeneratedColumn<double> accuracy = GeneratedColumn<double>(
+      'accuracy', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, sessionId, timestamp, latitude, longitude, altitude, accuracy];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cardio_track_points';
+  @override
+  VerificationContext validateIntegrity(Insertable<CardioTrackPoint> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('session_id')) {
+      context.handle(_sessionIdMeta,
+          sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta));
+    } else if (isInserting) {
+      context.missing(_sessionIdMeta);
+    }
+    if (data.containsKey('timestamp')) {
+      context.handle(_timestampMeta,
+          timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta));
+    } else if (isInserting) {
+      context.missing(_timestampMeta);
+    }
+    if (data.containsKey('latitude')) {
+      context.handle(_latitudeMeta,
+          latitude.isAcceptableOrUnknown(data['latitude']!, _latitudeMeta));
+    } else if (isInserting) {
+      context.missing(_latitudeMeta);
+    }
+    if (data.containsKey('longitude')) {
+      context.handle(_longitudeMeta,
+          longitude.isAcceptableOrUnknown(data['longitude']!, _longitudeMeta));
+    } else if (isInserting) {
+      context.missing(_longitudeMeta);
+    }
+    if (data.containsKey('altitude')) {
+      context.handle(_altitudeMeta,
+          altitude.isAcceptableOrUnknown(data['altitude']!, _altitudeMeta));
+    }
+    if (data.containsKey('accuracy')) {
+      context.handle(_accuracyMeta,
+          accuracy.isAcceptableOrUnknown(data['accuracy']!, _accuracyMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CardioTrackPoint map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CardioTrackPoint(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      sessionId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}session_id'])!,
+      timestamp: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}timestamp'])!,
+      latitude: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}latitude'])!,
+      longitude: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}longitude'])!,
+      altitude: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}altitude']),
+      accuracy: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}accuracy']),
+    );
+  }
+
+  @override
+  $CardioTrackPointsTable createAlias(String alias) {
+    return $CardioTrackPointsTable(attachedDatabase, alias);
+  }
+}
+
+class CardioTrackPoint extends DataClass
+    implements Insertable<CardioTrackPoint> {
+  final String id;
+  final String sessionId;
+  final int timestamp;
+  final double latitude;
+  final double longitude;
+  final double? altitude;
+  final double? accuracy;
+  const CardioTrackPoint(
+      {required this.id,
+      required this.sessionId,
+      required this.timestamp,
+      required this.latitude,
+      required this.longitude,
+      this.altitude,
+      this.accuracy});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['session_id'] = Variable<String>(sessionId);
+    map['timestamp'] = Variable<int>(timestamp);
+    map['latitude'] = Variable<double>(latitude);
+    map['longitude'] = Variable<double>(longitude);
+    if (!nullToAbsent || altitude != null) {
+      map['altitude'] = Variable<double>(altitude);
+    }
+    if (!nullToAbsent || accuracy != null) {
+      map['accuracy'] = Variable<double>(accuracy);
+    }
+    return map;
+  }
+
+  CardioTrackPointsCompanion toCompanion(bool nullToAbsent) {
+    return CardioTrackPointsCompanion(
+      id: Value(id),
+      sessionId: Value(sessionId),
+      timestamp: Value(timestamp),
+      latitude: Value(latitude),
+      longitude: Value(longitude),
+      altitude: altitude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(altitude),
+      accuracy: accuracy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accuracy),
+    );
+  }
+
+  factory CardioTrackPoint.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CardioTrackPoint(
+      id: serializer.fromJson<String>(json['id']),
+      sessionId: serializer.fromJson<String>(json['sessionId']),
+      timestamp: serializer.fromJson<int>(json['timestamp']),
+      latitude: serializer.fromJson<double>(json['latitude']),
+      longitude: serializer.fromJson<double>(json['longitude']),
+      altitude: serializer.fromJson<double?>(json['altitude']),
+      accuracy: serializer.fromJson<double?>(json['accuracy']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'sessionId': serializer.toJson<String>(sessionId),
+      'timestamp': serializer.toJson<int>(timestamp),
+      'latitude': serializer.toJson<double>(latitude),
+      'longitude': serializer.toJson<double>(longitude),
+      'altitude': serializer.toJson<double?>(altitude),
+      'accuracy': serializer.toJson<double?>(accuracy),
+    };
+  }
+
+  CardioTrackPoint copyWith(
+          {String? id,
+          String? sessionId,
+          int? timestamp,
+          double? latitude,
+          double? longitude,
+          Value<double?> altitude = const Value.absent(),
+          Value<double?> accuracy = const Value.absent()}) =>
+      CardioTrackPoint(
+        id: id ?? this.id,
+        sessionId: sessionId ?? this.sessionId,
+        timestamp: timestamp ?? this.timestamp,
+        latitude: latitude ?? this.latitude,
+        longitude: longitude ?? this.longitude,
+        altitude: altitude.present ? altitude.value : this.altitude,
+        accuracy: accuracy.present ? accuracy.value : this.accuracy,
+      );
+  CardioTrackPoint copyWithCompanion(CardioTrackPointsCompanion data) {
+    return CardioTrackPoint(
+      id: data.id.present ? data.id.value : this.id,
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
+      latitude: data.latitude.present ? data.latitude.value : this.latitude,
+      longitude: data.longitude.present ? data.longitude.value : this.longitude,
+      altitude: data.altitude.present ? data.altitude.value : this.altitude,
+      accuracy: data.accuracy.present ? data.accuracy.value : this.accuracy,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CardioTrackPoint(')
+          ..write('id: $id, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude, ')
+          ..write('altitude: $altitude, ')
+          ..write('accuracy: $accuracy')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, sessionId, timestamp, latitude, longitude, altitude, accuracy);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CardioTrackPoint &&
+          other.id == this.id &&
+          other.sessionId == this.sessionId &&
+          other.timestamp == this.timestamp &&
+          other.latitude == this.latitude &&
+          other.longitude == this.longitude &&
+          other.altitude == this.altitude &&
+          other.accuracy == this.accuracy);
+}
+
+class CardioTrackPointsCompanion extends UpdateCompanion<CardioTrackPoint> {
+  final Value<String> id;
+  final Value<String> sessionId;
+  final Value<int> timestamp;
+  final Value<double> latitude;
+  final Value<double> longitude;
+  final Value<double?> altitude;
+  final Value<double?> accuracy;
+  final Value<int> rowid;
+  const CardioTrackPointsCompanion({
+    this.id = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    this.timestamp = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
+    this.altitude = const Value.absent(),
+    this.accuracy = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CardioTrackPointsCompanion.insert({
+    required String id,
+    required String sessionId,
+    required int timestamp,
+    required double latitude,
+    required double longitude,
+    this.altitude = const Value.absent(),
+    this.accuracy = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        sessionId = Value(sessionId),
+        timestamp = Value(timestamp),
+        latitude = Value(latitude),
+        longitude = Value(longitude);
+  static Insertable<CardioTrackPoint> custom({
+    Expression<String>? id,
+    Expression<String>? sessionId,
+    Expression<int>? timestamp,
+    Expression<double>? latitude,
+    Expression<double>? longitude,
+    Expression<double>? altitude,
+    Expression<double>? accuracy,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sessionId != null) 'session_id': sessionId,
+      if (timestamp != null) 'timestamp': timestamp,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (altitude != null) 'altitude': altitude,
+      if (accuracy != null) 'accuracy': accuracy,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CardioTrackPointsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? sessionId,
+      Value<int>? timestamp,
+      Value<double>? latitude,
+      Value<double>? longitude,
+      Value<double?>? altitude,
+      Value<double?>? accuracy,
+      Value<int>? rowid}) {
+    return CardioTrackPointsCompanion(
+      id: id ?? this.id,
+      sessionId: sessionId ?? this.sessionId,
+      timestamp: timestamp ?? this.timestamp,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      altitude: altitude ?? this.altitude,
+      accuracy: accuracy ?? this.accuracy,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (sessionId.present) {
+      map['session_id'] = Variable<String>(sessionId.value);
+    }
+    if (timestamp.present) {
+      map['timestamp'] = Variable<int>(timestamp.value);
+    }
+    if (latitude.present) {
+      map['latitude'] = Variable<double>(latitude.value);
+    }
+    if (longitude.present) {
+      map['longitude'] = Variable<double>(longitude.value);
+    }
+    if (altitude.present) {
+      map['altitude'] = Variable<double>(altitude.value);
+    }
+    if (accuracy.present) {
+      map['accuracy'] = Variable<double>(accuracy.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CardioTrackPointsCompanion(')
+          ..write('id: $id, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude, ')
+          ..write('altitude: $altitude, ')
+          ..write('accuracy: $accuracy, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CardioHeartRateSamplesTable extends CardioHeartRateSamples
+    with TableInfo<$CardioHeartRateSamplesTable, CardioHeartRateSample> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CardioHeartRateSamplesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _sessionIdMeta =
+      const VerificationMeta('sessionId');
+  @override
+  late final GeneratedColumn<String> sessionId = GeneratedColumn<String>(
+      'session_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES cardio_sessions (id)'));
+  static const VerificationMeta _timestampMeta =
+      const VerificationMeta('timestamp');
+  @override
+  late final GeneratedColumn<int> timestamp = GeneratedColumn<int>(
+      'timestamp', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _bpmMeta = const VerificationMeta('bpm');
+  @override
+  late final GeneratedColumn<int> bpm = GeneratedColumn<int>(
+      'bpm', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, sessionId, timestamp, bpm];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cardio_heart_rate_samples';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<CardioHeartRateSample> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('session_id')) {
+      context.handle(_sessionIdMeta,
+          sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta));
+    } else if (isInserting) {
+      context.missing(_sessionIdMeta);
+    }
+    if (data.containsKey('timestamp')) {
+      context.handle(_timestampMeta,
+          timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta));
+    } else if (isInserting) {
+      context.missing(_timestampMeta);
+    }
+    if (data.containsKey('bpm')) {
+      context.handle(
+          _bpmMeta, bpm.isAcceptableOrUnknown(data['bpm']!, _bpmMeta));
+    } else if (isInserting) {
+      context.missing(_bpmMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CardioHeartRateSample map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CardioHeartRateSample(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      sessionId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}session_id'])!,
+      timestamp: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}timestamp'])!,
+      bpm: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}bpm'])!,
+    );
+  }
+
+  @override
+  $CardioHeartRateSamplesTable createAlias(String alias) {
+    return $CardioHeartRateSamplesTable(attachedDatabase, alias);
+  }
+}
+
+class CardioHeartRateSample extends DataClass
+    implements Insertable<CardioHeartRateSample> {
+  final String id;
+  final String sessionId;
+  final int timestamp;
+  final int bpm;
+  const CardioHeartRateSample(
+      {required this.id,
+      required this.sessionId,
+      required this.timestamp,
+      required this.bpm});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['session_id'] = Variable<String>(sessionId);
+    map['timestamp'] = Variable<int>(timestamp);
+    map['bpm'] = Variable<int>(bpm);
+    return map;
+  }
+
+  CardioHeartRateSamplesCompanion toCompanion(bool nullToAbsent) {
+    return CardioHeartRateSamplesCompanion(
+      id: Value(id),
+      sessionId: Value(sessionId),
+      timestamp: Value(timestamp),
+      bpm: Value(bpm),
+    );
+  }
+
+  factory CardioHeartRateSample.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CardioHeartRateSample(
+      id: serializer.fromJson<String>(json['id']),
+      sessionId: serializer.fromJson<String>(json['sessionId']),
+      timestamp: serializer.fromJson<int>(json['timestamp']),
+      bpm: serializer.fromJson<int>(json['bpm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'sessionId': serializer.toJson<String>(sessionId),
+      'timestamp': serializer.toJson<int>(timestamp),
+      'bpm': serializer.toJson<int>(bpm),
+    };
+  }
+
+  CardioHeartRateSample copyWith(
+          {String? id, String? sessionId, int? timestamp, int? bpm}) =>
+      CardioHeartRateSample(
+        id: id ?? this.id,
+        sessionId: sessionId ?? this.sessionId,
+        timestamp: timestamp ?? this.timestamp,
+        bpm: bpm ?? this.bpm,
+      );
+  CardioHeartRateSample copyWithCompanion(
+      CardioHeartRateSamplesCompanion data) {
+    return CardioHeartRateSample(
+      id: data.id.present ? data.id.value : this.id,
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
+      bpm: data.bpm.present ? data.bpm.value : this.bpm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CardioHeartRateSample(')
+          ..write('id: $id, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('bpm: $bpm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, sessionId, timestamp, bpm);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CardioHeartRateSample &&
+          other.id == this.id &&
+          other.sessionId == this.sessionId &&
+          other.timestamp == this.timestamp &&
+          other.bpm == this.bpm);
+}
+
+class CardioHeartRateSamplesCompanion
+    extends UpdateCompanion<CardioHeartRateSample> {
+  final Value<String> id;
+  final Value<String> sessionId;
+  final Value<int> timestamp;
+  final Value<int> bpm;
+  final Value<int> rowid;
+  const CardioHeartRateSamplesCompanion({
+    this.id = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    this.timestamp = const Value.absent(),
+    this.bpm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CardioHeartRateSamplesCompanion.insert({
+    required String id,
+    required String sessionId,
+    required int timestamp,
+    required int bpm,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        sessionId = Value(sessionId),
+        timestamp = Value(timestamp),
+        bpm = Value(bpm);
+  static Insertable<CardioHeartRateSample> custom({
+    Expression<String>? id,
+    Expression<String>? sessionId,
+    Expression<int>? timestamp,
+    Expression<int>? bpm,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sessionId != null) 'session_id': sessionId,
+      if (timestamp != null) 'timestamp': timestamp,
+      if (bpm != null) 'bpm': bpm,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CardioHeartRateSamplesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? sessionId,
+      Value<int>? timestamp,
+      Value<int>? bpm,
+      Value<int>? rowid}) {
+    return CardioHeartRateSamplesCompanion(
+      id: id ?? this.id,
+      sessionId: sessionId ?? this.sessionId,
+      timestamp: timestamp ?? this.timestamp,
+      bpm: bpm ?? this.bpm,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (sessionId.present) {
+      map['session_id'] = Variable<String>(sessionId.value);
+    }
+    if (timestamp.present) {
+      map['timestamp'] = Variable<int>(timestamp.value);
+    }
+    if (bpm.present) {
+      map['bpm'] = Variable<int>(bpm.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CardioHeartRateSamplesCompanion(')
+          ..write('id: $id, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('bpm: $bpm, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PersonalRecordsTable extends PersonalRecords
     with TableInfo<$PersonalRecordsTable, PersonalRecord> {
   @override
@@ -7059,6 +7723,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $WorkoutsTable workouts = $WorkoutsTable(this);
   late final $WorkoutSetsTable workoutSets = $WorkoutSetsTable(this);
   late final $CardioSessionsTable cardioSessions = $CardioSessionsTable(this);
+  late final $CardioTrackPointsTable cardioTrackPoints =
+      $CardioTrackPointsTable(this);
+  late final $CardioHeartRateSamplesTable cardioHeartRateSamples =
+      $CardioHeartRateSamplesTable(this);
   late final $PersonalRecordsTable personalRecords =
       $PersonalRecordsTable(this);
   late final $WorkoutTemplatesTable workoutTemplates =
@@ -7088,6 +7756,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final Index idxCardioSessionsExercise = Index(
       'idx_cardio_sessions_exercise',
       'CREATE INDEX idx_cardio_sessions_exercise ON cardio_sessions (exercise_id)');
+  late final Index idxCardioTrackPointsSession = Index(
+      'idx_cardio_track_points_session',
+      'CREATE INDEX idx_cardio_track_points_session ON cardio_track_points (session_id)');
+  late final Index idxCardioHeartRateSamplesSession = Index(
+      'idx_cardio_heart_rate_samples_session',
+      'CREATE INDEX idx_cardio_heart_rate_samples_session ON cardio_heart_rate_samples (session_id)');
   late final Index idxPersonalRecordsExerciseAchieved = Index(
       'idx_personal_records_exercise_achieved',
       'CREATE INDEX idx_personal_records_exercise_achieved ON personal_records (exercise_id, achieved_at)');
@@ -7120,6 +7794,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         workouts,
         workoutSets,
         cardioSessions,
+        cardioTrackPoints,
+        cardioHeartRateSamples,
         personalRecords,
         workoutTemplates,
         templateExercises,
@@ -7134,6 +7810,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         idxWorkoutSetsWorkoutOrder,
         idxCardioSessionsWorkout,
         idxCardioSessionsExercise,
+        idxCardioTrackPointsSession,
+        idxCardioHeartRateSamplesSession,
         idxPersonalRecordsExerciseAchieved,
         idxTemplateExercisesTemplate,
         idxProgrammeDaysProgramme,
@@ -7174,8 +7852,7 @@ final class $$ClientsTableReferences
   static MultiTypedResultKey<$BodyMetricsTable, List<BodyMetric>>
       _bodyMetricsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.bodyMetrics,
-              aliasName:
-                  $_aliasNameGenerator(db.clients.id, db.bodyMetrics.clientId));
+              aliasName: 'clients__id__body_metrics__client_id');
 
   $$BodyMetricsTableProcessedTableManager get bodyMetricsRefs {
     final manager = $$BodyMetricsTableTableManager($_db, $_db.bodyMetrics)
@@ -7189,7 +7866,7 @@ final class $$ClientsTableReferences
   static MultiTypedResultKey<$WorkoutsTable, List<Workout>> _workoutsRefsTable(
           _$AppDatabase db) =>
       MultiTypedResultKey.fromTable(db.workouts,
-          aliasName: $_aliasNameGenerator(db.clients.id, db.workouts.clientId));
+          aliasName: 'clients__id__workouts__client_id');
 
   $$WorkoutsTableProcessedTableManager get workoutsRefs {
     final manager = $$WorkoutsTableTableManager($_db, $_db.workouts)
@@ -7203,8 +7880,7 @@ final class $$ClientsTableReferences
   static MultiTypedResultKey<$CardioSessionsTable, List<CardioSession>>
       _cardioSessionsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.cardioSessions,
-              aliasName: $_aliasNameGenerator(
-                  db.clients.id, db.cardioSessions.clientId));
+              aliasName: 'clients__id__cardio_sessions__client_id');
 
   $$CardioSessionsTableProcessedTableManager get cardioSessionsRefs {
     final manager = $$CardioSessionsTableTableManager($_db, $_db.cardioSessions)
@@ -7218,8 +7894,7 @@ final class $$ClientsTableReferences
   static MultiTypedResultKey<$PersonalRecordsTable, List<PersonalRecord>>
       _personalRecordsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.personalRecords,
-              aliasName: $_aliasNameGenerator(
-                  db.clients.id, db.personalRecords.clientId));
+              aliasName: 'clients__id__personal_records__client_id');
 
   $$PersonalRecordsTableProcessedTableManager get personalRecordsRefs {
     final manager = $$PersonalRecordsTableTableManager(
@@ -7236,8 +7911,7 @@ final class $$ClientsTableReferences
       List<ClientPlanAssignment>> _clientPlanAssignmentsRefsTable(
           _$AppDatabase db) =>
       MultiTypedResultKey.fromTable(db.clientPlanAssignments,
-          aliasName: $_aliasNameGenerator(
-              db.clients.id, db.clientPlanAssignments.clientId));
+          aliasName: 'clients__id__client_plan_assignments__client_id');
 
   $$ClientPlanAssignmentsTableProcessedTableManager
       get clientPlanAssignmentsRefs {
@@ -7254,8 +7928,7 @@ final class $$ClientsTableReferences
   static MultiTypedResultKey<$HealthProfilesTable, List<HealthProfile>>
       _healthProfilesRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.healthProfiles,
-              aliasName: $_aliasNameGenerator(
-                  db.clients.id, db.healthProfiles.clientId));
+              aliasName: 'clients__id__health_profiles__client_id');
 
   $$HealthProfilesTableProcessedTableManager get healthProfilesRefs {
     final manager = $$HealthProfilesTableTableManager($_db, $_db.healthProfiles)
@@ -7853,8 +8526,7 @@ final class $$BodyMetricsTableReferences
   $$BodyMetricsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $ClientsTable _clientIdTable(_$AppDatabase db) =>
-      db.clients.createAlias(
-          $_aliasNameGenerator(db.bodyMetrics.clientId, db.clients.id));
+      db.clients.createAlias('body_metrics__client_id__clients__id');
 
   $$ClientsTableProcessedTableManager get clientId {
     final $_column = $_itemColumn<String>('client_id')!;
@@ -8175,10 +8847,9 @@ final class $$ExercisesTableReferences
   $$ExercisesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static MultiTypedResultKey<$WorkoutSetsTable, List<WorkoutSet>>
-      _workoutSetsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-          db.workoutSets,
-          aliasName:
-              $_aliasNameGenerator(db.exercises.id, db.workoutSets.exerciseId));
+      _workoutSetsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.workoutSets,
+              aliasName: 'exercises__id__workout_sets__exercise_id');
 
   $$WorkoutSetsTableProcessedTableManager get workoutSetsRefs {
     final manager = $$WorkoutSetsTableTableManager($_db, $_db.workoutSets)
@@ -8192,8 +8863,7 @@ final class $$ExercisesTableReferences
   static MultiTypedResultKey<$CardioSessionsTable, List<CardioSession>>
       _cardioSessionsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.cardioSessions,
-              aliasName: $_aliasNameGenerator(
-                  db.exercises.id, db.cardioSessions.exerciseId));
+              aliasName: 'exercises__id__cardio_sessions__exercise_id');
 
   $$CardioSessionsTableProcessedTableManager get cardioSessionsRefs {
     final manager = $$CardioSessionsTableTableManager($_db, $_db.cardioSessions)
@@ -8207,8 +8877,7 @@ final class $$ExercisesTableReferences
   static MultiTypedResultKey<$PersonalRecordsTable, List<PersonalRecord>>
       _personalRecordsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.personalRecords,
-              aliasName: $_aliasNameGenerator(
-                  db.exercises.id, db.personalRecords.exerciseId));
+              aliasName: 'exercises__id__personal_records__exercise_id');
 
   $$PersonalRecordsTableProcessedTableManager get personalRecordsRefs {
     final manager = $$PersonalRecordsTableTableManager(
@@ -8224,8 +8893,7 @@ final class $$ExercisesTableReferences
   static MultiTypedResultKey<$TemplateExercisesTable, List<TemplateExercise>>
       _templateExercisesRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.templateExercises,
-              aliasName: $_aliasNameGenerator(
-                  db.exercises.id, db.templateExercises.exerciseId));
+              aliasName: 'exercises__id__template_exercises__exercise_id');
 
   $$TemplateExercisesTableProcessedTableManager get templateExercisesRefs {
     final manager = $$TemplateExercisesTableTableManager(
@@ -8718,8 +9386,8 @@ final class $$WorkoutsTableReferences
     extends BaseReferences<_$AppDatabase, $WorkoutsTable, Workout> {
   $$WorkoutsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $ClientsTable _clientIdTable(_$AppDatabase db) => db.clients
-      .createAlias($_aliasNameGenerator(db.workouts.clientId, db.clients.id));
+  static $ClientsTable _clientIdTable(_$AppDatabase db) =>
+      db.clients.createAlias('workouts__client_id__clients__id');
 
   $$ClientsTableProcessedTableManager get clientId {
     final $_column = $_itemColumn<String>('client_id')!;
@@ -8733,10 +9401,9 @@ final class $$WorkoutsTableReferences
   }
 
   static MultiTypedResultKey<$WorkoutSetsTable, List<WorkoutSet>>
-      _workoutSetsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-          db.workoutSets,
-          aliasName:
-              $_aliasNameGenerator(db.workouts.id, db.workoutSets.workoutId));
+      _workoutSetsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.workoutSets,
+              aliasName: 'workouts__id__workout_sets__workout_id');
 
   $$WorkoutSetsTableProcessedTableManager get workoutSetsRefs {
     final manager = $$WorkoutSetsTableTableManager($_db, $_db.workoutSets)
@@ -8750,8 +9417,7 @@ final class $$WorkoutsTableReferences
   static MultiTypedResultKey<$CardioSessionsTable, List<CardioSession>>
       _cardioSessionsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.cardioSessions,
-              aliasName: $_aliasNameGenerator(
-                  db.workouts.id, db.cardioSessions.workoutId));
+              aliasName: 'workouts__id__cardio_sessions__workout_id');
 
   $$CardioSessionsTableProcessedTableManager get cardioSessionsRefs {
     final manager = $$CardioSessionsTableTableManager($_db, $_db.cardioSessions)
@@ -8765,8 +9431,7 @@ final class $$WorkoutsTableReferences
   static MultiTypedResultKey<$StretchingSessionsTable, List<StretchingSession>>
       _stretchingSessionsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.stretchingSessions,
-              aliasName: $_aliasNameGenerator(
-                  db.workouts.id, db.stretchingSessions.workoutId));
+              aliasName: 'workouts__id__stretching_sessions__workout_id');
 
   $$StretchingSessionsTableProcessedTableManager get stretchingSessionsRefs {
     final manager = $$StretchingSessionsTableTableManager(
@@ -9278,8 +9943,7 @@ final class $$WorkoutSetsTableReferences
   $$WorkoutSetsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $WorkoutsTable _workoutIdTable(_$AppDatabase db) =>
-      db.workouts.createAlias(
-          $_aliasNameGenerator(db.workoutSets.workoutId, db.workouts.id));
+      db.workouts.createAlias('workout_sets__workout_id__workouts__id');
 
   $$WorkoutsTableProcessedTableManager get workoutId {
     final $_column = $_itemColumn<String>('workout_id')!;
@@ -9293,8 +9957,7 @@ final class $$WorkoutSetsTableReferences
   }
 
   static $ExercisesTable _exerciseIdTable(_$AppDatabase db) =>
-      db.exercises.createAlias(
-          $_aliasNameGenerator(db.workoutSets.exerciseId, db.exercises.id));
+      db.exercises.createAlias('workout_sets__exercise_id__exercises__id');
 
   $$ExercisesTableProcessedTableManager get exerciseId {
     final $_column = $_itemColumn<String>('exercise_id')!;
@@ -9310,8 +9973,7 @@ final class $$WorkoutSetsTableReferences
   static MultiTypedResultKey<$PersonalRecordsTable, List<PersonalRecord>>
       _personalRecordsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.personalRecords,
-              aliasName: $_aliasNameGenerator(
-                  db.workoutSets.id, db.personalRecords.workoutSetId));
+              aliasName: 'workout_sets__id__personal_records__workout_set_id');
 
   $$PersonalRecordsTableProcessedTableManager get personalRecordsRefs {
     final manager =
@@ -9839,8 +10501,7 @@ final class $$CardioSessionsTableReferences
       super.$_db, super.$_table, super.$_typedResult);
 
   static $WorkoutsTable _workoutIdTable(_$AppDatabase db) =>
-      db.workouts.createAlias(
-          $_aliasNameGenerator(db.cardioSessions.workoutId, db.workouts.id));
+      db.workouts.createAlias('cardio_sessions__workout_id__workouts__id');
 
   $$WorkoutsTableProcessedTableManager get workoutId {
     final $_column = $_itemColumn<String>('workout_id')!;
@@ -9854,8 +10515,7 @@ final class $$CardioSessionsTableReferences
   }
 
   static $ExercisesTable _exerciseIdTable(_$AppDatabase db) =>
-      db.exercises.createAlias(
-          $_aliasNameGenerator(db.cardioSessions.exerciseId, db.exercises.id));
+      db.exercises.createAlias('cardio_sessions__exercise_id__exercises__id');
 
   $$ExercisesTableProcessedTableManager get exerciseId {
     final $_column = $_itemColumn<String>('exercise_id')!;
@@ -9869,8 +10529,7 @@ final class $$CardioSessionsTableReferences
   }
 
   static $ClientsTable _clientIdTable(_$AppDatabase db) =>
-      db.clients.createAlias(
-          $_aliasNameGenerator(db.cardioSessions.clientId, db.clients.id));
+      db.clients.createAlias('cardio_sessions__client_id__clients__id');
 
   $$ClientsTableProcessedTableManager get clientId {
     final $_column = $_itemColumn<String>('client_id')!;
@@ -9881,6 +10540,42 @@ final class $$CardioSessionsTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static MultiTypedResultKey<$CardioTrackPointsTable, List<CardioTrackPoint>>
+      _cardioTrackPointsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.cardioTrackPoints,
+              aliasName:
+                  'cardio_sessions__id__cardio_track_points__session_id');
+
+  $$CardioTrackPointsTableProcessedTableManager get cardioTrackPointsRefs {
+    final manager = $$CardioTrackPointsTableTableManager(
+            $_db, $_db.cardioTrackPoints)
+        .filter((f) => f.sessionId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_cardioTrackPointsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$CardioHeartRateSamplesTable,
+      List<CardioHeartRateSample>> _cardioHeartRateSamplesRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.cardioHeartRateSamples,
+          aliasName:
+              'cardio_sessions__id__cardio_heart_rate_samples__session_id');
+
+  $$CardioHeartRateSamplesTableProcessedTableManager
+      get cardioHeartRateSamplesRefs {
+    final manager = $$CardioHeartRateSamplesTableTableManager(
+            $_db, $_db.cardioHeartRateSamples)
+        .filter((f) => f.sessionId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_cardioHeartRateSamplesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
   }
 }
 
@@ -9974,6 +10669,50 @@ class $$CardioSessionsTableFilterComposer
                   $removeJoinBuilderFromRootComposer,
             ));
     return composer;
+  }
+
+  Expression<bool> cardioTrackPointsRefs(
+      Expression<bool> Function($$CardioTrackPointsTableFilterComposer f) f) {
+    final $$CardioTrackPointsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.cardioTrackPoints,
+        getReferencedColumn: (t) => t.sessionId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CardioTrackPointsTableFilterComposer(
+              $db: $db,
+              $table: $db.cardioTrackPoints,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> cardioHeartRateSamplesRefs(
+      Expression<bool> Function($$CardioHeartRateSamplesTableFilterComposer f)
+          f) {
+    final $$CardioHeartRateSamplesTableFilterComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.cardioHeartRateSamples,
+            getReferencedColumn: (t) => t.sessionId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$CardioHeartRateSamplesTableFilterComposer(
+                  $db: $db,
+                  $table: $db.cardioHeartRateSamples,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
   }
 }
 
@@ -10160,6 +10899,51 @@ class $$CardioSessionsTableAnnotationComposer
             ));
     return composer;
   }
+
+  Expression<T> cardioTrackPointsRefs<T extends Object>(
+      Expression<T> Function($$CardioTrackPointsTableAnnotationComposer a) f) {
+    final $$CardioTrackPointsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.cardioTrackPoints,
+            getReferencedColumn: (t) => t.sessionId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$CardioTrackPointsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.cardioTrackPoints,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<T> cardioHeartRateSamplesRefs<T extends Object>(
+      Expression<T> Function($$CardioHeartRateSamplesTableAnnotationComposer a)
+          f) {
+    final $$CardioHeartRateSamplesTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.cardioHeartRateSamples,
+            getReferencedColumn: (t) => t.sessionId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$CardioHeartRateSamplesTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.cardioHeartRateSamples,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
 }
 
 class $$CardioSessionsTableTableManager extends RootTableManager<
@@ -10173,7 +10957,12 @@ class $$CardioSessionsTableTableManager extends RootTableManager<
     $$CardioSessionsTableUpdateCompanionBuilder,
     (CardioSession, $$CardioSessionsTableReferences),
     CardioSession,
-    PrefetchHooks Function({bool workoutId, bool exerciseId, bool clientId})> {
+    PrefetchHooks Function(
+        {bool workoutId,
+        bool exerciseId,
+        bool clientId,
+        bool cardioTrackPointsRefs,
+        bool cardioHeartRateSamplesRefs})> {
   $$CardioSessionsTableTableManager(
       _$AppDatabase db, $CardioSessionsTable table)
       : super(TableManagerState(
@@ -10244,10 +11033,17 @@ class $$CardioSessionsTableTableManager extends RootTableManager<
                   ))
               .toList(),
           prefetchHooksCallback: (
-              {workoutId = false, exerciseId = false, clientId = false}) {
+              {workoutId = false,
+              exerciseId = false,
+              clientId = false,
+              cardioTrackPointsRefs = false,
+              cardioHeartRateSamplesRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [],
+              explicitlyWatchedTables: [
+                if (cardioTrackPointsRefs) db.cardioTrackPoints,
+                if (cardioHeartRateSamplesRefs) db.cardioHeartRateSamples
+              ],
               addJoins: <
                   T extends TableManagerState<
                       dynamic,
@@ -10295,7 +11091,34 @@ class $$CardioSessionsTableTableManager extends RootTableManager<
                 return state;
               },
               getPrefetchedDataCallback: (items) async {
-                return [];
+                return [
+                  if (cardioTrackPointsRefs)
+                    await $_getPrefetchedData<CardioSession,
+                            $CardioSessionsTable, CardioTrackPoint>(
+                        currentTable: table,
+                        referencedTable: $$CardioSessionsTableReferences
+                            ._cardioTrackPointsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CardioSessionsTableReferences(db, table, p0)
+                                .cardioTrackPointsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.sessionId == item.id),
+                        typedResults: items),
+                  if (cardioHeartRateSamplesRefs)
+                    await $_getPrefetchedData<CardioSession,
+                            $CardioSessionsTable, CardioHeartRateSample>(
+                        currentTable: table,
+                        referencedTable: $$CardioSessionsTableReferences
+                            ._cardioHeartRateSamplesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$CardioSessionsTableReferences(db, table, p0)
+                                .cardioHeartRateSamplesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.sessionId == item.id),
+                        typedResults: items)
+                ];
               },
             );
           },
@@ -10313,7 +11136,588 @@ typedef $$CardioSessionsTableProcessedTableManager = ProcessedTableManager<
     $$CardioSessionsTableUpdateCompanionBuilder,
     (CardioSession, $$CardioSessionsTableReferences),
     CardioSession,
-    PrefetchHooks Function({bool workoutId, bool exerciseId, bool clientId})>;
+    PrefetchHooks Function(
+        {bool workoutId,
+        bool exerciseId,
+        bool clientId,
+        bool cardioTrackPointsRefs,
+        bool cardioHeartRateSamplesRefs})>;
+typedef $$CardioTrackPointsTableCreateCompanionBuilder
+    = CardioTrackPointsCompanion Function({
+  required String id,
+  required String sessionId,
+  required int timestamp,
+  required double latitude,
+  required double longitude,
+  Value<double?> altitude,
+  Value<double?> accuracy,
+  Value<int> rowid,
+});
+typedef $$CardioTrackPointsTableUpdateCompanionBuilder
+    = CardioTrackPointsCompanion Function({
+  Value<String> id,
+  Value<String> sessionId,
+  Value<int> timestamp,
+  Value<double> latitude,
+  Value<double> longitude,
+  Value<double?> altitude,
+  Value<double?> accuracy,
+  Value<int> rowid,
+});
+
+final class $$CardioTrackPointsTableReferences extends BaseReferences<
+    _$AppDatabase, $CardioTrackPointsTable, CardioTrackPoint> {
+  $$CardioTrackPointsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $CardioSessionsTable _sessionIdTable(_$AppDatabase db) =>
+      db.cardioSessions
+          .createAlias('cardio_track_points__session_id__cardio_sessions__id');
+
+  $$CardioSessionsTableProcessedTableManager get sessionId {
+    final $_column = $_itemColumn<String>('session_id')!;
+
+    final manager = $$CardioSessionsTableTableManager($_db, $_db.cardioSessions)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_sessionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$CardioTrackPointsTableFilterComposer
+    extends Composer<_$AppDatabase, $CardioTrackPointsTable> {
+  $$CardioTrackPointsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get timestamp => $composableBuilder(
+      column: $table.timestamp, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get latitude => $composableBuilder(
+      column: $table.latitude, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get longitude => $composableBuilder(
+      column: $table.longitude, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get altitude => $composableBuilder(
+      column: $table.altitude, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get accuracy => $composableBuilder(
+      column: $table.accuracy, builder: (column) => ColumnFilters(column));
+
+  $$CardioSessionsTableFilterComposer get sessionId {
+    final $$CardioSessionsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.sessionId,
+        referencedTable: $db.cardioSessions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CardioSessionsTableFilterComposer(
+              $db: $db,
+              $table: $db.cardioSessions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$CardioTrackPointsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CardioTrackPointsTable> {
+  $$CardioTrackPointsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get timestamp => $composableBuilder(
+      column: $table.timestamp, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get latitude => $composableBuilder(
+      column: $table.latitude, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get longitude => $composableBuilder(
+      column: $table.longitude, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get altitude => $composableBuilder(
+      column: $table.altitude, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get accuracy => $composableBuilder(
+      column: $table.accuracy, builder: (column) => ColumnOrderings(column));
+
+  $$CardioSessionsTableOrderingComposer get sessionId {
+    final $$CardioSessionsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.sessionId,
+        referencedTable: $db.cardioSessions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CardioSessionsTableOrderingComposer(
+              $db: $db,
+              $table: $db.cardioSessions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$CardioTrackPointsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CardioTrackPointsTable> {
+  $$CardioTrackPointsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get timestamp =>
+      $composableBuilder(column: $table.timestamp, builder: (column) => column);
+
+  GeneratedColumn<double> get latitude =>
+      $composableBuilder(column: $table.latitude, builder: (column) => column);
+
+  GeneratedColumn<double> get longitude =>
+      $composableBuilder(column: $table.longitude, builder: (column) => column);
+
+  GeneratedColumn<double> get altitude =>
+      $composableBuilder(column: $table.altitude, builder: (column) => column);
+
+  GeneratedColumn<double> get accuracy =>
+      $composableBuilder(column: $table.accuracy, builder: (column) => column);
+
+  $$CardioSessionsTableAnnotationComposer get sessionId {
+    final $$CardioSessionsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.sessionId,
+        referencedTable: $db.cardioSessions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CardioSessionsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.cardioSessions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$CardioTrackPointsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $CardioTrackPointsTable,
+    CardioTrackPoint,
+    $$CardioTrackPointsTableFilterComposer,
+    $$CardioTrackPointsTableOrderingComposer,
+    $$CardioTrackPointsTableAnnotationComposer,
+    $$CardioTrackPointsTableCreateCompanionBuilder,
+    $$CardioTrackPointsTableUpdateCompanionBuilder,
+    (CardioTrackPoint, $$CardioTrackPointsTableReferences),
+    CardioTrackPoint,
+    PrefetchHooks Function({bool sessionId})> {
+  $$CardioTrackPointsTableTableManager(
+      _$AppDatabase db, $CardioTrackPointsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CardioTrackPointsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CardioTrackPointsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CardioTrackPointsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> sessionId = const Value.absent(),
+            Value<int> timestamp = const Value.absent(),
+            Value<double> latitude = const Value.absent(),
+            Value<double> longitude = const Value.absent(),
+            Value<double?> altitude = const Value.absent(),
+            Value<double?> accuracy = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CardioTrackPointsCompanion(
+            id: id,
+            sessionId: sessionId,
+            timestamp: timestamp,
+            latitude: latitude,
+            longitude: longitude,
+            altitude: altitude,
+            accuracy: accuracy,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String sessionId,
+            required int timestamp,
+            required double latitude,
+            required double longitude,
+            Value<double?> altitude = const Value.absent(),
+            Value<double?> accuracy = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CardioTrackPointsCompanion.insert(
+            id: id,
+            sessionId: sessionId,
+            timestamp: timestamp,
+            latitude: latitude,
+            longitude: longitude,
+            altitude: altitude,
+            accuracy: accuracy,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$CardioTrackPointsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({sessionId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (sessionId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.sessionId,
+                    referencedTable:
+                        $$CardioTrackPointsTableReferences._sessionIdTable(db),
+                    referencedColumn: $$CardioTrackPointsTableReferences
+                        ._sessionIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$CardioTrackPointsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $CardioTrackPointsTable,
+    CardioTrackPoint,
+    $$CardioTrackPointsTableFilterComposer,
+    $$CardioTrackPointsTableOrderingComposer,
+    $$CardioTrackPointsTableAnnotationComposer,
+    $$CardioTrackPointsTableCreateCompanionBuilder,
+    $$CardioTrackPointsTableUpdateCompanionBuilder,
+    (CardioTrackPoint, $$CardioTrackPointsTableReferences),
+    CardioTrackPoint,
+    PrefetchHooks Function({bool sessionId})>;
+typedef $$CardioHeartRateSamplesTableCreateCompanionBuilder
+    = CardioHeartRateSamplesCompanion Function({
+  required String id,
+  required String sessionId,
+  required int timestamp,
+  required int bpm,
+  Value<int> rowid,
+});
+typedef $$CardioHeartRateSamplesTableUpdateCompanionBuilder
+    = CardioHeartRateSamplesCompanion Function({
+  Value<String> id,
+  Value<String> sessionId,
+  Value<int> timestamp,
+  Value<int> bpm,
+  Value<int> rowid,
+});
+
+final class $$CardioHeartRateSamplesTableReferences extends BaseReferences<
+    _$AppDatabase, $CardioHeartRateSamplesTable, CardioHeartRateSample> {
+  $$CardioHeartRateSamplesTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $CardioSessionsTable _sessionIdTable(_$AppDatabase db) =>
+      db.cardioSessions.createAlias(
+          'cardio_heart_rate_samples__session_id__cardio_sessions__id');
+
+  $$CardioSessionsTableProcessedTableManager get sessionId {
+    final $_column = $_itemColumn<String>('session_id')!;
+
+    final manager = $$CardioSessionsTableTableManager($_db, $_db.cardioSessions)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_sessionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$CardioHeartRateSamplesTableFilterComposer
+    extends Composer<_$AppDatabase, $CardioHeartRateSamplesTable> {
+  $$CardioHeartRateSamplesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get timestamp => $composableBuilder(
+      column: $table.timestamp, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get bpm => $composableBuilder(
+      column: $table.bpm, builder: (column) => ColumnFilters(column));
+
+  $$CardioSessionsTableFilterComposer get sessionId {
+    final $$CardioSessionsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.sessionId,
+        referencedTable: $db.cardioSessions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CardioSessionsTableFilterComposer(
+              $db: $db,
+              $table: $db.cardioSessions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$CardioHeartRateSamplesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CardioHeartRateSamplesTable> {
+  $$CardioHeartRateSamplesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get timestamp => $composableBuilder(
+      column: $table.timestamp, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get bpm => $composableBuilder(
+      column: $table.bpm, builder: (column) => ColumnOrderings(column));
+
+  $$CardioSessionsTableOrderingComposer get sessionId {
+    final $$CardioSessionsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.sessionId,
+        referencedTable: $db.cardioSessions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CardioSessionsTableOrderingComposer(
+              $db: $db,
+              $table: $db.cardioSessions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$CardioHeartRateSamplesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CardioHeartRateSamplesTable> {
+  $$CardioHeartRateSamplesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get timestamp =>
+      $composableBuilder(column: $table.timestamp, builder: (column) => column);
+
+  GeneratedColumn<int> get bpm =>
+      $composableBuilder(column: $table.bpm, builder: (column) => column);
+
+  $$CardioSessionsTableAnnotationComposer get sessionId {
+    final $$CardioSessionsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.sessionId,
+        referencedTable: $db.cardioSessions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CardioSessionsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.cardioSessions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$CardioHeartRateSamplesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $CardioHeartRateSamplesTable,
+    CardioHeartRateSample,
+    $$CardioHeartRateSamplesTableFilterComposer,
+    $$CardioHeartRateSamplesTableOrderingComposer,
+    $$CardioHeartRateSamplesTableAnnotationComposer,
+    $$CardioHeartRateSamplesTableCreateCompanionBuilder,
+    $$CardioHeartRateSamplesTableUpdateCompanionBuilder,
+    (CardioHeartRateSample, $$CardioHeartRateSamplesTableReferences),
+    CardioHeartRateSample,
+    PrefetchHooks Function({bool sessionId})> {
+  $$CardioHeartRateSamplesTableTableManager(
+      _$AppDatabase db, $CardioHeartRateSamplesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CardioHeartRateSamplesTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CardioHeartRateSamplesTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CardioHeartRateSamplesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> sessionId = const Value.absent(),
+            Value<int> timestamp = const Value.absent(),
+            Value<int> bpm = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CardioHeartRateSamplesCompanion(
+            id: id,
+            sessionId: sessionId,
+            timestamp: timestamp,
+            bpm: bpm,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String sessionId,
+            required int timestamp,
+            required int bpm,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CardioHeartRateSamplesCompanion.insert(
+            id: id,
+            sessionId: sessionId,
+            timestamp: timestamp,
+            bpm: bpm,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$CardioHeartRateSamplesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({sessionId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (sessionId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.sessionId,
+                    referencedTable: $$CardioHeartRateSamplesTableReferences
+                        ._sessionIdTable(db),
+                    referencedColumn: $$CardioHeartRateSamplesTableReferences
+                        ._sessionIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$CardioHeartRateSamplesTableProcessedTableManager
+    = ProcessedTableManager<
+        _$AppDatabase,
+        $CardioHeartRateSamplesTable,
+        CardioHeartRateSample,
+        $$CardioHeartRateSamplesTableFilterComposer,
+        $$CardioHeartRateSamplesTableOrderingComposer,
+        $$CardioHeartRateSamplesTableAnnotationComposer,
+        $$CardioHeartRateSamplesTableCreateCompanionBuilder,
+        $$CardioHeartRateSamplesTableUpdateCompanionBuilder,
+        (CardioHeartRateSample, $$CardioHeartRateSamplesTableReferences),
+        CardioHeartRateSample,
+        PrefetchHooks Function({bool sessionId})>;
 typedef $$PersonalRecordsTableCreateCompanionBuilder = PersonalRecordsCompanion
     Function({
   required String id,
@@ -10347,8 +11751,7 @@ final class $$PersonalRecordsTableReferences extends BaseReferences<
       super.$_db, super.$_table, super.$_typedResult);
 
   static $ExercisesTable _exerciseIdTable(_$AppDatabase db) =>
-      db.exercises.createAlias(
-          $_aliasNameGenerator(db.personalRecords.exerciseId, db.exercises.id));
+      db.exercises.createAlias('personal_records__exercise_id__exercises__id');
 
   $$ExercisesTableProcessedTableManager get exerciseId {
     final $_column = $_itemColumn<String>('exercise_id')!;
@@ -10362,8 +11765,8 @@ final class $$PersonalRecordsTableReferences extends BaseReferences<
   }
 
   static $WorkoutSetsTable _workoutSetIdTable(_$AppDatabase db) =>
-      db.workoutSets.createAlias($_aliasNameGenerator(
-          db.personalRecords.workoutSetId, db.workoutSets.id));
+      db.workoutSets
+          .createAlias('personal_records__workout_set_id__workout_sets__id');
 
   $$WorkoutSetsTableProcessedTableManager? get workoutSetId {
     final $_column = $_itemColumn<String>('workout_set_id');
@@ -10377,8 +11780,7 @@ final class $$PersonalRecordsTableReferences extends BaseReferences<
   }
 
   static $ClientsTable _clientIdTable(_$AppDatabase db) =>
-      db.clients.createAlias(
-          $_aliasNameGenerator(db.personalRecords.clientId, db.clients.id));
+      db.clients.createAlias('personal_records__client_id__clients__id');
 
   $$ClientsTableProcessedTableManager get clientId {
     final $_column = $_itemColumn<String>('client_id')!;
@@ -10835,8 +12237,8 @@ final class $$WorkoutTemplatesTableReferences extends BaseReferences<
   static MultiTypedResultKey<$TemplateExercisesTable, List<TemplateExercise>>
       _templateExercisesRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.templateExercises,
-              aliasName: $_aliasNameGenerator(
-                  db.workoutTemplates.id, db.templateExercises.templateId));
+              aliasName:
+                  'workout_templates__id__template_exercises__template_id');
 
   $$TemplateExercisesTableProcessedTableManager get templateExercisesRefs {
     final manager = $$TemplateExercisesTableTableManager(
@@ -11102,9 +12504,9 @@ final class $$TemplateExercisesTableReferences extends BaseReferences<
   $$TemplateExercisesTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
 
-  static $WorkoutTemplatesTable _templateIdTable(_$AppDatabase db) =>
-      db.workoutTemplates.createAlias($_aliasNameGenerator(
-          db.templateExercises.templateId, db.workoutTemplates.id));
+  static $WorkoutTemplatesTable _templateIdTable(_$AppDatabase db) => db
+      .workoutTemplates
+      .createAlias('template_exercises__template_id__workout_templates__id');
 
   $$WorkoutTemplatesTableProcessedTableManager get templateId {
     final $_column = $_itemColumn<String>('template_id')!;
@@ -11118,9 +12520,8 @@ final class $$TemplateExercisesTableReferences extends BaseReferences<
         manager.$state.copyWith(prefetchedData: [item]));
   }
 
-  static $ExercisesTable _exerciseIdTable(_$AppDatabase db) =>
-      db.exercises.createAlias($_aliasNameGenerator(
-          db.templateExercises.exerciseId, db.exercises.id));
+  static $ExercisesTable _exerciseIdTable(_$AppDatabase db) => db.exercises
+      .createAlias('template_exercises__exercise_id__exercises__id');
 
   $$ExercisesTableProcessedTableManager get exerciseId {
     final $_column = $_itemColumn<String>('exercise_id')!;
@@ -12165,8 +13566,7 @@ final class $$StretchingSessionsTableReferences extends BaseReferences<
       super.$_db, super.$_table, super.$_typedResult);
 
   static $WorkoutsTable _workoutIdTable(_$AppDatabase db) =>
-      db.workouts.createAlias($_aliasNameGenerator(
-          db.stretchingSessions.workoutId, db.workouts.id));
+      db.workouts.createAlias('stretching_sessions__workout_id__workouts__id');
 
   $$WorkoutsTableProcessedTableManager get workoutId {
     final $_column = $_itemColumn<String>('workout_id')!;
@@ -12554,8 +13954,7 @@ final class $$ClientPlanAssignmentsTableReferences extends BaseReferences<
       super.$_db, super.$_table, super.$_typedResult);
 
   static $ClientsTable _clientIdTable(_$AppDatabase db) =>
-      db.clients.createAlias($_aliasNameGenerator(
-          db.clientPlanAssignments.clientId, db.clients.id));
+      db.clients.createAlias('client_plan_assignments__client_id__clients__id');
 
   $$ClientsTableProcessedTableManager get clientId {
     final $_column = $_itemColumn<String>('client_id')!;
@@ -12868,8 +14267,7 @@ final class $$HealthProfilesTableReferences
       super.$_db, super.$_table, super.$_typedResult);
 
   static $ClientsTable _clientIdTable(_$AppDatabase db) =>
-      db.clients.createAlias(
-          $_aliasNameGenerator(db.healthProfiles.clientId, db.clients.id));
+      db.clients.createAlias('health_profiles__client_id__clients__id');
 
   $$ClientsTableProcessedTableManager get clientId {
     final $_column = $_itemColumn<String>('client_id')!;
@@ -13180,6 +14578,11 @@ class $AppDatabaseManager {
       $$WorkoutSetsTableTableManager(_db, _db.workoutSets);
   $$CardioSessionsTableTableManager get cardioSessions =>
       $$CardioSessionsTableTableManager(_db, _db.cardioSessions);
+  $$CardioTrackPointsTableTableManager get cardioTrackPoints =>
+      $$CardioTrackPointsTableTableManager(_db, _db.cardioTrackPoints);
+  $$CardioHeartRateSamplesTableTableManager get cardioHeartRateSamples =>
+      $$CardioHeartRateSamplesTableTableManager(
+          _db, _db.cardioHeartRateSamples);
   $$PersonalRecordsTableTableManager get personalRecords =>
       $$PersonalRecordsTableTableManager(_db, _db.personalRecords);
   $$WorkoutTemplatesTableTableManager get workoutTemplates =>

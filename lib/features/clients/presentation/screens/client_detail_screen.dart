@@ -5,6 +5,7 @@ import 'package:hr_zones/hr_zones.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../../core/providers.dart';
+import '../../../heart_rate/presentation/providers/health_profile_provider.dart';
 import '../../../programmes/domain/models/programme.dart';
 import '../../../templates/domain/models/workout_template.dart';
 import '../../domain/models/client.dart';
@@ -408,6 +409,10 @@ class _HealthProfileFormState extends ConsumerState<_HealthProfileForm> {
         .read(healthProfileRepositoryProvider)
         .saveForClient(widget.clientId, profile);
     if (!mounted) return;
+    // The live profile is a one-shot read for the active client, so refresh
+    // it (and this screen's own copy) or zones and caps keep the old values.
+    ref.invalidate(clientHealthProfileProvider(widget.clientId));
+    ref.invalidate(healthProfileProvider);
     messenger.showSnackBar(SnackBar(content: Text(s.healthProfileSaved)));
   }
 }

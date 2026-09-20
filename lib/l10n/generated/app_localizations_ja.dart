@@ -912,6 +912,24 @@ class SJa extends S {
   String get cardioSessionSaved => '有酸素セッションを保存しました';
 
   @override
+  String get viewSavedSession => 'View';
+
+  @override
+  String get cardioSectionTitle => 'Cardio';
+
+  @override
+  String cardioRecordingCounts(int points, int samples) {
+    return '$points GPS points · $samples heart rate readings';
+  }
+
+  @override
+  String get exportCardioSession => 'Export';
+
+  @override
+  String get exportCardioSessionHint =>
+      'Share the GPS track as GPX and the heart rate readings as CSV';
+
+  @override
   String get heartRateMonitorCard => '心拍数モニター';
 
   @override
@@ -1690,6 +1708,10 @@ class SJa extends S {
   String get syncEnabledSubtitle => 'デバイス間でワークアウトデータを同期';
 
   @override
+  String get syncUnsupportedPlatform =>
+      'Cloud sync is not available on this platform';
+
+  @override
   String syncLastSynced(String time) {
     return '最終同期：$time';
   }
@@ -2010,6 +2032,11 @@ class SJa extends S {
   @override
   String viewingClient(String name) {
     return 'Viewing $name';
+  }
+
+  @override
+  String sessionClientLocked(String client) {
+    return 'Logging for $client — fixed for this session';
   }
 
   @override

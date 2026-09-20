@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +23,12 @@ class RestTimerNotifier extends Notifier<int?> {
   bool _completedNaturally = false;
   Duration? _lastRestDuration;
 
+  /// When the current rest ends. Remaining time is derived from the clock on
+  /// every tick rather than decremented per tick: while the app is suspended
+  /// Dart does not deliver the missed ticks, so a decrement would show most
+  /// of a rest still remaining after minutes in the background.
+  DateTime? _endsAt;
+
   /// True when the most recent transition to null was the timer running out
   /// rather than a manual stop — only then should the alert fire.
   bool get completedNaturally => _completedNaturally;
@@ -39,21 +46,23 @@ class RestTimerNotifier extends Notifier<int?> {
   void start(int seconds) {
     _timer?.cancel();
     _lastRestDuration = Duration(seconds: seconds);
+    _endsAt = clock.now().add(Duration(seconds: seconds));
     state = seconds;
     ref
         .read(trainerEventBusProvider)
         .emit(RestStarted(duration: Duration(seconds: seconds)));
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (state == null || state! <= 0) {
+      final remaining = _remainingSeconds();
+      if (remaining <= 0) {
         t.cancel();
+        _endsAt = null;
         _completedNaturally = true;
         state = null;
         ref
             .read(trainerEventBusProvider)
             .emit(RestFinished(restDuration: _lastRestDuration));
       } else {
-        state = state! - 1;
-        final remaining = state!;
+        state = remaining;
         if (remaining >= 1 && remaining <= 3) {
           ref
               .read(trainerEventBusProvider)
@@ -63,8 +72,18 @@ class RestTimerNotifier extends Notifier<int?> {
     });
   }
 
+  /// Whole seconds left, rounded up so a tick landing a few milliseconds
+  /// late still reads as the expected count.
+  int _remainingSeconds() {
+    final endsAt = _endsAt;
+    if (endsAt == null) return 0;
+    final ms = endsAt.difference(clock.now()).inMilliseconds;
+    return (ms / 1000).ceil();
+  }
+
   void stop() {
     _timer?.cancel();
+    _endsAt = null;
     _completedNaturally = false;
     state = null;
   }

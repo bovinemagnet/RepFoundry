@@ -26,7 +26,7 @@ void main() {
         .getSingle();
     expect(row.read<String>('client_id'), kSelfClientId);
 
-    expect(database.schemaVersion, 13);
+    expect(database.schemaVersion, db.AppDatabase.schemaVersionConst);
   });
 
   test(
@@ -122,7 +122,7 @@ void main() {
     final clients = await database.select(database.clients).get();
 
     // The upgrade — not onCreate — landed the schema at v13.
-    expect(database.schemaVersion, 13);
+    expect(database.schemaVersion, db.AppDatabase.schemaVersionConst);
 
     // The self ("Me") client was seeded by the v13 upgrade branch.
     expect(clients, hasLength(1));
@@ -132,6 +132,26 @@ void main() {
     // The 3 new tables exist and are queryable.
     await database.select(database.clientPlanAssignments).get();
     await database.select(database.healthProfiles).get();
+
+    // The v14 upgrade (cardio recordings) ran in the same chain and can
+    // hold rows against the legacy session.
+    await database.into(database.cardioTrackPoints).insert(
+          db.CardioTrackPointsCompanion.insert(
+            id: 'tp-1',
+            sessionId: 'c-legacy',
+            timestamp: 1000,
+            latitude: 51.5,
+            longitude: -0.1,
+          ),
+        );
+    await database.into(database.cardioHeartRateSamples).insert(
+          db.CardioHeartRateSamplesCompanion.insert(
+            id: 'hr-1',
+            sessionId: 'c-legacy',
+            timestamp: 1000,
+            bpm: 120,
+          ),
+        );
 
     // Pre-existing rows in all 4 coach-scoped tables backfilled to Me via
     // the `ALTER TABLE ... ADD COLUMN client_id ... DEFAULT` statements.
