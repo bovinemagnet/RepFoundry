@@ -436,7 +436,10 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       _hrSub = null;
       _hrConnectionSub?.cancel();
       _hrConnectionSub = null;
-      state = const CardioTrackingState(savedSuccessfully: true);
+      state = CardioTrackingState(
+        savedSuccessfully: true,
+        savedWorkoutId: result.workout.id,
+      );
       _syncForegroundService();
     } on SaveCardioSessionException catch (e) {
       state = state.copyWith(isSaving: false, error: e.message);

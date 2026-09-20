@@ -909,6 +909,9 @@ class SZh extends S {
   String get cardioSessionSaved => '有氧训练已保存';
 
   @override
+  String get viewSavedSession => 'View';
+
+  @override
   String get cardioSectionTitle => 'Cardio';
 
   @override

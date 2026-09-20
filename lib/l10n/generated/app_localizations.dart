@@ -1764,6 +1764,12 @@ abstract class S {
   /// **'Cardio session saved'**
   String get cardioSessionSaved;
 
+  /// No description provided for @viewSavedSession.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get viewSavedSession;
+
   /// No description provided for @cardioSectionTitle.
   ///
   /// In en, this message translates to:

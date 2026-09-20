@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
@@ -51,8 +52,19 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
         _distanceController.clear();
         _inclineController.clear();
         _heartRateController.clear();
+        final savedWorkoutId = next.savedWorkoutId;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.cardioSessionSaved)),
+          SnackBar(
+            content: Text(s.cardioSessionSaved),
+            // The session is reviewed (and exported) from History; point
+            // there so the save is not a dead end.
+            action: savedWorkoutId == null
+                ? null
+                : SnackBarAction(
+                    label: s.viewSavedSession,
+                    onPressed: () => context.go('/history/$savedWorkoutId'),
+                  ),
+          ),
         );
       }
       if (next.error != null && next.error != prev?.error) {

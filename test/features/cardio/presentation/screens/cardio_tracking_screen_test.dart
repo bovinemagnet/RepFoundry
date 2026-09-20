@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rep_foundry/features/cardio/presentation/controllers/cardio_tracking_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/cardio/application/save_cardio_session_use_case.dart';
@@ -220,5 +221,25 @@ void main() {
       // `_ActionButton` for start uses the play_arrow icon when not running.
       expect(find.byIcon(Icons.play_arrow), findsOneWidget);
     });
+  });
+
+  testWidgets('the saved snackbar offers to view the session in History',
+      (tester) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(CardioTrackingScreen)),
+    );
+    final controller = container.read(cardioTrackingProvider.notifier);
+    await controller.selectExercise('e1', 'Treadmill');
+    controller.start();
+    await tester.pump(const Duration(seconds: 2));
+    controller.pause();
+
+    await controller.save();
+    await tester.pump();
+
+    expect(find.text('Cardio session saved'), findsOneWidget);
+    expect(find.text('View'), findsOneWidget);
   });
 }

@@ -247,6 +247,24 @@ void main() {
       });
     });
 
+    group('review after save', () {
+      test('the saved workout id is exposed so the UI can link to it',
+          () async {
+        await controller.selectExercise('e1', 'Run');
+        controller.start();
+        await Future<void>.delayed(
+            const Duration(seconds: 1, milliseconds: 100));
+        controller.pause();
+
+        await controller.save();
+
+        final history = await workoutRepo.getWorkoutHistory(
+          clientId: kSelfClientId,
+        );
+        expect(controller.state.savedWorkoutId, history.single.id);
+      });
+    });
+
     group('recordings', () {
       test('the saved session carries the GPS track that was received',
           () async {

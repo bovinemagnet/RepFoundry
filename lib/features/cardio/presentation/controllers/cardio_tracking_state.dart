@@ -23,6 +23,10 @@ class CardioTrackingState {
   /// switching the roster mid-run cannot move it to someone else.
   final String? sessionClientId;
 
+  /// The workout the last save produced, so the UI can offer to open it in
+  /// History straight after saving.
+  final String? savedWorkoutId;
+
   const CardioTrackingState({
     this.isRunning = false,
     this.elapsedSeconds = 0,
@@ -42,6 +46,7 @@ class CardioTrackingState {
     this.heartRateReadings = const [],
     this.hrDeviceName,
     this.sessionClientId,
+    this.savedWorkoutId,
   });
 
   CardioTrackingState copyWith({
@@ -67,6 +72,7 @@ class CardioTrackingState {
     String? hrDeviceName,
     bool clearHrDeviceName = false,
     String? sessionClientId,
+    String? savedWorkoutId,
   }) {
     return CardioTrackingState(
       isRunning: isRunning ?? this.isRunning,
@@ -90,6 +96,7 @@ class CardioTrackingState {
       hrDeviceName:
           clearHrDeviceName ? null : (hrDeviceName ?? this.hrDeviceName),
       sessionClientId: sessionClientId ?? this.sessionClientId,
+      savedWorkoutId: savedWorkoutId ?? this.savedWorkoutId,
     );
   }
 }

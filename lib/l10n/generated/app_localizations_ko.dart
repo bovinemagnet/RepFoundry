@@ -910,6 +910,9 @@ class SKo extends S {
   String get cardioSessionSaved => '유산소 세션이 저장되었습니다';
 
   @override
+  String get viewSavedSession => 'View';
+
+  @override
   String get cardioSectionTitle => 'Cardio';
 
   @override
