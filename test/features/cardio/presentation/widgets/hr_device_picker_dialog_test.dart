@@ -49,6 +49,31 @@ void main() {
       expect(find.text('Setup Help'), findsOneWidget);
     });
 
+    testWidgets('lists a device as soon as it is found, while still scanning',
+        (tester) async {
+      // A strap found in the first second must not sit hidden behind the
+      // spinner until the full scan timeout ends (#50).
+      service = FakeHeartRateService();
+      service.streamScanResults = true;
+      await tester.pumpWidget(buildHost(service));
+      await tester.tap(find.text('Open picker'));
+      await tester.pump();
+
+      service.emitScanResult(
+        const DiscoveredHrDevice(id: 'AA:BB', name: 'Polar H9 C83FCD2B'),
+      );
+      await tester.pump();
+
+      expect(find.text('Polar H9 C83FCD2B'), findsOneWidget);
+      expect(find.text('Scanning for devices...'), findsOneWidget);
+
+      service.completeScan();
+      await tester.pump();
+
+      expect(find.text('Polar H9 C83FCD2B'), findsOneWidget);
+      expect(find.text('Scanning for devices...'), findsNothing);
+    });
+
     testWidgets('lists discovered devices when scan returns results',
         (tester) async {
       service = FakeHeartRateService(devicesToReturn: [

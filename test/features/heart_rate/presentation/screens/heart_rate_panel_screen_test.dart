@@ -21,6 +21,7 @@ import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../cardio/data/fake_foreground_session_service.dart';
 import '../../../cardio/data/fake_heart_rate_service.dart';
 import '../../../cardio/data/fake_location_service.dart';
 
@@ -98,9 +99,7 @@ void main() {
         .setMockMethodCallHandler(audioInstance, null);
   });
 
-  Widget buildScreen() {
-    return ProviderScope(
-      overrides: [
+  List<Object> screenOverrides() => [
         databaseProvider.overrideWithValue(database),
         cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
         saveCardioSessionUseCaseProvider.overrideWithValue(
@@ -114,7 +113,15 @@ void main() {
         healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
         healthSyncSettingsProvider
             .overrideWith(() => HealthSyncSettingsNotifier()),
-      ],
+        foregroundSessionServiceProvider
+            .overrideWithValue(FakeForegroundSessionService()),
+      ];
+
+  Widget buildScreenBody() => const HeartRatePanelScreen();
+
+  Widget buildScreen() {
+    return ProviderScope(
+      overrides: screenOverrides().cast(),
       child: const MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
@@ -124,6 +131,39 @@ void main() {
   }
 
   group('HeartRatePanelScreen', () {
+    testWidgets('the weekly report row opens the report', (tester) async {
+      final router = GoRouter(routes: [
+        GoRoute(path: '/', builder: (_, __) => buildScreenBody()),
+        GoRoute(
+          path: '/heart-rate/weekly-report',
+          builder: (_, __) => const Scaffold(body: Text('report opened')),
+        ),
+      ]);
+      await tester.pumpWidget(ProviderScope(
+        overrides: screenOverrides().cast(),
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+        ),
+      ));
+      await tester.pumpAndSettle();
+      // The row only shows once there are readings.
+      final controller = ProviderScope.containerOf(
+              tester.element(find.byType(HeartRatePanelScreen)))
+          .read(heartRatePanelProvider.notifier);
+      await controller.connectAndStart('dev', 'Strap');
+      heartRateService.emitHeartRate(120);
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Full Weekly Heart Report'));
+      await tester.tap(find.text('Full Weekly Heart Report'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('report opened'), findsOneWidget);
+    });
+
     testWidgets('renders the Heart Rate app bar with the setup-guide action',
         (tester) async {
       await tester.pumpWidget(buildScreen());

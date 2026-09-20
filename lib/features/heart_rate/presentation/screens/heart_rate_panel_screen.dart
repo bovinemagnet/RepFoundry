@@ -1072,7 +1072,7 @@ class _WeeklyReportRow extends StatelessWidget {
           child: Icon(Icons.monitor_heart, size: 22, color: peakZoneColor),
         ),
         title: Text(
-          'Full Weekly Heart Report',
+          S.of(context)!.weeklyHeartReportRow,
           style: KineticText.display(
             size: 14,
             weight: FontWeight.w700,
@@ -1080,7 +1080,7 @@ class _WeeklyReportRow extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          'Cardiovascular adaptation, last 7 days',
+          S.of(context)!.weeklyHeartReportSubtitle,
           style: GoogleFonts.manrope(
             fontSize: 11.5,
             color: cs.onSurfaceVariant,
@@ -1090,9 +1090,7 @@ class _WeeklyReportRow extends StatelessWidget {
           Icons.chevron_right,
           color: cs.onSurfaceVariant,
         ),
-        onTap: () {
-          // Navigation to weekly report — not yet implemented in this release.
-        },
+        onTap: () => context.push('/heart-rate/weekly-report'),
       ),
     );
   }

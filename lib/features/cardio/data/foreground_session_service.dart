@@ -83,8 +83,12 @@ class FlutterForegroundSessionService implements ForegroundSessionService {
           if (gpsEnabled) ForegroundServiceTypes.location,
           if (hrConnected) ForegroundServiceTypes.connectedDevice,
         ],
-        notificationTitle: 'RepFoundry is tracking your workout',
-        notificationText: 'Cardio session in progress',
+        notificationTitle: gpsEnabled
+            ? 'RepFoundry is tracking your workout'
+            : 'RepFoundry is monitoring your heart rate',
+        notificationText: gpsEnabled
+            ? 'Cardio session in progress'
+            : 'Heart rate monitor connected',
       );
       _running = true;
       _gps = gpsEnabled;

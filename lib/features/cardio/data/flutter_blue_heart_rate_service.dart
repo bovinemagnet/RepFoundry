@@ -76,13 +76,26 @@ class FlutterBlueHeartRateService implements HeartRateService {
   Future<List<DiscoveredHrDevice>> scanForDevices({
     Duration timeout = const Duration(seconds: 10),
   }) async {
+    var found = const <DiscoveredHrDevice>[];
+    await for (final devices in scanDevices(timeout: timeout)) {
+      found = devices;
+    }
+    return found;
+  }
+
+  @override
+  Stream<List<DiscoveredHrDevice>> scanDevices({
+    Duration timeout = const Duration(seconds: 10),
+  }) async* {
     final devices = <DiscoveredHrDevice>[];
     final seen = <String>{};
+    final controller = StreamController<List<DiscoveredHrDevice>>();
 
     // Collect results via a listener; scanResults only emits when a new
     // advertisement arrives, so awaiting it directly can hang forever once
     // the scan stops.
     final subscription = FlutterBluePlus.onScanResults.listen((results) {
+      var changed = false;
       for (final r in results) {
         if (seen.add(r.device.remoteId.str)) {
           var name = r.device.platformName;
@@ -92,32 +105,45 @@ class FlutterBlueHeartRateService implements HeartRateService {
             id: r.device.remoteId.str,
             name: name,
           ));
+          changed = true;
         }
+      }
+      if (changed && !controller.isClosed) {
+        controller.add(List.unmodifiable(devices));
       }
     });
 
-    try {
-      await FlutterBluePlus.startScan(
-        withServices: [_hrServiceUuid],
-        timeout: timeout,
-      );
-      // The timeout stops the scan; wait for that rather than for a
-      // (possibly never-arriving) final scanResults emission.
+    // Runs the scan in the background of the stream; its completion (or
+    // failure) closes the controller, which ends the stream.
+    Future<void> runScan() async {
       try {
-        await FlutterBluePlus.isScanning
-            .where((scanning) => !scanning)
-            .first
-            .timeout(timeout + const Duration(seconds: 5));
-      } on TimeoutException {
-        // Safety net: the platform never reported the scan stopping.
-        // Stop it ourselves and return whatever was found.
-        await FlutterBluePlus.stopScan();
+        await FlutterBluePlus.startScan(
+          withServices: [_hrServiceUuid],
+          timeout: timeout,
+        );
+        // The timeout stops the scan; wait for that rather than for a
+        // (possibly never-arriving) final scanResults emission.
+        try {
+          await FlutterBluePlus.isScanning
+              .where((scanning) => !scanning)
+              .first
+              .timeout(timeout + const Duration(seconds: 5));
+        } on TimeoutException {
+          // Safety net: the platform never reported the scan stopping.
+          // Stop it ourselves and return whatever was found.
+          await FlutterBluePlus.stopScan();
+        }
+      } catch (e, st) {
+        if (!controller.isClosed) controller.addError(e, st);
+      } finally {
+        await subscription.cancel();
+        if (!controller.isClosed) await controller.close();
       }
-    } finally {
-      await subscription.cancel();
     }
 
-    return devices;
+    unawaited(runScan());
+    yield const <DiscoveredHrDevice>[];
+    yield* controller.stream;
   }
 
   @override

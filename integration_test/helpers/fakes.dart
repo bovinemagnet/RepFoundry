@@ -34,6 +34,12 @@ class FakeHeartRateService implements HeartRateService {
   }
 
   @override
+  Stream<List<DiscoveredHrDevice>> scanDevices({
+    Duration timeout = const Duration(seconds: 10),
+  }) =>
+      Stream.value(devicesToReturn);
+
+  @override
   Future<void> connectToDevice(String deviceId) async {
     if (shouldThrowOnConnect) {
       throw Exception('Connection failed');

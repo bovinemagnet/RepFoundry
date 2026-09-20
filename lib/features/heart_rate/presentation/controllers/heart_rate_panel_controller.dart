@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/foreground/foreground_keep_alive.dart';
 import '../../../../core/providers.dart';
 import '../../../cardio/data/heart_rate_service.dart';
 import 'heart_rate_panel_state.dart';
@@ -60,6 +61,16 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
   }
 
   /// Start monitoring when HR is already connected (e.g. from cardio screen).
+  /// Keeps the process alive while a connected strap is being monitored,
+  /// otherwise Android suspends the BLE stream as soon as the app is
+  /// backgrounded and the trace goes blank until it returns.
+  void _syncKeepAlive() {
+    unawaited(ref.read(foregroundKeepAliveProvider).setHeartRatePanel(
+          monitoring: state.isMonitoring,
+          hrConnected: state.hrConnected,
+        ));
+  }
+
   void startMonitoring() {
     if (state.isMonitoring) return;
 
@@ -73,6 +84,7 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
 
     state = state.copyWith(isMonitoring: true);
     _monitoringSince = clock.now();
+    _syncKeepAlive();
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       state = state.copyWith(elapsedSeconds: _wallClockElapsedSeconds);
@@ -91,6 +103,7 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
       isMonitoring: false,
       elapsedSeconds: _wallClockElapsedSeconds,
     );
+    _syncKeepAlive();
   }
 
   void resetReadings() {
@@ -122,6 +135,7 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
       readings: const [],
       elapsedSeconds: 0,
     );
+    _syncKeepAlive();
   }
 
   /// Sync connection state from cardio — call when navigating to the HR panel.
@@ -171,6 +185,7 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
             hrConnected: true,
             hrReconnecting: false,
           );
+          _syncKeepAlive();
         case HrConnectionState.disconnected:
           _pauseClock();
           state = state.copyWith(
@@ -179,6 +194,7 @@ class HeartRatePanelController extends Notifier<HeartRatePanelState> {
             clearCurrentHeartRate: true,
             error: 'Heart rate monitor disconnected',
           );
+          _syncKeepAlive();
       }
     });
   }

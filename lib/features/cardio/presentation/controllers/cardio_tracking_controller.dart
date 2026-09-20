@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../../../../core/foreground/foreground_keep_alive.dart';
 import '../../../../core/heart_rate/hr_session_recorder.dart';
 import '../../../../core/providers.dart';
 import '../../../clients/domain/models/client.dart';
@@ -11,7 +12,6 @@ import '../../../clients/presentation/providers/active_client_provider.dart';
 import '../../../health_sync/data/health_sync_service.dart';
 import '../../../health_sync/presentation/providers/health_sync_settings_provider.dart';
 import '../../application/save_cardio_session_use_case.dart';
-import '../../data/foreground_session_service.dart';
 import '../../data/heart_rate_service.dart';
 import '../../data/location_service.dart';
 import '../../domain/models/cardio_heart_rate_sample.dart';
@@ -41,8 +41,6 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
   SaveCardioSessionUseCase get _saveUseCase =>
       ref.read(saveCardioSessionUseCaseProvider);
   LocationService get _locationService => ref.read(locationServiceProvider);
-  ForegroundSessionService get _foregroundService =>
-      ref.read(foregroundSessionServiceProvider);
   HeartRateService get _heartRateService => ref.read(heartRateServiceProvider);
   HealthSyncService get _healthSyncService =>
       ref.read(healthSyncServiceProvider);
@@ -103,7 +101,75 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       _hrSub?.cancel();
       _hrConnectionSub?.cancel();
     });
-    return const CardioTrackingState();
+    // The monitor is a singleton shared with the Heart Rate tab, so follow
+    // its connection state from the start: a strap connected (or dropped)
+    // over there must show here too, not only one connected from this
+    // screen.
+    _listenToConnectionState();
+    final alreadyConnected = _heartRateService.isConnected;
+    if (alreadyConnected) _subscribeToReadings();
+    return CardioTrackingState(hrConnected: alreadyConnected);
+  }
+
+  /// Takes over a connection made elsewhere: subscribe to readings and mark
+  /// the monitor connected. The device name is not known from here.
+  void _adoptExistingConnection() {
+    if (state.hrConnected) return;
+    _subscribeToReadings();
+    state = state.copyWith(hrConnected: true, hrConnecting: false);
+  }
+
+  void _subscribeToReadings() {
+    _hrSub?.cancel();
+    _hrSub = _heartRateService.heartRateStream.listen(
+      (bpm) {
+        // Straps report 0 BPM while they have no skin contact; recording
+        // it would poison the session minimum and average.
+        if (bpm <= 0) return;
+        state = state.isRunning
+            ? state.copyWith(
+                currentHeartRate: bpm,
+                heartRateReadings: [...state.heartRateReadings, bpm],
+              )
+            : state.copyWith(currentHeartRate: bpm);
+      },
+      onError: (_) {
+        state = state.copyWith(
+          hrConnected: false,
+          hrConnecting: false,
+          hrReconnecting: false,
+          clearCurrentHeartRate: true,
+          error: 'Heart rate monitor disconnected',
+        );
+      },
+    );
+  }
+
+  void _listenToConnectionState() {
+    _hrConnectionSub?.cancel();
+    _hrConnectionSub =
+        _heartRateService.connectionStateStream.listen((connState) {
+      switch (connState) {
+        case HrConnectionState.reconnecting:
+          state = state.copyWith(hrReconnecting: true);
+        case HrConnectionState.connected:
+          if (_hrSub == null) _subscribeToReadings();
+          state = state.copyWith(
+            hrConnected: true,
+            hrConnecting: false,
+            hrReconnecting: false,
+          );
+        case HrConnectionState.disconnected:
+          _hrSub?.cancel();
+          _hrSub = null;
+          state = state.copyWith(
+            hrConnected: false,
+            hrReconnecting: false,
+            clearCurrentHeartRate: true,
+            error: 'Heart rate monitor disconnected',
+          );
+      }
+    });
   }
 
   void start() {
@@ -138,11 +204,11 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
   /// Best-effort reconciliation of the Android foreground service that
   /// keeps GPS/HR streams alive while the phone is locked.
   void _syncForegroundService() {
-    unawaited(_foregroundService.update(
-      sessionRunning: state.isRunning,
-      gpsEnabled: state.gpsEnabled,
-      hrConnected: state.hrConnected,
-    ));
+    unawaited(ref.read(foregroundKeepAliveProvider).setCardio(
+          sessionRunning: state.isRunning,
+          gpsEnabled: state.gpsEnabled,
+          hrConnected: state.hrConnected,
+        ));
   }
 
   int get _wallClockElapsedSeconds {
@@ -263,50 +329,7 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
 
     try {
       await _heartRateService.connectToDevice(deviceId);
-      _hrSub?.cancel();
-      _hrSub = _heartRateService.heartRateStream.listen(
-        (bpm) {
-          // Straps report 0 BPM while they have no skin contact; recording
-          // it would poison the session minimum and average.
-          if (bpm <= 0) return;
-          state = state.isRunning
-              ? state.copyWith(
-                  currentHeartRate: bpm,
-                  heartRateReadings: [...state.heartRateReadings, bpm],
-                )
-              : state.copyWith(currentHeartRate: bpm);
-        },
-        onError: (_) {
-          state = state.copyWith(
-            hrConnected: false,
-            hrConnecting: false,
-            hrReconnecting: false,
-            clearCurrentHeartRate: true,
-            error: 'Heart rate monitor disconnected',
-          );
-        },
-      );
-
-      _hrConnectionSub?.cancel();
-      _hrConnectionSub =
-          _heartRateService.connectionStateStream.listen((connState) {
-        switch (connState) {
-          case HrConnectionState.reconnecting:
-            state = state.copyWith(hrReconnecting: true);
-          case HrConnectionState.connected:
-            state = state.copyWith(
-              hrConnected: true,
-              hrReconnecting: false,
-            );
-          case HrConnectionState.disconnected:
-            state = state.copyWith(
-              hrConnected: false,
-              hrReconnecting: false,
-              clearCurrentHeartRate: true,
-              error: 'Heart rate monitor disconnected',
-            );
-        }
-      });
+      _subscribeToReadings();
 
       state = state.copyWith(
         hrConnected: true,
@@ -325,8 +348,6 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
   Future<void> disconnectHeartRate() async {
     _hrSub?.cancel();
     _hrSub = null;
-    _hrConnectionSub?.cancel();
-    _hrConnectionSub = null;
     await _heartRateService.disconnect();
     state = state.copyWith(
       hrConnected: false,
@@ -440,12 +461,13 @@ class CardioTrackingController extends Notifier<CardioTrackingState> {
       // disconnectHeartRate when they want to release the device.
       _hrSub?.cancel();
       _hrSub = null;
-      _hrConnectionSub?.cancel();
-      _hrConnectionSub = null;
       state = CardioTrackingState(
         savedSuccessfully: true,
         savedWorkoutId: result.workout.id,
       );
+      // The strap is still connected: keep showing it that way for the
+      // next session instead of offering "Connect" for a live device.
+      if (_heartRateService.isConnected) _adoptExistingConnection();
       _syncForegroundService();
     } on SaveCardioSessionException catch (e) {
       state = state.copyWith(isSaving: false, error: e.message);

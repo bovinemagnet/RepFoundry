@@ -57,6 +57,12 @@ class _SeededPanelNotifier extends HeartRatePanelController {
 /// A minimal [HeartRateService] whose stream can be made to emit an error,
 /// which [FakeHeartRateService] has no hook for.
 class _ErroringHeartRateService implements HeartRateService {
+  @override
+  Stream<List<DiscoveredHrDevice>> scanDevices({
+    Duration timeout = const Duration(seconds: 10),
+  }) =>
+      const Stream.empty();
+
   final _controller = StreamController<int>.broadcast();
 
   @override

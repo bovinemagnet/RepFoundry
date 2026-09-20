@@ -37,11 +37,16 @@ class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
     });
 
     try {
-      final devices = await widget.heartRateService
-          .scanForDevices(timeout: const Duration(seconds: 10));
+      // Show each device the moment it is seen; the spinner stays on until
+      // the scan ends so the user knows more may still appear.
+      await for (final devices in widget.heartRateService
+          .scanDevices(timeout: const Duration(seconds: 10))) {
+        if (!mounted) return;
+        setState(() => _devices = devices);
+      }
       if (!mounted) return;
       setState(() {
-        _devices = devices;
+        _devices ??= const [];
         _scanning = false;
       });
     } on Exception catch (e) {
@@ -97,6 +102,9 @@ class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
+              // While scanning, devices found so far are listed under the
+              // spinner so a strap seen in the first second is tappable at
+              // once rather than after the full timeout.
               if (_scanning) ...[
                 const Center(child: CircularProgressIndicator()),
                 const SizedBox(height: 8),
@@ -106,6 +114,15 @@ class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
+                if (_devices != null && _devices!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: _DeviceList(
+                      devices: _devices!,
+                      scrollController: scrollController,
+                    ),
+                  ),
+                ],
               ] else if (_errorKind != null) ...[
                 Text(
                   _errorMessage(s, _errorKind!),
@@ -164,23 +181,38 @@ class _HrDevicePickerDialogState extends State<HrDevicePickerDialog> {
                 ),
               ] else ...[
                 Expanded(
-                  child: ListView.builder(
-                    controller: scrollController,
-                    itemCount: _devices!.length,
-                    itemBuilder: (context, index) {
-                      final device = _devices![index];
-                      return ListTile(
-                        leading: const Icon(Icons.bluetooth),
-                        title: Text(device.name),
-                        subtitle: Text(device.id),
-                        onTap: () => Navigator.of(context).pop(device),
-                      );
-                    },
+                  child: _DeviceList(
+                    devices: _devices!,
+                    scrollController: scrollController,
                   ),
                 ),
               ],
             ],
           ),
+        );
+      },
+    );
+  }
+}
+
+class _DeviceList extends StatelessWidget {
+  const _DeviceList({required this.devices, required this.scrollController});
+
+  final List<DiscoveredHrDevice> devices;
+  final ScrollController scrollController;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      controller: scrollController,
+      itemCount: devices.length,
+      itemBuilder: (context, index) {
+        final device = devices[index];
+        return ListTile(
+          leading: const Icon(Icons.bluetooth),
+          title: Text(device.name),
+          subtitle: Text(device.id),
+          onTap: () => Navigator.of(context).pop(device),
         );
       },
     );

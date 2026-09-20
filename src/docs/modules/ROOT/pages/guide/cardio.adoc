@@ -41,9 +41,9 @@ Enter or update the incline at any point during a session — it's stored as a p
 
 == Connecting a heart rate monitor
 
-Cardio sessions can show live BPM from a Bluetooth heart rate strap or watch. Tap the *Heart Rate Monitor* card and then *Connect* to scan for nearby devices.
+Cardio sessions can show live BPM from a Bluetooth heart rate strap or watch. Tap the *Heart Rate Monitor* card and then *Connect* to scan for nearby devices — matching devices appear in the list as soon as they're found, before the scan finishes.
 
-Cardio shares its Bluetooth connection with the dedicated heart rate panel — connect a device once and it stays connected whichever screen you're on. See xref:guide/heart-rate.adoc[] for more on the heart rate panel, training zones, and device pairing.
+Cardio shares its Bluetooth connection with the dedicated heart rate panel — connect a device once and it stays connected whichever screen you're on. If a monitor is already connected from the Heart Rate tab, it shows as connected here automatically, with no need to reconnect, and saving a session doesn't drop the connection either — it's ready for your next session or for the heart rate panel. See xref:guide/heart-rate.adoc[] for more on the heart rate panel, training zones, and device pairing.
 
 === Supported devices
 

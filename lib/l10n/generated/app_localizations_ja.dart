@@ -439,6 +439,49 @@ class SJa extends S {
   String get recentChart => '最近';
 
   @override
+  String get weeklyHeartReportTitle => 'Weekly Heart Report';
+
+  @override
+  String get weeklyHeartReportSubtitle =>
+      'Cardiovascular adaptation, last 7 days';
+
+  @override
+  String get weeklyHeartReportRow => 'Full Weekly Heart Report';
+
+  @override
+  String get weeklyHeartReportEmpty => 'No heart rate data this week';
+
+  @override
+  String get weeklyHeartReportEmptyHint =>
+      'Connect a monitor during a workout or cardio session and it will be summarised here.';
+
+  @override
+  String get weeklyHeartReportSessions => 'Sessions';
+
+  @override
+  String get weeklyHeartReportAvg => 'Avg HR';
+
+  @override
+  String get weeklyHeartReportPeak => 'Peak HR';
+
+  @override
+  String get weeklyHeartReportDailyPeak => 'Daily peak';
+
+  @override
+  String get weeklyHeartReportTimeInZone => 'Time in zone';
+
+  @override
+  String get weeklyHeartReportSessionsTitle => 'Sessions';
+
+  @override
+  String get weeklyHeartReportStrengthSession => 'Strength workout';
+
+  @override
+  String weeklyHeartReportAvgPeak(int avg, int peak) {
+    return 'avg $avg · peak $peak';
+  }
+
+  @override
   String get fullSessionChart => 'フルセッション';
 
   @override
@@ -910,6 +953,9 @@ class SJa extends S {
 
   @override
   String get cardioSessionSaved => '有酸素セッションを保存しました';
+
+  @override
+  String get hrMonitorConnected => 'Connected';
 
   @override
   String get viewSavedSession => 'View';
