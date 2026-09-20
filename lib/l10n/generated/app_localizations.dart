@@ -1764,6 +1764,30 @@ abstract class S {
   /// **'Cardio session saved'**
   String get cardioSessionSaved;
 
+  /// No description provided for @cardioSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cardio'**
+  String get cardioSectionTitle;
+
+  /// No description provided for @cardioRecordingCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} GPS points · {samples} heart rate readings'**
+  String cardioRecordingCounts(int points, int samples);
+
+  /// No description provided for @exportCardioSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get exportCardioSession;
+
+  /// No description provided for @exportCardioSessionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Share the GPS track as GPX and the heart rate readings as CSV'**
+  String get exportCardioSessionHint;
+
   /// No description provided for @heartRateMonitorCard.
   ///
   /// In en, this message translates to:

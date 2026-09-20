@@ -460,6 +460,16 @@
   "gpsSubtitle": "Track distance via GPS for outdoor runs",
   "saveSession": "Save Session",
   "cardioSessionSaved": "Cardio session saved",
+  "cardioSectionTitle": "Cardio",
+  "cardioRecordingCounts": "{points} GPS points · {samples} heart rate readings",
+  "@cardioRecordingCounts": {
+    "placeholders": {
+      "points": { "type": "int" },
+      "samples": { "type": "int" }
+    }
+  },
+  "exportCardioSession": "Export",
+  "exportCardioSessionHint": "Share the GPS track as GPX and the heart rate readings as CSV",
   "heartRateMonitorCard": "Heart Rate Monitor",
   "heartRateMonitorSubtitle": "Connect a BLE heart rate strap or watch",
   "connect": "Connect",

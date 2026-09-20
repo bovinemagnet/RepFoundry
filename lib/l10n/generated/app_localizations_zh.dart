@@ -909,6 +909,21 @@ class SZh extends S {
   String get cardioSessionSaved => '有氧训练已保存';
 
   @override
+  String get cardioSectionTitle => 'Cardio';
+
+  @override
+  String cardioRecordingCounts(int points, int samples) {
+    return '$points GPS points · $samples heart rate readings';
+  }
+
+  @override
+  String get exportCardioSession => 'Export';
+
+  @override
+  String get exportCardioSessionHint =>
+      'Share the GPS track as GPX and the heart rate readings as CSV';
+
+  @override
   String get heartRateMonitorCard => '心率监测器';
 
   @override

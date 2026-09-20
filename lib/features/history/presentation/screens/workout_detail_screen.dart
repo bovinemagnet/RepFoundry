@@ -6,6 +6,8 @@ import '../../../workout/domain/models/workout.dart';
 import '../../../workout/domain/models/workout_set.dart';
 import '../../../workout/presentation/controllers/active_workout_controller.dart';
 import '../../../templates/application/convert_workout_to_template_use_case.dart';
+import '../../../cardio/domain/models/cardio_session.dart';
+import '../../../cardio/presentation/providers/cardio_session_export_provider.dart';
 import '../../../exercises/domain/models/exercise.dart';
 import '../../../stretching/domain/models/stretching_session.dart';
 import '../../../stretching/presentation/widgets/stretch_preset_localiser.dart';
@@ -16,12 +18,30 @@ import '../../../../core/units/weight_unit_provider.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 
+/// A saved cardio session with how much was recorded alongside it, so the
+/// review card can show the counts and only offer Export when there is
+/// something to export.
+class _CardioSessionSummary {
+  final CardioSession session;
+  final int trackPointCount;
+  final int heartRateSampleCount;
+
+  const _CardioSessionSummary({
+    required this.session,
+    required this.trackPointCount,
+    required this.heartRateSampleCount,
+  });
+
+  bool get hasRecordings => trackPointCount > 0 || heartRateSampleCount > 0;
+}
+
 class _WorkoutDetailData {
   final Workout workout;
   final Map<String, List<WorkoutSet>> setsByExercise;
   final Map<String, Exercise> exercisesById;
   final Set<String> prSetIds;
   final List<StretchingSession> stretchingSessions;
+  final List<_CardioSessionSummary> cardioSessions;
 
   const _WorkoutDetailData({
     required this.workout,
@@ -29,6 +49,7 @@ class _WorkoutDetailData {
     required this.exercisesById,
     this.prSetIds = const {},
     this.stretchingSessions = const [],
+    this.cardioSessions = const [],
   });
 }
 
@@ -69,12 +90,24 @@ final _workoutDetailProvider =
     final stretchingSessions =
         await stretchingRepo.getSessionsForWorkout(workoutId);
 
+    final cardioRepo = ref.watch(cardioSessionRepositoryProvider);
+    final cardioSessions = <_CardioSessionSummary>[
+      for (final session in await cardioRepo.getSessionsForWorkout(workoutId))
+        _CardioSessionSummary(
+          session: session,
+          trackPointCount: (await cardioRepo.getTrackPoints(session.id)).length,
+          heartRateSampleCount:
+              (await cardioRepo.getHeartRateSamples(session.id)).length,
+        ),
+    ];
+
     return _WorkoutDetailData(
       workout: workout,
       setsByExercise: byExercise,
       exercisesById: exercisesById,
       prSetIds: prSetIds,
       stretchingSessions: stretchingSessions,
+      cardioSessions: cardioSessions,
     );
   },
 );
@@ -261,10 +294,117 @@ class _WorkoutDetailBody extends ConsumerWidget {
             sets: entry.value,
             prSetIds: data.prSetIds,
           ),
+        for (final summary in data.cardioSessions)
+          _CardioCard(
+            summary: summary,
+            exerciseName:
+                data.exercisesById[summary.session.exerciseId]?.name ??
+                    summary.session.exerciseId,
+            startedAt: workout.startedAt,
+          ),
         if (data.stretchingSessions.isNotEmpty)
           _StretchingCard(sessions: data.stretchingSessions),
       ],
     );
+  }
+}
+
+/// Review card for a saved cardio session: the headline stats, how much
+/// was recorded, and an Export action that shares the GPS track (GPX) and
+/// heart-rate readings (CSV) as two files.
+class _CardioCard extends ConsumerWidget {
+  const _CardioCard({
+    required this.summary,
+    required this.exerciseName,
+    required this.startedAt,
+  });
+
+  final _CardioSessionSummary summary;
+  final String exerciseName;
+  final DateTime startedAt;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
+    final theme = Theme.of(context);
+    final session = summary.session;
+    final stats = <String>[
+      session.duration.formatted,
+      if (session.distanceMeters != null)
+        '${(session.distanceMeters! / 1000).toStringAsFixed(2)} km',
+      if (session.paceMinutesPerKm != null)
+        s.paceLabel(_formatPace(session.paceMinutesPerKm!)),
+      if (session.avgHeartRate != null) '${session.avgHeartRate} bpm',
+    ];
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.directions_run,
+                  size: 20,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    s.cardioSectionTitle,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Tooltip(
+                  message: s.exportCardioSessionHint,
+                  child: TextButton.icon(
+                    onPressed: summary.hasRecordings
+                        ? () => ref.read(cardioSessionExportProvider)(
+                              session: session,
+                              exerciseName: exerciseName,
+                              startedAt: startedAt,
+                            )
+                        : null,
+                    icon: const Icon(Icons.ios_share, size: 18),
+                    label: Text(s.exportCardioSession),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(exerciseName, style: theme.textTheme.bodyMedium),
+            const SizedBox(height: 4),
+            Text(
+              stats.join('  ·  '),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              s.cardioRecordingCounts(
+                summary.trackPointCount,
+                summary.heartRateSampleCount,
+              ),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static String _formatPace(double minutesPerKm) {
+    final mins = minutesPerKm.floor();
+    final secs = ((minutesPerKm - mins) * 60).round();
+    return '$mins:${secs.toString().padLeft(2, '0')}';
   }
 }
 
