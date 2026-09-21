@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
 import 'package:rep_foundry/features/cardio/presentation/controllers/cardio_tracking_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -85,25 +86,29 @@ void main() {
     binding.platformDispatcher.views.first.resetDevicePixelRatio();
   });
 
+  List<Object> screenOverrides({List<Exercise> cardioExercises = const []}) {
+    return [
+      exerciseRepositoryProvider.overrideWithValue(
+        _FakeExerciseRepository(cardioExercises),
+      ),
+      cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
+      saveCardioSessionUseCaseProvider.overrideWithValue(
+        SaveCardioSessionUseCase(
+          cardioRepository: cardioRepo,
+          workoutRepository: workoutRepo,
+        ),
+      ),
+      locationServiceProvider.overrideWithValue(locationService),
+      heartRateServiceProvider.overrideWithValue(heartRateService),
+      healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
+      healthSyncSettingsProvider
+          .overrideWith(() => HealthSyncSettingsNotifier()),
+    ];
+  }
+
   Widget buildScreen({List<Exercise> cardioExercises = const []}) {
     return ProviderScope(
-      overrides: [
-        exerciseRepositoryProvider.overrideWithValue(
-          _FakeExerciseRepository(cardioExercises),
-        ),
-        cardioSessionRepositoryProvider.overrideWithValue(cardioRepo),
-        saveCardioSessionUseCaseProvider.overrideWithValue(
-          SaveCardioSessionUseCase(
-            cardioRepository: cardioRepo,
-            workoutRepository: workoutRepo,
-          ),
-        ),
-        locationServiceProvider.overrideWithValue(locationService),
-        heartRateServiceProvider.overrideWithValue(heartRateService),
-        healthSyncServiceProvider.overrideWithValue(HealthSyncService()),
-        healthSyncSettingsProvider
-            .overrideWith(() => HealthSyncSettingsNotifier()),
-      ],
+      overrides: screenOverrides(cardioExercises: cardioExercises).cast(),
       child: const MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
@@ -260,10 +265,43 @@ void main() {
     });
   });
 
-  testWidgets('the saved snackbar offers to view the session in History',
-      (tester) async {
-    await tester.pumpWidget(buildScreen());
+  // The saved snackbar resolves the router eagerly, so these tests run the
+  // screen under a GoRouter like the real app shell does.
+  Future<GoRouter> pumpRouted(WidgetTester tester) async {
+    final router = GoRouter(
+      initialLocation: '/cardio',
+      routes: [
+        GoRoute(
+          path: '/cardio',
+          builder: (context, state) => const CardioTrackingScreen(),
+        ),
+        GoRoute(
+          path: '/elsewhere',
+          builder: (context, state) => const Scaffold(body: Text('Elsewhere')),
+        ),
+        GoRoute(
+          path: '/history/:id',
+          builder: (context, state) => Scaffold(
+            body: Text('History ${state.pathParameters['id']}'),
+          ),
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: screenOverrides().cast(),
+        child: MaterialApp.router(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
+    return router;
+  }
+
+  Future<ProviderContainer> saveASession(WidgetTester tester) async {
     final container = ProviderScope.containerOf(
       tester.element(find.byType(CardioTrackingScreen)),
     );
@@ -272,11 +310,57 @@ void main() {
     controller.start();
     await tester.pump(const Duration(seconds: 2));
     controller.pause();
-
     await controller.save();
     await tester.pump();
+    return container;
+  }
+
+  testWidgets('the saved snackbar offers to view the session in History',
+      (tester) async {
+    await pumpRouted(tester);
+    await saveASession(tester);
 
     expect(find.text('Cardio session saved'), findsOneWidget);
     expect(find.text('View'), findsOneWidget);
+  });
+
+  // Issue #129: a snackbar with an action persists by default in recent
+  // Flutter, so the "saved" toast never went away.
+  testWidgets('the saved snackbar dismisses on its own', (tester) async {
+    await pumpRouted(tester);
+    await saveASession(tester);
+    expect(find.text('Cardio session saved'), findsOneWidget);
+
+    // Let the entrance animation finish (the dismiss timer starts on the
+    // frame after it), then run past the default 4 s timeout and the exit
+    // animation.
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('Cardio session saved'), findsNothing);
+  });
+
+  // Issue #129: View resolved the router through the Cardio screen's own
+  // context, which is unmounted once the user switches tab — the tap then
+  // threw instead of navigating.
+  testWidgets('View still opens History after leaving the Cardio tab',
+      (tester) async {
+    final router = await pumpRouted(tester);
+    final container = await saveASession(tester);
+    final savedId = container.read(cardioTrackingProvider).savedWorkoutId;
+    expect(savedId, isNotNull);
+
+    router.go('/elsewhere');
+    await tester.pumpAndSettle();
+    expect(find.byType(CardioTrackingScreen), findsNothing);
+    expect(find.text('View'), findsOneWidget);
+
+    await tester.tap(find.text('View'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('History $savedId'), findsOneWidget);
+    expect(find.text('Cardio session saved'), findsNothing);
   });
 }

@@ -360,6 +360,43 @@ void main() {
       expect(repository.created.single.clientId, kSelfClientId);
     });
 
+    // Issue #129: a snackbar with an action persists by default, which
+    // silently overrode the prompt's 8 s duration.
+    testWidgets('the health import prompt dismisses on its own',
+        (tester) async {
+      final sample = (weightKg: 80.0, date: DateTime.now().toUtc());
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            bodyMetricsStreamProvider.overrideWith(
+              (ref) => Stream.value(const []),
+            ),
+            healthSyncSettingsProvider.overrideWith(
+              HealthSyncSettingsNotifier.new,
+            ),
+            bodyMetricRepositoryProvider.overrideWithValue(
+              _RecordingBodyMetricRepository(),
+            ),
+            healthWeightCheckProvider.overrideWith((ref) async => sample),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
+            home: BodyMetricsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Import'), findsOneWidget);
+
+      // Past the prompt's 8 s duration plus the exit animation.
+      await tester.pump(const Duration(seconds: 9));
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(find.text('Import'), findsNothing);
+    });
+
     testWidgets('a measurement for another client is not written to health',
         (tester) async {
       final repository = _RecordingBodyMetricRepository();
