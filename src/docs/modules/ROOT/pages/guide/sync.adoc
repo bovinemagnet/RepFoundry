@@ -72,6 +72,8 @@ Once it's on, the same screen shows when you last synced and offers a
 turns sync off and removes your data from cloud storage — your data on this
 device is not affected.
 
+See the xref:privacy.adoc[Privacy policy] for exactly what the synced snapshot contains.
+
 == When the same data changes on two devices
 
 If you edit the same workout, set, or other record on two devices before
