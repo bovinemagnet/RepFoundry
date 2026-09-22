@@ -70,16 +70,22 @@ class _CardioTrackingScreenState extends ConsumerState<CardioTrackingScreen> {
         _inclineController.clear();
         _heartRateController.clear();
         final savedWorkoutId = next.savedWorkoutId;
+        // Resolve the router now: the snackbar outlives this screen when
+        // the user switches tab, and its context is unmounted by then.
+        final router = GoRouter.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.cardioSessionSaved),
+            // A snackbar with an action persists by default; keep the
+            // normal timeout so the toast clears itself.
+            persist: false,
             // The session is reviewed (and exported) from History; point
             // there so the save is not a dead end.
             action: savedWorkoutId == null
                 ? null
                 : SnackBarAction(
                     label: s.viewSavedSession,
-                    onPressed: () => context.go('/history/$savedWorkoutId'),
+                    onPressed: () => router.go('/history/$savedWorkoutId'),
                   ),
           ),
         );

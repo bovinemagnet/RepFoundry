@@ -46,6 +46,9 @@ class BodyMetricsScreen extends ConsumerWidget {
                 },
               ),
               duration: const Duration(seconds: 8),
+              // A snackbar with an action persists by default, which would
+              // override the duration above.
+              persist: false,
             ),
           );
         }
