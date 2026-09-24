@@ -453,6 +453,9 @@
   "searchExercisesHint": "Search exercises\u2026",
   "filterAll": "All",
   "noExercisesFound": "No exercises found",
+  "sortExercises": "Sort",
+  "sortMostUsed": "Most used",
+  "sortAlphabetical": "A\u2013Z",
   "loadingExercises": "Loading exercises\u2026",
   "customExercise": "Custom",
 

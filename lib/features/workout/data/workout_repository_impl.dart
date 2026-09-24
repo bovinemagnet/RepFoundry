@@ -124,6 +124,21 @@ class InMemoryWorkoutRepository implements WorkoutRepository {
   }
 
   @override
+  Future<Map<String, int>> getExerciseUsageCounts(String clientId) async {
+    final liveWorkoutIds = _workouts
+        .where((w) => w.clientId == clientId && w.deletedAt == null)
+        .map((w) => w.id)
+        .toSet();
+    final workoutsByExercise = <String, Set<String>>{};
+    for (final s in _sets) {
+      if (!liveWorkoutIds.contains(s.workoutId)) continue;
+      workoutsByExercise.putIfAbsent(s.exerciseId, () => {}).add(s.workoutId);
+    }
+    return workoutsByExercise
+        .map((id, workouts) => MapEntry(id, workouts.length));
+  }
+
+  @override
   Future<WorkoutSet?> getLastSetForExercise(String exerciseId) async {
     final sets = _sets.where((s) => s.exerciseId == exerciseId).toList()
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));

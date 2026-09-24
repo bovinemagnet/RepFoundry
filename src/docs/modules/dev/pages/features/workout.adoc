@@ -92,6 +92,18 @@ Custom exercises are persisted through `DriftExerciseRepository`.
 The `isCustom` flag distinguishes them from seeded exercises in the library view.
 Soft deletes are used so history referencing a deleted exercise remains valid.
 
+=== Picker Sort Order
+
+`WorkoutRepository.getExerciseUsageCounts(clientId)` returns a `Map<String, int>` of exercise id to the number of distinct, non-deleted workouts belonging to that client that contain a live set for the exercise. The Drift implementation builds this with `selectOnly` and a `count(distinct: true)` over `workoutId`, grouped by `exerciseId` and joined to `workouts`.
+
+`exerciseUsageCountsProvider` (`lib/features/exercises/presentation/providers/exercise_usage_provider.dart`) scopes this map to `activeClientProvider`, so counts always reflect the currently active client.
+
+The ordering itself is a pure function, `sortExercisesForPicker()`, together with the `ExerciseSortOrder { mostUsed, alphabetical }` enum, both defined in `lib/features/exercises/domain/exercise_sort.dart`. It sinks session exercises to the bottom first, then — for `mostUsed` only — orders by usage count descending, then falls back to name.
+
+`ActiveWorkoutScreen` pushes the `/exercises` route with `extra:` set to a `Set<String>` of the session's exercise ids; the route builder in `lib/app/router.dart` reads this and passes it through to `ExercisePickerScreen(sessionExerciseIds:)`. The template editor pushes the same route without `extra`, so no exercises sink to the bottom there.
+
+The chosen sort order is held in a non-autoDispose, picker-local `Notifier`, so it survives across picker openings within a single app run but is not persisted — it resets to `mostUsed` the next time the app starts.
+
 == Logging Sets
 
 Each entry is a `WorkoutSet`:
@@ -305,6 +317,12 @@ Each `TemplateExercise` stores:
 
 | `lib/features/workout/data/drift_workout_repository.dart`
 | SQLite persistence for workouts and sets
+
+| `lib/features/exercises/domain/exercise_sort.dart`
+| Pure `sortExercisesForPicker()` function and `ExerciseSortOrder` enum
+
+| `lib/features/exercises/presentation/providers/exercise_usage_provider.dart`
+| Exercise usage counts scoped to the active client
 |===
 
 == Related Features

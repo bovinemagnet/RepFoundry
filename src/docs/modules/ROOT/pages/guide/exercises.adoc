@@ -13,7 +13,9 @@ The library does not have its own tab in the bottom navigation. Instead, RepFoun
 
 == Browsing and searching
 
-The library lists every exercise alphabetically by name. Type into the search field at the top to filter by name — matching is case-insensitive and matches anywhere in the name, not just the start.
+Tap the sort icon (*Sort*) in the top-right of the header to change how the library is ordered. *Most used* (the default) ranks exercises by how many of the active client's workouts they've featured in, so the exercises you reach for most often stay near the top; exercises tied on that count, and any never used, fall back to alphabetical order. *A–Z* lists every exercise alphabetically by name instead. Either way, if you open the library from an active workout, exercises already added to that workout move to the bottom of the list rather than disappearing — opening it while building a template doesn't move anything. The chosen order also applies to search results and muscle-group filtered lists, and is kept for as long as the app stays open, resetting to Most used the next time you start RepFoundry.
+
+Type into the search field at the top to filter by name — matching is case-insensitive and matches anywhere in the name, not just the start.
 
 Below the search field, a row of filter chips lets you narrow the list to a single muscle group, plus an *All* chip to clear the filter. While you are searching, the muscle group filter is ignored — search looks across the whole library regardless of which chip is selected.
 

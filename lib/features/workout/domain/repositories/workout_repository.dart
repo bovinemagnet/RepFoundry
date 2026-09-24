@@ -30,6 +30,11 @@ abstract class WorkoutRepository {
     int limit = 50,
   });
   Future<WorkoutSet?> getLastSetForExercise(String exerciseId);
+
+  /// Maps exercise id → the number of distinct non-deleted workouts owned by
+  /// [clientId] that contain a live set of that exercise. Exercises never
+  /// logged are omitted.
+  Future<Map<String, int>> getExerciseUsageCounts(String clientId);
   Future<WorkoutSet> updateSet(WorkoutSet set);
   Future<void> deleteSet(String setId);
   Future<List<WorkoutSet>> getSetsFromLastSession(

@@ -322,6 +322,9 @@
   "searchExercisesHint": "エクササイズを検索…",
   "filterAll": "すべて",
   "noExercisesFound": "エクササイズが見つかりません",
+  "sortExercises": "並べ替え",
+  "sortMostUsed": "よく使う順",
+  "sortAlphabetical": "名前順",
   "loadingExercises": "エクササイズを読み込み中…",
   "customExercise": "カスタム",
 

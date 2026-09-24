@@ -165,7 +165,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Deep / contextual routes that sit outside the nav shell.
       GoRoute(
         path: '/exercises',
-        builder: (context, state) => const ExercisePickerScreen(),
+        builder: (context, state) => ExercisePickerScreen(
+          sessionExerciseIds: state.extra as Set<String>? ?? const {},
+        ),
       ),
       GoRoute(
         path: '/pr-history',

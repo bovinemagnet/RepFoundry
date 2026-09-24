@@ -322,6 +322,9 @@
   "searchExercisesHint": "운동 검색…",
   "filterAll": "전체",
   "noExercisesFound": "운동을 찾을 수 없습니다",
+  "sortExercises": "정렬",
+  "sortMostUsed": "자주 사용한 순",
+  "sortAlphabetical": "이름순",
   "loadingExercises": "운동 로딩 중…",
   "customExercise": "맞춤",
 

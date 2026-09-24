@@ -622,7 +622,15 @@ class ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen>
   // ─────────────────────────────────────────────────────────────────────────
 
   Future<void> _pickExercise(BuildContext context, WidgetRef ref) async {
-    final exercise = await context.push<Exercise>('/exercises');
+    final sessionExerciseIds = ref
+        .read(activeWorkoutControllerProvider)
+        .exercises
+        .map((e) => e.id)
+        .toSet();
+    final exercise = await context.push<Exercise>(
+      '/exercises',
+      extra: sessionExerciseIds,
+    );
     if (exercise != null && mounted) {
       await handleAddExercise(exercise);
     }

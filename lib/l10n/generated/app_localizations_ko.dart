@@ -897,6 +897,15 @@ class SKo extends S {
   String get noExercisesFound => '운동을 찾을 수 없습니다';
 
   @override
+  String get sortExercises => '정렬';
+
+  @override
+  String get sortMostUsed => '자주 사용한 순';
+
+  @override
+  String get sortAlphabetical => '이름순';
+
+  @override
   String get loadingExercises => '운동 로딩 중…';
 
   @override
