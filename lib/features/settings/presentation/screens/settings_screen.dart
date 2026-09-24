@@ -39,6 +39,8 @@ import '../providers/user_age_provider.dart';
 import '../../../notifications/presentation/providers/reminder_settings_provider.dart';
 import '../../../notifications/domain/models/reminder_settings.dart';
 import '../../../../core/widgets/kinetic.dart';
+import '../../../../core/units/plate_calculator.dart';
+import '../providers/plate_settings_provider.dart';
 
 // ─── Public screen ────────────────────────────────────────────────────────────
 
@@ -372,6 +374,13 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
             ]),
+
+            const SizedBox(height: 22),
+
+            // ── PLATE CALCULATOR ──────────────────────────────────────────
+            KineticSectionLabel(s.sectionPlateCalculator),
+            const SizedBox(height: 11),
+            _PlateCalculatorCard(unit: weightUnit),
 
             const SizedBox(height: 22),
 
@@ -818,6 +827,78 @@ class _Set2Row extends StatelessWidget {
       );
     }
     return content;
+  }
+}
+
+// ─── Plate calculator card ────────────────────────────────────────────────────
+
+/// Bar weight and available plate sizes for the active [unit]. Each unit keeps
+/// its own setup, so only the one in use is shown.
+class _PlateCalculatorCard extends ConsumerWidget {
+  const _PlateCalculatorCard({required this.unit});
+
+  final WeightUnit unit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = S.of(context)!;
+    final cs = Theme.of(context).colorScheme;
+    final setup = ref.watch(plateSettingsProvider).forUnit(unit);
+    final notifier = ref.read(plateSettingsProvider.notifier);
+    final isKg = unit == WeightUnit.kg;
+    String label(double v) => '${formatPlateWeight(v)}${unit.label(s)}';
+
+    return _Set2Card(children: [
+      _Set2Row(
+        icon: Icons.horizontal_rule,
+        title: s.barWeightLabel,
+        subtitle: null,
+        stackTrailingWhenNarrow: true,
+        trailing: _CompactSegmented<double>(
+          selected: setup.bar,
+          options: [
+            for (final bar in isKg ? kgBarWeights : lbsBarWeights)
+              _SegOption(value: bar, label: label(bar)),
+          ],
+          onSelected: (bar) => notifier.setBar(unit, bar),
+        ),
+      ),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _Set2Row(
+            icon: Icons.fitness_center,
+            title: s.plateSizesLabel,
+            subtitle: s.plateSizesSubtitle,
+          ),
+          Padding(
+            // Aligns the chips with the row's title (16 + 24 icon + 14 gap).
+            padding: const EdgeInsets.fromLTRB(54, 0, 16, 14),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final plate in isKg ? kgPlateSizes : lbsPlateSizes)
+                  FilterChip(
+                    label: Text(label(plate)),
+                    selected: setup.plates.contains(plate),
+                    showCheckmark: false,
+                    selectedColor: cs.primary,
+                    labelStyle: KineticText.mono(
+                      size: 12,
+                      weight: FontWeight.w700,
+                      color: setup.plates.contains(plate)
+                          ? cs.onPrimary
+                          : cs.onSurfaceVariant,
+                    ),
+                    onSelected: (_) => notifier.togglePlate(unit, plate),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ]);
   }
 }
 

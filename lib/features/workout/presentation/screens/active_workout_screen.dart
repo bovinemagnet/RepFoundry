@@ -1564,6 +1564,7 @@ class _ExerciseSectionContent extends ConsumerWidget {
                 (sets.isNotEmpty ? sets.last.weight : null),
             onAddWarmup:
                 isWarmupRampable(exercise.equipmentType) ? onAddWarmup : null,
+            showPlates: exercise.equipmentType == EquipmentType.barbell,
           )
         else
           _AddSetButton(onTap: onExpand),

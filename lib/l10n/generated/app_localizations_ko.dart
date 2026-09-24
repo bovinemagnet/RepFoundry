@@ -736,6 +736,45 @@ class SKo extends S {
   String get addWarmup => '워밍업 추가';
 
   @override
+  String get platesAction => '플레이트';
+
+  @override
+  String get plateCalculatorTitle => '플레이트 계산기';
+
+  @override
+  String plateTargetAndBar(String target, String bar) {
+    return '$target · 바 $bar';
+  }
+
+  @override
+  String get platesPerSide => '한쪽';
+
+  @override
+  String get plateJustTheBar => '바만';
+
+  @override
+  String plateBelowBar(String bar) {
+    return '$bar 바보다 가볍습니다';
+  }
+
+  @override
+  String plateClosest(String loaded, String shortfall) {
+    return '가장 가까운 무게: $loaded ($shortfall 부족)';
+  }
+
+  @override
+  String get sectionPlateCalculator => '플레이트 계산기';
+
+  @override
+  String get barWeightLabel => '바 무게';
+
+  @override
+  String get plateSizesLabel => '사용 가능한 플레이트';
+
+  @override
+  String get plateSizesSubtitle => '크기를 탭해 포함하거나 제외하세요';
+
+  @override
   String get warmupRampTitle => '워밍업 램프';
 
   @override

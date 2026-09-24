@@ -32,6 +32,15 @@ Turning on the *Warm-up* toggle before logging a set (covered in xref:first-work
 
 For exercises using loadable equipment — barbell, dumbbell, kettlebell, cable, or machine — RepFoundry can also generate a warm-up ramp for you. Enter the weight you plan to work up to, then use the warm-up ramp option to see a suggested sequence of lighter sets building up to that weight, with the reps decreasing as the weight increases. For barbell exercises, the ramp opens with an empty-bar set. Confirm to add every step in the ramp as warm-up sets in one go, or dismiss and log your own warm-ups manually. The ramp is not offered for bodyweight, resistance band, cardio machine, or other non-loadable equipment.
 
+[[plate-calculator]]
+== Plate calculator
+
+For a barbell exercise, a *Plates* action sits next to *Add RPE*, the warm-up pill, and *Add Warm-up* on the set entry card. Tap it to open a plate calculator for the weight you've typed into the weight field — or, if that field is empty, the same suggested or last-logged weight the warm-up ramp falls back to.
+
+The sheet shows your target weight and bar weight (for example, "100kg · bar 20kg"), then a *Per side* breakdown listing the plates to load on each side, largest first — for example "25kg × 1" then "15kg × 1". If your available plates can't hit the target exactly, it shows the closest weight you can load instead, such as "Closest you can load: 100kg (1kg short)". If the target is exactly the bar, it says "Just the bar"; if it's lighter than the bar itself, it says so — "Lighter than the 20kg bar".
+
+Bar weight and which plate sizes you have available are configured under xref:guide/settings.adoc#plate-calculator[Settings → Plate calculator].
+
 == Supersets
 
 Two exercises in the same session can be linked as a superset so you move between them together. Press and hold an exercise card and choose to link it as a superset, then pick the exercise you want to pair it with. Linked exercises are shown grouped together with a superset indicator; tap the unlink icon on the group to separate them again.

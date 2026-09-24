@@ -48,6 +48,8 @@ void main() {
             // It is supplied for every warm-up-rampable exercise — which is
             // every barbell lift — so this is the common case, not an edge.
             onAddWarmup: (_) {},
+            // Barbell lifts also get "PLATES", making theirs the fullest row.
+            showPlates: true,
           ),
         ),
       ),
@@ -63,6 +65,10 @@ void main() {
       tester.getBottomRight(logSet).dx,
       lessThanOrEqualTo(393.0),
       reason: 'LOG SET is clipped off the right edge of a 393pt phone',
+    );
+    expect(
+      tester.getBottomRight(find.text('PLATES')).dx,
+      lessThanOrEqualTo(393.0),
     );
   });
 }

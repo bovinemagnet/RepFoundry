@@ -154,6 +154,16 @@ Warm-up rows are visually distinguished in the set list with a *W* badge.
 
 Edits to a persisted set are written immediately through `DriftWorkoutRepository`.
 
+== Plate Calculator
+
+`platesForWeight({target, bar, plates})` in `lib/core/units/plate_calculator.dart` is a pure function returning a `PlateBreakdown`: `perSide` (a `List<({double plate, int count})>`, heaviest first), `loaded`, `shortfall`, `isExact`, and `isBelowBar`. It loads plates greedily, largest first, never exceeding the target. There's no epsilon tolerance — realistic targets in 0.1 steps and binary-exact plate sizes make one unnecessary. `formatPlateWeight()` renders a plate size to at most 2 decimal places, dropping trailing zeros.
+
+`plateSettingsProvider` (`lib/features/settings/presentation/providers/plate_settings_provider.dart`) holds a `PlateSettings` with a separate `PlateSetup {bar, plates}` for kg and lbs, selected via `forUnit()`; `PlateSettingsNotifier.setBar(unit, bar)` and `togglePlate(unit, plate)` mutate it, persisted to SharedPreferences under `plate_bar_kg`/`plate_bar_lbs` (doubles) and `plate_sizes_kg`/`plate_sizes_lbs` (string lists). Available bar weights and plate sizes are fixed constants (`kgBarWeights`, `lbsBarWeights`, `kgPlateSizes`, `lbsPlateSizes`).
+
+`PlateBreakdownSheet` (`lib/features/workout/presentation/widgets/plate_breakdown_sheet.dart`), opened via `PlateBreakdownSheet.show(context, workingKg)`, is a `ConsumerWidget` bottom sheet that converts the stored kg weight through `double.parse(unit.formatFromKg(workingKg))` before running the calculator — this avoids a case such as 155 lb, stored as kg, converting back to 154.99999… and dropping to smaller plates than the display actually shows.
+
+`SetInputCard` takes a `showPlates` bool and resolves the working weight with the same `_workingKg()` helper the warm-up ramp uses before opening the sheet. `ActiveWorkoutScreen`'s exercise section passes `showPlates: exercise.equipmentType == EquipmentType.barbell`, so the action only appears for barbell exercises.
+
 == Ghost Set Auto-Fill
 
 When an exercise is added to a workout, `ActiveWorkoutController` queries the most recent completed session containing that exercise via `WorkoutRepository.getSetsFromLastSession()`.
@@ -311,6 +321,15 @@ Each `TemplateExercise` stores:
 
 | `lib/features/workout/presentation/widgets/set_input_card.dart`
 | Set entry widget with ghost suggestion
+
+| `lib/core/units/plate_calculator.dart`
+| Pure `platesForWeight()` greedy plate breakdown
+
+| `lib/features/settings/presentation/providers/plate_settings_provider.dart`
+| Bar weight and available plate sizes, per unit
+
+| `lib/features/workout/presentation/widgets/plate_breakdown_sheet.dart`
+| Plate calculator bottom sheet
 
 | `lib/features/workout/presentation/widgets/rest_timer_widget.dart`
 | Countdown timer with haptic / audio alerts
