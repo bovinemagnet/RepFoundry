@@ -134,6 +134,8 @@ While monitoring, RepFoundry shows:
 * Time spent in each zone, plus total time spent at a moderate effort or higher
 * Your heart rate drop in the minute after you stop monitoring — a rough indicator of recovery
 
+By default, the live trace under your BPM and both heart rate charts colour the line by training zone — the same five zone colours as the legend further down the screen — so the shape of the trace shows effort shifts at a glance, not just the number. The colour changes exactly at the zone boundary, and the shaded area under the charts follows the same colours. A reading below zone 1 is shown in grey, since it falls outside every zone; with no zones calculated yet (see <<personalising-your-zones>>), the traces stay a single colour throughout. Turn this off from *Settings → Health Profile → Zone-Coloured HR Line* if you'd rather see a single colour — it's independent of the *Zone Colour Bands* toggle, which tints the chart background instead of the line.
+
 == Weekly heart report
 
 Once the panel is showing readings from a connected monitor, a *Full Weekly Heart Report* row appears below the charts. Tap it for a rundown of the last seven days: how many sessions carried heart-rate data, your average and peak BPM across the week, a bar chart of the highest BPM reached each day, time spent in each training zone, and a list of your sessions — newest first, each showing its average and peak BPM, and opening straight into History if you tap it. Cardio sessions are named after the exercise; strength sessions are labelled as strength sessions.

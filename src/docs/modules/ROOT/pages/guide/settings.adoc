@@ -80,7 +80,7 @@ The *Health Profile* card lets you enter the figures RepFoundry's heart rate zon
 
 A clinician-provided maximum heart rate — the most authoritative input, when your doctor has given you one — isn't entered directly on this list. It's set through *Set Up Heart Rate Zones*, a guided step-by-step setup reachable from the same card, or from your own client profile page on tablet or desktop-sized layouts.
 
-The card also shows your current *Zone Method* and confidence level, and a *Zone Colour Bands* toggle for the colour-coded zone display.
+The card also shows your current *Zone Method* and confidence level, a *Zone Colour Bands* toggle for the colour-coded zone display, and a *Zone-Coloured HR Line* toggle — "Colour the heart-rate line by training zone", on by default — that colours the heart-rate line itself by zone instead of a single colour. The two toggles are independent of each other.
 
 See xref:guide/heart-rate.adoc[] for how these inputs are combined into zones, what each confidence level means, and how caution mode behaves when a medical flag is set.
 

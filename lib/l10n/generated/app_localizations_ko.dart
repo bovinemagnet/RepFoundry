@@ -271,6 +271,12 @@ class SKo extends S {
   String get zoneColourBandsSubtitle => '심박수 차트에 색상 구간 밴드 표시';
 
   @override
+  String get zoneColouredLine => '구간 색상 심박수 선';
+
+  @override
+  String get zoneColouredLineSubtitle => '심박수 선을 훈련 구간별 색상으로 표시';
+
+  @override
   String get sectionMaxHrAlert => '최대 심박수 알림';
 
   @override

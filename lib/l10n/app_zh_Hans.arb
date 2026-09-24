@@ -102,6 +102,8 @@
 
   "zoneColourBands": "区间颜色带",
   "zoneColourBandsSubtitle": "在心率图表上显示彩色区间带",
+  "zoneColouredLine": "按区间着色的心率线",
+  "zoneColouredLineSubtitle": "按训练区间为心率线着色",
 
   "sectionMaxHrAlert": "最大心率提醒",
   "maxHrAlertVibration": "达到最大心率时震动",

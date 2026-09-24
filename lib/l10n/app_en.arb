@@ -169,6 +169,8 @@
 
   "zoneColourBands": "Zone Colour Bands",
   "zoneColourBandsSubtitle": "Show coloured zone bands on HR chart",
+  "zoneColouredLine": "Zone-Coloured HR Line",
+  "zoneColouredLineSubtitle": "Colour the heart-rate line by training zone",
 
   "sectionMaxHrAlert": "Max Heart Rate Alert",
   "maxHrAlertVibration": "Vibration on Max HR",

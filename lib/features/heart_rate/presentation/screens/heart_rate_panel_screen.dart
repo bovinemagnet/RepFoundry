@@ -22,6 +22,7 @@ import '../providers/health_profile_provider.dart';
 import '../providers/heart_rate_panel_visibility_provider.dart';
 import '../providers/max_hr_alert_provider.dart';
 import '../providers/zone_bands_provider.dart';
+import '../providers/zone_coloured_line_provider.dart';
 import '../providers/zone_configuration_provider.dart';
 import '../widgets/caution_badge.dart';
 import '../widgets/disclaimer_dialog.dart';
@@ -30,6 +31,7 @@ import '../widgets/heart_rate_chart.dart';
 import '../widgets/heart_rate_zones.dart';
 import '../widgets/reliability_indicator.dart';
 import '../widgets/symptom_report_button.dart';
+import '../widgets/zone_line_gradient.dart';
 
 class HeartRatePanelScreen extends ConsumerStatefulWidget {
   const HeartRatePanelScreen({super.key});
@@ -154,6 +156,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
     final zoneConfig = ref.watch(zoneConfigurationProvider);
     final chartWindow = ref.watch(chartWindowProvider);
     final showZoneBands = ref.watch(zoneBandsProvider);
+    final zoneColouredLine = ref.watch(zoneColouredLineProvider);
 
     ref.listen(heartRatePanelProvider, (prev, next) {
       if (next.error != null && next.error != prev?.error) {
@@ -225,6 +228,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
               _EkgTrace(
                 readings: panelState.readings,
                 peakZoneColor: peakZoneColor,
+                lineZones: zoneColouredLine ? zoneConfig : null,
               ),
               const SizedBox(height: 20),
             ],
@@ -257,6 +261,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
                 zoneConfig: zoneConfig,
                 chartWindow: chartWindow,
                 showZoneBands: showZoneBands,
+                zoneColouredLine: zoneColouredLine,
                 peakZoneColor: peakZoneColor,
                 onWindowChanged: (v) =>
                     ref.read(chartWindowProvider.notifier).setWindow(v),
@@ -267,6 +272,7 @@ class _HeartRatePanelScreenState extends ConsumerState<HeartRatePanelScreen> {
                 readings: panelState.readings,
                 zoneConfig: zoneConfig,
                 showZoneBands: showZoneBands,
+                zoneColouredLine: zoneColouredLine,
               ),
               const SizedBox(height: 16),
             ],
@@ -415,24 +421,69 @@ class _EkgTrace extends StatelessWidget {
   const _EkgTrace({
     required this.readings,
     required this.peakZoneColor,
+    required this.lineZones,
   });
 
   final List<HrReading> readings;
   final Color peakZoneColor;
 
+  /// Zones to colour the trace by, or null for a single-colour trace.
+  final ZoneConfiguration? lineZones;
+
   @override
   Widget build(BuildContext context) {
     final data = readings.map((r) => r.bpm.toDouble()).toList();
+    final gradients = _zoneTraceGradients(
+      context,
+      data,
+      lineZones,
+      fillOpacity: 0.14,
+    );
     return SizedBox(
       height: 64,
       child: SparklineWidget(
         data: data,
         lineColor: peakZoneColor,
         fillColor: peakZoneColor.withValues(alpha: 0.14),
+        lineGradient: gradients?.line,
+        fillGradient: gradients?.fill,
         strokeWidth: 2.5,
       ),
     );
   }
+}
+
+/// Line and fill gradients that colour a [SparklineWidget] of [data] by
+/// training zone (#131), or null when [zones] is null or empty.
+///
+/// A sparkline spans its data, so the gradient runs from the highest BPM at
+/// the top to the lowest at the bottom.
+({LinearGradient line, LinearGradient fill})? _zoneTraceGradients(
+  BuildContext context,
+  List<double> data,
+  ZoneConfiguration? zones, {
+  required double fillOpacity,
+}) {
+  if (zones == null || zones.zones.isEmpty || data.isEmpty) return null;
+  final top = data.reduce((a, b) => a > b ? a : b);
+  final bottom = data.reduce((a, b) => a < b ? a : b);
+  final neutral = Theme.of(context).colorScheme.onSurfaceVariant;
+  return (
+    line: zoneLineGradient(
+      zones,
+      topBpm: top,
+      bottomBpm: bottom,
+      belowZonesColour: neutral,
+    ),
+    fill: zoneLineGradient(
+      zones,
+      topBpm: top,
+      bottomBpm: bottom,
+      belowZonesColour: neutral,
+      opacity: fillOpacity,
+      fade: true,
+    ),
+  );
 }
 
 // ── Hero BPM Section ──────────────────────────────────────────────────────────
@@ -906,6 +957,7 @@ class _TrendChartSection extends StatelessWidget {
     required this.zoneConfig,
     required this.chartWindow,
     required this.showZoneBands,
+    required this.zoneColouredLine,
     required this.peakZoneColor,
     required this.onWindowChanged,
   });
@@ -914,6 +966,7 @@ class _TrendChartSection extends StatelessWidget {
   final ZoneConfiguration? zoneConfig;
   final int chartWindow;
   final bool showZoneBands;
+  final bool zoneColouredLine;
   final Color peakZoneColor;
   final ValueChanged<int> onWindowChanged;
 
@@ -927,6 +980,12 @@ class _TrendChartSection extends StatelessWidget {
     final sparkData = panelState.readings.map((r) => r.bpm.toDouble()).toList();
     final maxBpm =
         sparkData.isNotEmpty ? sparkData.reduce((a, b) => a > b ? a : b) : 0.0;
+    final sparkGradients = _zoneTraceGradients(
+      context,
+      sparkData,
+      zoneColouredLine ? zoneConfig : null,
+      fillOpacity: 0.18,
+    );
 
     return Container(
       decoration: BoxDecoration(
@@ -1008,6 +1067,7 @@ class _TrendChartSection extends StatelessWidget {
             zoneConfig: zoneConfig,
             windowSeconds: chartWindow,
             showZoneBands: showZoneBands,
+            zoneColouredLine: zoneColouredLine,
           ),
           const SizedBox(height: 16),
 
@@ -1029,6 +1089,8 @@ class _TrendChartSection extends StatelessWidget {
                 data: sparkData,
                 lineColor: peakZoneColor,
                 fillColor: peakZoneColor.withValues(alpha: 0.18),
+                lineGradient: sparkGradients?.line,
+                fillGradient: sparkGradients?.fill,
                 strokeWidth: 2.5,
               ),
             )
@@ -1037,6 +1099,7 @@ class _TrendChartSection extends StatelessWidget {
               readings: panelState.readings,
               zoneConfig: zoneConfig,
               showZoneBands: showZoneBands,
+              zoneColouredLine: zoneColouredLine,
             ),
         ],
       ),

@@ -273,6 +273,13 @@ class SEn extends S {
   String get zoneColourBandsSubtitle => 'Show coloured zone bands on HR chart';
 
   @override
+  String get zoneColouredLine => 'Zone-Coloured HR Line';
+
+  @override
+  String get zoneColouredLineSubtitle =>
+      'Colour the heart-rate line by training zone';
+
+  @override
   String get sectionMaxHrAlert => 'Max Heart Rate Alert';
 
   @override

@@ -11,6 +11,7 @@ import 'package:hr_zones/hr_zones.dart';
 import '../../../heart_rate/presentation/providers/health_profile_provider.dart';
 import '../../../heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_bands_provider.dart';
+import '../../../heart_rate/presentation/providers/zone_coloured_line_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
 import '../../../heart_rate/presentation/widgets/health_profile_onboarding.dart';
 import '../../../../core/entitlements/entitlement.dart';
@@ -202,6 +203,17 @@ class SettingsScreen extends ConsumerWidget {
                   value: ref.watch(zoneBandsProvider),
                   onChanged: (_) =>
                       ref.read(zoneBandsProvider.notifier).toggle(),
+                ),
+              ),
+              // Zone-coloured HR line (#131)
+              _Set2Row(
+                icon: Icons.show_chart,
+                title: s.zoneColouredLine,
+                subtitle: s.zoneColouredLineSubtitle,
+                trailing: _KineticToggle(
+                  value: ref.watch(zoneColouredLineProvider),
+                  onChanged: (_) =>
+                      ref.read(zoneColouredLineProvider.notifier).toggle(),
                 ),
               ),
             ]),
