@@ -13,6 +13,7 @@ import 'package:rep_foundry/core/units/weight_unit_provider.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/zone_coloured_line_provider.dart';
 import 'package:rep_foundry/features/settings/presentation/screens/settings_screen.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
+import 'package:rep_foundry/features/settings/presentation/providers/plate_settings_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _RecordingSyncOrchestrator extends SyncOrchestrator {
@@ -228,6 +229,82 @@ void main() {
       expect(container.read(weightUnitProvider), WeightUnit.lbs);
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('weight_unit'), 'lbs');
+    });
+  });
+
+  group('SettingsScreen plate calculator (#66)', () {
+    Future<ProviderContainer> pumpAt(
+      WidgetTester tester,
+      String label, {
+      Map<String, Object> prefs = const {},
+    }) async {
+      SharedPreferences.setMockInitialValues({'weight_unit': 'kg', ...prefs});
+      orchestrator = _RecordingSyncOrchestrator(
+        result: SyncResult(
+          success: true,
+          entitiesMerged: 0,
+          syncedAt: DateTime.utc(2026, 9, 24, 12),
+        ),
+      );
+      await tester.pumpWidget(buildScreen(orchestrator));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text(label), 300,
+          scrollable: find.byType(Scrollable).first);
+      await tester.pumpAndSettle();
+      return ProviderScope.containerOf(
+        tester.element(find.byType(SettingsScreen)),
+      );
+    }
+
+    testWidgets('choosing a bar weight persists for the active unit',
+        (tester) async {
+      final container = await pumpAt(tester, 'Bar weight');
+
+      // 15 kg is both a bar and a plate; the bar row comes first.
+      await tester.tap(find.text('15kg').first);
+      await tester.pumpAndSettle();
+
+      final kg = container.read(plateSettingsProvider).forUnit(WeightUnit.kg);
+      expect(kg.bar, 15);
+      expect(kg.plates, contains(15.0));
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getDouble('plate_bar_kg'), 15);
+    });
+
+    testWidgets('tapping a plate size leaves it out and persists',
+        (tester) async {
+      final container = await pumpAt(tester, 'Plates available');
+      await tester.ensureVisible(find.widgetWithText(FilterChip, '25kg'));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<FilterChip>(find.widgetWithText(FilterChip, '25kg'))
+            .selected,
+        isTrue,
+      );
+
+      await tester.tap(find.widgetWithText(FilterChip, '25kg'));
+      await tester.pumpAndSettle();
+
+      expect(
+        container.read(plateSettingsProvider).forUnit(WeightUnit.kg).plates,
+        isNot(contains(25.0)),
+      );
+      expect(
+        tester
+            .widget<FilterChip>(find.widgetWithText(FilterChip, '25kg'))
+            .selected,
+        isFalse,
+      );
+    });
+
+    testWidgets('shows the pound setup when pounds are selected',
+        (tester) async {
+      await pumpAt(tester, 'Plates available', prefs: {'weight_unit': 'lbs'});
+
+      expect(find.text('35lbs'), findsNWidgets(2)); // a bar and a plate
+      expect(find.widgetWithText(FilterChip, '45lbs'), findsOneWidget);
+      expect(find.text('25kg'), findsNothing);
     });
   });
 

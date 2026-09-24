@@ -104,6 +104,13 @@ Under *Settings → Appearance*:
 
 It has no effect on how an imported file is interpreted: that's decided by the source format itself. Hevy exports are always in kilograms, and Strong exports use whatever unit each row declares or, when a file doesn't declare one, the unit you're asked to confirm at import time — not whatever your Weight Unit display setting happens to be set to.
 
+[[plate-calculator]]
+== Plate calculator
+
+Under *Settings → Plate calculator*, *Bar weight* chooses the bar used for the plate calculator described in xref:guide/workout.adoc#plate-calculator[Plate calculator] — 20, 15, or 10 kg (45, 35, or 25 lbs when your weight unit is lbs), defaulting to 20 kg or 45 lbs. *Plates available* is a row of chips for the plate sizes you load from, per side — kg: 25, 20, 15, 10, 5, 2.5, 1.25; lbs: 45, 35, 25, 10, 5, 2.5 — all on by default; tap a chip to include or leave out that size.
+
+Kg and lbs keep separate bar and plate choices; only the setup matching your current Weight Unit is shown, and switching unit switches setup. The calculator assumes you have enough pairs of each selected size — it doesn't track how many individual plates you own. Your choices are saved on the device.
+
 == Rest timer alerts
 
 Under *Settings → Rest Timer*, *Vibration Alert* and *Sound Alert* each independently control whether the rest timer vibrates and/or plays a sound when it finishes. Both are on by default.

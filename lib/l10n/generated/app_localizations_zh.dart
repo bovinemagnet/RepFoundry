@@ -735,6 +735,45 @@ class SZh extends S {
   String get addWarmup => '添加热身';
 
   @override
+  String get platesAction => '杠铃片';
+
+  @override
+  String get plateCalculatorTitle => '杠铃片计算器';
+
+  @override
+  String plateTargetAndBar(String target, String bar) {
+    return '$target · 杠 $bar';
+  }
+
+  @override
+  String get platesPerSide => '每侧';
+
+  @override
+  String get plateJustTheBar => '只用空杠';
+
+  @override
+  String plateBelowBar(String bar) {
+    return '比 $bar 的杠还轻';
+  }
+
+  @override
+  String plateClosest(String loaded, String shortfall) {
+    return '最接近的重量：$loaded（差 $shortfall）';
+  }
+
+  @override
+  String get sectionPlateCalculator => '杠铃片计算器';
+
+  @override
+  String get barWeightLabel => '杠重量';
+
+  @override
+  String get plateSizesLabel => '可用杠铃片';
+
+  @override
+  String get plateSizesSubtitle => '点击尺寸以加入或排除';
+
+  @override
   String get warmupRampTitle => '热身梯度';
 
   @override
@@ -3254,6 +3293,45 @@ class SZhHans extends SZh {
 
   @override
   String get addWarmup => '添加热身';
+
+  @override
+  String get platesAction => '杠铃片';
+
+  @override
+  String get plateCalculatorTitle => '杠铃片计算器';
+
+  @override
+  String plateTargetAndBar(String target, String bar) {
+    return '$target · 杠 $bar';
+  }
+
+  @override
+  String get platesPerSide => '每侧';
+
+  @override
+  String get plateJustTheBar => '只用空杠';
+
+  @override
+  String plateBelowBar(String bar) {
+    return '比 $bar 的杠还轻';
+  }
+
+  @override
+  String plateClosest(String loaded, String shortfall) {
+    return '最接近的重量：$loaded（差 $shortfall）';
+  }
+
+  @override
+  String get sectionPlateCalculator => '杠铃片计算器';
+
+  @override
+  String get barWeightLabel => '杠重量';
+
+  @override
+  String get plateSizesLabel => '可用杠铃片';
+
+  @override
+  String get plateSizesSubtitle => '点击尺寸以加入或排除';
 
   @override
   String get warmupRampTitle => '热身梯度';

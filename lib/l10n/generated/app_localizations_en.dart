@@ -757,6 +757,45 @@ class SEn extends S {
   String get addWarmup => 'Add warm-up';
 
   @override
+  String get platesAction => 'Plates';
+
+  @override
+  String get plateCalculatorTitle => 'Plate calculator';
+
+  @override
+  String plateTargetAndBar(String target, String bar) {
+    return '$target · bar $bar';
+  }
+
+  @override
+  String get platesPerSide => 'Per side';
+
+  @override
+  String get plateJustTheBar => 'Just the bar';
+
+  @override
+  String plateBelowBar(String bar) {
+    return 'Lighter than the $bar bar';
+  }
+
+  @override
+  String plateClosest(String loaded, String shortfall) {
+    return 'Closest you can load: $loaded ($shortfall short)';
+  }
+
+  @override
+  String get sectionPlateCalculator => 'Plate calculator';
+
+  @override
+  String get barWeightLabel => 'Bar weight';
+
+  @override
+  String get plateSizesLabel => 'Plates available';
+
+  @override
+  String get plateSizesSubtitle => 'Tap a size to include or leave it out';
+
+  @override
   String get warmupRampTitle => 'Warm-up ramp';
 
   @override

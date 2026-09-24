@@ -738,6 +738,45 @@ class SJa extends S {
   String get addWarmup => 'ウォームアップ追加';
 
   @override
+  String get platesAction => 'プレート';
+
+  @override
+  String get plateCalculatorTitle => 'プレート計算';
+
+  @override
+  String plateTargetAndBar(String target, String bar) {
+    return '$target · バー $bar';
+  }
+
+  @override
+  String get platesPerSide => '片側';
+
+  @override
+  String get plateJustTheBar => 'バーのみ';
+
+  @override
+  String plateBelowBar(String bar) {
+    return '$bar のバーより軽い重量です';
+  }
+
+  @override
+  String plateClosest(String loaded, String shortfall) {
+    return '最も近い重量: $loaded（$shortfall 不足）';
+  }
+
+  @override
+  String get sectionPlateCalculator => 'プレート計算';
+
+  @override
+  String get barWeightLabel => 'バーの重量';
+
+  @override
+  String get plateSizesLabel => '使えるプレート';
+
+  @override
+  String get plateSizesSubtitle => 'サイズをタップして含める/外す';
+
+  @override
   String get warmupRampTitle => 'ウォームアップランプ';
 
   @override

@@ -672,6 +672,54 @@ void main() {
     });
   });
 
+  group('plate calculator', () {
+    Future<void> startWithExercise(
+      WidgetTester tester,
+      Exercise exercise,
+    ) async {
+      SharedPreferences.setMockInitialValues({'weight_unit': 'kg'});
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Start Workout'));
+      await tester.pumpAndSettle();
+
+      final state = tester.state<ActiveWorkoutScreenState>(
+        find.byType(ActiveWorkoutScreen),
+      );
+      await state.handleAddExercise(exercise);
+      await tester.pumpAndSettle();
+      // Let the input card's 350 ms autofocus timer fire.
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+
+    testWidgets('action is offered for barbell exercises only', (tester) async {
+      await startWithExercise(
+        tester,
+        makeExercise('db', 'Dumbbell Press',
+            equipmentType: EquipmentType.dumbbell),
+      );
+
+      // Dumbbells still get a warm-up ramp, so the action row is rendered.
+      expect(find.text('ADD WARM-UP'), findsOneWidget);
+      expect(find.text('PLATES'), findsNothing);
+    });
+
+    testWidgets('shows the plates per side for the typed weight',
+        (tester) async {
+      await startWithExercise(tester, makeExercise('bb', 'Bench Press'));
+
+      await tester.enterText(find.byType(TextFormField).first, '100');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('PLATES'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Plate calculator'), findsOneWidget);
+      expect(find.text('100kg · bar 20kg'), findsOneWidget);
+      expect(find.text('25kg × 1'), findsOneWidget);
+      expect(find.text('15kg × 1'), findsOneWidget);
+    });
+  });
+
   group('warm-up ramp', () {
     Future<void> startWithExercise(
       WidgetTester tester,

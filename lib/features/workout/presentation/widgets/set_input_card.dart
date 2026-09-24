@@ -4,6 +4,7 @@ import 'package:rep_foundry/core/units/weight_unit_provider.dart';
 import 'package:rep_foundry/core/widgets/kinetic.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../models/ghost_set.dart';
+import 'plate_breakdown_sheet.dart';
 
 /// A card widget for entering a new set's weight and reps.
 ///
@@ -18,6 +19,7 @@ class SetInputCard extends StatefulWidget {
     this.unit = WeightUnit.kg,
     this.fallbackWorkingKg,
     this.onAddWarmup,
+    this.showPlates = false,
   });
 
   final void Function({
@@ -36,6 +38,10 @@ class SetInputCard extends StatefulWidget {
   /// When set, an "Add warm-up" affordance is shown; tapping it resolves the
   /// working weight (typed value, else [fallbackWorkingKg]) and calls back.
   final void Function(double workingKg)? onAddWarmup;
+
+  /// When true, a "Plates" affordance opens the per-side plate breakdown for
+  /// the same working weight. Offered for barbell exercises only.
+  final bool showPlates;
 
   /// When true, the Weight field grabs keyboard focus on first build.
   /// Used so a freshly added exercise becomes the active input target
@@ -161,11 +167,21 @@ class _SetInputCardState extends State<SetInputCard> {
     if (_isWarmUp) setState(() => _isWarmUp = false);
   }
 
-  void _addWarmup() {
+  /// Typed weight in kg, else [SetInputCard.fallbackWorkingKg], else 0.
+  double _workingKg() {
     final typed =
         widget.unit.toKg(double.tryParse(_weightController.text) ?? 0);
-    final workingKg = typed > 0 ? typed : (widget.fallbackWorkingKg ?? 0);
+    return typed > 0 ? typed : (widget.fallbackWorkingKg ?? 0);
+  }
+
+  void _addWarmup() {
+    final workingKg = _workingKg();
     if (workingKg > 0) widget.onAddWarmup!(workingKg);
+  }
+
+  void _showPlates() {
+    final workingKg = _workingKg();
+    if (workingKg > 0) PlateBreakdownSheet.show(context, workingKg);
   }
 
   @override
@@ -305,6 +321,30 @@ class _SetInputCardState extends State<SetInputCard> {
                             const SizedBox(width: 5),
                             Text(
                               s.addWarmup.toUpperCase(),
+                              style: KineticText.mono(
+                                size: 12,
+                                letterSpacing: 0.5,
+                                color: cs.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    // "Plates" per-side breakdown — barbell only.
+                    if (widget.showPlates)
+                      GestureDetector(
+                        onTap: _showPlates,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.fitness_center,
+                              size: 16,
+                              color: cs.primary,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              s.platesAction.toUpperCase(),
                               style: KineticText.mono(
                                 size: 12,
                                 letterSpacing: 0.5,

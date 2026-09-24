@@ -1464,6 +1464,72 @@ abstract class S {
   /// **'Add warm-up'**
   String get addWarmup;
 
+  /// No description provided for @platesAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Plates'**
+  String get platesAction;
+
+  /// No description provided for @plateCalculatorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate calculator'**
+  String get plateCalculatorTitle;
+
+  /// No description provided for @plateTargetAndBar.
+  ///
+  /// In en, this message translates to:
+  /// **'{target} · bar {bar}'**
+  String plateTargetAndBar(String target, String bar);
+
+  /// No description provided for @platesPerSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Per side'**
+  String get platesPerSide;
+
+  /// No description provided for @plateJustTheBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Just the bar'**
+  String get plateJustTheBar;
+
+  /// No description provided for @plateBelowBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Lighter than the {bar} bar'**
+  String plateBelowBar(String bar);
+
+  /// No description provided for @plateClosest.
+  ///
+  /// In en, this message translates to:
+  /// **'Closest you can load: {loaded} ({shortfall} short)'**
+  String plateClosest(String loaded, String shortfall);
+
+  /// No description provided for @sectionPlateCalculator.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate calculator'**
+  String get sectionPlateCalculator;
+
+  /// No description provided for @barWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bar weight'**
+  String get barWeightLabel;
+
+  /// No description provided for @plateSizesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Plates available'**
+  String get plateSizesLabel;
+
+  /// No description provided for @plateSizesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a size to include or leave it out'**
+  String get plateSizesSubtitle;
+
   /// No description provided for @warmupRampTitle.
   ///
   /// In en, this message translates to:
