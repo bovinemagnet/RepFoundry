@@ -194,12 +194,13 @@ The heart rate panel has its own pure-Dart domain layer:
 * `zoneConfigurationProvider` (derived `Provider`) — watches `healthProfileProvider` and calls `calculateZones()`.
 * `cautionModeProvider` (derived `Provider`) — reads `healthProfileProvider.isCautionMode`.
 * `chartWindowProvider` (`StateNotifier`) — configurable sliding window duration (30s, 60s, 90s, 120s, 300s). Persisted via SharedPreferences.
+* `zoneColouredLineProvider` (`Notifier<bool>`) — whether the heart-rate line and its fill are coloured by training zone rather than a single colour. Persisted via SharedPreferences, default `true`.
 * `userAgeProvider` — delegates to `healthProfileProvider.age` for backwards compatibility.
 
 === Presentation Components
 
 * `HeartRatePanelController` (`StateNotifier`) — manages monitoring state, timestamped readings (`HrReading`), elapsed timer, and BLE connection lifecycle. Declared non-autoDispose so monitoring survives tab switches.
-* `HeartRateChart` — real-time fl_chart `LineChart` plotting BPM against elapsed time, with zone band annotations and optional sliding window view.
+* `HeartRateChart` — real-time fl_chart `LineChart` plotting BPM against elapsed time, with zone band annotations and optional sliding window view. By default, the line and its fill are coloured by training zone via `zoneLineGradient`; toggled by `zoneColouredLineProvider`.
 * `HeartRateZoneLegend` — displays five training zones with dual labels, BPM ranges, and an inline `ReliabilityIndicator`. Highlights the current zone. Shows "Clinician-provided limits in use" when applicable.
 * `HealthProfileOnboarding` — four-step bottom sheet: age → resting HR + measured max → medical flags → clinician cap. Triggered on first HR panel visit or from Settings.
 * `DisclaimerDialog` — first-use disclaimer dialog (shown once via SharedPreferences flag).
@@ -241,6 +242,9 @@ Several settings are persisted outside the Drift database using SharedPreference
 
 | Chart window duration
 | `chartWindowProvider`
+
+| Zone-coloured HR line toggle
+| `zoneColouredLineProvider`
 
 | First-use disclaimer shown flag
 | Read directly in `DisclaimerDialog`

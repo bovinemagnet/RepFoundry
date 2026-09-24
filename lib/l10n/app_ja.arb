@@ -102,6 +102,8 @@
 
   "zoneColourBands": "ゾーンカラーバンド",
   "zoneColourBandsSubtitle": "心拍数チャートにカラーゾーンバンドを表示",
+  "zoneColouredLine": "ゾーン別カラーの心拍ライン",
+  "zoneColouredLineSubtitle": "心拍数ラインをトレーニングゾーンごとに色分け",
 
   "sectionMaxHrAlert": "最大心拍数アラート",
   "maxHrAlertVibration": "最大心拍数到達時の振動",

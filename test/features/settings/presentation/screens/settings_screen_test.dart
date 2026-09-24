@@ -10,6 +10,7 @@ import 'package:rep_foundry/features/sync/data/noop_cloud_sync_service.dart';
 import 'package:rep_foundry/features/sync/domain/models/sync_result.dart';
 import 'package:rep_foundry/core/units/weight_unit.dart';
 import 'package:rep_foundry/core/units/weight_unit_provider.dart';
+import 'package:rep_foundry/features/heart_rate/presentation/providers/zone_coloured_line_provider.dart';
 import 'package:rep_foundry/features/settings/presentation/screens/settings_screen.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -227,6 +228,46 @@ void main() {
       expect(container.read(weightUnitProvider), WeightUnit.lbs);
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('weight_unit'), 'lbs');
+    });
+  });
+
+  group('SettingsScreen zone-coloured HR line (#131)', () {
+    testWidgets('is on by default and its switch turns it off and persists',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      orchestrator = _RecordingSyncOrchestrator(
+        result: SyncResult(
+          success: true,
+          entitiesMerged: 0,
+          syncedAt: DateTime.utc(2026, 9, 24, 12),
+        ),
+      );
+
+      await tester.pumpWidget(buildScreen(orchestrator));
+      await tester.pumpAndSettle();
+
+      final label = find.text('Zone-Coloured HR Line');
+      await tester.scrollUntilVisible(label, 300,
+          scrollable: find.byType(Scrollable).first);
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Colour the heart-rate line by training zone'),
+        findsOneWidget,
+      );
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(SettingsScreen)),
+      );
+      expect(container.read(zoneColouredLineProvider), isTrue);
+
+      await tester.tapAt(Offset(850, tester.getCenter(label).dy));
+      await tester.pumpAndSettle();
+
+      expect(container.read(zoneColouredLineProvider), isFalse);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('hr_zone_coloured_line'), isFalse);
+      // The neighbouring zone-bands switch was not the one tapped.
+      expect(prefs.getBool('hr_show_zone_bands'), isNull);
     });
   });
 

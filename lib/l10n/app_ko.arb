@@ -102,6 +102,8 @@
 
   "zoneColourBands": "구간 색상 밴드",
   "zoneColourBandsSubtitle": "심박수 차트에 색상 구간 밴드 표시",
+  "zoneColouredLine": "구간 색상 심박수 선",
+  "zoneColouredLineSubtitle": "심박수 선을 훈련 구간별 색상으로 표시",
 
   "sectionMaxHrAlert": "최대 심박수 알림",
   "maxHrAlertVibration": "최대 심박수 도달 시 진동",

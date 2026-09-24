@@ -271,6 +271,12 @@ class SZh extends S {
   String get zoneColourBandsSubtitle => '在心率图表上显示彩色区间带';
 
   @override
+  String get zoneColouredLine => '按区间着色的心率线';
+
+  @override
+  String get zoneColouredLineSubtitle => '按训练区间为心率线着色';
+
+  @override
   String get sectionMaxHrAlert => '最大心率提醒';
 
   @override
@@ -2850,6 +2856,12 @@ class SZhHans extends SZh {
 
   @override
   String get zoneColourBandsSubtitle => '在心率图表上显示彩色区间带';
+
+  @override
+  String get zoneColouredLine => '按区间着色的心率线';
+
+  @override
+  String get zoneColouredLineSubtitle => '按训练区间为心率线着色';
 
   @override
   String get sectionMaxHrAlert => '最大心率提醒';

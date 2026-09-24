@@ -606,6 +606,18 @@ abstract class S {
   /// **'Show coloured zone bands on HR chart'**
   String get zoneColourBandsSubtitle;
 
+  /// No description provided for @zoneColouredLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone-Coloured HR Line'**
+  String get zoneColouredLine;
+
+  /// No description provided for @zoneColouredLineSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Colour the heart-rate line by training zone'**
+  String get zoneColouredLineSubtitle;
+
   /// No description provided for @sectionMaxHrAlert.
   ///
   /// In en, this message translates to:

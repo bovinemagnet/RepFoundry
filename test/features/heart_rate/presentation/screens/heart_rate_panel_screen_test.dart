@@ -16,7 +16,11 @@ import 'package:rep_foundry/features/heart_rate/presentation/controllers/heart_r
 import 'package:rep_foundry/features/heart_rate/presentation/controllers/heart_rate_panel_state.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/health_profile_provider.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/heart_rate_panel_visibility_provider.dart';
+import 'package:rep_foundry/features/heart_rate/presentation/providers/zone_configuration_provider.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/screens/heart_rate_panel_screen.dart';
+import 'package:rep_foundry/features/heart_rate/presentation/widgets/heart_rate_chart.dart';
+import 'package:rep_foundry/features/heart_rate/presentation/widgets/zone_line_gradient.dart';
+import 'package:rep_foundry/core/widgets/sparkline_widget.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -484,6 +488,82 @@ void main() {
       // screen) — assert the strings as they appear in the ARB.
       expect(find.text('Recent'), findsOneWidget);
       expect(find.text('Full Session'), findsOneWidget);
+    });
+
+    // ── Zone-coloured HR line (#131) ─────────────────────────────────────
+
+    // 100..160 bpm climbs through several age-35 zones, staying under the
+    // max-HR alert.
+    List<HrReading> climbing() => [
+          for (var i = 0; i <= 12; i++)
+            HrReading(bpm: 100 + i * 5, elapsed: Duration(seconds: i * 5)),
+        ];
+
+    HeartRatePanelState climbingState() => HeartRatePanelState(
+          hrConnected: true,
+          isMonitoring: true,
+          currentHeartRate: 160,
+          readings: climbing(),
+        );
+
+    testWidgets(
+        'by default every HR trace follows the zone colours as BPM rises',
+        (tester) async {
+      await tester.pumpWidget(buildScreenWithState(climbingState()));
+      await tester.pumpAndSettle();
+
+      final context = tester.element(find.byType(HeartRatePanelScreen));
+      final zones =
+          ProviderScope.containerOf(context).read(zoneConfigurationProvider)!;
+      final expected = zoneLineGradient(
+        zones,
+        topBpm: 160,
+        bottomBpm: 100,
+        belowZonesColour: Theme.of(context).colorScheme.onSurfaceVariant,
+      );
+      // The climb crosses at least two zones, so the line changes colour.
+      expect(expected.colors.map((c) => c.toARGB32()).toSet().length,
+          greaterThan(1));
+
+      // The live trace and the full-session trace.
+      final sparklines =
+          tester.widgetList<SparklineWidget>(find.byType(SparklineWidget));
+      expect(sparklines, hasLength(2));
+      for (final sparkline in sparklines) {
+        expect(sparkline.lineGradient, expected);
+        final fill = sparkline.fillGradient! as LinearGradient;
+        expect(fill.stops, expected.stops);
+        expect(
+          [for (final c in fill.colors) c.withValues(alpha: 1)],
+          [for (final c in expected.colors) c.withValues(alpha: 1)],
+        );
+      }
+
+      // The recent chart.
+      final chart = tester.widget<HeartRateChart>(find.byType(HeartRateChart));
+      expect(chart.zoneColouredLine, isTrue);
+    });
+
+    testWidgets('turning the setting off restores the single-colour traces',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'hr_disclaimer_shown': true,
+        'hr_age': 35,
+        'hr_zone_coloured_line': false,
+      });
+
+      await tester.pumpWidget(buildScreenWithState(climbingState()));
+      await tester.pumpAndSettle();
+
+      final sparklines =
+          tester.widgetList<SparklineWidget>(find.byType(SparklineWidget));
+      expect(sparklines, hasLength(2));
+      for (final sparkline in sparklines) {
+        expect(sparkline.lineGradient, isNull);
+        expect(sparkline.fillGradient, isNull);
+      }
+      final chart = tester.widget<HeartRateChart>(find.byType(HeartRateChart));
+      expect(chart.zoneColouredLine, isFalse);
     });
 
     testWidgets(

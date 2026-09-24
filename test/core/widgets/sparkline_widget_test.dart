@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/widgets/sparkline_widget.dart';
 
+import '../../helpers/pixel_probe.dart';
+
 void main() {
   Widget buildTestWidget(List<double> data) {
     return MaterialApp(
@@ -67,6 +69,81 @@ void main() {
       );
 
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('SparklineWidget gradients (#131)', () {
+    const red = Color(0xFFFF0000);
+    const blue = Color(0xFF0000FF);
+    const green = Color(0xFF00FF00);
+    const white = Color(0xFFFFFFFF);
+    const probeKey = Key('probe');
+
+    // Top half red, bottom half blue, with a hard edge in the middle.
+    const splitGradient = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [red, red, blue, blue],
+      stops: [0, 0.5, 0.5, 1],
+    );
+
+    // A diagonal from bottom-left (0) to top-right (100) on a black square.
+    Future<PixelProbe> paint(
+      WidgetTester tester, {
+      Gradient? lineGradient,
+      Gradient? fillGradient,
+    }) async {
+      await tester.pumpWidget(
+        Center(
+          child: RepaintBoundary(
+            key: probeKey,
+            child: Container(
+              width: 100,
+              height: 100,
+              color: const Color(0xFF000000),
+              child: SparklineWidget(
+                data: const [0, 25, 50, 75, 100],
+                lineColor: white,
+                fillColor: const Color(0x00000000),
+                lineGradient: lineGradient,
+                fillGradient: fillGradient,
+                strokeWidth: 4,
+              ),
+            ),
+          ),
+        ),
+      );
+      return PixelProbe.capture(tester, find.byKey(probeKey));
+    }
+
+    testWidgets('without a gradient the line uses lineColor', (tester) async {
+      final probe = await paint(tester);
+
+      expect(probe.columnContains(90, white, toY: 50), isTrue);
+      expect(probe.columnContains(10, white, fromY: 50), isTrue);
+    });
+
+    testWidgets('a line gradient colours the line by height', (tester) async {
+      final probe = await paint(tester, lineGradient: splitGradient);
+
+      // Near the top-right the line is high, so red; near the bottom-left
+      // it is low, so blue.
+      expect(probe.columnContains(90, red, toY: 50), isTrue);
+      expect(probe.columnContains(90, blue), isFalse);
+      expect(probe.columnContains(10, blue, fromY: 50), isTrue);
+      expect(probe.columnContains(10, red), isFalse);
+      expect(probe.columnContains(10, white), isFalse);
+    });
+
+    testWidgets('a fill gradient replaces the faded fillColor', (tester) async {
+      const solidGreen = LinearGradient(colors: [green, green]);
+      final probe = await paint(tester, fillGradient: solidGreen);
+
+      // Well below the line at the right-hand side.
+      expect(PixelProbe.isClose(probe.at(90, 80), green), isTrue);
+      // Above the line stays the black background.
+      expect(PixelProbe.isClose(probe.at(10, 20), const Color(0xFF000000)),
+          isTrue);
     });
   });
 }

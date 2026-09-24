@@ -127,6 +127,20 @@ Percentages are of the resolved `maxHr` for max-HR-based methods, of heart rate 
 
 `HeartRateChart` (`lib/features/heart_rate/presentation/widgets/heart_rate_chart.dart`, `fl_chart`) renders the windowed and full-session heart rate traces. The BPM line is curved (`curveSmoothness: 0.15`, to reduce sensor spike flicker), plotted over optional zone-band background annotations (`rangeAnnotations`, toggled via `zoneBandsProvider`), with dashed per-zone threshold lines (`_thresholdLines`, `dashArray: [4, 4]`) each labelled with its percentage and BPM value. The X-axis uses adaptive `M:SS` labels (`_xInterval(totalSeconds)` sizes the tick interval to the session length). `_TrendChartSection` in `heart_rate_panel_screen.dart` shows a windowed `HeartRateChart` alongside a `SparklineWidget` full-session trace, falling back to a second `HeartRateChart` when fewer than 2 readings exist. The window duration (30/60/90/120/300 s, default 60 s) is persisted via `ChartWindowNotifier` (`lib/features/heart_rate/presentation/providers/chart_window_provider.dart`, key `hr_chart_window_seconds`).
 
+=== Zone-Coloured Line
+
+By default, the live hero trace and both the windowed and full-session charts colour the line — and the area beneath it — by training zone rather than a single colour. `zoneLineGradient(ZoneConfiguration config, {required double topBpm, required double bottomBpm, required Color belowZonesColour, double opacity = 1, bool fade = false})` (`lib/features/heart_rate/presentation/widgets/zone_line_gradient.dart`) is a pure function returning a vertical `LinearGradient` (`topCenter` → `bottomCenter`) with paired hard stops at each zone edge that falls within `[bottomBpm, topBpm]`; the rect it's painted over must have its top edge at `topBpm` and bottom edge at `bottomBpm` for the stops to land on the correct BPM. `opacity` scales every stop's colour; `fade` additionally ramps alpha to zero at the bottom, for use as a fill gradient. A reading below the lowest zone, or in a gap between custom zone bounds, is painted in a neutral grey (`belowZonesColour`) rather than a zone colour.
+
+`SparklineWidget` (`lib/core/widgets/sparkline_widget.dart`) gained optional `lineGradient` and `fillGradient` parameters, painted over the whole widget with its top mapped to the data maximum and its bottom to the data minimum; when set, they replace the plain `lineColor` and faded `fillColor`. `HeartRatePanelScreen`'s private `_zoneTraceGradients` helper builds these from `zoneLineGradient` for the live hero trace and the full-session sparkline.
+
+`HeartRateChart` gained a `zoneColouredLine` parameter (default `true`). Its line gradient uses `gradientArea: LineChartGradientArea.wholeChart` with top/bottom set to the chart's `maxY`/`minY`, so the gradient's hard stops line up with the dashed threshold lines. fl_chart paints the below-bar fill over a rect running from the highest plotted spot down to the chart floor, so the fill gradient is built from the max reading down to `minY`, at 0.1 opacity.
+
+`zoneColouredLineProvider` (`lib/features/heart_rate/presentation/providers/zone_coloured_line_provider.dart`) is a `Notifier<bool>` mirroring `zoneBandsProvider`'s SharedPreferences-backed pattern — key `hr_zone_coloured_line`, default `true`, persisted on `toggle()`. `HeartRatePanelScreen` watches it and passes `zoneColouredLine` through to `HeartRateChart` and conditionally builds gradients for the two sparkline traces. Turning the toggle off, or having no `ZoneConfiguration` at all (no health profile), falls back to the previous single-colour behaviour for all three traces.
+
+Tests render the traces and sample pixel colours via `PixelProbe` (`test/helpers/pixel_probe.dart`) so a dropped or misaligned gradient fails rather than passing silently.
+
+NOTE: The saved cardio session's heart-rate chart on the workout detail screen is out of scope for this feature and still uses the theme's primary colour throughout — zone-colouring it would need the session owner's health profile rather than the active client's, and hasn't been implemented.
+
 == Session Statistics
 
 `_calculateStats()` in `HeartRatePanelScreen` derives average/min/max BPM from `HeartRatePanelState.readings`. Elapsed time is tracked in `HeartRatePanelController` via a wall-clock anchor (`_monitoringSince` / `_accumulated`) rather than a tick counter, so time spent backgrounded is still accounted for correctly on resume.
@@ -187,7 +201,7 @@ Top to bottom in `HeartRatePanelScreen.build()`:
 
 == Settings Integration
 
-`SettingsScreen` includes a Health Profile section (`_Set2Card`) bound directly to `healthProfileProvider` / `userAgeProvider`: age, resting HR, measured max HR, beta-blocker toggle, heart-condition toggle, a read-only zone-method + reliability summary row, a link into the 4-step onboarding sheet (`s.setUpHeartRateZones`), and a zone-colour-bands toggle bound to `zoneBandsProvider`. There is no direct Settings row for the clinician-provided maximum or lactate threshold. `clinicianMaxHr` can be set via the onboarding sheet's fourth step, or via the second entry point described below; `lactateThresholdHr` has no in-app UI at all.
+`SettingsScreen` includes a Health Profile section (`_Set2Card`) bound directly to `healthProfileProvider` / `userAgeProvider`: age, resting HR, measured max HR, beta-blocker toggle, heart-condition toggle, a read-only zone-method + reliability summary row, a link into the 4-step onboarding sheet (`s.setUpHeartRateZones`), a zone-colour-bands toggle bound to `zoneBandsProvider`, and a zone-coloured-line toggle bound to `zoneColouredLineProvider`. There is no direct Settings row for the clinician-provided maximum or lactate threshold. `clinicianMaxHr` can be set via the onboarding sheet's fourth step, or via the second entry point described below; `lactateThresholdHr` has no in-app UI at all.
 
 A separate Max Heart Rate Alert section binds to `maxHrAlertProvider` (vibration toggle, sound toggle, cooldown dropdown: 10/15/30/60 s), followed by the general disclaimer paragraph (`s.warningGeneralDisclaimer`).
 
@@ -269,6 +283,15 @@ HR-related analytics events (`HrAnalyticsEvent`, `lib/features/heart_rate/domain
 
 | `lib/features/heart_rate/presentation/widgets/heart_rate_chart.dart`
 | `fl_chart` line chart with zone bands
+
+| `lib/features/heart_rate/presentation/widgets/zone_line_gradient.dart`
+| `zoneLineGradient()` — pure function building the per-zone line/fill `LinearGradient`
+
+| `lib/features/heart_rate/presentation/providers/zone_coloured_line_provider.dart`
+| `zoneColouredLineProvider` — zone-coloured-line toggle state
+
+| `lib/core/widgets/sparkline_widget.dart`
+| Sparkline widget — gained `lineGradient` / `fillGradient` for zone colouring
 
 | `lib/features/heart_rate/presentation/widgets/heart_rate_zones.dart`
 | Zone legend with dual labels

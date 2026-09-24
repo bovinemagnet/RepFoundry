@@ -6,18 +6,26 @@ import 'package:flutter/material.dart';
 ///
 /// Draws a polyline scaled to the widget bounds with optional gradient fill.
 /// Handles edge cases: empty data renders nothing, a single point renders a dot.
+///
+/// [lineGradient] and [fillGradient], when given, are painted over the whole
+/// widget, whose top edge is the highest value in [data] and bottom edge the
+/// lowest. They replace [lineColor] and the faded [fillColor] respectively.
 class SparklineWidget extends StatelessWidget {
   const SparklineWidget({
     super.key,
     required this.data,
     this.lineColor,
     this.fillColor,
+    this.lineGradient,
+    this.fillGradient,
     this.strokeWidth = 1.5,
   });
 
   final List<double> data;
   final Color? lineColor;
   final Color? fillColor;
+  final Gradient? lineGradient;
+  final Gradient? fillGradient;
   final double strokeWidth;
 
   @override
@@ -34,6 +42,8 @@ class SparklineWidget extends StatelessWidget {
         data: data,
         lineColor: effectiveLineColor,
         fillColor: effectiveFillColor,
+        lineGradient: lineGradient,
+        fillGradient: fillGradient,
         strokeWidth: strokeWidth,
       ),
     );
@@ -45,21 +55,28 @@ class _SparklinePainter extends CustomPainter {
     required this.data,
     required this.lineColor,
     required this.fillColor,
+    required this.lineGradient,
+    required this.fillGradient,
     required this.strokeWidth,
   });
 
   final List<double> data;
   final Color lineColor;
   final Color fillColor;
+  final Gradient? lineGradient;
+  final Gradient? fillGradient;
   final double strokeWidth;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (data.isEmpty) return;
 
+    final bounds = Offset.zero & size;
+
     if (data.length == 1) {
       final paint = Paint()
         ..color = lineColor
+        ..shader = lineGradient?.createShader(bounds)
         ..style = PaintingStyle.fill;
       canvas.drawCircle(
         Offset(size.width / 2, size.height / 2),
@@ -94,16 +111,19 @@ class _SparklinePainter extends CustomPainter {
     fillPath.close();
 
     final fillPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [fillColor, fillColor.withValues(alpha: 0.0)],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+      ..shader = (fillGradient ??
+              LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [fillColor, fillColor.withValues(alpha: 0.0)],
+              ))
+          .createShader(bounds);
     canvas.drawPath(fillPath, fillPaint);
 
     // Draw the line.
     final linePaint = Paint()
       ..color = lineColor
+      ..shader = lineGradient?.createShader(bounds)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
@@ -121,6 +141,8 @@ class _SparklinePainter extends CustomPainter {
     return oldDelegate.data != data ||
         oldDelegate.lineColor != lineColor ||
         oldDelegate.fillColor != fillColor ||
+        oldDelegate.lineGradient != lineGradient ||
+        oldDelegate.fillGradient != fillGradient ||
         oldDelegate.strokeWidth != strokeWidth;
   }
 }

@@ -271,6 +271,12 @@ class SJa extends S {
   String get zoneColourBandsSubtitle => '心拍数チャートにカラーゾーンバンドを表示';
 
   @override
+  String get zoneColouredLine => 'ゾーン別カラーの心拍ライン';
+
+  @override
+  String get zoneColouredLineSubtitle => '心拍数ラインをトレーニングゾーンごとに色分け';
+
+  @override
   String get sectionMaxHrAlert => '最大心拍数アラート';
 
   @override
