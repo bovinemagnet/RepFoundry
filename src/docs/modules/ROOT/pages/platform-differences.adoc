@@ -43,6 +43,15 @@ These are separate, platform-provided services with no data flowing between them
 
 See xref:guide/health-sync.adoc[] for exactly what is written and when.
 
+== The coach's voice in the background behaves differently
+
+Coach mode's spoken voice (see xref:guide/trainer.adoc[]) can keep talking during a workout after the screen turns off or you switch to another app, but the two platforms support this differently:
+
+* *Android* keeps the app running with a notification while the coach speaks in the background, so the coach keeps speaking while the screen is off.
+* *iOS* is allowed to keep playing the coach's voice in the background, but suspends apps that aren't actively producing sound between lines. With a Bluetooth heart rate monitor connected, the app keeps waking to receive readings, so cues keep arriving; without one, a rest countdown that falls while your iPhone is locked may be missed.
+
+This follows from how each platform manages background apps, not from a RepFoundry choice.
+
 == Availability: Android is released, iOS is source-only
 
 * *Android* — signed release builds are published on GitHub for every tagged release. See xref:install-android.adoc[].
@@ -83,3 +92,4 @@ This is a project resourcing decision, not a platform limitation — nothing abo
 * xref:install-ios.adoc[]
 * xref:guide/sync.adoc[]
 * xref:guide/health-sync.adoc[]
+* xref:guide/trainer.adoc[]

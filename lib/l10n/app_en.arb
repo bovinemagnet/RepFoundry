@@ -1241,6 +1241,8 @@
   "trainerEncouragement": "Encouragement",
   "trainerQuotes": "Inspirational quotes",
   "trainerQuotesSubtitle": "Speaks a short quote when a workout starts and after rests of two minutes or longer.",
+  "trainerSpeakInBackground": "Speak in background",
+  "trainerSpeakInBackgroundSubtitle": "Keeps the coach talking during a workout when the screen is off or you switch apps. Android shows a notification while it does.",
   "trainerHrCallouts": "Heart rate zone callouts",
   "trainerHrCalloutsSubtitle": "Announces your training zone as it changes, when a heart rate monitor is connected.",
   "trainerHrSafetyWarnings": "Heart rate safety warnings",

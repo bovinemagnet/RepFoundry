@@ -999,7 +999,12 @@ void main() {
         controller.start();
         expect(
           foregroundService.last,
-          (sessionRunning: true, gpsEnabled: false, hrConnected: false),
+          (
+            sessionRunning: true,
+            gpsEnabled: false,
+            hrConnected: false,
+            coachActive: false
+          ),
         );
         controller.reset();
       });
@@ -1022,7 +1027,12 @@ void main() {
         await controller.toggleGps();
         expect(
           foregroundService.last,
-          (sessionRunning: true, gpsEnabled: true, hrConnected: false),
+          (
+            sessionRunning: true,
+            gpsEnabled: true,
+            hrConnected: false,
+            coachActive: false
+          ),
         );
         controller.reset();
       });
@@ -1033,7 +1043,12 @@ void main() {
         await controller.connectHeartRate('dev1', 'Polar H10');
         expect(
           foregroundService.last,
-          (sessionRunning: true, gpsEnabled: false, hrConnected: true),
+          (
+            sessionRunning: true,
+            gpsEnabled: false,
+            hrConnected: true,
+            coachActive: false
+          ),
         );
         controller.reset();
       });

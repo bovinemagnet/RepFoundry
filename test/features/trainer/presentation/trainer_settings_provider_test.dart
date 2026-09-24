@@ -162,4 +162,36 @@ void main() {
       expect(container.read(trainerSettingsProvider).quotesEnabled, isFalse);
     });
   });
+
+  group('speakInBackground', () {
+    test('defaults to true — the coach keeps talking with the screen off', () {
+      expect(const TrainerSettings().speakInBackground, isTrue);
+    });
+
+    test('setSpeakInBackground updates state and persists', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(trainerSettingsProvider.notifier)
+          .setSpeakInBackground(false);
+
+      expect(
+          container.read(trainerSettingsProvider).speakInBackground, isFalse);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('trainer_speak_in_background'), isFalse);
+    });
+
+    test('restores a persisted false on load', () async {
+      SharedPreferences.setMockInitialValues(
+          {'trainer_speak_in_background': false});
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container.read(trainerSettingsProvider.notifier).acceptDisclaimer();
+
+      expect(
+          container.read(trainerSettingsProvider).speakInBackground, isFalse);
+    });
+  });
 }

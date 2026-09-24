@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <!-- BLE permissions for heart rate monitors -->
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
@@ -51,11 +52,12 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <!-- Cardio session tracking service (flutter_foreground_task).
+        <!-- Background keep-alive for cardio tracking, heart-rate monitoring
+             and the coach's voice (flutter_foreground_task).
              Warning: do not change the service name. -->
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
-            android:foregroundServiceType="location|connectedDevice"
+            android:foregroundServiceType="location|connectedDevice|mediaPlayback"
             android:exported="false"
             android:stopWithTask="true" />
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />

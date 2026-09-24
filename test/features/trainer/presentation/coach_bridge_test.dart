@@ -822,4 +822,140 @@ void main() {
     expect(speechService.spoken, hasLength(1),
         reason: 'no reading has come back below the cap');
   });
+
+  group('speak in background (#93)', () {
+    final binding = TestWidgetsFlutterBinding.instance;
+
+    // Lifecycle changes must follow the real order, or the binding asserts.
+    void goToBackground() {
+      binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    }
+
+    void returnToForeground() {
+      binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    }
+
+    setUp(() =>
+        binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed));
+
+    CoachBridge bridgeWith(ProviderContainer container) {
+      final bridge = container.read(_bridgeUnderTest);
+      bridge.strings = lookupS(const Locale('en'));
+      return bridge;
+    }
+
+    test('keeps speaking in the background when the setting is on', () async {
+      final container = buildContainer();
+      bridgeWith(container);
+      goToBackground();
+      addTearDown(returnToForeground);
+
+      container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+
+      expect(speechService.spoken, hasLength(1));
+      expect(speechService.stopCount, 0);
+    });
+
+    test('says nothing in the background when the setting is off', () async {
+      final container = buildContainer(
+        settings: const TrainerSettings(
+          enabled: true,
+          disclaimerAccepted: true,
+          speakInBackground: false,
+        ),
+      );
+      bridgeWith(container);
+      goToBackground();
+      addTearDown(returnToForeground);
+
+      container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+
+      expect(speechService.spoken, isEmpty);
+    });
+
+    test('with the setting off, leaving the app cuts off speech in flight',
+        () async {
+      final container = buildContainer(
+        settings: const TrainerSettings(
+          enabled: true,
+          disclaimerAccepted: true,
+          speakInBackground: false,
+        ),
+      );
+      bridgeWith(container);
+
+      goToBackground();
+      addTearDown(returnToForeground);
+
+      expect(speechService.stopCount, greaterThanOrEqualTo(1));
+    });
+
+    test('with the setting off, a brief interruption does not silence it',
+        () async {
+      // Pulling down the notification shade only makes the app inactive.
+      final container = buildContainer(
+        settings: const TrainerSettings(
+          enabled: true,
+          disclaimerAccepted: true,
+          speakInBackground: false,
+        ),
+      );
+      bridgeWith(container);
+      binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      addTearDown(() =>
+          binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed));
+
+      container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+
+      expect(speechService.spoken, hasLength(1));
+    });
+
+    test('with the setting off, a hidden app is already background', () async {
+      final container = buildContainer(
+        settings: const TrainerSettings(
+          enabled: true,
+          disclaimerAccepted: true,
+          speakInBackground: false,
+        ),
+      );
+      bridgeWith(container);
+      binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      addTearDown(() {
+        binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+        binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      });
+
+      container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+
+      expect(speechService.spoken, isEmpty);
+    });
+
+    test('with the setting off, the coach speaks again once back in the app',
+        () async {
+      final container = buildContainer(
+        settings: const TrainerSettings(
+          enabled: true,
+          disclaimerAccepted: true,
+          speakInBackground: false,
+        ),
+      );
+      bridgeWith(container);
+      goToBackground();
+      returnToForeground();
+
+      container.read(trainerEventBusProvider).emit(const WorkoutStarted());
+      await Future<void>.delayed(Duration.zero);
+
+      expect(speechService.spoken, hasLength(1));
+    });
+  });
 }

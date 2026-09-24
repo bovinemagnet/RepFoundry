@@ -2604,6 +2604,13 @@ class SZh extends S {
       'Speaks a short quote when a workout starts and after rests of two minutes or longer.';
 
   @override
+  String get trainerSpeakInBackground => 'Speak in background';
+
+  @override
+  String get trainerSpeakInBackgroundSubtitle =>
+      'Keeps the coach talking during a workout when the screen is off or you switch apps. Android shows a notification while it does.';
+
+  @override
   String get trainerHrCallouts => 'Heart rate zone callouts';
 
   @override

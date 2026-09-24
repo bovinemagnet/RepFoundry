@@ -382,6 +382,30 @@ void main() {
     expect(container.read(trainerSettingsProvider).quotesEnabled, isFalse);
   });
 
+  testWidgets('renders the speak-in-background toggle and writes it through',
+      (tester) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Speak in background'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+
+    final tile = find.widgetWithText(SwitchListTile, 'Speak in background');
+    expect(tile, findsOneWidget);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TrainerSettingsScreen)),
+    );
+    expect(container.read(trainerSettingsProvider).speakInBackground, isTrue);
+
+    await tester.tap(find.descendant(of: tile, matching: find.byType(Switch)));
+    await tester.pumpAndSettle();
+
+    expect(container.read(trainerSettingsProvider).speakInBackground, isFalse);
+  });
+
   group('heart-rate settings', () {
     testWidgets(
         'both HR switches default on and are listed with HR safety '
@@ -446,9 +470,11 @@ void main() {
         300,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.tap(
-        find.widgetWithText(SwitchListTile, 'Heart rate safety warnings'),
-      );
+      final tile =
+          find.widgetWithText(SwitchListTile, 'Heart rate safety warnings');
+      await tester.ensureVisible(tile);
+      await tester.pumpAndSettle();
+      await tester.tap(tile);
       await tester.pumpAndSettle();
 
       final container = ProviderScope.containerOf(
