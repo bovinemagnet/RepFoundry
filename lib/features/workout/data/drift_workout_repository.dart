@@ -175,6 +175,25 @@ class DriftWorkoutRepository implements WorkoutRepository {
   }
 
   @override
+  Future<Map<String, int>> getExerciseUsageCounts(String clientId) async {
+    final exerciseId = _db.workoutSets.exerciseId;
+    final uses = _db.workoutSets.workoutId.count(distinct: true);
+    final q = _db.selectOnly(_db.workoutSets).join([
+      innerJoin(
+        _db.workouts,
+        _db.workouts.id.equalsExp(_db.workoutSets.workoutId),
+      ),
+    ])
+      ..addColumns([exerciseId, uses])
+      ..where(_db.workoutSets.deletedAt.isNull() &
+          _db.workouts.clientId.equals(clientId) &
+          _db.workouts.deletedAt.isNull())
+      ..groupBy([exerciseId]);
+    final rows = await q.get();
+    return {for (final r in rows) r.read(exerciseId)!: r.read(uses)!};
+  }
+
+  @override
   Future<WorkoutSet?> getLastSetForExercise(String exerciseId) async {
     final q = _db.select(_db.workoutSets)
       ..where((t) => t.exerciseId.equals(exerciseId) & t.deletedAt.isNull())

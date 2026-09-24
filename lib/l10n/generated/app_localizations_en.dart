@@ -919,6 +919,15 @@ class SEn extends S {
   String get noExercisesFound => 'No exercises found';
 
   @override
+  String get sortExercises => 'Sort';
+
+  @override
+  String get sortMostUsed => 'Most used';
+
+  @override
+  String get sortAlphabetical => 'A–Z';
+
+  @override
   String get loadingExercises => 'Loading exercises…';
 
   @override

@@ -349,6 +349,45 @@ void main() {
       });
     });
 
+    group('getExerciseUsageCounts', () {
+      test('counts distinct workouts per exercise, not sets', () async {
+        final w1 = await repo.createWorkout(newWorkout());
+        final w2 = await repo.createWorkout(newWorkout());
+        await repo.addSet(newSet(workoutId: w1.id, exerciseId: '1'));
+        await repo
+            .addSet(newSet(workoutId: w1.id, exerciseId: '1', setOrder: 2));
+        await repo.addSet(newSet(workoutId: w2.id, exerciseId: '1'));
+        await repo.addSet(newSet(workoutId: w2.id, exerciseId: '2'));
+
+        final counts = await repo.getExerciseUsageCounts(kSelfClientId);
+
+        expect(counts, {'1': 2, '2': 1});
+      });
+
+      test('excludes other clients, deleted workouts and deleted sets',
+          () async {
+        await database.into(database.clients).insert(
+              db.ClientsCompanion.insert(
+                  id: 'alice', name: 'Alice', colour: 0, createdAt: 0),
+            );
+        final mine = await repo.createWorkout(newWorkout());
+        final alices =
+            await repo.createWorkout(Workout.create(clientId: 'alice'));
+        final deleted = await repo.createWorkout(newWorkout());
+        await repo.addSet(newSet(workoutId: mine.id, exerciseId: '1'));
+        final withdrawn =
+            await repo.addSet(newSet(workoutId: mine.id, exerciseId: '3'));
+        await repo.addSet(newSet(workoutId: alices.id, exerciseId: '2'));
+        await repo.addSet(newSet(workoutId: deleted.id, exerciseId: '2'));
+        await repo.deleteWorkout(deleted.id);
+        await repo.deleteSet(withdrawn.id);
+
+        final counts = await repo.getExerciseUsageCounts(kSelfClientId);
+
+        expect(counts, {'1': 1});
+      });
+    });
+
     group('getLastSetForExercise', () {
       test('returns the most recent set', () async {
         final workout = newWorkout();

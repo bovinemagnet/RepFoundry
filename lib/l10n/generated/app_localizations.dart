@@ -1734,6 +1734,24 @@ abstract class S {
   /// **'No exercises found'**
   String get noExercisesFound;
 
+  /// No description provided for @sortExercises.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get sortExercises;
+
+  /// No description provided for @sortMostUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Most used'**
+  String get sortMostUsed;
+
+  /// No description provided for @sortAlphabetical.
+  ///
+  /// In en, this message translates to:
+  /// **'A–Z'**
+  String get sortAlphabetical;
+
   /// No description provided for @loadingExercises.
   ///
   /// In en, this message translates to:

@@ -566,7 +566,7 @@ void main() {
   });
 
   group('swipe navigation', () {
-    Widget buildRouterScreen() {
+    Widget buildRouterScreen({void Function(Object? extra)? onPickExercise}) {
       final router = GoRouter(
         initialLocation: '/workout',
         routes: [
@@ -578,6 +578,13 @@ void main() {
             path: '/heart-rate',
             builder: (context, state) =>
                 const Scaffold(body: Text('heart-rate destination')),
+          ),
+          GoRoute(
+            path: '/exercises',
+            builder: (context, state) {
+              onPickExercise?.call(state.extra);
+              return const Scaffold(body: Text('exercise picker'));
+            },
           ),
         ],
       );
@@ -621,6 +628,32 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('heart-rate destination'), findsOneWidget);
+    });
+
+    testWidgets('Add Exercise hands the session exercise ids to the picker',
+        (tester) async {
+      Object? pickerExtra;
+      await tester.pumpWidget(
+        buildRouterScreen(onPickExercise: (extra) => pickerExtra = extra),
+      );
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(ActiveWorkoutScreen)),
+      );
+      final notifier = container.read(activeWorkoutControllerProvider.notifier);
+      await notifier.startWorkout();
+      await notifier.addExercise(makeExercise('ex-1', 'Bench Press'));
+      await notifier.addExercise(makeExercise('ex-2', 'Cable Fly'));
+      await tester.pumpAndSettle();
+      // Let the input card's 350 ms autofocus timer fire.
+      await tester.pump(const Duration(milliseconds: 400));
+
+      await tester.tap(find.text('Add Exercise'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('exercise picker'), findsOneWidget);
+      expect(pickerExtra, {'ex-1', 'ex-2'});
     });
 
     testWidgets('rightward fling stays on the workout screen', (tester) async {

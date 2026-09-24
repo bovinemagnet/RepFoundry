@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
+import '../../domain/exercise_sort.dart';
 import '../../domain/models/exercise.dart';
+import '../providers/exercise_usage_provider.dart';
 import '../screens/create_exercise_screen.dart';
 import '../screens/edit_exercise_screen.dart';
 import '../widgets/exercise_list_tile.dart';
@@ -31,23 +33,40 @@ final _selectedMuscleGroupProvider =
   _SelectedMuscleGroupNotifier.new,
 );
 
-final _filteredExercisesProvider =
-    FutureProvider.autoDispose<List<Exercise>>((ref) async {
+class _SortOrderNotifier extends Notifier<ExerciseSortOrder> {
+  @override
+  ExerciseSortOrder build() => ExerciseSortOrder.mostUsed;
+  void set(ExerciseSortOrder value) => state = value;
+}
+
+final _sortOrderProvider =
+    NotifierProvider<_SortOrderNotifier, ExerciseSortOrder>(
+  _SortOrderNotifier.new,
+);
+
+final _filteredExercisesProvider = FutureProvider.autoDispose<
+    ({List<Exercise> exercises, Map<String, int> usageCounts})>((ref) async {
   final repo = ref.watch(exerciseRepositoryProvider);
   final query = ref.watch(_searchQueryProvider);
   final group = ref.watch(_selectedMuscleGroupProvider);
+  final usageCounts = await ref.watch(exerciseUsageCountsProvider.future);
 
+  final List<Exercise> exercises;
   if (query.isNotEmpty) {
-    return repo.searchExercises(query);
+    exercises = await repo.searchExercises(query);
+  } else if (group != null) {
+    exercises = await repo.getExercisesByMuscleGroup(group);
+  } else {
+    exercises = await repo.getAllExercises();
   }
-  if (group != null) {
-    return repo.getExercisesByMuscleGroup(group);
-  }
-  return repo.getAllExercises();
+  return (exercises: exercises, usageCounts: usageCounts);
 });
 
 class ExercisePickerScreen extends ConsumerStatefulWidget {
-  const ExercisePickerScreen({super.key});
+  const ExercisePickerScreen({super.key, this.sessionExerciseIds = const {}});
+
+  /// Exercises already in the current workout; listed last.
+  final Set<String> sessionExerciseIds;
 
   @override
   ConsumerState<ExercisePickerScreen> createState() =>
@@ -75,6 +94,7 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
     final cs = Theme.of(context).colorScheme;
     final exercisesAsync = ref.watch(_filteredExercisesProvider);
     final selectedGroup = ref.watch(_selectedMuscleGroupProvider);
+    final sortOrder = ref.watch(_sortOrderProvider);
 
     return Scaffold(
       backgroundColor: cs.surface,
@@ -85,7 +105,12 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(22, 8, 22, 0),
-              child: _PickerHeader(title: s.chooseExercise),
+              child: _PickerHeader(
+                title: s.chooseExercise,
+                sortOrder: sortOrder,
+                onSortChanged: (order) =>
+                    ref.read(_sortOrderProvider.notifier).set(order),
+              ),
             ),
             // Search field (.search).
             Padding(
@@ -107,39 +132,48 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
             // Exercise list.
             Expanded(
               child: exercisesAsync.when(
-                data: (exercises) => exercises.isEmpty
-                    ? Center(child: Text(s.noExercisesFound))
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(22, 0, 22, 96),
-                        itemCount: exercises.length,
-                        itemBuilder: (context, index) {
-                          final exercise = exercises[index];
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Hairline divider between rows (.exrow + .exrow).
-                              if (index > 0)
-                                Divider(
-                                  height: 1,
-                                  thickness: 1,
-                                  color: cs.outlineVariant,
+                data: (result) {
+                  final exercises = sortExercisesForPicker(
+                    result.exercises,
+                    order: sortOrder,
+                    usageCounts: result.usageCounts,
+                    sessionExerciseIds: widget.sessionExerciseIds,
+                  );
+                  return exercises.isEmpty
+                      ? Center(child: Text(s.noExercisesFound))
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(22, 0, 22, 96),
+                          itemCount: exercises.length,
+                          itemBuilder: (context, index) {
+                            final exercise = exercises[index];
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Hairline divider between rows (.exrow + .exrow).
+                                if (index > 0)
+                                  Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: cs.outlineVariant,
+                                  ),
+                                ExerciseListTile(
+                                  exercise: exercise,
+                                  onTap: () =>
+                                      Navigator.of(context).pop(exercise),
+                                  trailing: exercise.isCustom
+                                      ? IconButton(
+                                          icon:
+                                              const Icon(Icons.edit, size: 20),
+                                          onPressed: () =>
+                                              _editExercise(context, exercise),
+                                        )
+                                      : const Icon(Icons.chevron_right),
                                 ),
-                              ExerciseListTile(
-                                exercise: exercise,
-                                onTap: () =>
-                                    Navigator.of(context).pop(exercise),
-                                trailing: exercise.isCustom
-                                    ? IconButton(
-                                        icon: const Icon(Icons.edit, size: 20),
-                                        onPressed: () =>
-                                            _editExercise(context, exercise),
-                                      )
-                                    : const Icon(Icons.chevron_right),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
+                              ],
+                            );
+                          },
+                        );
+                },
                 loading: () => LoadingWidget(message: s.loadingExercises),
                 error: (e, _) =>
                     Center(child: Text(s.errorPrefix(e.toString()))),
@@ -183,11 +217,17 @@ class _ExercisePickerScreenState extends ConsumerState<ExercisePickerScreen> {
 
 // ─── Picker header (.pkhead) ──────────────────────────────────────────────────
 
-/// Back-button tile + screen title.  Mirrors rf.css `.pkhead`.
+/// Back-button tile + screen title + sort menu.  Mirrors rf.css `.pkhead`.
 class _PickerHeader extends StatelessWidget {
-  const _PickerHeader({required this.title});
+  const _PickerHeader({
+    required this.title,
+    required this.sortOrder,
+    required this.onSortChanged,
+  });
 
   final String title;
+  final ExerciseSortOrder sortOrder;
+  final ValueChanged<ExerciseSortOrder> onSortChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -220,8 +260,41 @@ class _PickerHeader extends StatelessWidget {
               color: cs.onSurface,
             ),
           ),
+          const Spacer(),
+          _SortMenu(sortOrder: sortOrder, onSelected: onSortChanged),
         ],
       ),
+    );
+  }
+}
+
+/// Sort-order menu; the current order is shown checked.
+class _SortMenu extends StatelessWidget {
+  const _SortMenu({required this.sortOrder, required this.onSelected});
+
+  final ExerciseSortOrder sortOrder;
+  final ValueChanged<ExerciseSortOrder> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context)!;
+    final labels = {
+      ExerciseSortOrder.mostUsed: s.sortMostUsed,
+      ExerciseSortOrder.alphabetical: s.sortAlphabetical,
+    };
+    return PopupMenuButton<ExerciseSortOrder>(
+      tooltip: s.sortExercises,
+      icon: const Icon(Icons.sort),
+      initialValue: sortOrder,
+      onSelected: onSelected,
+      itemBuilder: (context) => [
+        for (final entry in labels.entries)
+          CheckedPopupMenuItem(
+            value: entry.key,
+            checked: entry.key == sortOrder,
+            child: Text(entry.value),
+          ),
+      ],
     );
   }
 }

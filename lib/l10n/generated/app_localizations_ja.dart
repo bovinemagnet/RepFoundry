@@ -899,6 +899,15 @@ class SJa extends S {
   String get noExercisesFound => 'エクササイズが見つかりません';
 
   @override
+  String get sortExercises => '並べ替え';
+
+  @override
+  String get sortMostUsed => 'よく使う順';
+
+  @override
+  String get sortAlphabetical => '名前順';
+
+  @override
   String get loadingExercises => 'エクササイズを読み込み中…';
 
   @override

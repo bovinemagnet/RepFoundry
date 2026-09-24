@@ -896,6 +896,15 @@ class SZh extends S {
   String get noExercisesFound => '未找到动作';
 
   @override
+  String get sortExercises => '排序';
+
+  @override
+  String get sortMostUsed => '最常用';
+
+  @override
+  String get sortAlphabetical => '按名称';
+
+  @override
   String get loadingExercises => '正在加载动作…';
 
   @override
@@ -3378,6 +3387,15 @@ class SZhHans extends SZh {
 
   @override
   String get noExercisesFound => '未找到动作';
+
+  @override
+  String get sortExercises => '排序';
+
+  @override
+  String get sortMostUsed => '最常用';
+
+  @override
+  String get sortAlphabetical => '按名称';
 
   @override
   String get loadingExercises => '正在加载动作…';

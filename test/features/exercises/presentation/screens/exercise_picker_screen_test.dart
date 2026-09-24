@@ -1,31 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
+import 'package:rep_foundry/features/exercises/presentation/providers/exercise_usage_provider.dart';
 import 'package:rep_foundry/features/exercises/presentation/screens/exercise_picker_screen.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
   late InMemoryExerciseRepository fakeRepo;
+  late Map<String, int> usageCounts;
 
   setUp(() {
     fakeRepo = InMemoryExerciseRepository();
+    usageCounts = {};
   });
 
-  Widget buildScreen() {
-    return ProviderScope(
-      overrides: [
+  List<Override> overrides() => [
         exerciseRepositoryProvider.overrideWithValue(fakeRepo),
-      ],
-      child: const MaterialApp(
+        exerciseUsageCountsProvider.overrideWith((ref) async => usageCounts),
+      ];
+
+  Widget buildScreen({Set<String> sessionExerciseIds = const {}}) {
+    return ProviderScope(
+      overrides: overrides(),
+      child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
-        home: ExercisePickerScreen(),
+        home: ExercisePickerScreen(sessionExerciseIds: sessionExerciseIds),
       ),
     );
   }
+
+  /// Narrows the list to the four chest exercises so every row is on screen.
+  Future<void> filterToChest(WidgetTester tester) async {
+    await tester.ensureVisible(find.widgetWithText(FilterChip, 'chest'));
+    await tester.tap(find.widgetWithText(FilterChip, 'chest'));
+    await tester.pumpAndSettle();
+  }
+
+  bool isAbove(WidgetTester tester, String upper, String lower) =>
+      tester.getTopLeft(find.text(upper)).dy <
+      tester.getTopLeft(find.text(lower)).dy;
 
   group('ExercisePickerScreen', () {
     testWidgets('renders_exerciseList_showsTitleAndDefaultExercise',
@@ -106,9 +124,7 @@ void main() {
       // Use the Builder/Navigator pattern so we can capture the popped value.
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            exerciseRepositoryProvider.overrideWithValue(fakeRepo),
-          ],
+          overrides: overrides(),
           child: MaterialApp(
             localizationsDelegates: S.localizationsDelegates,
             supportedLocales: S.supportedLocales,
@@ -183,6 +199,42 @@ void main() {
       // chevron_right icon, not an edit icon.
       expect(find.byIcon(Icons.edit), findsNothing);
       expect(find.byIcon(Icons.chevron_right), findsWidgets);
+    });
+
+    testWidgets('sortsMostUsedFirstByDefault', (tester) async {
+      usageCounts = {'14': 3, '1': 1}; // Cable Fly, Barbell Bench Press
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+      await filterToChest(tester);
+
+      expect(isAbove(tester, 'Cable Fly', 'Barbell Bench Press'), isTrue);
+      expect(isAbove(tester, 'Barbell Bench Press', 'Incline Dumbbell Press'),
+          isTrue);
+    });
+
+    testWidgets('sessionExercisesSinkToTheBottom', (tester) async {
+      usageCounts = {'1': 9}; // Barbell Bench Press, the most used
+      await tester.pumpWidget(buildScreen(sessionExerciseIds: {'1'}));
+      await tester.pumpAndSettle();
+      await filterToChest(tester);
+
+      // Pec Deck is last alphabetically among the others.
+      expect(isAbove(tester, 'Pec Deck', 'Barbell Bench Press'), isTrue);
+    });
+
+    testWidgets('sortMenu_alphabeticalIgnoresUsage', (tester) async {
+      usageCounts = {'14': 3}; // Cable Fly
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+      await filterToChest(tester);
+      expect(isAbove(tester, 'Cable Fly', 'Barbell Bench Press'), isTrue);
+
+      await tester.tap(find.byTooltip('Sort'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('A\u2013Z'));
+      await tester.pumpAndSettle();
+
+      expect(isAbove(tester, 'Barbell Bench Press', 'Cable Fly'), isTrue);
     });
 
     testWidgets('editIcon_isShownForCustomExercise', (tester) async {

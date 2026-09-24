@@ -305,6 +305,9 @@
   "searchExercisesHint": "搜索动作…",
   "filterAll": "全部",
   "noExercisesFound": "未找到动作",
+  "sortExercises": "排序",
+  "sortMostUsed": "最常用",
+  "sortAlphabetical": "按名称",
   "loadingExercises": "正在加载动作…",
   "customExercise": "自定义",
 
