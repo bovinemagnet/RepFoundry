@@ -80,4 +80,17 @@ void main() {
       contains(25.0),
     );
   });
+
+  test('ensureLoaded resolves once the saved setup is in place', () async {
+    SharedPreferences.setMockInitialValues({'plate_bar_kg': 15.0});
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    await container.read(plateSettingsProvider.notifier).ensureLoaded();
+
+    expect(
+      container.read(plateSettingsProvider).forUnit(WeightUnit.kg).bar,
+      15,
+    );
+  });
 }

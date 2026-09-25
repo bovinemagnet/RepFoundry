@@ -50,6 +50,8 @@ void main() {
             onAddWarmup: (_) {},
             // Barbell lifts also get "PLATES", making theirs the fullest row.
             showPlates: true,
+            // Loadable equipment also gets "PYRAMID".
+            onPyramid: (_) {},
           ),
         ),
       ),
@@ -66,9 +68,12 @@ void main() {
       lessThanOrEqualTo(393.0),
       reason: 'LOG SET is clipped off the right edge of a 393pt phone',
     );
-    expect(
-      tester.getBottomRight(find.text('PLATES')).dx,
-      lessThanOrEqualTo(393.0),
-    );
+    for (final action in ['PLATES', 'PYRAMID']) {
+      expect(
+        tester.getBottomRight(find.text(action)).dx,
+        lessThanOrEqualTo(393.0),
+        reason: '$action is clipped off the right edge of a 393pt phone',
+      );
+    }
   });
 }

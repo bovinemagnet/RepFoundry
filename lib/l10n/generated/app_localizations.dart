@@ -1464,6 +1464,24 @@ abstract class S {
   /// **'Add warm-up'**
   String get addWarmup;
 
+  /// No description provided for @pyramidAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Pyramid'**
+  String get pyramidAction;
+
+  /// No description provided for @pyramidTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pyramid'**
+  String get pyramidTitle;
+
+  /// No description provided for @usePyramid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use pyramid'**
+  String get usePyramid;
+
   /// No description provided for @platesAction.
   ///
   /// In en, this message translates to:

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../controllers/active_workout_controller.dart';
 import '../models/ghost_set.dart';
+import '../widgets/pyramid_sheet.dart';
 import '../widgets/pr_celebration_overlay.dart';
 import '../widgets/edit_set_dialog.dart';
 import '../widgets/set_input_card.dart';
@@ -1565,6 +1566,10 @@ class _ExerciseSectionContent extends ConsumerWidget {
             onAddWarmup:
                 isWarmupRampable(exercise.equipmentType) ? onAddWarmup : null,
             showPlates: exercise.equipmentType == EquipmentType.barbell,
+            onPyramid: isWarmupRampable(exercise.equipmentType)
+                ? (workingKg) =>
+                    showPyramidSheet(context, ref, exercise, workingKg)
+                : null,
           )
         else
           _AddSetButton(onTap: onExpand),

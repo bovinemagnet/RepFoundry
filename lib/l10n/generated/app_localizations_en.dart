@@ -757,6 +757,15 @@ class SEn extends S {
   String get addWarmup => 'Add warm-up';
 
   @override
+  String get pyramidAction => 'Pyramid';
+
+  @override
+  String get pyramidTitle => 'Pyramid';
+
+  @override
+  String get usePyramid => 'Use pyramid';
+
+  @override
   String get platesAction => 'Plates';
 
   @override

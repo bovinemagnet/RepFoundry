@@ -735,6 +735,15 @@ class SZh extends S {
   String get addWarmup => '添加热身';
 
   @override
+  String get pyramidAction => '金字塔';
+
+  @override
+  String get pyramidTitle => '金字塔组';
+
+  @override
+  String get usePyramid => '使用金字塔组';
+
+  @override
   String get platesAction => '杠铃片';
 
   @override
@@ -3355,6 +3364,15 @@ class SZhHans extends SZh {
 
   @override
   String get addWarmup => '添加热身';
+
+  @override
+  String get pyramidAction => '金字塔';
+
+  @override
+  String get pyramidTitle => '金字塔组';
+
+  @override
+  String get usePyramid => '使用金字塔组';
 
   @override
   String get platesAction => '杠铃片';

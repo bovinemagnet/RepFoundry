@@ -738,6 +738,15 @@ class SJa extends S {
   String get addWarmup => 'ウォームアップ追加';
 
   @override
+  String get pyramidAction => 'ピラミッド';
+
+  @override
+  String get pyramidTitle => 'ピラミッド';
+
+  @override
+  String get usePyramid => 'ピラミッドを使う';
+
+  @override
   String get platesAction => 'プレート';
 
   @override

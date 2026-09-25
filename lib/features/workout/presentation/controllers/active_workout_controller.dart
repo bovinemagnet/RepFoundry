@@ -543,6 +543,37 @@ class ActiveWorkoutController extends Notifier<ActiveWorkoutState> {
     );
   }
 
+  /// Replaces [exerciseId]'s suggested sets with a pyramid (#84), so the set
+  /// card pre-fills each step in turn. Nothing is logged. Suggestions already
+  /// used up by logged sets are kept, so the pyramid starts with the next set.
+  void applyPyramid(
+    String exerciseId,
+    List<({double weightKg, int reps})> sets,
+  ) {
+    final logged = state.setsByExercise[exerciseId] ?? const [];
+    final existing = state.ghostSetsByExercise[exerciseId] ?? const [];
+    final ghosts = [
+      for (var i = 0; i < logged.length; i++)
+        i < existing.length
+            ? existing[i]
+            : GhostSet(
+                weight: logged[i].weight,
+                reps: logged[i].reps,
+                rpe: logged[i].rpe,
+                setOrder: i + 1,
+              ),
+      for (var i = 0; i < sets.length; i++)
+        GhostSet(
+          weight: sets[i].weightKg,
+          reps: sets[i].reps,
+          setOrder: logged.length + i + 1,
+        ),
+    ];
+    state = state.copyWith(
+      ghostSetsByExercise: {...state.ghostSetsByExercise, exerciseId: ghosts},
+    );
+  }
+
   Future<Map<String, List<GhostSet>>> _loadGhostsForExercises(
     List<String> exerciseIds,
     String clientId,

@@ -20,6 +20,7 @@ class SetInputCard extends StatefulWidget {
     this.fallbackWorkingKg,
     this.onAddWarmup,
     this.showPlates = false,
+    this.onPyramid,
   });
 
   final void Function({
@@ -42,6 +43,10 @@ class SetInputCard extends StatefulWidget {
   /// When true, a "Plates" affordance opens the per-side plate breakdown for
   /// the same working weight. Offered for barbell exercises only.
   final bool showPlates;
+
+  /// When set, a "Pyramid" affordance resolves the working weight (as for the
+  /// warm-up ramp) and calls back to preview an ascending pyramid (#84).
+  final void Function(double workingKg)? onPyramid;
 
   /// When true, the Weight field grabs keyboard focus on first build.
   /// Used so a freshly added exercise becomes the active input target
@@ -177,6 +182,11 @@ class _SetInputCardState extends State<SetInputCard> {
   void _addWarmup() {
     final workingKg = _workingKg();
     if (workingKg > 0) widget.onAddWarmup!(workingKg);
+  }
+
+  void _showPyramid() {
+    final workingKg = _workingKg();
+    if (workingKg > 0) widget.onPyramid!(workingKg);
   }
 
   void _showPlates() {
@@ -321,6 +331,30 @@ class _SetInputCardState extends State<SetInputCard> {
                             const SizedBox(width: 5),
                             Text(
                               s.addWarmup.toUpperCase(),
+                              style: KineticText.mono(
+                                size: 12,
+                                letterSpacing: 0.5,
+                                color: cs.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    // "Pyramid" set scheme — loadable equipment only.
+                    if (widget.onPyramid != null)
+                      GestureDetector(
+                        onTap: _showPyramid,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.signal_cellular_alt,
+                              size: 16,
+                              color: cs.primary,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              s.pyramidAction.toUpperCase(),
                               style: KineticText.mono(
                                 size: 12,
                                 letterSpacing: 0.5,
