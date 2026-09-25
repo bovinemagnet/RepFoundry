@@ -299,6 +299,8 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.ensureVisible(find.text('Withdraw consent'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Withdraw consent'));
     await tester.pumpAndSettle();
 
@@ -336,6 +338,8 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.ensureVisible(find.text('Withdraw consent'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Withdraw consent'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Cancel'));
@@ -404,6 +408,33 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(container.read(trainerSettingsProvider).speakInBackground, isFalse);
+  });
+
+  testWidgets('renders the activity nudges toggle, off, and writes it through',
+      (tester) async {
+    await tester.pumpWidget(buildScreen());
+    await tester.pumpAndSettle();
+
+    final tile = find.widgetWithText(
+        SwitchListTile, 'Offer to join when you get moving');
+    await tester.scrollUntilVisible(
+      tile,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TrainerSettingsScreen)),
+    );
+    expect(
+        container.read(trainerSettingsProvider).activityNudgesEnabled, isFalse);
+
+    await tester.tap(find.descendant(of: tile, matching: find.byType(Switch)));
+    await tester.pumpAndSettle();
+
+    expect(
+        container.read(trainerSettingsProvider).activityNudgesEnabled, isTrue);
   });
 
   group('heart-rate settings', () {

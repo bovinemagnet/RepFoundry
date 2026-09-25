@@ -17,6 +17,7 @@ import 'package:rep_foundry/features/heart_rate/presentation/providers/zone_conf
 import 'package:rep_foundry/features/trainer/domain/trainer_event.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/hr_event_source.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/trainer_event_bus.dart';
+import 'package:rep_foundry/features/trainer/presentation/providers/trainer_settings_provider.dart';
 
 import '../../cardio/data/fake_heart_rate_service.dart';
 
@@ -52,6 +53,14 @@ class _SeededPanelNotifier extends HeartRatePanelController {
     super.build();
     return _seed;
   }
+}
+
+/// Default coach settings, synchronously: the source reads them for activity
+/// nudges (off by default), and the real notifier's SharedPreferences load
+/// must never run here.
+class _DefaultTrainerSettings extends TrainerSettingsNotifier {
+  @override
+  TrainerSettings build() => const TrainerSettings();
 }
 
 /// A minimal [HeartRateService] whose stream can be made to emit an error,
@@ -191,6 +200,7 @@ void main() {
     final container = ProviderContainer(overrides: [
       heartRateServiceProvider.overrideWithValue(heartRateService),
       entitlementServiceProvider.overrideWithValue(_AlwaysEntitled()),
+      trainerSettingsProvider.overrideWith(_DefaultTrainerSettings.new),
       zoneConfigurationProvider.overrideWith(
         (ref) => zoneConfigResolver != null
             ? zoneConfigResolver()
@@ -964,6 +974,7 @@ void main() {
         final container = ProviderContainer(overrides: [
           heartRateServiceProvider.overrideWithValue(hr),
           entitlementServiceProvider.overrideWithValue(_AlwaysEntitled()),
+          trainerSettingsProvider.overrideWith(_DefaultTrainerSettings.new),
           zoneConfigurationProvider.overrideWithValue(_config()),
           maxHrAlertProvider.overrideWith(
             () => _SeededMaxHrAlertNotifier(const MaxHrAlertSettings()),
@@ -1004,6 +1015,7 @@ void main() {
         final container = ProviderContainer(overrides: [
           heartRateServiceProvider.overrideWithValue(hr),
           entitlementServiceProvider.overrideWithValue(_AlwaysEntitled()),
+          trainerSettingsProvider.overrideWith(_DefaultTrainerSettings.new),
           zoneConfigurationProvider.overrideWithValue(_config()),
           maxHrAlertProvider.overrideWith(
             () => _SeededMaxHrAlertNotifier(const MaxHrAlertSettings()),

@@ -5,13 +5,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hr_zones/hr_zones.dart';
 
 import '../../../../core/providers.dart';
+import '../../../cardio/presentation/controllers/cardio_tracking_controller.dart';
 import '../../../heart_rate/presentation/controllers/heart_rate_panel_controller.dart';
 import '../../../heart_rate/presentation/providers/heart_rate_panel_visibility_provider.dart';
 import '../../../heart_rate/presentation/providers/max_hr_alert_provider.dart';
 import '../../../heart_rate/presentation/providers/zone_configuration_provider.dart';
+import '../../../workout/presentation/controllers/active_workout_controller.dart';
+import '../../application/activity_detector.dart';
 import '../../domain/hr_zone_lookup.dart';
 import '../../domain/trainer_event.dart';
 import 'trainer_event_bus.dart';
+import 'trainer_settings_provider.dart';
 
 /// Turns the live BLE heart rate stream into the trainer events the coach
 /// reacts to.
@@ -101,6 +105,7 @@ class HrEventSource {
   final Duration _aboveCapAnnounceDelay;
 
   late final StreamSubscription<int> _subscription;
+  final ActivityDetector _activity = ActivityDetector();
   Timer? _signalLossTimer;
   Timer? _pendingAboveCapAnnouncement;
 
@@ -139,6 +144,43 @@ class HrEventSource {
     // that reaches the engine first. Do not reorder these two lines.
     _handleCap(bpm, config.maxHr);
     _handleZone(bpm, config);
+    _handleActivity(bpm, config);
+  }
+
+  /// Offers company when effort at or above the Zone 2 floor is sustained
+  /// with no workout or cardio session running (phase 3). Skipped entirely
+  /// unless the user has opted in and the coach could speak at all; the
+  /// entitlement is enforced by the event bus itself.
+  void _handleActivity(int bpm, ZoneConfiguration config) {
+    final settings = _ref.read(trainerSettingsProvider);
+    final coachAvailable = settings.enabled &&
+        settings.disclaimerAccepted &&
+        settings.activityNudgesEnabled;
+    if (!coachAvailable) return;
+
+    final nudge = _activity.onReading(
+      elevated: (zoneNumberFor(config, bpm) ?? 0) >= 2,
+      at: clock.now(),
+      sessionRunning: _sessionRunning(),
+    );
+    if (nudge && !_offerBlocked()) _emit(const ActivityDetected());
+  }
+
+  /// The same conditions that silence the coach's encouragement also
+  /// withhold the invitation — on screen as well as spoken, since it is an
+  /// invitation to exercise: above the safe maximum, in zone 5, or in caution
+  /// mode. The episode still counts as offered, so it is not made later.
+  bool _offerBlocked() =>
+      _aboveCap || _currentZone == 5 || _ref.read(cautionModeProvider);
+
+  /// `exists` guards keep this from building either controller as a side
+  /// effect: one that has never been built has no session running.
+  bool _sessionRunning() {
+    final workout = _ref.exists(activeWorkoutControllerProvider) &&
+        _ref.read(activeWorkoutControllerProvider).hasActiveWorkout;
+    final cardio = _ref.exists(cardioTrackingProvider) &&
+        _ref.read(cardioTrackingProvider).isRunning;
+    return workout || cardio;
   }
 
   void _handleZone(int bpm, ZoneConfiguration config) {
@@ -283,6 +325,7 @@ class HrEventSource {
   void _onSignalLoss() {
     _candidateZone = null;
     _candidateZoneSince = null;
+    _activity.onSignalLoss();
 
     if (!_aboveCap && _currentZone == null) return;
     _aboveCap = false;

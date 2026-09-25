@@ -95,6 +95,7 @@ const _spokenKinds = [
   TrainerEventKind.restCountdown,
   TrainerEventKind.restFinished,
   TrainerEventKind.workoutFinished,
+  TrainerEventKind.activityDetected,
 ];
 
 /// Heart-rate cues (phase 2a). Kept separate from [_spokenKinds] because

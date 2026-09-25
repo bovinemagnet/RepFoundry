@@ -102,6 +102,11 @@ const Persona steadyPersona = Persona(
     TrainerEventKind.hrBackBelowCap: [
       'coachSteadyBackBelowCap',
     ],
+    TrainerEventKind.activityDetected: [
+      'coachSteadyNudge1',
+      'coachSteadyNudge2',
+      'coachSteadyNudge3',
+    ],
   },
 );
 
@@ -159,6 +164,11 @@ const Persona hypePersona = Persona(
     TrainerEventKind.hrBackBelowCap: [
       'coachHypeBackBelowCap',
     ],
+    TrainerEventKind.activityDetected: [
+      'coachHypeNudge1',
+      'coachHypeNudge2',
+      'coachHypeNudge3',
+    ],
   },
 );
 
@@ -210,6 +220,11 @@ const Persona sergeantPersona = Persona(
     ],
     TrainerEventKind.hrBackBelowCap: [
       'coachSergeantBackBelowCap',
+    ],
+    TrainerEventKind.activityDetected: [
+      'coachSergeantNudge1',
+      'coachSergeantNudge2',
+      'coachSergeantNudge3',
     ],
   },
 );

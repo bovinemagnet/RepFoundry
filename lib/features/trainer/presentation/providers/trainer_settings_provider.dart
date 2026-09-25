@@ -13,6 +13,7 @@ class TrainerSettings {
     this.hrSafetyWarningsEnabled = true,
     this.quotesEnabled = true,
     this.speakInBackground = true,
+    this.activityNudgesEnabled = false,
   });
 
   final bool enabled;
@@ -40,6 +41,10 @@ class TrainerSettings {
   /// foreground and no background keep-alive is requested on its behalf.
   final bool speakInBackground;
 
+  /// Whether the coach offers to join in when a connected heart rate monitor
+  /// shows sustained effort with no workout running. Opt-in.
+  final bool activityNudgesEnabled;
+
   TrainerSettings copyWith({
     bool? enabled,
     bool? countdownsEnabled,
@@ -51,6 +56,7 @@ class TrainerSettings {
     bool? hrSafetyWarningsEnabled,
     bool? quotesEnabled,
     bool? speakInBackground,
+    bool? activityNudgesEnabled,
   }) {
     return TrainerSettings(
       enabled: enabled ?? this.enabled,
@@ -64,6 +70,8 @@ class TrainerSettings {
           hrSafetyWarningsEnabled ?? this.hrSafetyWarningsEnabled,
       quotesEnabled: quotesEnabled ?? this.quotesEnabled,
       speakInBackground: speakInBackground ?? this.speakInBackground,
+      activityNudgesEnabled:
+          activityNudgesEnabled ?? this.activityNudgesEnabled,
     );
   }
 }
@@ -95,6 +103,7 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
       hrSafetyWarningsEnabled: prefs.getBool('trainer_hr_safety') ?? true,
       quotesEnabled: prefs.getBool('trainer_quotes') ?? true,
       speakInBackground: prefs.getBool('trainer_speak_in_background') ?? true,
+      activityNudgesEnabled: prefs.getBool('trainer_activity_nudges') ?? false,
     );
   }
 
@@ -155,6 +164,13 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
     state = state.copyWith(speakInBackground: value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('trainer_speak_in_background', value);
+  }
+
+  Future<void> setActivityNudges(bool value) async {
+    await _loading;
+    state = state.copyWith(activityNudgesEnabled: value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('trainer_activity_nudges', value);
   }
 
   Future<void> setSpeechRate(double value) async {

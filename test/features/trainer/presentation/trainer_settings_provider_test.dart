@@ -194,4 +194,35 @@ void main() {
           container.read(trainerSettingsProvider).speakInBackground, isFalse);
     });
   });
+
+  group('activityNudgesEnabled', () {
+    test('defaults to false — nudges are opt-in', () {
+      expect(const TrainerSettings().activityNudgesEnabled, isFalse);
+    });
+
+    test('setActivityNudges updates state and persists', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(trainerSettingsProvider.notifier)
+          .setActivityNudges(true);
+
+      expect(container.read(trainerSettingsProvider).activityNudgesEnabled,
+          isTrue);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('trainer_activity_nudges'), isTrue);
+    });
+
+    test('restores a persisted true on load', () async {
+      SharedPreferences.setMockInitialValues({'trainer_activity_nudges': true});
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container.read(trainerSettingsProvider.notifier).acceptDisclaimer();
+
+      expect(container.read(trainerSettingsProvider).activityNudgesEnabled,
+          isTrue);
+    });
+  });
 }

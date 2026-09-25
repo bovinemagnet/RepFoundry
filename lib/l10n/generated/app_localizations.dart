@@ -4464,6 +4464,60 @@ abstract class S {
   /// **'Good. Back under your max.'**
   String get coachSergeantBackBelowCap;
 
+  /// No description provided for @coachSteadyNudge1.
+  ///
+  /// In en, this message translates to:
+  /// **'Looks like you\'re on the move. Want some company? Start a workout whenever you\'re ready.'**
+  String get coachSteadyNudge1;
+
+  /// No description provided for @coachSteadyNudge2.
+  ///
+  /// In en, this message translates to:
+  /// **'Your heart rate says you\'re working. I\'m here if you\'d like me along. Just start a workout.'**
+  String get coachSteadyNudge2;
+
+  /// No description provided for @coachSteadyNudge3.
+  ///
+  /// In en, this message translates to:
+  /// **'Sounds like you\'ve got going. Start a workout and I\'ll keep you company.'**
+  String get coachSteadyNudge3;
+
+  /// No description provided for @coachHypeNudge1.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re moving! Want me along for the ride? Start a workout and we\'ll go together.'**
+  String get coachHypeNudge1;
+
+  /// No description provided for @coachHypeNudge2.
+  ///
+  /// In en, this message translates to:
+  /// **'I can see you\'re working! Start a workout and I\'m right there with you.'**
+  String get coachHypeNudge2;
+
+  /// No description provided for @coachHypeNudge3.
+  ///
+  /// In en, this message translates to:
+  /// **'Look at you go! Fancy some company? Start a workout and I\'m in.'**
+  String get coachHypeNudge3;
+
+  /// No description provided for @coachSergeantNudge1.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re working. Start a workout and I\'ll keep count.'**
+  String get coachSergeantNudge1;
+
+  /// No description provided for @coachSergeantNudge2.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart rate\'s up. Start a workout if you want me on the job.'**
+  String get coachSergeantNudge2;
+
+  /// No description provided for @coachSergeantNudge3.
+  ///
+  /// In en, this message translates to:
+  /// **'Effort noticed. Start a workout and I\'ll call the rests.'**
+  String get coachSergeantNudge3;
+
   /// No description provided for @coachQuote1.
   ///
   /// In en, this message translates to:
@@ -4709,6 +4763,30 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Keeps the coach talking during a workout when the screen is off or you switch apps. Android shows a notification while it does.'**
   String get trainerSpeakInBackgroundSubtitle;
+
+  /// No description provided for @trainerActivityNudges.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer to join when you get moving'**
+  String get trainerActivityNudges;
+
+  /// No description provided for @trainerActivityNudgesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'With a heart rate monitor connected and no workout running, the coach offers to start one after about 90 seconds of sustained effort. Once per stretch of activity.'**
+  String get trainerActivityNudgesSubtitle;
+
+  /// No description provided for @activityNudgeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Looks like you’re working out.'**
+  String get activityNudgeMessage;
+
+  /// No description provided for @activityNudgeStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start workout'**
+  String get activityNudgeStart;
 
   /// No description provided for @trainerHrCallouts.
   ///
