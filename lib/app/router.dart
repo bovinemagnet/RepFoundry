@@ -26,6 +26,7 @@ import '../features/trainer/presentation/providers/coach_bridge.dart';
 import '../features/trainer/presentation/providers/coach_keep_alive.dart';
 import '../features/trainer/presentation/providers/hr_event_source.dart';
 import '../features/trainer/presentation/screens/trainer_settings_screen.dart';
+import '../features/trainer/presentation/widgets/activity_nudge_listener.dart';
 import '../core/entitlements/entitlement.dart';
 import '../core/entitlements/entitlement_provider.dart';
 import '../core/widgets/scaffold_with_nav_bar.dart';
@@ -60,9 +61,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             // Tells the background keep-alive when the coach is talking
             // through a workout, so it keeps speaking with the screen off.
             ref.read(coachKeepAliveProvider);
-            return ScaffoldWithNavBar(
-              railFooter: const ClientSwitcher(),
-              child: child,
+            // Offers a one-tap workout when the coach notices sustained
+            // effort with nothing running, from whichever tab is open.
+            return ActivityNudgeListener(
+              child: ScaffoldWithNavBar(
+                railFooter: const ClientSwitcher(),
+                child: child,
+              ),
             );
           },
         ),

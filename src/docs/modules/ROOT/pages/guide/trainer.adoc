@@ -59,6 +59,17 @@ With *Speak in background* switched off, the coach goes quiet as soon as you lea
 
 On iPhone, the coach is also allowed to keep speaking in the background, but iOS pauses apps that aren't actively playing sound between the coach's lines. With a Bluetooth heart rate monitor connected, the app keeps waking to receive readings, so cues keep arriving as expected; without one, a rest countdown that falls while your phone is locked may be missed. See xref:platform-differences.adoc[] for more on how Android and iOS differ.
 
+[[offering-to-join-in]]
+== Offering to join in
+
+With a heart rate monitor connected and no workout or cardio session running, the coach can offer to start one when it notices you're already moving. This is controlled by an *Offer to join when you get moving* switch on the coach settings screen, off by default.
+
+Once your heart rate has stayed at or above the bottom of zone 2 for 90 seconds without a break, the coach speaks a single invitation in your chosen voice — Steady, for example: "Looks like you're on the move. Want some company? Start a workout whenever you're ready." At the same moment, RepFoundry shows an on-screen "Looks like you're working out." message with a *Start workout* button; tapping it starts a workout and takes you to the Workout tab, whichever tab you're currently on.
+
+A dip below zone 2 restarts the 90-second count, so a flight of stairs or a brisk minute's walk won't trigger it. Once an invitation has been given, the coach stays quiet until your heart rate has been below zone 2 for a full two minutes, so it won't offer again and again during one continuous stretch of activity — and finishing a workout while still out of breath doesn't earn a fresh invitation. A heart rate monitor dropping out and reconnecting also restarts the 90-second count, but doesn't by itself earn a second invitation.
+
+The invitation follows the same safety rules as the coach's other encouragement: above your maximum heart rate, in caution mode, or in zone 5, it is not made at all — neither spoken nor shown on screen (see "When encouragement and quotes pause").
+
 == Turning it on, off, and adjusting what it says
 
 Coach mode is not yet available in normal builds of RepFoundry. When it is available, it lives in *Settings → Virtual Trainer* — see xref:guide/settings.adoc[] for the rest of the settings screen; until then, no Coach section appears there at all. This isn't a bug to work around — it's simply not switched on for everyone yet.
@@ -69,6 +80,6 @@ From the same screen you can:
 
 * Choose your coaching voice — Steady, Hype, or Sergeant.
 * Adjust the speech rate, with a *Test voice* button to hear it before you commit.
-* Switch rest countdowns, encouragement, inspirational quotes, *Speak in background* (see <<with-the-screen-off>>), heart rate zone callouts, and heart rate safety warnings on or off individually.
+* Switch rest countdowns, encouragement, inspirational quotes, *Speak in background* (see <<with-the-screen-off>>), *Offer to join when you get moving* (see <<offering-to-join-in>>), heart rate zone callouts, and heart rate safety warnings on or off individually.
 
 Turning off the main *Enable coach* switch silences the coach immediately, even mid-sentence — it doesn't wait for the current line to finish.

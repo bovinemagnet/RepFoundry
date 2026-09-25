@@ -108,6 +108,18 @@ final Map<String, PhraseBuilder> phraseResolvers = {
   'coachSergeantAboveCap2': (s, _) => s.coachSergeantAboveCap2,
   'coachSergeantBackBelowCap': (s, _) => s.coachSergeantBackBelowCap,
 
+  // Activity nudges (phase 3): an invitation when effort is noticed with no
+  // session running.
+  'coachSteadyNudge1': (s, _) => s.coachSteadyNudge1,
+  'coachSteadyNudge2': (s, _) => s.coachSteadyNudge2,
+  'coachSteadyNudge3': (s, _) => s.coachSteadyNudge3,
+  'coachHypeNudge1': (s, _) => s.coachHypeNudge1,
+  'coachHypeNudge2': (s, _) => s.coachHypeNudge2,
+  'coachHypeNudge3': (s, _) => s.coachHypeNudge3,
+  'coachSergeantNudge1': (s, _) => s.coachSergeantNudge1,
+  'coachSergeantNudge2': (s, _) => s.coachSergeantNudge2,
+  'coachSergeantNudge3': (s, _) => s.coachSergeantNudge3,
+
   // Shared quote bank (phase 2, spec §5): identical across every persona, so
   // one set of resolver entries covers steady, hype, and sergeant alike.
   'coachQuote1': (s, _) => s.coachQuote1,

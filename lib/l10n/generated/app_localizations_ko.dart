@@ -2472,6 +2472,42 @@ class SKo extends S {
   String get coachSergeantBackBelowCap => 'Good. Back under your max.';
 
   @override
+  String get coachSteadyNudge1 =>
+      'Looks like you\'re on the move. Want some company? Start a workout whenever you\'re ready.';
+
+  @override
+  String get coachSteadyNudge2 =>
+      'Your heart rate says you\'re working. I\'m here if you\'d like me along. Just start a workout.';
+
+  @override
+  String get coachSteadyNudge3 =>
+      'Sounds like you\'ve got going. Start a workout and I\'ll keep you company.';
+
+  @override
+  String get coachHypeNudge1 =>
+      'You\'re moving! Want me along for the ride? Start a workout and we\'ll go together.';
+
+  @override
+  String get coachHypeNudge2 =>
+      'I can see you\'re working! Start a workout and I\'m right there with you.';
+
+  @override
+  String get coachHypeNudge3 =>
+      'Look at you go! Fancy some company? Start a workout and I\'m in.';
+
+  @override
+  String get coachSergeantNudge1 =>
+      'You\'re working. Start a workout and I\'ll keep count.';
+
+  @override
+  String get coachSergeantNudge2 =>
+      'Heart rate\'s up. Start a workout if you want me on the job.';
+
+  @override
+  String get coachSergeantNudge3 =>
+      'Effort noticed. Start a workout and I\'ll call the rests.';
+
+  @override
   String get coachQuote1 =>
       'No longer talk at all about the kind of man that a good man ought to be, but be such. — Marcus Aurelius';
 
@@ -2615,6 +2651,19 @@ class SKo extends S {
   @override
   String get trainerSpeakInBackgroundSubtitle =>
       'Keeps the coach talking during a workout when the screen is off or you switch apps. Android shows a notification while it does.';
+
+  @override
+  String get trainerActivityNudges => 'Offer to join when you get moving';
+
+  @override
+  String get trainerActivityNudgesSubtitle =>
+      'With a heart rate monitor connected and no workout running, the coach offers to start one after about 90 seconds of sustained effort. Once per stretch of activity.';
+
+  @override
+  String get activityNudgeMessage => 'Looks like you’re working out.';
+
+  @override
+  String get activityNudgeStart => 'Start workout';
 
   @override
   String get trainerHrCallouts => 'Heart rate zone callouts';

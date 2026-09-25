@@ -180,6 +180,26 @@ Coach mode's own demand is computed by `coachNeedsBackgroundProvider` (`lib/feat
 
 Tests: `test/features/trainer/presentation/coach_keep_alive_test.dart`, `test/app/coach_keep_alive_mount_test.dart` (mounts the real router), the "speak in background (#93)" group in `coach_bridge_test.dart`, and the extended cases in `test/core/foreground/foreground_keep_alive_test.dart`.
 
+[[activity-nudges]]
+== Activity Nudges (Coach)
+
+`ActivityDetector` (`lib/features/trainer/application/activity_detector.dart`) is a pure-Dart, HR-stream-driven detector that invites the user to start logging a session once their heart rate has been elevated for a while without one running. `ActivityDetector({window = 90 s, episodeGap = 2 min})` exposes `onReading({elevated, at, sessionRunning}) → bool` and `onSignalLoss()`:
+
+* An episode requires the elevated heart rate (Zone 2+) to be sustained continuously for the full 90-second window before it triggers; a single reading dropping below the elevated threshold resets the window.
+* After a trigger, the detector needs a continuous 2-minute episode gap below the threshold before it will arm again, so it doesn't repeat-invite mid-session.
+* A `sessionRunning: true` reading marks the episode as already under way rather than triggering, so finishing a workout out of breath doesn't earn an invitation.
+* `onSignalLoss()` resets the window without counting as a completed invitation.
+
+`HrEventSource._handleActivity()` (`lib/features/trainer/presentation/providers/hr_event_source.dart`) feeds the detector every heart rate reading: `elevated` is `zoneNumberFor(config, bpm) >= 2`; `sessionRunning` is `activeWorkoutControllerProvider.hasActiveWorkout || cardioTrackingProvider.isRunning`, each read guarded with `ref.exists` so neither controller is built as an unwanted side effect just to check it. The whole path is skipped unless `settings.enabled && disclaimerAccepted && activityNudgesEnabled` — entitlement gating itself is enforced separately, inside `TrainerEventBus.emit`. `_onSignalLoss()` calls `detector.onSignalLoss()`.
+
+A trigger emits a new `TrainerEventKind.activityDetected` / `ActivityDetected` event. `CoachingEngine` routes it through `_speak(..., SpeechPriority.encouragement)`, so it passes through the same encouragement gate as other encouragement (blocked above the user's safe max heart rate, in caution mode, and in zone 5). `HrEventSource._offerBlocked()` applies the same three conditions before emitting at all, so the on-screen offer is withheld too; the episode still counts as offered. Three phrases per persona were added — `coachSteadyNudge1-3`, `coachHypeNudge1-3`, `coachSergeantNudge1-3` — wired through the ARB, `phraseResolvers`, and `persona_packs.dart`; `persona_packs_test.dart` now lists this kind in `_spokenKinds`.
+
+`TrainerSettings.activityNudgesEnabled` (default `false`, SharedPreferences key `trainer_activity_nudges`, setter `setActivityNudges`) is the user-facing *Offer to join when you get moving* switch — see xref:ROOT:guide/trainer.adoc[] for the end-user description.
+
+`ActivityNudgeListener` (`lib/features/trainer/presentation/widgets/activity_nudge_listener.dart`) wraps `ScaffoldWithNavBar` in the router's `ShellRoute`. It subscribes to the trainer event bus for `ActivityDetected` events and shows a `SnackBar` (10 s duration, `persist: false`) whose action button calls `activeWorkoutControllerProvider.notifier.startWorkout()` then `router.go('/workout')`. New ARB strings: `activityNudgeMessage`, `activityNudgeStart`, `trainerActivityNudges`, `trainerActivityNudgesSubtitle`.
+
+Tests: `test/features/trainer/application/activity_detector_test.dart` (synthetic 1 Hz heart rate traces covering brief spikes, dips, breathers between sets, episode re-arming, active sessions, and signal loss), `test/features/trainer/application/coaching_engine_activity_test.dart`, `test/features/trainer/presentation/hr_event_source_activity_test.dart`, `test/features/trainer/presentation/widgets/activity_nudge_listener_test.dart`, and `test/app/coach_keep_alive_mount_test.dart` (mounts the real shell).
+
 [[weekly-heart-report]]
 == Weekly Heart Report
 
@@ -268,6 +288,12 @@ HR-related analytics events (`HrAnalyticsEvent`, `lib/features/heart_rate/domain
 
 | `lib/core/foreground/foreground_keep_alive.dart`
 | `ForegroundKeepAlive` — reconciles cardio, heart-rate-panel, and coach demand into one foreground notification
+
+| `lib/features/trainer/application/activity_detector.dart`
+| `ActivityDetector` — pure Dart, elevated-HR episode detection for activity nudges
+
+| `lib/features/trainer/presentation/widgets/activity_nudge_listener.dart`
+| `ActivityNudgeListener` — shows the "start a session?" snackbar on `ActivityDetected`
 
 | `lib/features/heart_rate/presentation/providers/health_profile_provider.dart`
 | `HealthProfileNotifier` — per-client, repository-backed state
