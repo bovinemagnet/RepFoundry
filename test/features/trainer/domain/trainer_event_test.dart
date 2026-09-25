@@ -16,6 +16,7 @@ void main() {
     );
     expect(const RestCountdown(secondsLeft: 3).kind,
         TrainerEventKind.restCountdown);
+    expect(const ActivityDetected().kind, TrainerEventKind.activityDetected);
   });
 
   test('speech priority orders safety above everything else', () {

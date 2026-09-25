@@ -130,6 +130,12 @@ class _TrainerSettingsScreenState extends ConsumerState<TrainerSettingsScreen> {
             onChanged: notifier.setSpeakInBackground,
           ),
           SwitchListTile(
+            title: Text(s.trainerActivityNudges),
+            subtitle: Text(s.trainerActivityNudgesSubtitle),
+            value: settings.activityNudgesEnabled,
+            onChanged: notifier.setActivityNudges,
+          ),
+          SwitchListTile(
             title: Text(s.trainerHrCallouts),
             subtitle: Text(s.trainerHrCalloutsSubtitle),
             value: settings.hrCalloutsEnabled,

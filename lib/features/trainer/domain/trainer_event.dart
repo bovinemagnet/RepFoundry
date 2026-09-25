@@ -15,6 +15,7 @@ enum TrainerEventKind {
   hrAboveCap,
   hrBackBelowCap,
   hrSignalLost,
+  activityDetected,
 }
 
 /// Something that happened in the workout that the coach may react to.
@@ -142,4 +143,13 @@ class HeartRateSignalLost extends TrainerEvent {
 
   @override
   TrainerEventKind get kind => TrainerEventKind.hrSignalLost;
+}
+
+/// Sustained effort was noticed with no workout or cardio session running,
+/// so the coach can offer to join in (phase 3). See `ActivityDetector`.
+class ActivityDetected extends TrainerEvent {
+  const ActivityDetected();
+
+  @override
+  TrainerEventKind get kind => TrainerEventKind.activityDetected;
 }

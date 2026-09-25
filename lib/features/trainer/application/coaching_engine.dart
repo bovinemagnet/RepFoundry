@@ -154,6 +154,10 @@ class CoachingEngine {
         _onAboveCap(bpm, cap, now, hrSafetyWarningsEnabled),
       HeartRateBackBelowCap() => _onBackBelowCap(now, hrSafetyWarningsEnabled),
       HeartRateSignalLost() => _onSignalLost(),
+      // An invitation, not a safety cue: it takes the encouragement gate,
+      // so it stays silent above the cap, in caution mode and in zone 5.
+      ActivityDetected() =>
+        _speak(event.kind, SpeechPriority.encouragement, now),
     };
   }
 
