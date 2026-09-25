@@ -2062,6 +2062,12 @@ class SJa extends S {
   String get customStretchHint => 'ストレッチ名';
 
   @override
+  String get stretchSearchHint => 'ストレッチを検索…';
+
+  @override
+  String get stretchSearchNoMatch => '一致するストレッチがありません。「カスタム…」で追加できます。';
+
+  @override
   String get recordTimeLabel => '時間の記録方法';
 
   @override

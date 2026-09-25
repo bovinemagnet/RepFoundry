@@ -48,6 +48,7 @@ StretchingEntryMethod _entryMethodFor(_Mode mode) {
 class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
   _Mode _mode = _Mode.manual;
   final _customNameController = TextEditingController();
+  final _searchController = TextEditingController();
   final _notesController = TextEditingController();
   final _minutesController = TextEditingController();
   final _secondsController = TextEditingController();
@@ -73,6 +74,7 @@ class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
   @override
   void dispose() {
     _customNameController.dispose();
+    _searchController.dispose();
     _notesController.dispose();
     _minutesController.dispose();
     _secondsController.dispose();
@@ -116,6 +118,19 @@ class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
     final state = ref.watch(stretchingTimerProvider);
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final query = _searchController.text.trim().toLowerCase();
+    final matching = [
+      for (final preset in defaultStretches)
+        if (localiseStretch(s, preset.key).toLowerCase().contains(query))
+          preset,
+    ];
+    // The chosen stretch stays visible even when it stops matching, so a
+    // selection is never hidden from the person who made it.
+    final visible = [
+      for (final preset in defaultStretches)
+        if (matching.contains(preset) || state.selectedType == preset.key)
+          preset,
+    ];
 
     return Padding(
       padding: EdgeInsets.only(
@@ -162,13 +177,19 @@ class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
                 ),
                 // Section label — rf.css `.sheet__lbl`: mono 11, 0.14em spacing.
                 _SheetLabel(s.stretchTypeLabel),
+                _StretchSearchField(
+                  controller: _searchController,
+                  hint: s.stretchSearchHint,
+                  onChanged: () => setState(() {}),
+                ),
+                const SizedBox(height: 10),
                 // Stretch-type chips — rf.css `.schip` / `.schip--on`.
                 // ChoiceChip is used so the test can locate chips by type and text.
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    for (final preset in defaultStretches)
+                    for (final preset in visible)
                       _StretchChip(
                         label: localiseStretch(s, preset.key),
                         selected: state.selectedType == preset.key,
@@ -184,6 +205,13 @@ class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
                       selected: state.selectedType ==
                           StretchingSession.customStretchType,
                       onSelected: () {
+                        // A search with no preset behind it is most likely
+                        // the name of the stretch being added.
+                        final searched = _searchController.text.trim();
+                        if (_customNameController.text.trim().isEmpty &&
+                            searched.isNotEmpty) {
+                          _customNameController.text = searched;
+                        }
                         ref.read(stretchingTimerProvider.notifier).selectType(
                               type: StretchingSession.customStretchType,
                               customName: _customNameController.text,
@@ -192,6 +220,13 @@ class _AddStretchingSheetState extends ConsumerState<AddStretchingSheet> {
                     ),
                   ],
                 ),
+                if (query.isNotEmpty && matching.isEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    s.stretchSearchNoMatch,
+                    style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                ],
                 if (state.selectedType ==
                     StretchingSession.customStretchType) ...[
                   const SizedBox(height: 12),
@@ -375,6 +410,57 @@ class _SheetLabel extends StatelessWidget {
 /// Stretch-type chip — wraps [ChoiceChip] with Kinetic Green styling.
 /// Tests locate these as [ChoiceChip] widgets, so the type is preserved.
 /// rf.css `.schip` (outlined default) / `.schip--on` (accent fill).
+/// Filters the stretch chips by name as the user types.
+class _StretchSearchField extends StatelessWidget {
+  const _StretchSearchField({
+    required this.controller,
+    required this.hint,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final String hint;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final noBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide.none,
+    );
+    return TextField(
+      key: const Key('stretch-search'),
+      controller: controller,
+      onChanged: (_) => onChanged(),
+      style: GoogleFonts.manrope(fontSize: 13, color: cs.onSurface),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: GoogleFonts.manrope(
+          fontSize: 13,
+          color: cs.onSurfaceVariant,
+        ),
+        prefixIcon: Icon(Icons.search, size: 20, color: cs.outline),
+        suffixIcon: controller.text.isEmpty
+            ? null
+            : IconButton(
+                icon: Icon(Icons.clear, size: 18, color: cs.outline),
+                onPressed: () {
+                  controller.clear();
+                  onChanged();
+                },
+              ),
+        filled: true,
+        fillColor: cs.surfaceContainer,
+        isDense: true,
+        border: noBorder,
+        enabledBorder: noBorder,
+        focusedBorder: noBorder,
+      ),
+    );
+  }
+}
+
 class _StretchChip extends StatelessWidget {
   const _StretchChip({
     required this.label,

@@ -795,6 +795,8 @@
   "stretchTypeLabel": "스트레칭 종류",
   "customStretchLabel": "사용자 지정…",
   "customStretchHint": "스트레칭 이름",
+  "stretchSearchHint": "스트레칭 검색…",
+  "stretchSearchNoMatch": "일치하는 스트레칭이 없습니다. '사용자 지정…'으로 추가하세요.",
   "recordTimeLabel": "시간 기록 방법",
   "recordTimer": "타이머",
   "recordManual": "수동",

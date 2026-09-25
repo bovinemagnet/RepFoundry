@@ -137,4 +137,108 @@ void main() {
       expect(stored.first.durationSeconds, 300);
     });
   });
+
+  group('AddStretchingSheet search (#69)', () {
+    Future<void> openSheet(WidgetTester tester) async {
+      await tester.pumpWidget(buildHost(InMemoryStretchingSessionRepository()));
+      await tester.tap(find.text('Open sheet'));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> search(WidgetTester tester, String query) async {
+      await tester.enterText(find.byKey(const Key('stretch-search')), query);
+      await tester.pumpAndSettle();
+    }
+
+    Finder chip(String label) => find.widgetWithText(ChoiceChip, label);
+
+    testWidgets('narrows the stretches to names that match', (tester) async {
+      await openSheet(tester);
+      expect(chip('Cobra Stretch'), findsOneWidget);
+
+      await search(tester, 'split');
+
+      expect(chip('Front Splits'), findsOneWidget);
+      expect(chip('Side Splits (Middle Splits)'), findsOneWidget);
+      expect(chip('Cobra Stretch'), findsNothing);
+      expect(chip('Pigeon Pose'), findsNothing);
+    });
+
+    testWidgets('ignores case', (tester) async {
+      await openSheet(tester);
+
+      await search(tester, 'COBRA');
+
+      expect(chip('Cobra Stretch'), findsOneWidget);
+      expect(chip('Frog Pose'), findsNothing);
+    });
+
+    testWidgets('keeps Custom available while searching', (tester) async {
+      await openSheet(tester);
+
+      await search(tester, 'split');
+
+      expect(chip('Custom\u2026'), findsOneWidget);
+    });
+
+    testWidgets('keeps the chosen stretch visible when it stops matching',
+        (tester) async {
+      await openSheet(tester);
+      await tester.ensureVisible(chip('Cobra Stretch'));
+      await tester.pumpAndSettle();
+      await tester.tap(chip('Cobra Stretch'));
+      await tester.pumpAndSettle();
+
+      await search(tester, 'split');
+
+      expect(chip('Cobra Stretch'), findsOneWidget);
+      expect(chip('Frog Pose'), findsNothing);
+    });
+
+    testWidgets('clearing the search shows every stretch again',
+        (tester) async {
+      await openSheet(tester);
+      await search(tester, 'split');
+
+      await search(tester, '');
+
+      expect(chip('Cobra Stretch'), findsOneWidget);
+      expect(chip('Frog Pose'), findsOneWidget);
+    });
+
+    testWidgets('the clear button empties the search', (tester) async {
+      await openSheet(tester);
+      await search(tester, 'split');
+
+      await tester.tap(find.descendant(
+        of: find.byKey(const Key('stretch-search')),
+        matching: find.byIcon(Icons.clear),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(chip('Cobra Stretch'), findsOneWidget);
+      expect(find.byIcon(Icons.clear), findsNothing);
+    });
+
+    testWidgets('no match points to Custom, which takes the searched name',
+        (tester) async {
+      await openSheet(tester);
+      expect(find.textContaining('No stretches match'), findsNothing);
+
+      await search(tester, 'Thread the needle');
+
+      expect(find.textContaining('No stretches match'), findsOneWidget);
+      await tester.ensureVisible(chip('Custom\u2026'));
+      await tester.pumpAndSettle();
+      await tester.tap(chip('Custom\u2026'));
+      await tester.pumpAndSettle();
+
+      final nameField = find.widgetWithText(TextField, 'Stretch name');
+      expect(nameField, findsOneWidget);
+      expect(
+        tester.widget<TextField>(nameField).controller?.text,
+        'Thread the needle',
+      );
+    });
+  });
 }

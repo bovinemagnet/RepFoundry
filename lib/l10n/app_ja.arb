@@ -795,6 +795,8 @@
   "stretchTypeLabel": "ストレッチの種類",
   "customStretchLabel": "カスタム…",
   "customStretchHint": "ストレッチ名",
+  "stretchSearchHint": "ストレッチを検索…",
+  "stretchSearchNoMatch": "一致するストレッチがありません。「カスタム…」で追加できます。",
   "recordTimeLabel": "時間の記録方法",
   "recordTimer": "タイマー",
   "recordManual": "手動",
