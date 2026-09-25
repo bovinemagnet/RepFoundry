@@ -760,6 +760,12 @@ class SEn extends S {
   String get pyramidAction => 'Pyramid';
 
   @override
+  String get countRepsAction => 'Count reps';
+
+  @override
+  String get stopCountAction => 'Stop count';
+
+  @override
   String get pyramidTitle => 'Pyramid';
 
   @override
@@ -2574,6 +2580,29 @@ class SEn extends S {
       'Effort noticed. Start a workout and I\'ll call the rests.';
 
   @override
+  String coachTempoCount(int count) {
+    return '$count';
+  }
+
+  @override
+  String coachTempoToGo(int count) {
+    return '$count to go';
+  }
+
+  @override
+  String coachTempoRest(int seconds) {
+    return 'Rest $seconds seconds.';
+  }
+
+  @override
+  String get coachTempoResume => 'Go.';
+
+  @override
+  String coachTempoDone(int count) {
+    return '$count. That\'s the set.';
+  }
+
+  @override
   String get coachQuote1 =>
       'No longer talk at all about the kind of man that a good man ought to be, but be such. — Marcus Aurelius';
 
@@ -2724,6 +2753,37 @@ class SEn extends S {
   @override
   String get trainerActivityNudgesSubtitle =>
       'With a heart rate monitor connected and no workout running, the coach offers to start one after about 90 seconds of sustained effort. Once per stretch of activity.';
+
+  @override
+  String get trainerRepCountingPace => 'Rep counting pace';
+
+  @override
+  String trainerSecondsShort(int seconds) {
+    return '$seconds s';
+  }
+
+  @override
+  String get trainerCountDirection => 'Count direction';
+
+  @override
+  String get trainerCountUp => 'Up';
+
+  @override
+  String get trainerCountDown => 'Down';
+
+  @override
+  String get trainerClusterPause => 'Pause within a set';
+
+  @override
+  String get trainerClusterOff => 'Off';
+
+  @override
+  String trainerClusterEvery(int reps) {
+    return 'Every $reps';
+  }
+
+  @override
+  String get trainerClusterPauseLength => 'Pause length';
 
   @override
   String get activityNudgeMessage => 'Looks like you’re working out.';

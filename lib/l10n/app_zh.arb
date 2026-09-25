@@ -247,6 +247,8 @@
   "rpeLabel": "RPE",
   "addWarmup": "添加热身",
   "pyramidAction": "金字塔",
+  "countRepsAction": "计数",
+  "stopCountAction": "停止计数",
   "pyramidTitle": "金字塔组",
   "usePyramid": "使用金字塔组",
   "platesAction": "杠铃片",

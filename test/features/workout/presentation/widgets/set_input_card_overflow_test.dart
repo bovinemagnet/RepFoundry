@@ -52,6 +52,14 @@ void main() {
             showPlates: true,
             // Loadable equipment also gets "PYRAMID".
             onPyramid: (_) {},
+            // With the coach on, "COUNT REPS" joins the row too.
+            repCounting: RepCountingOptions(
+              perRep: const Duration(seconds: 3),
+              countDown: false,
+              clusterSize: 0,
+              clusterPause: const Duration(seconds: 10),
+              emit: (_) {},
+            ),
           ),
         ),
       ),
@@ -68,7 +76,7 @@ void main() {
       lessThanOrEqualTo(393.0),
       reason: 'LOG SET is clipped off the right edge of a 393pt phone',
     );
-    for (final action in ['PLATES', 'PYRAMID']) {
+    for (final action in ['PLATES', 'PYRAMID', 'COUNT REPS']) {
       expect(
         tester.getBottomRight(find.text(action)).dx,
         lessThanOrEqualTo(393.0),

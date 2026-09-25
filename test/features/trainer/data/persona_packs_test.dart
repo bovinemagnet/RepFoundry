@@ -115,8 +115,23 @@ const _hrKinds = [
 /// but it still needs uniqueness, resolver, and denylist coverage.
 const _quoteKinds = [TrainerEventKind.quote];
 
+/// Rep counting at a tempo (#83): neutral counting lines, shared by every
+/// persona, so one phrase per kind is enough — but none may be missing.
+const _tempoKinds = [
+  TrainerEventKind.tempoCount,
+  TrainerEventKind.tempoCountDown,
+  TrainerEventKind.tempoRest,
+  TrainerEventKind.tempoResume,
+  TrainerEventKind.tempoSetDone,
+];
+
 /// Every kind whose phrases must resolve to text and obey the denylist.
-const _allSpokenKinds = [..._spokenKinds, ..._hrKinds, ..._quoteKinds];
+const _allSpokenKinds = [
+  ..._spokenKinds,
+  ..._hrKinds,
+  ..._quoteKinds,
+  ..._tempoKinds,
+];
 
 /// Every persona the app ships. Adding a new persona here is what brings it
 /// under every loop below (count, uniqueness, resolver completeness,
@@ -135,6 +150,12 @@ Map<String, Object> _argsFor(TrainerEventKind kind) => switch (kind) {
           'zoneNumber': 3,
           'effortLabel': 'Moderate',
         },
+      TrainerEventKind.tempoCount ||
+      TrainerEventKind.tempoCountDown ||
+      TrainerEventKind.tempoRest ||
+      TrainerEventKind.tempoResume ||
+      TrainerEventKind.tempoSetDone =>
+        const {'count': 3, 'seconds': 10},
       _ => const <String, Object>{},
     };
 
@@ -254,6 +275,15 @@ void main() {
           reason: '${persona.id} persona has no $kind phrases — that cue '
               'would silently degrade to no speech at all',
         );
+      }
+    }
+  });
+
+  test('every persona can count a set', () {
+    for (final persona in _allPersonas) {
+      for (final kind in _tempoKinds) {
+        expect(persona.phrasesFor(kind), isNotEmpty,
+            reason: '${persona.id} persona has no $kind phrases');
       }
     }
   });

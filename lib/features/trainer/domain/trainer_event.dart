@@ -1,3 +1,5 @@
+import 'tempo_cue.dart';
+
 /// The categories of moment the coach can speak to.
 ///
 /// A personal record is its own kind rather than a flag so personas can hold
@@ -16,6 +18,11 @@ enum TrainerEventKind {
   hrBackBelowCap,
   hrSignalLost,
   activityDetected,
+  tempoCount,
+  tempoCountDown,
+  tempoRest,
+  tempoResume,
+  tempoSetDone,
 }
 
 /// Something that happened in the workout that the coach may react to.
@@ -152,4 +159,29 @@ class ActivityDetected extends TrainerEvent {
 
   @override
   TrainerEventKind get kind => TrainerEventKind.activityDetected;
+}
+
+/// A moment in a set the coach is counting at a steady tempo (#83); see
+/// `tempoPlan`. [value] is the count (or reps to go), the pause length in
+/// seconds, or the reps done, depending on [cue].
+class RepTempo extends TrainerEvent {
+  const RepTempo({
+    required this.cue,
+    required this.value,
+    this.countingDown = false,
+  });
+
+  final TempoCueKind cue;
+  final int value;
+  final bool countingDown;
+
+  @override
+  TrainerEventKind get kind => switch (cue) {
+        TempoCueKind.count => countingDown
+            ? TrainerEventKind.tempoCountDown
+            : TrainerEventKind.tempoCount,
+        TempoCueKind.rest => TrainerEventKind.tempoRest,
+        TempoCueKind.resume => TrainerEventKind.tempoResume,
+        TempoCueKind.done => TrainerEventKind.tempoSetDone,
+      };
 }

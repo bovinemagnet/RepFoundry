@@ -174,6 +174,18 @@ Edits to a persisted set are written immediately through `DriftWorkoutRepository
 
 `SetInputCard` takes an `onPyramid` callback; `_ExerciseSectionContent` supplies it only for `isWarmupRampable` equipment — the same equipment types offered `Add Warm-up` — and opens the sheet itself, rather than threading the callback through `_ExerciseSection` or the superset group widget.
 
+== Rep Counting (Coach)
+
+`tempoPlan({targetReps, perRep, countDown, clusterSize, clusterPause})` in `lib/features/trainer/application/tempo_plan.dart` is a pure function returning a `List<TempoCue>` (`lib/features/trainer/domain/tempo_cue.dart`): `typedef TempoCue = ({Duration at, TempoCueKind kind, int value})`, with `TempoCueKind { count, rest, resume, done }`. Each rep is scheduled `perRep` after the last; the final rep always emits `done`, and — with `clusterSize` above zero — every `clusterSize`th rep before the last emits `rest` (the pause length in seconds as `value`) followed by `resume` after `clusterPause`.
+
+`TempoRunner` (`lib/features/trainer/application/tempo_runner.dart`) plays a `tempoPlan` timeline with `Timer`s, firing `onCue` at each cue's moment and `onFinished` once with the reps done when the set completes. `stop()` cancels the remaining timers and returns the reps completed so far — every cue but `resume` marks a rep.
+
+`SetInputCard` takes an optional `RepCountingOptions` (`repCounting`) and owns the `TempoRunner` behind the *Count reps* / *Stop count* toggle on the set entry card. `_repCountingOptions(ref)` in `active_workout_screen.dart` supplies it only when the coach is entitled, switched on, and the safety notice accepted, and emits each cue as a `RepTempo` trainer event on `trainerEventBusProvider` rather than speaking it directly, so it goes through the usual coach pipeline (bridge gating, background speech, and so on).
+
+`CoachingEngine` speaks `RepTempo` events (kinds `tempoCount`, `tempoCountDown`, `tempoRest`, `tempoResume`, `tempoSetDone`) at `SpeechPriority.countdown` with `encouragement: false` — so counting is not subject to the caution-mode and zone-5 encouragement pause — and returns `null` while `_aboveCap`, silencing it above the user's maximum heart rate. Phrases are shared by all three personas via `_tempoBanks` in `persona_packs.dart` (`coachTempoCount`, `coachTempoToGo`, `coachTempoRest`, `coachTempoResume`, `coachTempoDone`).
+
+`TrainerSettings` gains `tempoSecondsPerRep` (default 3), `tempoCountDown` (default false), `tempoClusterSize` (default 0, meaning off), and `tempoClusterPauseSeconds` (default 10), persisted under the keys `trainer_tempo_seconds`, `trainer_tempo_count_down`, `trainer_tempo_cluster_size`, and `trainer_tempo_cluster_pause`.
+
 == Ghost Set Auto-Fill
 
 When an exercise is added to a workout, `ActiveWorkoutController` queries the most recent completed session containing that exercise via `WorkoutRepository.getSetsFromLastSession()`.
@@ -346,6 +358,15 @@ Each `TemplateExercise` stores:
 
 | `lib/features/workout/presentation/widgets/pyramid_sheet.dart`
 | Pyramid sheet, opens via `showPyramidSheet()`
+
+| `lib/features/trainer/domain/tempo_cue.dart`
+| `TempoCue` and `TempoCueKind` for rep counting
+
+| `lib/features/trainer/application/tempo_plan.dart`
+| Pure `tempoPlan()` rep-counting timeline generator
+
+| `lib/features/trainer/application/tempo_runner.dart`
+| `TempoRunner` plays a tempo plan's cues with `Timer`s
 
 | `lib/features/workout/presentation/widgets/rest_timer_widget.dart`
 | Countdown timer with haptic / audio alerts

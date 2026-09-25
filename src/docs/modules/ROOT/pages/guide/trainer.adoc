@@ -70,6 +70,19 @@ A dip below zone 2 restarts the 90-second count, so a flight of stairs or a bris
 
 The invitation follows the same safety rules as the coach's other encouragement: above your maximum heart rate, in caution mode, or in zone 5, it is not made at all — neither spoken nor shown on screen (see "When encouragement and quotes pause").
 
+[[counting-reps]]
+== Counting your reps
+
+While the coach can speak, a *Count reps* action sits on the set entry card alongside *Add RPE*, the warm-up pill, *Pyramid*, and *Plates*. Tap it and the coach counts the set for you, hands-free, up to the number in the Reps field, at a steady pace — one rep every few seconds. While it's counting, the action becomes *Stop count*: tapping it ends the count early and fills the Reps field in with however many reps were counted so far. Logging the set also stops the count, and logs whatever the Reps field shows.
+
+Counting up says "1", "2", "3"… Counting down instead counts down the reps still to go: "3 to go", "2 to go"… On the last rep it lets you know the set is finished — for example, "8. That's the set."
+
+For cluster sets, the coach can also pause partway through instead of counting straight through: after every couple of reps it says "Rest 10 seconds," then "Go." once the pause ends, and carries on counting. It never pauses after the final rep.
+
+The rest between sets is a separate thing, already handled by the rest timer and the coach's own spoken rest countdown — see "When the coach speaks" above.
+
+Above your maximum heart rate, the counting falls silent too — a pacing voice isn't right for that moment, and only the calm "ease off" warning speaks. Unlike encouragement, though, counting isn't paused by caution mode or by reaching zone 5 — it's simply telling you where you are in the set, not cheering you on, so it keeps going through both.
+
 == Turning it on, off, and adjusting what it says
 
 Coach mode is not yet available in normal builds of RepFoundry. When it is available, it lives in *Settings → Virtual Trainer* — see xref:guide/settings.adoc[] for the rest of the settings screen; until then, no Coach section appears there at all. This isn't a bug to work around — it's simply not switched on for everyone yet.
@@ -80,6 +93,7 @@ From the same screen you can:
 
 * Choose your coaching voice — Steady, Hype, or Sergeant.
 * Adjust the speech rate, with a *Test voice* button to hear it before you commit.
+* Set the *Rep counting pace* (2, 3, 4, 5, or 6 seconds per rep; 3 seconds by default), the *Count direction* (Up or Down; Up by default), and *Pause within a set* (Off, or every 2 to 5 reps; off by default) — with a *Pause length* (5, 10, 15, or 20 seconds; 10 by default) once pauses are switched on — for <<counting-reps,counting your reps>>.
 * Switch rest countdowns, encouragement, inspirational quotes, *Speak in background* (see <<with-the-screen-off>>), *Offer to join when you get moving* (see <<offering-to-join-in>>), heart rate zone callouts, and heart rate safety warnings on or off individually.
 
 Turning off the main *Enable coach* switch silences the coach immediately, even mid-sentence — it doesn't wait for the current line to finish.

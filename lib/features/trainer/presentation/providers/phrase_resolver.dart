@@ -120,6 +120,13 @@ final Map<String, PhraseBuilder> phraseResolvers = {
   'coachSergeantNudge2': (s, _) => s.coachSergeantNudge2,
   'coachSergeantNudge3': (s, _) => s.coachSergeantNudge3,
 
+  // Rep counting at a tempo (#83), shared by every persona.
+  'coachTempoCount': (s, a) => s.coachTempoCount(a['count'] as int? ?? 0),
+  'coachTempoToGo': (s, a) => s.coachTempoToGo(a['count'] as int? ?? 0),
+  'coachTempoRest': (s, a) => s.coachTempoRest(a['seconds'] as int? ?? 0),
+  'coachTempoResume': (s, _) => s.coachTempoResume,
+  'coachTempoDone': (s, a) => s.coachTempoDone(a['count'] as int? ?? 0),
+
   // Shared quote bank (phase 2, spec §5): identical across every persona, so
   // one set of resolver entries covers steady, hype, and sergeant alike.
   'coachQuote1': (s, _) => s.coachQuote1,

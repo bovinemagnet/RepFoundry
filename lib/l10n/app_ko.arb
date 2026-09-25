@@ -264,6 +264,8 @@
   "rpeLabel": "RPE",
   "addWarmup": "워밍업 추가",
   "pyramidAction": "피라미드",
+  "countRepsAction": "횟수 세기",
+  "stopCountAction": "세기 중지",
   "pyramidTitle": "피라미드",
   "usePyramid": "피라미드 사용",
   "platesAction": "플레이트",

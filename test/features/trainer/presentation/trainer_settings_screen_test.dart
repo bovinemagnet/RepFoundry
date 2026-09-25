@@ -437,6 +437,58 @@ void main() {
         container.read(trainerSettingsProvider).activityNudgesEnabled, isTrue);
   });
 
+  group('rep counting settings (#83)', () {
+    Future<ProviderContainer> openAt(WidgetTester tester, String label) async {
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text(label),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      return ProviderScope.containerOf(
+        tester.element(find.byType(TrainerSettingsScreen)),
+      );
+    }
+
+    Future<void> choose(WidgetTester tester, String label) async {
+      await tester.ensureVisible(find.text(label));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(label));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('sets the pace', (tester) async {
+      final container = await openAt(tester, 'Rep counting pace');
+
+      await choose(tester, '4 s');
+
+      expect(container.read(trainerSettingsProvider).tempoSecondsPerRep, 4);
+    });
+
+    testWidgets('switches between counting up and down', (tester) async {
+      final container = await openAt(tester, 'Count direction');
+
+      await choose(tester, 'Down');
+
+      expect(container.read(trainerSettingsProvider).tempoCountDown, isTrue);
+    });
+
+    testWidgets('pauses within a set, with the pause length shown only then',
+        (tester) async {
+      final container = await openAt(tester, 'Pause within a set');
+      expect(find.text('Pause length'), findsNothing);
+
+      await choose(tester, 'Every 2');
+      await choose(tester, '15 s');
+
+      final settings = container.read(trainerSettingsProvider);
+      expect(settings.tempoClusterSize, 2);
+      expect(settings.tempoClusterPauseSeconds, 15);
+    });
+  });
+
   group('heart-rate settings', () {
     testWidgets(
         'both HR switches default on and are listed with HR safety '

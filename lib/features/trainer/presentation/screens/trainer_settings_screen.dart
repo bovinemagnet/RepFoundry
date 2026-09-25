@@ -107,6 +107,37 @@ class _TrainerSettingsScreenState extends ConsumerState<TrainerSettingsScreen> {
               child: Text(s.trainerTestVoice),
             ),
           ),
+          // Rep counting (#83): the coach counts a set at this tempo.
+          _ChipSetting<int>(
+            title: s.trainerRepCountingPace,
+            options: const [2, 3, 4, 5, 6],
+            selected: settings.tempoSecondsPerRep,
+            label: s.trainerSecondsShort,
+            onSelected: notifier.setTempoSecondsPerRep,
+          ),
+          _ChipSetting<bool>(
+            title: s.trainerCountDirection,
+            options: const [false, true],
+            selected: settings.tempoCountDown,
+            label: (down) => down ? s.trainerCountDown : s.trainerCountUp,
+            onSelected: notifier.setTempoCountDown,
+          ),
+          _ChipSetting<int>(
+            title: s.trainerClusterPause,
+            options: const [0, 2, 3, 4, 5],
+            selected: settings.tempoClusterSize,
+            label: (reps) =>
+                reps == 0 ? s.trainerClusterOff : s.trainerClusterEvery(reps),
+            onSelected: notifier.setTempoClusterSize,
+          ),
+          if (settings.tempoClusterSize > 0)
+            _ChipSetting<int>(
+              title: s.trainerClusterPauseLength,
+              options: const [5, 10, 15, 20],
+              selected: settings.tempoClusterPauseSeconds,
+              label: s.trainerSecondsShort,
+              onSelected: notifier.setTempoClusterPauseSeconds,
+            ),
           SwitchListTile(
             title: Text(s.trainerCountdowns),
             value: settings.countdownsEnabled,
@@ -222,5 +253,44 @@ class _TrainerSettingsScreenState extends ConsumerState<TrainerSettingsScreen> {
     if (confirmed == true) {
       await notifier.revokeDisclaimer();
     }
+  }
+}
+
+/// A titled row of choice chips for one setting; wraps at any width.
+class _ChipSetting<T> extends StatelessWidget {
+  const _ChipSetting({
+    required this.title,
+    required this.options,
+    required this.selected,
+    required this.label,
+    required this.onSelected,
+  });
+
+  final String title;
+  final List<T> options;
+  final T selected;
+  final String Function(T option) label;
+  final void Function(T option) onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(title),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final option in options)
+              ChoiceChip(
+                label: Text(label(option)),
+                selected: option == selected,
+                onSelected: (_) => onSelected(option),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
