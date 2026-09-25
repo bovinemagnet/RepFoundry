@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:clock/clock.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
@@ -82,6 +83,13 @@ class CoachBridge {
         }
       },
     );
+    // With "speak in background" off, leaving the app must cut the coach off
+    // mid-sentence, not just stop the next cue.
+    _lifecycleListener = AppLifecycleListener(onHide: () {
+      if (!_ref.read(trainerSettingsProvider).speakInBackground) {
+        unawaited(_ref.read(speechServiceProvider).stop());
+      }
+    });
   }
 
   final Ref _ref;
@@ -94,6 +102,17 @@ class CoachBridge {
   late final CoachingEngine _engine;
   late final StreamSubscription<TrainerEvent> _subscription;
   late final ProviderSubscription<EntitlementService> _entitlementSubscription;
+  late final AppLifecycleListener _lifecycleListener;
+
+  /// True once the app is no longer visible (screen off or backgrounded).
+  static bool get _inBackground =>
+      switch (WidgetsBinding.instance.lifecycleState) {
+        AppLifecycleState.hidden ||
+        AppLifecycleState.paused ||
+        AppLifecycleState.detached =>
+          true,
+        _ => false,
+      };
 
   void _onEvent(TrainerEvent event) {
     final strings = this.strings;
@@ -101,6 +120,7 @@ class CoachBridge {
 
     final settings = _ref.read(trainerSettingsProvider);
     if (!settings.enabled || !settings.disclaimerAccepted) return;
+    if (!settings.speakInBackground && _inBackground) return;
     if (!_ref
         .read(entitlementServiceProvider)
         .has(Entitlement.virtualTrainer)) {
@@ -169,6 +189,7 @@ class CoachBridge {
   void dispose() {
     unawaited(_subscription.cancel());
     _entitlementSubscription.close();
+    _lifecycleListener.dispose();
   }
 }
 

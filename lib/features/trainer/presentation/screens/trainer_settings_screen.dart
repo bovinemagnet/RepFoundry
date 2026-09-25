@@ -124,6 +124,12 @@ class _TrainerSettingsScreenState extends ConsumerState<TrainerSettingsScreen> {
             onChanged: notifier.setQuotes,
           ),
           SwitchListTile(
+            title: Text(s.trainerSpeakInBackground),
+            subtitle: Text(s.trainerSpeakInBackgroundSubtitle),
+            value: settings.speakInBackground,
+            onChanged: notifier.setSpeakInBackground,
+          ),
+          SwitchListTile(
             title: Text(s.trainerHrCallouts),
             subtitle: Text(s.trainerHrCalloutsSubtitle),
             value: settings.hrCalloutsEnabled,

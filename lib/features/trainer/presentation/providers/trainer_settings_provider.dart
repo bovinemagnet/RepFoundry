@@ -12,6 +12,7 @@ class TrainerSettings {
     this.hrCalloutsEnabled = true,
     this.hrSafetyWarningsEnabled = true,
     this.quotesEnabled = true,
+    this.speakInBackground = true,
   });
 
   final bool enabled;
@@ -34,6 +35,11 @@ class TrainerSettings {
   /// toggle: switching countdowns off must not silently mute quotes too.
   final bool quotesEnabled;
 
+  /// Whether the coach keeps speaking with the screen off or the app in the
+  /// background. When false, the coach goes quiet whenever the app leaves the
+  /// foreground and no background keep-alive is requested on its behalf.
+  final bool speakInBackground;
+
   TrainerSettings copyWith({
     bool? enabled,
     bool? countdownsEnabled,
@@ -44,6 +50,7 @@ class TrainerSettings {
     bool? hrCalloutsEnabled,
     bool? hrSafetyWarningsEnabled,
     bool? quotesEnabled,
+    bool? speakInBackground,
   }) {
     return TrainerSettings(
       enabled: enabled ?? this.enabled,
@@ -56,6 +63,7 @@ class TrainerSettings {
       hrSafetyWarningsEnabled:
           hrSafetyWarningsEnabled ?? this.hrSafetyWarningsEnabled,
       quotesEnabled: quotesEnabled ?? this.quotesEnabled,
+      speakInBackground: speakInBackground ?? this.speakInBackground,
     );
   }
 }
@@ -86,6 +94,7 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
       hrCalloutsEnabled: prefs.getBool('trainer_hr_callouts') ?? true,
       hrSafetyWarningsEnabled: prefs.getBool('trainer_hr_safety') ?? true,
       quotesEnabled: prefs.getBool('trainer_quotes') ?? true,
+      speakInBackground: prefs.getBool('trainer_speak_in_background') ?? true,
     );
   }
 
@@ -139,6 +148,13 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
     state = state.copyWith(quotesEnabled: value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('trainer_quotes', value);
+  }
+
+  Future<void> setSpeakInBackground(bool value) async {
+    await _loading;
+    state = state.copyWith(speakInBackground: value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('trainer_speak_in_background', value);
   }
 
   Future<void> setSpeechRate(double value) async {

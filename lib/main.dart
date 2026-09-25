@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app/app.dart';
@@ -10,6 +11,9 @@ import 'features/sync/presentation/providers/sync_settings_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Lets the foreground service's task handler relay notification button
+  // presses (the coach's "Turn coach off") back to this isolate.
+  FlutterForegroundTask.initCommunicationPort();
 
   // Fonts are bundled in assets/fonts/ — never fetch from fonts.gstatic.com.
   GoogleFonts.config.allowRuntimeFetching = false;

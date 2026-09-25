@@ -4698,6 +4698,18 @@ abstract class S {
   /// **'Speaks a short quote when a workout starts and after rests of two minutes or longer.'**
   String get trainerQuotesSubtitle;
 
+  /// No description provided for @trainerSpeakInBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak in background'**
+  String get trainerSpeakInBackground;
+
+  /// No description provided for @trainerSpeakInBackgroundSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeps the coach talking during a workout when the screen is off or you switch apps. Android shows a notification while it does.'**
+  String get trainerSpeakInBackgroundSubtitle;
+
   /// No description provided for @trainerHrCallouts.
   ///
   /// In en, this message translates to:

@@ -23,6 +23,7 @@ import '../features/clients/presentation/screens/client_roster_screen.dart';
 import '../features/clients/presentation/widgets/client_switcher.dart';
 import '../features/clients/presentation/screens/client_detail_screen.dart';
 import '../features/trainer/presentation/providers/coach_bridge.dart';
+import '../features/trainer/presentation/providers/coach_keep_alive.dart';
 import '../features/trainer/presentation/providers/hr_event_source.dart';
 import '../features/trainer/presentation/screens/trainer_settings_screen.dart';
 import '../core/entitlements/entitlement.dart';
@@ -56,6 +57,9 @@ final routerProvider = Provider<GoRouter>((ref) {
             // second, still-subscribed source (see hrEventSourceProvider's
             // lifecycle tests).
             ref.read(hrEventSourceProvider);
+            // Tells the background keep-alive when the coach is talking
+            // through a workout, so it keeps speaking with the screen off.
+            ref.read(coachKeepAliveProvider);
             return ScaffoldWithNavBar(
               railFooter: const ClientSwitcher(),
               child: child,
