@@ -53,7 +53,7 @@ RepFoundry's rest timer normally ends with a chime. When the coach is enabled an
 
 The coach keeps talking through a workout even when your screen is off or you switch to another app — rest countdowns, a logged set, a personal record and the rest all still speak. This is controlled by a *Speak in background* switch on the coach settings screen, on by default.
 
-On Android, while the coach is speaking in the background during a workout, RepFoundry shows a notification — "RepFoundry is tracking your workout" / "Your coach is with you" — so the system keeps it running. It's the same single notification cardio tracking and heart rate monitoring use, so you'll only ever see one. It disappears once the workout finishes, the coach is switched off, or you turn *Speak in background* off.
+On Android, while the coach is speaking in the background during a workout, RepFoundry shows a notification — "RepFoundry is tracking your workout" / "Your coach is with you" — so the system keeps it running. It's the same single notification cardio tracking and heart rate monitoring use, so you'll only ever see one. While the coach is active it carries a *Turn coach off* button, which switches the coach off straight from the notification — the same as the master switch on the coach settings screen, so switch it back on there when you want the coach again. The notification disappears once the workout finishes, the coach is switched off, or you turn *Speak in background* off.
 
 With *Speak in background* switched off, the coach goes quiet as soon as you leave the app — cutting off anything it's mid-sentence saying — and picks up again once you return. A brief interruption, such as pulling down the notification shade, does not silence it.
 

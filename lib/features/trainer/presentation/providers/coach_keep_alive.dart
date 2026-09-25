@@ -25,7 +25,8 @@ final coachNeedsBackgroundProvider = Provider<bool>((ref) {
 });
 
 /// Reports [coachNeedsBackgroundProvider] to the shared
-/// [ForegroundKeepAlive]. Mounted for the life of the app shell, like the
+/// [ForegroundKeepAlive], and switches the coach off when its notification
+/// button is tapped. Mounted for the life of the app shell, like the
 /// coach bridge.
 ///
 /// Subscribed through the container rather than with `ref.listen`, for the
@@ -38,7 +39,15 @@ final coachKeepAliveProvider = Provider<void>((ref) {
     (_, active) => unawaited(keepAlive.setCoach(active: active)),
     fireImmediately: true,
   );
+  // The notification's "Turn coach off" button: switching the coach off
+  // silences it (see CoachBridge) and, through the subscription above,
+  // releases the keep-alive and its notification.
+  final stopRequests = keepAlive.coachStopRequests.listen(
+    (_) =>
+        unawaited(ref.read(trainerSettingsProvider.notifier).setEnabled(false)),
+  );
   ref.onDispose(() {
+    unawaited(stopRequests.cancel());
     subscription.close();
     unawaited(keepAlive.setCoach(active: false));
   });

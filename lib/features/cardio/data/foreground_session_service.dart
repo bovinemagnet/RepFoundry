@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
@@ -17,6 +18,37 @@ abstract class ForegroundSessionService {
     required bool hrConnected,
     required bool coachActive,
   });
+
+  /// Fires when the user taps the notification's "Turn coach off" button,
+  /// shown only while the coach is keeping the service alive.
+  Stream<void> get coachStopRequests;
+}
+
+/// Id of the notification button that switches the coach off.
+const String stopCoachButtonId = 'stop_coach';
+
+/// Runs in the service's own isolate; the plugin calls it when the service
+/// starts. Its only job is to relay notification button presses back to the
+/// app's isolate.
+@pragma('vm:entry-point')
+void foregroundTaskStart() {
+  FlutterForegroundTask.setTaskHandler(_ButtonRelay());
+}
+
+class _ButtonRelay extends TaskHandler {
+  @override
+  Future<void> onStart(DateTime timestamp, TaskStarter starter) async {}
+
+  @override
+  void onRepeatEvent(DateTime timestamp) {}
+
+  @override
+  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {}
+
+  @override
+  void onNotificationButtonPressed(String id) {
+    FlutterForegroundTask.sendDataToMain(id);
+  }
 }
 
 class FlutterForegroundSessionService implements ForegroundSessionService {
@@ -25,10 +57,19 @@ class FlutterForegroundSessionService implements ForegroundSessionService {
   bool _gps = false;
   bool _hr = false;
   bool _coach = false;
+  final _stopCoach = StreamController<void>.broadcast();
+
+  @override
+  Stream<void> get coachStopRequests => _stopCoach.stream;
+
+  void _onTaskData(Object data) {
+    if (data == stopCoachButtonId) _stopCoach.add(null);
+  }
 
   void _init() {
     if (_initialised) return;
     _initialised = true;
+    FlutterForegroundTask.addTaskDataCallback(_onTaskData);
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'cardio_tracking',
@@ -99,6 +140,15 @@ class FlutterForegroundSessionService implements ForegroundSessionService {
             : coachActive
                 ? 'Your coach is with you'
                 : 'Heart rate monitor connected',
+        notificationButtons: coachActive
+            ? const [
+                NotificationButton(
+                  id: stopCoachButtonId,
+                  text: 'Turn coach off',
+                ),
+              ]
+            : null,
+        callback: foregroundTaskStart,
       );
       _running = true;
       _gps = gpsEnabled;

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:rep_foundry/features/cardio/data/foreground_session_service.dart';
 
 /// Records every reconciliation request for assertions in controller tests.
@@ -31,4 +33,12 @@ class FakeForegroundSessionService implements ForegroundSessionService {
       coachActive: coachActive,
     ));
   }
+
+  final _stopCoach = StreamController<void>.broadcast();
+
+  @override
+  Stream<void> get coachStopRequests => _stopCoach.stream;
+
+  /// Simulates the user tapping the notification's stop-coach button.
+  void pressStopCoach() => _stopCoach.add(null);
 }

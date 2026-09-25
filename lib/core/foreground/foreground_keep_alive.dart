@@ -47,6 +47,9 @@ class ForegroundKeepAlive {
     return _reconcile();
   }
 
+  /// The notification's "Turn coach off" button being tapped.
+  Stream<void> get coachStopRequests => _service.coachStopRequests;
+
   Future<void> _reconcile() {
     final panelActive = _panelMonitoring && _panelHr;
     return _service.update(

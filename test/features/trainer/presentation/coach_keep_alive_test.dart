@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rep_foundry/core/entitlements/entitlement.dart';
 import 'package:rep_foundry/core/entitlements/entitlement_provider.dart';
 import 'package:rep_foundry/core/foreground/foreground_keep_alive.dart';
@@ -48,6 +49,8 @@ void main() {
   const coachOn = TrainerSettings(enabled: true, disclaimerAccepted: true);
 
   late FakeForegroundSessionService service;
+
+  setUp(() => SharedPreferences.setMockInitialValues({}));
 
   ProviderContainer start({
     TrainerSettings settings = coachOn,
@@ -149,6 +152,19 @@ void main() {
         .forceUpdate(const {});
     await container.pump();
 
+    expect(coachKeptAlive(), isFalse);
+  });
+
+  test('the notification button switches the coach off and releases it',
+      () async {
+    final container = start();
+    expect(coachKeptAlive(), isTrue);
+
+    service.pressStopCoach();
+    await pumpEventQueue();
+    await container.pump();
+
+    expect(container.read(trainerSettingsProvider).enabled, isFalse);
     expect(coachKeptAlive(), isFalse);
   });
 }
