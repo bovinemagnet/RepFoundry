@@ -2061,6 +2061,12 @@ class SKo extends S {
   String get customStretchHint => '스트레칭 이름';
 
   @override
+  String get stretchSearchHint => '스트레칭 검색…';
+
+  @override
+  String get stretchSearchNoMatch => '일치하는 스트레칭이 없습니다. \'사용자 지정…\'으로 추가하세요.';
+
+  @override
   String get recordTimeLabel => '시간 기록 방법';
 
   @override

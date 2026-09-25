@@ -45,6 +45,10 @@ The Add Stretching sheet offers twenty built-in stretches as selectable chips:
 
 If none of these fit, choose *Custom…* and type your own stretch name (up to 60 characters).
 
+=== Searching the list
+
+A *Search stretches…* field sits above the chips. Type part of a name to narrow the twenty presets down to matches — for example, "split" shows Front Splits and Side Splits (Middle Splits). Searching is not case-sensitive, and a stretch you have already picked stays visible even if it no longer matches what you typed. *Custom…* is always shown while you search, and if nothing matches, a hint reminds you to use it. Tapping *Custom…* from a search with no matches fills in the name field with what you searched for, so you can add your own stretch without retyping it. Tap the *✕* button beside the field to clear the search and see every stretch again.
+
 == The timer
 
 The sheet offers three ways to record how long you held a stretch, switched with a segmented control:

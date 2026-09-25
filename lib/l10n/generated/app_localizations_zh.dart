@@ -2055,6 +2055,12 @@ class SZh extends S {
   String get customStretchHint => '拉伸名称';
 
   @override
+  String get stretchSearchHint => '搜索拉伸…';
+
+  @override
+  String get stretchSearchNoMatch => '没有匹配的拉伸动作。使用“自定义…”添加。';
+
+  @override
   String get recordTimeLabel => '时间记录方式';
 
   @override
@@ -4533,6 +4539,12 @@ class SZhHans extends SZh {
 
   @override
   String get customStretchHint => '拉伸名称';
+
+  @override
+  String get stretchSearchHint => '搜索拉伸…';
+
+  @override
+  String get stretchSearchNoMatch => '没有匹配的拉伸动作。使用“自定义…”添加。';
 
   @override
   String get recordTimeLabel => '时间记录方式';

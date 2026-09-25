@@ -3762,6 +3762,18 @@ abstract class S {
   /// **'Stretch name'**
   String get customStretchHint;
 
+  /// No description provided for @stretchSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search stretches…'**
+  String get stretchSearchHint;
+
+  /// No description provided for @stretchSearchNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No stretches match. Use Custom… to add your own.'**
+  String get stretchSearchNoMatch;
+
   /// No description provided for @recordTimeLabel.
   ///
   /// In en, this message translates to:

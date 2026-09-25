@@ -2109,6 +2109,13 @@ class SEn extends S {
   String get customStretchHint => 'Stretch name';
 
   @override
+  String get stretchSearchHint => 'Search stretches…';
+
+  @override
+  String get stretchSearchNoMatch =>
+      'No stretches match. Use Custom… to add your own.';
+
+  @override
   String get recordTimeLabel => 'Record time';
 
   @override

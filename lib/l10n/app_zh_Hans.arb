@@ -793,6 +793,8 @@
   "stretchTypeLabel": "拉伸类型",
   "customStretchLabel": "自定义…",
   "customStretchHint": "拉伸名称",
+  "stretchSearchHint": "搜索拉伸…",
+  "stretchSearchNoMatch": "没有匹配的拉伸动作。使用“自定义…”添加。",
   "recordTimeLabel": "时间记录方式",
   "recordTimer": "计时器",
   "recordManual": "手动",

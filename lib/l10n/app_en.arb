@@ -983,6 +983,8 @@
   "stretchTypeLabel": "Stretch type",
   "customStretchLabel": "Custom…",
   "customStretchHint": "Stretch name",
+  "stretchSearchHint": "Search stretches…",
+  "stretchSearchNoMatch": "No stretches match. Use Custom… to add your own.",
   "recordTimeLabel": "Record time",
   "recordTimer": "Timer",
   "recordManual": "Manual",
