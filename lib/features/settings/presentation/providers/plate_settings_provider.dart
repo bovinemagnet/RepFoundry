@@ -41,11 +41,17 @@ class PlateSettings {
 }
 
 class PlateSettingsNotifier extends Notifier<PlateSettings> {
+  Future<void>? _loading;
+
   @override
   PlateSettings build() {
-    _load();
+    _loading = _load();
     return PlateSettings.defaults;
   }
+
+  /// Completes once the saved setup has replaced the defaults. Callers that
+  /// read the setup once, rather than watching it, must await this first.
+  Future<void> ensureLoaded() => _loading ?? Future<void>.value();
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();

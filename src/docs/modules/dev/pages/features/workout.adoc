@@ -164,6 +164,16 @@ Edits to a persisted set are written immediately through `DriftWorkoutRepository
 
 `SetInputCard` takes a `showPlates` bool and resolves the working weight with the same `_workingKg()` helper the warm-up ramp uses before opening the sheet. `ActiveWorkoutScreen`'s exercise section passes `showPlates: exercise.equipmentType == EquipmentType.barbell`, so the action only appears for barbell exercises.
 
+== Pyramid Sets
+
+`pyramidSets({top, base, step, minimum})` in `lib/core/units/pyramid.dart` is a pure function returning `List<({double weight, int reps})>` in one display unit. It scales the scheme `(0.70, 12), (0.75, 10), (0.80, 8), (0.85, 6), (0.90, 4)` by `fraction / 0.90` against `top`, so the fifth set lands exactly on `top`. The lighter four sets are rounded to `base + n × step` and clamped to `[minimum, top]`. Returns an empty list when `top <= 0`.
+
+`showPyramidSheet(context, ref, exercise, workingKg)` (`lib/features/workout/presentation/widgets/pyramid_sheet.dart`) resolves `base`/`minimum`/`step` before calling `pyramidSets()`: for a barbell, `base` and `minimum` are `PlateSetup.bar` and `step` is twice the smallest enabled plate (falling back to 2.5 kg / 5 lb when no plate is enabled); for other loadable equipment, `base` is 0 and `step`/`minimum` are 2.5 kg / 5 lb. It awaits the new `PlateSettingsNotifier.ensureLoaded()` first — the sheet reads the plate setup once rather than watching it, so without this the first pyramid opened in a session used the default bar and plates rather than the user's saved setup (caught by a widget test).
+
+`ActiveWorkoutController.applyPyramid(exerciseId, List<({double weightKg, int reps})>)` replaces that exercise's `GhostSet`s with the pyramid, keeping entries already consumed by logged sets so the remaining ghosts line up with the next set to log; other exercises are untouched.
+
+`SetInputCard` takes an `onPyramid` callback; `_ExerciseSectionContent` supplies it only for `isWarmupRampable` equipment — the same equipment types offered `Add Warm-up` — and opens the sheet itself, rather than threading the callback through `_ExerciseSection` or the superset group widget.
+
 == Ghost Set Auto-Fill
 
 When an exercise is added to a workout, `ActiveWorkoutController` queries the most recent completed session containing that exercise via `WorkoutRepository.getSetsFromLastSession()`.
@@ -330,6 +340,12 @@ Each `TemplateExercise` stores:
 
 | `lib/features/workout/presentation/widgets/plate_breakdown_sheet.dart`
 | Plate calculator bottom sheet
+
+| `lib/core/units/pyramid.dart`
+| Pure `pyramidSets()` ascending pyramid generator
+
+| `lib/features/workout/presentation/widgets/pyramid_sheet.dart`
+| Pyramid sheet, opens via `showPyramidSheet()`
 
 | `lib/features/workout/presentation/widgets/rest_timer_widget.dart`
 | Countdown timer with haptic / audio alerts

@@ -736,6 +736,15 @@ class SKo extends S {
   String get addWarmup => '워밍업 추가';
 
   @override
+  String get pyramidAction => '피라미드';
+
+  @override
+  String get pyramidTitle => '피라미드';
+
+  @override
+  String get usePyramid => '피라미드 사용';
+
+  @override
   String get platesAction => '플레이트';
 
   @override

@@ -720,6 +720,140 @@ void main() {
     });
   });
 
+  group('pyramid (#84)', () {
+    Future<void> startWithExercise(
+      WidgetTester tester,
+      Exercise exercise, {
+      String unit = 'kg',
+    }) async {
+      SharedPreferences.setMockInitialValues({'weight_unit': unit});
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Start Workout'));
+      await tester.pumpAndSettle();
+
+      final state = tester.state<ActiveWorkoutScreenState>(
+        find.byType(ActiveWorkoutScreen),
+      );
+      await state.handleAddExercise(exercise);
+      await tester.pumpAndSettle();
+      // Let the input card's 350 ms autofocus timer fire.
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+
+    Future<void> openPyramid(WidgetTester tester, String workingWeight) async {
+      await tester.enterText(find.byType(TextFormField).first, workingWeight);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('PYRAMID'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('PYRAMID'));
+      await tester.pumpAndSettle();
+    }
+
+    String fieldText(WidgetTester tester, int index) => tester
+        .widget<EditableText>(find.byType(EditableText).at(index))
+        .controller
+        .text;
+
+    testWidgets('is not offered for bodyweight exercises', (tester) async {
+      await startWithExercise(
+        tester,
+        makeExercise('bw', 'Pull-up', equipmentType: EquipmentType.bodyweight),
+      );
+
+      expect(find.text('LOG SET'), findsOneWidget);
+      expect(find.text('PYRAMID'), findsNothing);
+    });
+
+    testWidgets('previews a barbell pyramid up to the working weight',
+        (tester) async {
+      await startWithExercise(tester, makeExercise('bb', 'Bench Press'));
+
+      await openPyramid(tester, '100');
+
+      expect(find.text('Pyramid'), findsOneWidget);
+      expect(find.text('77.5kg × 12'), findsOneWidget);
+      expect(find.text('82.5kg × 10'), findsOneWidget);
+      expect(find.text('90kg × 8'), findsOneWidget);
+      expect(find.text('95kg × 6'), findsOneWidget);
+      expect(find.text('100kg × 4'), findsOneWidget);
+    });
+
+    testWidgets('works in pounds', (tester) async {
+      await startWithExercise(
+        tester,
+        makeExercise('bb', 'Bench Press'),
+        unit: 'lbs',
+      );
+
+      await openPyramid(tester, '225');
+
+      expect(find.text('175lbs × 12'), findsOneWidget);
+      expect(find.text('225lbs × 4'), findsOneWidget);
+
+      await tester.tap(find.text('USE PYRAMID'));
+      await tester.pumpAndSettle();
+      expect(fieldText(tester, 0), '175');
+    });
+
+    testWidgets('a barbell steps in pairs of the smallest plate on the bar',
+        (tester) async {
+      // Only 5, 10 and 20 kg plates on a 15 kg bar: 10 kg steps from 15.
+      SharedPreferences.setMockInitialValues({
+        'weight_unit': 'kg',
+        'plate_bar_kg': 15.0,
+        'plate_sizes_kg': ['5', '10', '20'],
+      });
+      await tester.pumpWidget(buildScreen());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Start Workout'));
+      await tester.pumpAndSettle();
+      await tester
+          .state<ActiveWorkoutScreenState>(find.byType(ActiveWorkoutScreen))
+          .handleAddExercise(makeExercise('bb', 'Bench Press'));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      await openPyramid(tester, '100');
+
+      expect(find.text('75kg × 12'), findsOneWidget);
+      expect(find.text('85kg × 10'), findsOneWidget);
+      expect(find.text('85kg × 8'), findsOneWidget);
+      expect(find.text('95kg × 6'), findsOneWidget);
+    });
+
+    testWidgets('dumbbells step from zero, not from a bar', (tester) async {
+      await startWithExercise(
+        tester,
+        makeExercise('db', 'Dumbbell Press',
+            equipmentType: EquipmentType.dumbbell),
+      );
+
+      await openPyramid(tester, '30');
+
+      expect(find.text('22.5kg × 12'), findsOneWidget);
+      expect(find.text('30kg × 4'), findsOneWidget);
+    });
+
+    testWidgets('using it fills the set card with each set in turn',
+        (tester) async {
+      await startWithExercise(tester, makeExercise('bb', 'Bench Press'));
+      await openPyramid(tester, '100');
+
+      await tester.tap(find.text('USE PYRAMID'));
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(ActiveWorkoutScreen)),
+      );
+      final state = container.read(activeWorkoutControllerProvider);
+      expect(state.setsByExercise['bb'] ?? [], isEmpty,
+          reason: 'a pyramid suggests sets; it must not log them');
+      expect(fieldText(tester, 0), '77.5');
+      expect(fieldText(tester, 1), '12');
+    });
+  });
+
   group('warm-up ramp', () {
     Future<void> startWithExercise(
       WidgetTester tester,

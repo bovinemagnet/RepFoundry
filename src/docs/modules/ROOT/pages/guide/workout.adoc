@@ -41,6 +41,17 @@ The sheet shows your target weight and bar weight (for example, "100kg · bar 20
 
 Bar weight and which plate sizes you have available are configured under xref:guide/settings.adoc#plate-calculator[Settings → Plate calculator].
 
+[[pyramid-sets]]
+== Pyramid sets
+
+For exercises using loadable equipment — barbell, dumbbell, kettlebell, cable, or machine — a *Pyramid* action sits next to *Add RPE*, the warm-up pill, and *Add Warm-up* on the set entry card. Tap it to open a pyramid sheet for the weight you've typed into the weight field — or, if that field is empty, the same suggested or last-logged weight the warm-up ramp falls back to.
+
+The sheet previews an ascending pyramid: five sets, with reps stepping down from 12 to 4 as the weight climbs to your working weight on the final set. For example, working up to 100 kg on a barbell gives 77.5 kg × 12, 82.5 kg × 10, 90 kg × 8, 95 kg × 6, and 100 kg × 4.
+
+Weights are rounded to what you can actually load. For a barbell, that's the bar plus pairs of your smallest available plate — both taken from xref:guide/settings.adoc#plate-calculator[Settings → Plate calculator]; for other equipment, steps of 2.5 kg (or 5 lb, matching your weight unit).
+
+Tapping *Use pyramid* doesn't log anything. Instead, it makes the pyramid the exercise's suggested sets, so the set entry card fills in each set's weight and reps in turn, with the sets you haven't reached yet shown as dimmed suggested rows — the same way sets suggested from your last session normally appear. If you've already logged sets for the exercise, the pyramid picks up from the next set.
+
 == Supersets
 
 Two exercises in the same session can be linked as a superset so you move between them together. Press and hold an exercise card and choose to link it as a superset, then pick the exercise you want to pair it with. Linked exercises are shown grouped together with a superset indicator; tap the unlink icon on the group to separate them again.

@@ -334,6 +334,75 @@ void main() {
       });
     });
 
+    group('applyPyramid (#84)', () {
+      const pyramid = [
+        (weightKg: 77.5, reps: 12),
+        (weightKg: 82.5, reps: 10),
+        (weightKg: 100.0, reps: 4),
+      ];
+
+      test('suggests the pyramid, set by set, without logging anything',
+          () async {
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+        final exercise = (await exerciseRepo.getAllExercises()).first;
+        await controller.addExercise(exercise);
+
+        controller.applyPyramid(exercise.id, pyramid);
+
+        final state = readState();
+        expect(state.setsByExercise[exercise.id] ?? [], isEmpty);
+        expect(state.nextGhostSet(exercise.id)?.weight, 77.5);
+        expect(state.nextGhostSet(exercise.id)?.reps, 12);
+        expect(
+          state.remainingGhosts(exercise.id).map((g) => (g.weight, g.reps)),
+          [(77.5, 12), (82.5, 10), (100.0, 4)],
+        );
+      });
+
+      test('lines up after sets already logged', () async {
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+        final exercise = (await exerciseRepo.getAllExercises()).first;
+        await controller.addExercise(exercise);
+        await controller.logSet(exerciseId: exercise.id, weight: 20, reps: 10);
+
+        controller.applyPyramid(exercise.id, pyramid);
+
+        final state = readState();
+        expect(state.nextGhostSet(exercise.id)?.weight, 77.5);
+        expect(state.remainingGhosts(exercise.id), hasLength(3));
+        expect(state.remainingGhosts(exercise.id).first.setOrder, 2);
+
+        await controller.logSet(
+            exerciseId: exercise.id, weight: 77.5, reps: 12);
+        expect(readState().nextGhostSet(exercise.id)?.weight, 82.5);
+      });
+
+      test('leaves other exercises alone', () async {
+        await waitForInit();
+        final controller = readController();
+        await controller.startWorkout();
+        final exercises = await exerciseRepo.getAllExercises();
+        await controller.addExercise(exercises[0]);
+        await controller.addExercise(exercises[1]);
+        controller.applyPyramid(exercises[1].id, const [
+          (weightKg: 40.0, reps: 8),
+        ]);
+
+        controller.applyPyramid(exercises[0].id, pyramid);
+
+        expect(
+          readState()
+              .remainingGhosts(exercises[1].id)
+              .map((g) => (g.weight, g.reps)),
+          [(40.0, 8)],
+        );
+      });
+    });
+
     group('updateSet', () {
       test('re-evaluates personal records for the corrected set', () async {
         await waitForInit();
