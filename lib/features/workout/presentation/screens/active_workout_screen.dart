@@ -17,6 +17,8 @@ import '../../../clients/presentation/widgets/client_switcher.dart';
 import '../../../stretching/presentation/widgets/add_stretching_sheet.dart';
 import '../../../stretching/presentation/widgets/stretching_section.dart';
 import '../../../templates/domain/models/workout_template.dart';
+import '../../../../core/entitlements/entitlement.dart';
+import '../../../../core/entitlements/entitlement_provider.dart';
 import '../../../../core/extensions/datetime_extensions.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/units/warmup_ramp.dart';
@@ -26,6 +28,8 @@ import '../../../../core/widgets/horizontal_swipe_navigator.dart';
 import '../../../../core/widgets/kinetic.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/widgets/sparkline_widget.dart';
+import '../../../trainer/presentation/providers/trainer_event_bus.dart';
+import '../../../trainer/presentation/providers/trainer_settings_provider.dart';
 
 final _templatePickerProvider =
     StreamProvider.autoDispose<List<WorkoutTemplate>>((ref) {
@@ -1442,6 +1446,25 @@ class _ExerciseSection extends StatelessWidget {
   }
 }
 
+/// Rep counting (#83) is part of the coach: offered only while the coach can
+/// speak — entitled, switched on and its safety notice accepted — with the
+/// pace and pauses from its settings.
+RepCountingOptions? _repCountingOptions(WidgetRef ref) {
+  final settings = ref.watch(trainerSettingsProvider);
+  final entitled =
+      ref.watch(entitlementServiceProvider).has(Entitlement.virtualTrainer);
+  if (!entitled || !settings.enabled || !settings.disclaimerAccepted) {
+    return null;
+  }
+  return RepCountingOptions(
+    perRep: Duration(seconds: settings.tempoSecondsPerRep),
+    countDown: settings.tempoCountDown,
+    clusterSize: settings.tempoClusterSize,
+    clusterPause: Duration(seconds: settings.tempoClusterPauseSeconds),
+    emit: ref.read(trainerEventBusProvider).emit,
+  );
+}
+
 class _ExerciseSectionContent extends ConsumerWidget {
   const _ExerciseSectionContent({
     required this.exercise,
@@ -1566,6 +1589,7 @@ class _ExerciseSectionContent extends ConsumerWidget {
             onAddWarmup:
                 isWarmupRampable(exercise.equipmentType) ? onAddWarmup : null,
             showPlates: exercise.equipmentType == EquipmentType.barbell,
+            repCounting: _repCountingOptions(ref),
             onPyramid: isWarmupRampable(exercise.equipmentType)
                 ? (workingKg) =>
                     showPyramidSheet(context, ref, exercise, workingKg)

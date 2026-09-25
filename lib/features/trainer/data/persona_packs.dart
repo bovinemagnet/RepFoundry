@@ -27,6 +27,16 @@ import '../domain/trainer_event.dart';
 /// uniqueness/resolver/denylist test loops cover it automatically instead of
 /// needing a parallel set of checks. That sharing is also what lets quote
 /// memory survive a persona switch.
+/// Rep counting at a tempo (#83). Neutral counting, so every persona shares
+/// the same lines rather than each voicing a number differently.
+const Map<TrainerEventKind, List<String>> _tempoBanks = {
+  TrainerEventKind.tempoCount: ['coachTempoCount'],
+  TrainerEventKind.tempoCountDown: ['coachTempoToGo'],
+  TrainerEventKind.tempoRest: ['coachTempoRest'],
+  TrainerEventKind.tempoResume: ['coachTempoResume'],
+  TrainerEventKind.tempoSetDone: ['coachTempoDone'],
+};
+
 const List<String> _quoteBank = [
   'coachQuote1',
   'coachQuote2',
@@ -107,6 +117,7 @@ const Persona steadyPersona = Persona(
       'coachSteadyNudge2',
       'coachSteadyNudge3',
     ],
+    ..._tempoBanks,
   },
 );
 
@@ -169,6 +180,7 @@ const Persona hypePersona = Persona(
       'coachHypeNudge2',
       'coachHypeNudge3',
     ],
+    ..._tempoBanks,
   },
 );
 
@@ -226,6 +238,7 @@ const Persona sergeantPersona = Persona(
       'coachSergeantNudge2',
       'coachSergeantNudge3',
     ],
+    ..._tempoBanks,
   },
 );
 

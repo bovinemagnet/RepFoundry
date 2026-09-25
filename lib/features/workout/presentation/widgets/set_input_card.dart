@@ -5,11 +5,33 @@ import 'package:rep_foundry/core/widgets/kinetic.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import '../models/ghost_set.dart';
 import 'plate_breakdown_sheet.dart';
+import '../../../trainer/application/tempo_plan.dart';
+import '../../../trainer/application/tempo_runner.dart';
+import '../../../trainer/domain/trainer_event.dart';
 
 /// A card widget for entering a new set's weight and reps.
 ///
 /// Styled to the "Kinetic Green" redesign: `.fieldrow` / `.field` /
 /// `.field--focus` tiles from rf.css, with the Kinetic action row below.
+/// How the coach counts a set's reps (#83); see `tempoPlan`.
+class RepCountingOptions {
+  const RepCountingOptions({
+    required this.perRep,
+    required this.countDown,
+    required this.clusterSize,
+    required this.clusterPause,
+    required this.emit,
+  });
+
+  final Duration perRep;
+  final bool countDown;
+  final int clusterSize;
+  final Duration clusterPause;
+
+  /// Sends each counting cue to the coach.
+  final void Function(TrainerEvent event) emit;
+}
+
 class SetInputCard extends StatefulWidget {
   const SetInputCard({
     super.key,
@@ -21,6 +43,7 @@ class SetInputCard extends StatefulWidget {
     this.onAddWarmup,
     this.showPlates = false,
     this.onPyramid,
+    this.repCounting,
   });
 
   final void Function({
@@ -47,6 +70,10 @@ class SetInputCard extends StatefulWidget {
   /// When set, a "Pyramid" affordance resolves the working weight (as for the
   /// warm-up ramp) and calls back to preview an ascending pyramid (#84).
   final void Function(double workingKg)? onPyramid;
+
+  /// When set (the coach can speak), a "Count reps" affordance has the coach
+  /// count the set at a steady tempo and fills in the reps when it ends.
+  final RepCountingOptions? repCounting;
 
   /// When true, the Weight field grabs keyboard focus on first build.
   /// Used so a freshly added exercise becomes the active input target
@@ -148,6 +175,7 @@ class _SetInputCardState extends State<SetInputCard> {
 
   @override
   void dispose() {
+    _repCounter?.stop();
     _weightController.dispose();
     _repsController.dispose();
     _rpeController.dispose();
@@ -158,6 +186,10 @@ class _SetInputCardState extends State<SetInputCard> {
   }
 
   void _submit() {
+    // Logging the set ends it; a count still running would talk over the
+    // next one.
+    _repCounter?.stop();
+    _repCounter = null;
     if (!_formKey.currentState!.validate()) return;
 
     final weight =
@@ -182,6 +214,42 @@ class _SetInputCardState extends State<SetInputCard> {
   void _addWarmup() {
     final workingKg = _workingKg();
     if (workingKg > 0) widget.onAddWarmup!(workingKg);
+  }
+
+  TempoRunner? _repCounter;
+
+  void _toggleRepCounting() {
+    final running = _repCounter;
+    if (running != null) {
+      final done = running.stop();
+      setState(() {
+        _repCounter = null;
+        if (done > 0) _repsController.text = '$done';
+      });
+      return;
+    }
+    final options = widget.repCounting!;
+    final target = int.tryParse(_repsController.text) ?? 0;
+    if (target <= 0) return;
+    final counter = TempoRunner(
+      plan: tempoPlan(
+        targetReps: target,
+        perRep: options.perRep,
+        countDown: options.countDown,
+        clusterSize: options.clusterSize,
+        clusterPause: options.clusterPause,
+      ),
+      onCue: (cue) => options.emit(RepTempo(
+        cue: cue.kind,
+        value: cue.value,
+        countingDown: options.countDown,
+      )),
+      // The reps field already holds the target the count ran to.
+      onFinished: (_) {
+        if (mounted) setState(() => _repCounter = null);
+      },
+    );
+    setState(() => _repCounter = counter..start());
   }
 
   void _showPyramid() {
@@ -331,6 +399,35 @@ class _SetInputCardState extends State<SetInputCard> {
                             const SizedBox(width: 5),
                             Text(
                               s.addWarmup.toUpperCase(),
+                              style: KineticText.mono(
+                                size: 12,
+                                letterSpacing: 0.5,
+                                color: cs.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    // "Count reps" — the coach counts the set at a tempo.
+                    if (widget.repCounting != null)
+                      GestureDetector(
+                        onTap: _toggleRepCounting,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _repCounter == null
+                                  ? Icons.record_voice_over
+                                  : Icons.stop,
+                              size: 16,
+                              color: cs.primary,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              (_repCounter == null
+                                      ? s.countRepsAction
+                                      : s.stopCountAction)
+                                  .toUpperCase(),
                               style: KineticText.mono(
                                 size: 12,
                                 letterSpacing: 0.5,

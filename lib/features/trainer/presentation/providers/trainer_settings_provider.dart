@@ -14,6 +14,10 @@ class TrainerSettings {
     this.quotesEnabled = true,
     this.speakInBackground = true,
     this.activityNudgesEnabled = false,
+    this.tempoSecondsPerRep = 3,
+    this.tempoCountDown = false,
+    this.tempoClusterSize = 0,
+    this.tempoClusterPauseSeconds = 10,
   });
 
   final bool enabled;
@@ -45,6 +49,18 @@ class TrainerSettings {
   /// shows sustained effort with no workout running. Opt-in.
   final bool activityNudgesEnabled;
 
+  /// Rep counting (#83): the pace, one rep every this many seconds.
+  final int tempoSecondsPerRep;
+
+  /// Whether rep counting speaks the reps still to go rather than the count.
+  final bool tempoCountDown;
+
+  /// Rest after every this many reps within a set; 0 means no pauses.
+  final int tempoClusterSize;
+
+  /// Length of each within-set pause, in seconds.
+  final int tempoClusterPauseSeconds;
+
   TrainerSettings copyWith({
     bool? enabled,
     bool? countdownsEnabled,
@@ -57,6 +73,10 @@ class TrainerSettings {
     bool? quotesEnabled,
     bool? speakInBackground,
     bool? activityNudgesEnabled,
+    int? tempoSecondsPerRep,
+    bool? tempoCountDown,
+    int? tempoClusterSize,
+    int? tempoClusterPauseSeconds,
   }) {
     return TrainerSettings(
       enabled: enabled ?? this.enabled,
@@ -72,6 +92,11 @@ class TrainerSettings {
       speakInBackground: speakInBackground ?? this.speakInBackground,
       activityNudgesEnabled:
           activityNudgesEnabled ?? this.activityNudgesEnabled,
+      tempoSecondsPerRep: tempoSecondsPerRep ?? this.tempoSecondsPerRep,
+      tempoCountDown: tempoCountDown ?? this.tempoCountDown,
+      tempoClusterSize: tempoClusterSize ?? this.tempoClusterSize,
+      tempoClusterPauseSeconds:
+          tempoClusterPauseSeconds ?? this.tempoClusterPauseSeconds,
     );
   }
 }
@@ -104,6 +129,11 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
       quotesEnabled: prefs.getBool('trainer_quotes') ?? true,
       speakInBackground: prefs.getBool('trainer_speak_in_background') ?? true,
       activityNudgesEnabled: prefs.getBool('trainer_activity_nudges') ?? false,
+      tempoSecondsPerRep: prefs.getInt('trainer_tempo_seconds') ?? 3,
+      tempoCountDown: prefs.getBool('trainer_tempo_count_down') ?? false,
+      tempoClusterSize: prefs.getInt('trainer_tempo_cluster_size') ?? 0,
+      tempoClusterPauseSeconds:
+          prefs.getInt('trainer_tempo_cluster_pause') ?? 10,
     );
   }
 
@@ -171,6 +201,34 @@ class TrainerSettingsNotifier extends Notifier<TrainerSettings> {
     state = state.copyWith(activityNudgesEnabled: value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('trainer_activity_nudges', value);
+  }
+
+  Future<void> setTempoSecondsPerRep(int value) async {
+    await _loading;
+    state = state.copyWith(tempoSecondsPerRep: value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('trainer_tempo_seconds', value);
+  }
+
+  Future<void> setTempoCountDown(bool value) async {
+    await _loading;
+    state = state.copyWith(tempoCountDown: value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('trainer_tempo_count_down', value);
+  }
+
+  Future<void> setTempoClusterSize(int value) async {
+    await _loading;
+    state = state.copyWith(tempoClusterSize: value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('trainer_tempo_cluster_size', value);
+  }
+
+  Future<void> setTempoClusterPauseSeconds(int value) async {
+    await _loading;
+    state = state.copyWith(tempoClusterPauseSeconds: value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('trainer_tempo_cluster_pause', value);
   }
 
   Future<void> setSpeechRate(double value) async {

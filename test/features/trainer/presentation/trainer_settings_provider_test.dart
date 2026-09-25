@@ -225,4 +225,55 @@ void main() {
           isTrue);
     });
   });
+
+  group('rep counting (#83)', () {
+    test('defaults: a rep every 3 s, counting up, no cluster pauses', () {
+      const settings = TrainerSettings();
+      expect(settings.tempoSecondsPerRep, 3);
+      expect(settings.tempoCountDown, isFalse);
+      expect(settings.tempoClusterSize, 0);
+      expect(settings.tempoClusterPauseSeconds, 10);
+    });
+
+    test('each setter updates state and persists', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final notifier = container.read(trainerSettingsProvider.notifier);
+
+      await notifier.setTempoSecondsPerRep(4);
+      await notifier.setTempoCountDown(true);
+      await notifier.setTempoClusterSize(2);
+      await notifier.setTempoClusterPauseSeconds(15);
+
+      final settings = container.read(trainerSettingsProvider);
+      expect(settings.tempoSecondsPerRep, 4);
+      expect(settings.tempoCountDown, isTrue);
+      expect(settings.tempoClusterSize, 2);
+      expect(settings.tempoClusterPauseSeconds, 15);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getInt('trainer_tempo_seconds'), 4);
+      expect(prefs.getBool('trainer_tempo_count_down'), isTrue);
+      expect(prefs.getInt('trainer_tempo_cluster_size'), 2);
+      expect(prefs.getInt('trainer_tempo_cluster_pause'), 15);
+    });
+
+    test('restores saved values on load', () async {
+      SharedPreferences.setMockInitialValues({
+        'trainer_tempo_seconds': 5,
+        'trainer_tempo_count_down': true,
+        'trainer_tempo_cluster_size': 3,
+        'trainer_tempo_cluster_pause': 20,
+      });
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container.read(trainerSettingsProvider.notifier).acceptDisclaimer();
+
+      final settings = container.read(trainerSettingsProvider);
+      expect(settings.tempoSecondsPerRep, 5);
+      expect(settings.tempoCountDown, isTrue);
+      expect(settings.tempoClusterSize, 3);
+      expect(settings.tempoClusterPauseSeconds, 20);
+    });
+  });
 }

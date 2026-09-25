@@ -158,6 +158,18 @@ class CoachingEngine {
       // so it stays silent above the cap, in caution mode and in zone 5.
       ActivityDetected() =>
         _speak(event.kind, SpeechPriority.encouragement, now),
+      // Counting a set the user started is not encouragement, so it keeps
+      // speaking in caution mode and zone 5 — but a voice setting the pace
+      // must stop above the safe maximum, where only "ease off" belongs.
+      RepTempo(:final value) => _aboveCap
+          ? null
+          : _speak(
+              event.kind,
+              SpeechPriority.countdown,
+              now,
+              args: {'count': value, 'seconds': value},
+              encouragement: false,
+            ),
     };
   }
 

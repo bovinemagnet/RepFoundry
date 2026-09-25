@@ -264,6 +264,8 @@
   "rpeLabel": "RPE",
   "addWarmup": "ウォームアップ追加",
   "pyramidAction": "ピラミッド",
+  "countRepsAction": "回数をカウント",
+  "stopCountAction": "カウント停止",
   "pyramidTitle": "ピラミッド",
   "usePyramid": "ピラミッドを使う",
   "platesAction": "プレート",

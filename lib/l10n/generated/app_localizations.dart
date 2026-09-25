@@ -1470,6 +1470,18 @@ abstract class S {
   /// **'Pyramid'**
   String get pyramidAction;
 
+  /// No description provided for @countRepsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Count reps'**
+  String get countRepsAction;
+
+  /// No description provided for @stopCountAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop count'**
+  String get stopCountAction;
+
   /// No description provided for @pyramidTitle.
   ///
   /// In en, this message translates to:
@@ -4548,6 +4560,36 @@ abstract class S {
   /// **'Effort noticed. Start a workout and I\'ll call the rests.'**
   String get coachSergeantNudge3;
 
+  /// No description provided for @coachTempoCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}'**
+  String coachTempoCount(int count);
+
+  /// No description provided for @coachTempoToGo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} to go'**
+  String coachTempoToGo(int count);
+
+  /// No description provided for @coachTempoRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest {seconds} seconds.'**
+  String coachTempoRest(int seconds);
+
+  /// No description provided for @coachTempoResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Go.'**
+  String get coachTempoResume;
+
+  /// No description provided for @coachTempoDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}. That\'s the set.'**
+  String coachTempoDone(int count);
+
   /// No description provided for @coachQuote1.
   ///
   /// In en, this message translates to:
@@ -4805,6 +4847,60 @@ abstract class S {
   /// In en, this message translates to:
   /// **'With a heart rate monitor connected and no workout running, the coach offers to start one after about 90 seconds of sustained effort. Once per stretch of activity.'**
   String get trainerActivityNudgesSubtitle;
+
+  /// No description provided for @trainerRepCountingPace.
+  ///
+  /// In en, this message translates to:
+  /// **'Rep counting pace'**
+  String get trainerRepCountingPace;
+
+  /// No description provided for @trainerSecondsShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} s'**
+  String trainerSecondsShort(int seconds);
+
+  /// No description provided for @trainerCountDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Count direction'**
+  String get trainerCountDirection;
+
+  /// No description provided for @trainerCountUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Up'**
+  String get trainerCountUp;
+
+  /// No description provided for @trainerCountDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Down'**
+  String get trainerCountDown;
+
+  /// No description provided for @trainerClusterPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause within a set'**
+  String get trainerClusterPause;
+
+  /// No description provided for @trainerClusterOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get trainerClusterOff;
+
+  /// No description provided for @trainerClusterEvery.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {reps}'**
+  String trainerClusterEvery(int reps);
+
+  /// No description provided for @trainerClusterPauseLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause length'**
+  String get trainerClusterPauseLength;
 
   /// No description provided for @activityNudgeMessage.
   ///
