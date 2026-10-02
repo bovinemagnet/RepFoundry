@@ -52,6 +52,160 @@ void main() {
     );
   }
 
+  group('ScaffoldWithNavBar system navigation inset (#143)', () {
+    // A phone with on-screen system navigation (Android three-button or
+    // gesture bar) reports a bottom inset; the glass bar grows by that inset,
+    // so tab content and sheets must end above the bar's real top edge.
+    const systemInset = 48.0;
+
+    Future<void> useMobileViewportWithInset(WidgetTester tester) async {
+      await useMobileViewport(tester);
+      tester.view.padding = const FakeViewPadding(bottom: systemInset);
+      tester.view.viewPadding = const FakeViewPadding(bottom: systemInset);
+      addTearDown(() {
+        tester.view.resetPadding();
+        tester.view.resetViewPadding();
+      });
+    }
+
+    double navBarTop(WidgetTester tester) => tester
+        .getRect(find
+            .ancestor(
+              of: find.text('HEART RATE'),
+              matching: find.byType(BackdropFilter),
+            )
+            .first)
+        .top;
+
+    GoRouter buildSheetRouter({required bool sheetUsesSafeArea}) {
+      Widget sheet(BuildContext context) {
+        // Mirrors the health-profile onboarding sheet, which lifts itself
+        // clear of the keyboard by the view inset it sees.
+        final content = Padding(
+          padding: EdgeInsets.fromLTRB(
+            24,
+            24,
+            24,
+            MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FilledButton(onPressed: () {}, child: const Text('Done')),
+            ],
+          ),
+        );
+        return sheetUsesSafeArea ? SafeArea(child: content) : content;
+      }
+
+      return GoRouter(
+        initialLocation: '/heart-rate',
+        routes: [
+          ShellRoute(
+            builder: (_, __, child) => ScaffoldWithNavBar(child: child),
+            routes: [
+              GoRoute(
+                path: '/heart-rate',
+                builder: (_, __) => Scaffold(
+                  body: Column(
+                    children: [
+                      Builder(
+                        builder: (context) => TextButton(
+                          onPressed: () => showModalBottomSheet<void>(
+                            context: context,
+                            isScrollControlled: true,
+                            useSafeArea: true,
+                            builder: sheet,
+                          ),
+                          child: const Text('Open sheet'),
+                        ),
+                      ),
+                      const Spacer(),
+                      const Text('Tab bottom'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    testWidgets('tab content ends above the nav bar', (tester) async {
+      await useMobileViewportWithInset(tester);
+      await tester.pumpWidget(
+        buildApp(buildSheetRouter(sheetUsesSafeArea: false)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.getRect(find.text('Tab bottom')).bottom,
+        lessThanOrEqualTo(navBarTop(tester)),
+      );
+    });
+
+    testWidgets('a bottom sheet without SafeArea is not covered by the nav bar',
+        (tester) async {
+      await useMobileViewportWithInset(tester);
+      await tester.pumpWidget(
+        buildApp(buildSheetRouter(sheetUsesSafeArea: false)),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Open sheet'));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.getRect(find.text('Done')).bottom,
+        lessThanOrEqualTo(navBarTop(tester)),
+      );
+    });
+
+    testWidgets(
+        'with the keyboard open, a sheet sits directly above the nav bar '
+        'without overflowing', (tester) async {
+      await useMobileViewportWithInset(tester);
+      // The keyboard covers the system navigation inset, so the platform
+      // reports no bottom padding while it is open.
+      tester.view.padding = FakeViewPadding.zero;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      addTearDown(tester.view.resetViewInsets);
+      await tester.pumpWidget(
+        buildApp(buildSheetRouter(sheetUsesSafeArea: false)),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Open sheet'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      // The shell's Scaffold already lifts its body (nav bar included) above
+      // the keyboard, so the sheet must not pad for the keyboard again.
+      expect(
+        tester.getRect(find.byType(FilledButton)).bottom,
+        navBarTop(tester) - 24,
+      );
+    });
+
+    testWidgets('a bottom sheet with SafeArea is not lifted a second time',
+        (tester) async {
+      await useMobileViewportWithInset(tester);
+      await tester.pumpWidget(
+        buildApp(buildSheetRouter(sheetUsesSafeArea: true)),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Open sheet'));
+      await tester.pumpAndSettle();
+
+      // The sheet's 24 px padding is the only gap between the button and
+      // the bar — the system inset is already spent by the bar itself.
+      final buttonBottom = tester.getRect(find.byType(FilledButton)).bottom;
+      expect(buttonBottom, navBarTop(tester) - 24);
+    });
+  });
+
   group('ScaffoldWithNavBar (mobile bottom nav)', () {
     testWidgets('renders all five nav labels in uppercase', (tester) async {
       await useMobileViewport(tester);

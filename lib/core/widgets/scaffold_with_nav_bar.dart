@@ -127,13 +127,26 @@ class ScaffoldWithNavBar extends StatelessWidget {
       // keep their original full-screen presentation on mobile.
       inner = child;
     } else {
+      // The glass bar grows by the system navigation inset, so the content
+      // must stop above both — and, with the inset spent by the bar, must not
+      // see it again, or a SafeArea inside a tab or sheet would double it.
+      final systemInset = MediaQuery.of(context).padding.bottom;
       inner = Scaffold(
         body: Stack(
           children: [
             Positioned.fill(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: _navBarHeight),
-                child: child,
+                padding: EdgeInsets.only(bottom: _navBarHeight + systemInset),
+                // Built from the body's context, not the shell's: the
+                // Scaffold has already lifted its body above the keyboard and
+                // dropped the keyboard inset, which the shell's copy still has.
+                child: Builder(
+                  builder: (bodyContext) => MediaQuery.removePadding(
+                    context: bodyContext,
+                    removeBottom: true,
+                    child: child,
+                  ),
+                ),
               ),
             ),
             Positioned(
