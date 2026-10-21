@@ -17,10 +17,10 @@ void main() {
 
   group('DriftExerciseRepository', () {
     group('getAllExercises', () {
-      test('returns the 21 seeded exercises sorted by name', () async {
+      test('returns the 23 seeded exercises sorted by name', () async {
         final exercises = await repo.getAllExercises();
 
-        expect(exercises, hasLength(21));
+        expect(exercises, hasLength(23));
         for (var i = 0; i < exercises.length - 1; i++) {
           expect(
             exercises[i].name.compareTo(exercises[i + 1].name),
@@ -33,8 +33,20 @@ void main() {
         await repo.deleteExercise('1');
         final exercises = await repo.getAllExercises();
 
-        expect(exercises, hasLength(20));
+        expect(exercises, hasLength(22));
         expect(exercises.any((e) => e.id == '1'), isFalse);
+      });
+
+      test('seeds Elliptical and Stair Climber as cardio machines', () async {
+        final exercises = await repo.getAllExercises();
+
+        for (final name in ['Elliptical', 'Stair Climber']) {
+          final exercise = exercises.singleWhere((e) => e.name == name);
+          expect(exercise.category, ExerciseCategory.cardio);
+          expect(exercise.muscleGroup, MuscleGroup.cardio);
+          expect(exercise.equipmentType, EquipmentType.cardioMachine);
+          expect(exercise.isCustom, isFalse);
+        }
       });
     });
 
@@ -166,7 +178,7 @@ void main() {
         // Wait for the initial emission.
         await pumpEventQueue();
         expect(emissions, hasLength(1));
-        expect(emissions.first, hasLength(21));
+        expect(emissions.first, hasLength(23));
 
         final newExercise = Exercise.create(
           name: 'Arnold Press',
@@ -178,7 +190,7 @@ void main() {
         await pumpEventQueue();
 
         expect(emissions, hasLength(2));
-        expect(emissions.last, hasLength(22));
+        expect(emissions.last, hasLength(24));
       });
     });
   });

@@ -15,7 +15,7 @@ The database is the single source of truth for all user data; no feature require
 | File | Purpose
 
 | `lib/core/database/app_database.dart`
-| `@DriftDatabase` class with all seven table registrations, a `forTesting(QueryExecutor)` constructor, and 18 default exercise seed records
+| `@DriftDatabase` class with all seven table registrations, a `forTesting(QueryExecutor)` constructor, and 23 default exercise seed records
 
 | `lib/core/database/tables/`
 | Directory containing one Dart file per Drift table definition
@@ -86,7 +86,7 @@ Queries filter out non-null `deleted_at` values by default.
 
 === Seed Data
 
-On first run, 18 default exercises (IDs `'1'` through `'18'`) are inserted via the `beforeOpen` hook in `AppDatabase`.
+On first run, 23 default exercises (IDs `'1'` through `'23'`) are inserted via the `beforeOpen` hook in `AppDatabase`.
 These cover common compound and isolation movements across major equipment categories.
 
 == Schema
@@ -480,6 +480,9 @@ Each schema version increment adds a `MigrationStep` that applies the required D
 
 | v14
 | Added `cardio_track_points` and `cardio_heart_rate_samples` (migration step guarded by `from < 14`)
+
+| v15
+| Data only, no table or column changes. Seeds Elliptical (`'22'`) and Stair Climber (`'23'`) for existing installs (migration step guarded by `from < 15`), skipping any whose id or name (case-insensitive) already exists
 |===
 
 NOTE: Always run `dart run build_runner build --delete-conflicting-outputs` after adding a new migration step to regenerate the schema version hash used by Drift's migration verification tests.

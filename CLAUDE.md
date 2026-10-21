@@ -44,7 +44,7 @@ Shared code lives in `lib/core/` (extensions, widgets, providers, database).
 
 The app uses Drift for SQLite persistence. Key files:
 
-- `lib/core/database/app_database.dart` — `@DriftDatabase` class with 15 tables, `forTesting(QueryExecutor)` constructor, and seed data (21 default exercises)
+- `lib/core/database/app_database.dart` — `@DriftDatabase` class with 15 tables, `forTesting(QueryExecutor)` constructor, and seed data (23 default exercises)
 - `lib/core/database/tables/` — Drift table definitions (exercises, workouts, workout_sets, cardio_sessions, personal_records, workout_templates, template_exercises)
 - `lib/core/database/converters.dart` — DateTime↔epoch ms and enum↔string helpers
 - `lib/core/database/database_provider.dart` — Riverpod `Provider<AppDatabase>` overridden in `main()`
