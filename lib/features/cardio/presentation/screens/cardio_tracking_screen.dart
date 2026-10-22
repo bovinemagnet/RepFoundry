@@ -513,44 +513,56 @@ class _ExerciseSegControl extends StatelessWidget {
                     children: exercises.map((ex) {
                       final isSelected = ex.id == selectedId;
                       return Expanded(
-                        child: GestureDetector(
-                          onTap: () => onSelected(ex.id, ex.name),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 11,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  isSelected ? cs.primary : Colors.transparent,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.directions_run,
-                                  size: 17,
-                                  color: isSelected
-                                      ? cs.onPrimary
-                                      : cs.onSurfaceVariant,
-                                ),
-                                const SizedBox(width: 6),
-                                Flexible(
-                                  child: Text(
-                                    ex.name,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: KineticText.mono(
-                                      size: 12,
-                                      letterSpacing: 0.4,
-                                      color: isSelected
-                                          ? cs.onPrimary
-                                          : cs.onSurfaceVariant,
+                        child: Builder(
+                          builder: (pillContext) => GestureDetector(
+                            onTap: () {
+                              onSelected(ex.id, ex.name);
+                              // A pill cut off by the edge slides into view.
+                              // Only this row scrolls, not the page.
+                              Scrollable.of(pillContext).position.ensureVisible(
+                                    pillContext.findRenderObject()!,
+                                    alignment: 0.5,
+                                    duration: const Duration(milliseconds: 200),
+                                  );
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 11,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? cs.primary
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.directions_run,
+                                    size: 17,
+                                    color: isSelected
+                                        ? cs.onPrimary
+                                        : cs.onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      ex.name,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: KineticText.mono(
+                                        size: 12,
+                                        letterSpacing: 0.4,
+                                        color: isSelected
+                                            ? cs.onPrimary
+                                            : cs.onSurfaceVariant,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),

@@ -299,6 +299,51 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('a tapped sport pill half off the edge scrolls into view',
+        (tester) async {
+      final binding = TestWidgetsFlutterBinding.ensureInitialized();
+      binding.platformDispatcher.views.first.physicalSize =
+          const Size(720, 1480);
+      binding.platformDispatcher.views.first.devicePixelRatio = 1.75;
+
+      await tester.pumpWidget(buildScreen(cardioExercises: [
+        for (final name in [
+          'Elliptical',
+          'Rowing Machine',
+          'Stair Climber',
+          'Stationary Bike',
+          'Treadmill',
+        ])
+          cardioExercise(name),
+      ]));
+      await tester.pumpAndSettle();
+
+      final pill = find
+          .ancestor(
+            of: find.text('Stair Climber'),
+            matching: find.byType(GestureDetector),
+          )
+          .first;
+      final viewport = tester.getRect(
+          find.ancestor(of: pill, matching: find.byType(Scrollable)).first);
+      final before = tester.getRect(pill);
+      // Precondition: the pill starts cut off by the right edge.
+      expect(before.left, lessThan(viewport.right));
+      expect(before.right, greaterThan(viewport.right));
+
+      await tester.tapAt(Offset(before.left + 10, before.center.dy));
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(CardioTrackingScreen)),
+      );
+      expect(container.read(cardioTrackingProvider).selectedExerciseName,
+          'Stair Climber');
+      final after = tester.getRect(pill);
+      expect(after.left, greaterThanOrEqualTo(viewport.left - 0.5));
+      expect(after.right, lessThanOrEqualTo(viewport.right + 0.5));
+    });
+
     testWidgets('selects the first cardio exercise by default', (tester) async {
       await tester.pumpWidget(buildScreen(cardioExercises: [
         cardioExercise('Treadmill'),
