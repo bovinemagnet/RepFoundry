@@ -14,6 +14,7 @@
 ** xref:features/health-sync.adoc[Health Sync]
 ** xref:features/body-metrics.adoc[Body Metrics]
 ** xref:features/notifications.adoc[Notifications]
+** xref:features/mcp.adoc[Assistant Access (MCP)]
 * xref:testing.adoc[Testing]
 * xref:localisation.adoc[Localisation]
 * xref:release-versioning.adoc[Release Versioning]

@@ -1,0 +1,146 @@
+= Assistant Access (MCP)
+Paul Snow
+0.0.0
+:description: Implementation reference for the desktop-only, read-only Model Context Protocol server in RepFoundry: layering, security model, tool catalogue and testing.
+
+Implementation reference for the loopback, read-only Model Context Protocol (MCP) server that lets an AI assistant on the same desktop read the user's training data.
+
+[NOTE]
+====
+For how to turn the feature on and connect an assistant, see xref:ROOT:guide/ai-assistants.adoc[AI assistant access (desktop)].
+====
+
+== Overview
+
+The feature is desktop-only (macOS, Windows, Linux), read-only and off by default.
+It is unavailable on iOS, Android and web, where the Settings section is absent.
+Code lives under `lib/features/mcp/`.
+
+Desktop has no cloud sync, so the data served is whatever was logged on the desktop or imported from a JSON backup.
+
+== Architecture
+
+[cols="1,3"]
+|===
+|Layer |Contents
+
+|`domain/`
+|`McpSettings` (enabled, port, token, includeClients, includeHealthProfile, disclosureAccepted); `McpServerStatus` (`McpStopped`, `McpRunning(port)`, `McpFailed(reason)`); `isMcpHostSupported()`.
+
+|`application/`
+|Pure Dart. The `McpTool` interface (name, description, `inputSchema` map, `call(args)` returning a JSON map); `McpToolError`, which becomes a tool error result; `McpScope`; `mcp_args.dart`; `buildMcpTools(deps, settings)`; `kMcpServerInstructions`.
+
+|`data/`
+|`McpServerHost`, the only file that imports the `mcp_dart` package; the `isMcpRequestAllowed()` guard; `mcpHostSupportedOnThisPlatform()`.
+
+|`presentation/`
+|`McpSettingsNotifier` and `McpServerController`. The Settings card is `_McpCard` in `settings_screen.dart`.
+|===
+
+Details worth knowing:
+
+* `McpScope` limits results to Me unless `includeClients` is on. When it is off, a `client_id` argument is rejected. Another client's workout id answers "Workout not found", so existence is not leaked.
+* `mcp_args.dart` applies a default `limit` of 20, capped at 100, parses ISO 8601 dates, and handles an opaque base64url cursor.
+* `McpServerHost` wraps `StreamableMcpServer`, which supports MCP 2025-11-25 sessions and 2026-07-28 stateless requests. A fresh `McpServer` is created per request or session.
+* Analytics aggregates moved to `lib/features/analytics/application/training_aggregates.dart` so the training-summary tool and the analytics screen share them.
+
+=== Settings and lifecycle
+
+`McpSettingsNotifier` persists to SharedPreferences under `mcp_enabled`, `mcp_port`, `mcp_token`, `mcp_include_clients`, `mcp_include_health_profile` and `mcp_disclosure_accepted`.
+
+`McpServerController` is started from `main()`.
+It applies settings changes one at a time on a single future chain, so a burst of toggles can never leave two servers bound.
+It restarts the server only when the port, the token or a toggle changes.
+Errors become `McpFailed` and never reach the app.
+
+== Request flow
+
+[source,mermaid]
+----
+include::example$mcp-request-flow.mmd[]
+----
+
+== Security model
+
+The server binds `127.0.0.1` only, never all interfaces.
+Every request passes these checks:
+
+Bearer token::
+Requires `Authorization: Bearer <token>`. The token is 256 bits of randomness, base64url encoded, and stored in SharedPreferences. The database beside it is equally readable by the same OS user, so a keychain would add no protection.
+
+No `Origin` header::
+Any request carrying an `Origin` header is rejected, which blocks web pages and DNS rebinding. The host passes `allowedOrigins: {'https://no-browser-access.invalid'}` to the SDK, so any Origin fails its DNS-rebinding check before CORS or `OPTIONS` handling. `isMcpRequestAllowed()` adds a guard of its own.
+
+Exact `Host`::
+`Host` must be exactly `127.0.0.1:<port>` or `localhost:<port>`. The SDK's own check ignores the port, so ours is stricter.
+
+Failed checks answer *403*, not 401.
+This is deliberate: without OAuth metadata the SDK answers 403, and advertising fake OAuth metadata would push clients into an OAuth flow.
+
+The macOS release entitlements gain `com.apple.security.network.server` so the sandbox allows the listener.
+
+All tools carry the annotations `readOnlyHint: true`, `destructiveHint: false`, `idempotentHint: true` and `openWorldHint: false`.
+
+== Tool catalogue
+
+[cols="2,4"]
+|===
+|Tool |Returns
+
+|`list_workouts`
+|Completed sessions, newest first, with exercises, working-set count and volume excluding warm-ups. The first page also returns any in-progress session as `in_progress`. Paged.
+
+|`get_workout`
+|Sets grouped by exercise, including RPE, estimated one-rep max and heart rate; cardio summaries; stretches.
+
+|`list_exercises`
+|The exercise library with times used.
+
+|`get_exercise_history`
+|History for one exercise.
+
+|`list_personal_records`
+|Personal records, each with a `unit` of `kg`, `reps` or `kg_x_reps`.
+
+|`get_training_summary`
+|Weekly volume, change, set count, average RPE, load and muscle balance over N local weeks (default 8).
+
+|`list_cardio_sessions`
+|Cardio sessions. Paged.
+
+|`get_cardio_progress`
+|Six-week cardio progress.
+
+|`get_weekly_heart_report`
+|Seven days of heart data, including time in zone.
+
+|`list_body_metrics`
+|Body metric entries.
+
+|`list_templates`
+|Workout templates.
+
+|`list_programmes`
+|Programmes.
+
+|`list_clients`
+|Client roster. Registered only when `includeClients` is on.
+
+|`get_health_profile`
+|Health profile. Registered only when `includeHealthProfile` is on.
+|===
+
+Conventions:
+
+* Units are in field names: kg, km, seconds, bpm.
+* Timestamps are ISO 8601 local time with offset.
+* Weeks start on Monday.
+* Deleted records are never returned.
+* GPS routes and positions are never returned.
+
+== Testing
+
+* Tool tests run over in-memory repositories.
+* A read-only proof seals write-guarded repositories and calls every tool.
+* Host tests use real loopback sockets. They must clear flutter_test's mock `HttpOverrides`, which answers every HTTP request with 400.
+* Every security check was mutation-tested.
