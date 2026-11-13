@@ -50,6 +50,27 @@ void main() {
     expect(rows.first['date'], '2026-03-08');
   });
 
+  test('list_body_metrics pages with next_cursor', () async {
+    final repo = FakeBodyMetricRepository([
+      for (var d = 1; d <= 25; d++)
+        _metric('m$d', DateTime(2026, 1, d), 80.0 + d),
+    ]);
+    final tool = ListBodyMetricsTool(repo, f.scope());
+    final seen = <Object?>[];
+    final sizes = <int>[];
+    Object? cursor;
+    do {
+      final r =
+          await tool.call({'limit': 10, if (cursor != null) 'cursor': cursor});
+      final rows = r['entries']! as List;
+      sizes.add(rows.length);
+      seen.addAll(rows.map((e) => (e as Map)['date']));
+      cursor = r['next_cursor'];
+    } while (cursor != null);
+    expect(sizes, [10, 10, 5]);
+    expect(seen.toSet(), hasLength(25));
+  });
+
   test('list_templates lists live templates with exercises in order', () async {
     final repo = InMemoryWorkoutTemplateRepository();
     TemplateExercise ex(String id, String name, int order,

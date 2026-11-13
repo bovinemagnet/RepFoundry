@@ -19,13 +19,15 @@ class ListBodyMetricsTool implements McpTool {
 
   @override
   String get description =>
-      'Lists body weight and optional body-fat entries, newest first.';
+      'Lists body weight and optional body-fat entries, newest first. Page '
+      'with `next_cursor`.';
 
   @override
   Map<String, Object?> get inputSchema => objectSchema({
         'from': kFromSchema,
         'to': kToSchema,
         'limit': kLimitSchema,
+        'cursor': kCursorSchema,
         'client_id': kClientIdSchema,
       });
 
@@ -33,18 +35,20 @@ class ListBodyMetricsTool implements McpTool {
   Future<Map<String, Object?>> call(Map<String, Object?> args) async {
     final clientId = await _scope.resolveClientId(args);
     final from = parseDate(args, 'from');
-    final to = parseDate(args, 'to');
+    final before = decodeCursor(args) ?? parseDate(args, 'to');
     final limit = parseLimit(args);
     final rows = (await _metrics.getAll(clientId: clientId, limit: 1000))
         .where((m) =>
             !m.isDeleted &&
             (from == null || !m.date.isBefore(from)) &&
-            (to == null || m.date.isBefore(to)))
+            (before == null || m.date.isBefore(before)))
         .toList()
       ..sort((a, b) => b.date.compareTo(a.date));
+    final page = rows.take(limit).toList();
     return {
+      'next_cursor': rows.length > limit ? encodeCursor(page.last.date) : null,
       'entries': [
-        for (final m in rows.take(limit))
+        for (final m in page)
           {
             'date': isoDate(m.date),
             'weight_kg': round2(m.weight),

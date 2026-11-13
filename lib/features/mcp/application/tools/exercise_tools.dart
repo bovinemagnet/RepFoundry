@@ -91,7 +91,8 @@ class GetExerciseHistoryTool implements McpTool {
   String get description =>
       'Returns the sets of one exercise grouped by session, newest first, '
       'with the best estimated one-rep max and total working-set volume '
-      'across the sessions returned. `limit` counts sessions. Covers the '
+      'across the sessions returned. `limit` counts sessions; page with '
+      '`next_cursor`. Covers the '
       'most recent 200 sets.';
 
   @override
@@ -103,6 +104,7 @@ class GetExerciseHistoryTool implements McpTool {
         'from': kFromSchema,
         'to': kToSchema,
         'limit': kLimitSchema,
+        'cursor': kCursorSchema,
         'client_id': kClientIdSchema,
       }, required: [
         'exercise_id'
@@ -114,7 +116,7 @@ class GetExerciseHistoryTool implements McpTool {
     final clientId = await _scope.resolveClientId(args);
     final limit = parseLimit(args);
     final from = parseDate(args, 'from');
-    final to = parseDate(args, 'to');
+    final before = decodeCursor(args) ?? parseDate(args, 'to');
     final exercise = await _exercises.getExercise(exerciseId);
     if (exercise == null || exercise.isDeleted) {
       throw const McpToolError('Exercise not found');
@@ -133,7 +135,7 @@ class GetExerciseHistoryTool implements McpTool {
         .map((e) => (id: e.key, date: sessionDate(e.value), sets: e.value))
         .where((s) =>
             (from == null || !s.date.isBefore(from)) &&
-            (to == null || s.date.isBefore(to)))
+            (before == null || s.date.isBefore(before)))
         .toList()
       ..sort((a, b) => b.date.compareTo(a.date));
     final page = sessions.take(limit).toList();
@@ -152,6 +154,8 @@ class GetExerciseHistoryTool implements McpTool {
       'max_estimated_1rm_kg': round2OrNull(best),
       'total_volume_kg':
           round2(working.fold<double>(0, (sum, s) => sum + s.volume)),
+      'next_cursor':
+          sessions.length > limit ? encodeCursor(page.last.date) : null,
       'sessions': [
         for (final s in page)
           {
@@ -189,13 +193,15 @@ class ListPersonalRecordsTool implements McpTool {
   @override
   String get description =>
       'Lists personal records newest first: estimated one-rep max, heaviest '
-      'weight, most reps and biggest single-set volume, each with its unit.';
+      'weight, most reps and biggest single-set volume, each with its unit. '
+      'Page with `next_cursor`.';
 
   @override
   Map<String, Object?> get inputSchema => objectSchema({
         'exercise_id': {'type': 'string'},
         'from': kFromSchema,
         'limit': kLimitSchema,
+        'cursor': kCursorSchema,
         'client_id': kClientIdSchema,
       });
 
@@ -205,6 +211,7 @@ class ListPersonalRecordsTool implements McpTool {
     final exerciseId = optionalString(args, 'exercise_id');
     final from = parseDate(args, 'from');
     final limit = parseLimit(args);
+    final before = decodeCursor(args);
 
     final found = exerciseId == null
         ? await _records.getAllRecords(clientId: clientId, limit: 1000)
@@ -212,13 +219,18 @@ class ListPersonalRecordsTool implements McpTool {
     final names = await exercisesById(_exercises);
     final rows = found
         .where((r) =>
-            !r.isDeleted && (from == null || !r.achievedAt.isBefore(from)))
+            !r.isDeleted &&
+            (from == null || !r.achievedAt.isBefore(from)) &&
+            (before == null || r.achievedAt.isBefore(before)))
         .toList()
       ..sort((a, b) => b.achievedAt.compareTo(a.achievedAt));
 
+    final page = rows.take(limit).toList();
     return {
+      'next_cursor':
+          rows.length > limit ? encodeCursor(page.last.achievedAt) : null,
       'records': [
-        for (final r in rows.take(limit))
+        for (final r in page)
           {
             'exercise_id': r.exerciseId,
             'exercise_name': names[r.exerciseId]?.name ?? kUnknownExerciseName,

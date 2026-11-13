@@ -97,6 +97,29 @@ void main() {
       expect(ranged['sessions'], hasLength(2));
     });
 
+    test('pages sessions with next_cursor', () async {
+      for (var d = 1; d <= 5; d++) {
+        final w = await f.workout(DateTime(2026, 3, d));
+        await f.set(w, bench, weight: 100, reps: 5);
+      }
+      final seen = <Object?>[];
+      final sizes = <int>[];
+      Object? cursor;
+      do {
+        final r = await tool().call({
+          'exercise_id': bench.id,
+          'limit': 2,
+          if (cursor != null) 'cursor': cursor,
+        });
+        final sessions = r['sessions']! as List;
+        sizes.add(sessions.length);
+        seen.addAll(sessions.map((e) => (e as Map)['workout_id']));
+        cursor = r['next_cursor'];
+      } while (cursor != null);
+      expect(sizes, [2, 2, 1]);
+      expect(seen.toSet(), hasLength(5));
+    });
+
     test('rejects an unknown exercise', () async {
       await expectLater(
           tool().call({'exercise_id': 'nope'}), throwsA(isA<McpToolError>()));
@@ -147,6 +170,25 @@ void main() {
       expect(rows.map((e) => e['unit']), ['kg', 'kg_x_reps', 'reps', 'kg']);
       expect(rows.first['exercise_name'], 'Zz Bench Press');
       expect(rows.first['value'], 116.67);
+    });
+
+    test('pages records with next_cursor', () async {
+      for (var d = 1; d <= 25; d++) {
+        await record(RecordType.maxWeight, 100.0 + d, DateTime(2026, 1, d));
+      }
+      final seen = <Object?>[];
+      final sizes = <int>[];
+      Object? cursor;
+      do {
+        final r = await tool()
+            .call({'limit': 10, if (cursor != null) 'cursor': cursor});
+        final rows = r['records']! as List;
+        sizes.add(rows.length);
+        seen.addAll(rows.map((e) => (e as Map)['value']));
+        cursor = r['next_cursor'];
+      } while (cursor != null);
+      expect(sizes, [10, 10, 5]);
+      expect(seen.toSet(), hasLength(25));
     });
 
     test('filters by exercise and date, and hides other clients', () async {
