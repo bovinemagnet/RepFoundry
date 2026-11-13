@@ -2828,4 +2828,75 @@ class SEn extends S {
   @override
   String get trainerSettingsEntrySubtitle =>
       'Your coach\'s voice, persona, and safety notice.';
+
+  @override
+  String get sectionMcp => 'AI Assistant Access (MCP)';
+
+  @override
+  String get mcpEnableTitle => 'Allow assistants to read my data';
+
+  @override
+  String get mcpEnableSubtitle =>
+      'Apps on this computer can query your training log';
+
+  @override
+  String get mcpStatusTitle => 'Status';
+
+  @override
+  String get mcpStatusStopped => 'Off';
+
+  @override
+  String mcpStatusRunning(int port) {
+    return 'Running on 127.0.0.1:$port';
+  }
+
+  @override
+  String mcpStatusFailed(String reason) {
+    return 'Could not start: $reason';
+  }
+
+  @override
+  String get mcpEndpointTitle => 'Endpoint';
+
+  @override
+  String get mcpTokenTitle => 'Access token';
+
+  @override
+  String get mcpCopy => 'Copy';
+
+  @override
+  String get mcpCopied => 'Copied';
+
+  @override
+  String get mcpRegenerateToken => 'Regenerate';
+
+  @override
+  String get mcpPortTitle => 'Port';
+
+  @override
+  String get mcpPortInvalid => 'Enter a port between 1024 and 65535';
+
+  @override
+  String get mcpIncludeClientsTitle => 'Include client data';
+
+  @override
+  String get mcpIncludeClientsSubtitle =>
+      'Let assistants read your clients\' training';
+
+  @override
+  String get mcpIncludeHealthTitle => 'Include health profile';
+
+  @override
+  String get mcpIncludeHealthSubtitle =>
+      'Age, heart-rate limits and medical flags';
+
+  @override
+  String get mcpDisclosureTitle => 'Before you turn this on';
+
+  @override
+  String get mcpDisclosureBody =>
+      'An assistant you connect can read your training data. Most assistants send what they read to their AI provider. Nothing is shared until you connect an assistant using the endpoint and token shown here.';
+
+  @override
+  String get mcpDisclosureAccept => 'Turn on';
 }

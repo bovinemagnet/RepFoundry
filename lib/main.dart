@@ -7,6 +7,7 @@ import 'core/database/app_database.dart';
 import 'core/database/database_provider.dart';
 import 'core/providers.dart';
 import 'features/notifications/data/notification_service.dart';
+import 'features/mcp/presentation/providers/mcp_server_controller.dart';
 import 'features/sync/presentation/providers/sync_settings_provider.dart';
 
 Future<void> main() async {
@@ -44,6 +45,9 @@ class _AppWithLifecycleState extends ConsumerState<_AppWithLifecycle>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Desktop only: starts the assistant (MCP) server if the user enabled
+    // it. The controller does nothing on other platforms.
+    ref.read(mcpServerControllerProvider);
   }
 
   @override

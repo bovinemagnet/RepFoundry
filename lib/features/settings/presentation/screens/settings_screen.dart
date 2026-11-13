@@ -38,6 +38,10 @@ import '../../../../core/responsive/layout_mode.dart';
 import '../providers/user_age_provider.dart';
 import '../../../notifications/presentation/providers/reminder_settings_provider.dart';
 import '../../../notifications/domain/models/reminder_settings.dart';
+import '../../../mcp/domain/mcp_server_status.dart';
+import '../../../mcp/domain/mcp_settings.dart';
+import '../../../mcp/presentation/providers/mcp_server_controller.dart';
+import '../../../mcp/presentation/providers/mcp_settings_provider.dart';
 import '../../../../core/widgets/kinetic.dart';
 import '../../../../core/units/plate_calculator.dart';
 import '../providers/plate_settings_provider.dart';
@@ -443,6 +447,14 @@ class SettingsScreen extends ConsumerWidget {
             _DataCard(s: s),
 
             const SizedBox(height: 22),
+
+            // ── AI ASSISTANT ACCESS (desktop only) ────────────────────────
+            if (ref.watch(mcpHostSupportedProvider)) ...[
+              KineticSectionLabel(s.sectionMcp),
+              const SizedBox(height: 11),
+              _McpCard(s: s),
+              const SizedBox(height: 22),
+            ],
 
             // ── ABOUT ─────────────────────────────────────────────────────
             KineticSectionLabel(s.sectionAbout),
@@ -907,7 +919,8 @@ class _PlateCalculatorCard extends ConsumerWidget {
 /// iOS-style toggle that reflects the Kinetic Green design (.toggle / .toggle--on).
 /// Uses Flutter's [Switch] for accessibility; styled via the ambient theme.
 class _KineticToggle extends StatelessWidget {
-  const _KineticToggle({required this.value, required this.onChanged});
+  const _KineticToggle(
+      {super.key, required this.value, required this.onChanged});
 
   final bool value;
   final ValueChanged<bool> onChanged;
@@ -1725,6 +1738,211 @@ class _ImportFileRowState extends ConsumerState<_ImportFileRow> {
 
 /// Ghosted "REPFOUNDRY" wordmark + mono caption.
 /// Mirrors the design's footer: very low opacity Space Grotesk + dim mono.
+// ─── AI assistant access (MCP) card ──────────────────────────────────────────
+
+/// Desktop-only controls for the read-only MCP server.
+class _McpCard extends ConsumerWidget {
+  const _McpCard({required this.s});
+
+  final S s;
+
+  static const _maskedToken = '••••••••••••••••';
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(mcpSettingsProvider);
+    final status = ref.watch(mcpServerControllerProvider);
+    final notifier = ref.read(mcpSettingsProvider.notifier);
+    final endpoint = 'http://127.0.0.1:${settings.port}/mcp';
+
+    final statusText = switch (status) {
+      McpRunning(:final port) => s.mcpStatusRunning(port),
+      McpFailed(:final reason) => s.mcpStatusFailed(reason),
+      McpStopped() => s.mcpStatusStopped,
+    };
+
+    return _Set2Card(children: [
+      _Set2Row(
+        icon: Icons.smart_toy_outlined,
+        title: s.mcpEnableTitle,
+        subtitle: s.mcpEnableSubtitle,
+        trailing: _KineticToggle(
+          key: const Key('mcp-enable-switch'),
+          value: settings.enabled,
+          onChanged: (on) => _setEnabled(context, ref, settings, on),
+        ),
+      ),
+      _Set2Row(
+        icon: Icons.lan_outlined,
+        title: s.mcpStatusTitle,
+        subtitle: statusText,
+      ),
+      if (settings.enabled && settings.token.isNotEmpty) ...[
+        _Set2Row(
+          icon: Icons.link,
+          title: s.mcpEndpointTitle,
+          subtitle: endpoint,
+          trailing: _copyButton(context, endpoint),
+        ),
+        _Set2Row(
+          icon: Icons.key_outlined,
+          title: s.mcpTokenTitle,
+          subtitle: _maskedToken,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _copyButton(context, settings.token),
+              TextButton(
+                onPressed: notifier.regenerateToken,
+                child: Text(s.mcpRegenerateToken),
+              ),
+            ],
+          ),
+        ),
+      ],
+      _Set2Row(
+        icon: Icons.numbers,
+        title: s.mcpPortTitle,
+        subtitle: '${settings.port}',
+        trailing: _ChevronTrailing(),
+        onTap: () => _editPort(context, ref, settings.port),
+      ),
+      _Set2Row(
+        icon: Icons.groups_outlined,
+        title: s.mcpIncludeClientsTitle,
+        subtitle: s.mcpIncludeClientsSubtitle,
+        trailing: _KineticToggle(
+          value: settings.includeClients,
+          onChanged: notifier.setIncludeClients,
+        ),
+      ),
+      _Set2Row(
+        icon: Icons.monitor_heart_outlined,
+        title: s.mcpIncludeHealthTitle,
+        subtitle: s.mcpIncludeHealthSubtitle,
+        trailing: _KineticToggle(
+          value: settings.includeHealthProfile,
+          onChanged: notifier.setIncludeHealthProfile,
+        ),
+      ),
+    ]);
+  }
+
+  Widget _copyButton(BuildContext context, String value) {
+    return IconButton(
+      tooltip: s.mcpCopy,
+      icon: const Icon(Icons.copy, size: 18),
+      onPressed: () async {
+        await Clipboard.setData(ClipboardData(text: value));
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(s.mcpCopied)));
+      },
+    );
+  }
+
+  Future<void> _setEnabled(
+    BuildContext context,
+    WidgetRef ref,
+    McpSettings settings,
+    bool on,
+  ) async {
+    final notifier = ref.read(mcpSettingsProvider.notifier);
+    if (on && !settings.disclosureAccepted) {
+      final accepted = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(s.mcpDisclosureTitle),
+          content: Text(s.mcpDisclosureBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(s.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(s.mcpDisclosureAccept),
+            ),
+          ],
+        ),
+      );
+      if (accepted != true) return;
+      await notifier.acceptDisclosure();
+    }
+    await notifier.setEnabled(on);
+  }
+
+  Future<void> _editPort(
+      BuildContext context, WidgetRef ref, int current) async {
+    final port = await showDialog<int>(
+      context: context,
+      builder: (_) => _McpPortDialog(s: s, current: current),
+    );
+    if (port != null) {
+      await ref.read(mcpSettingsProvider.notifier).setPort(port);
+    }
+  }
+}
+
+/// Asks for a loopback port; owns its text controller so it outlives the
+/// dialog's closing animation.
+class _McpPortDialog extends StatefulWidget {
+  const _McpPortDialog({required this.s, required this.current});
+
+  final S s;
+  final int current;
+
+  @override
+  State<_McpPortDialog> createState() => _McpPortDialogState();
+}
+
+class _McpPortDialogState extends State<_McpPortDialog> {
+  late final TextEditingController _controller =
+      TextEditingController(text: '${widget.current}');
+  String? _error;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final value = int.tryParse(_controller.text);
+    if (value == null || value < kMinMcpPort || value > kMaxMcpPort) {
+      setState(() => _error = widget.s.mcpPortInvalid);
+      return;
+    }
+    Navigator.pop(context, value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.s;
+    return AlertDialog(
+      title: Text(s.mcpPortTitle),
+      content: TextField(
+        controller: _controller,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        autofocus: true,
+        decoration: InputDecoration(
+          labelText: s.mcpPortTitle,
+          errorText: _error,
+          border: const OutlineInputBorder(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(s.cancel),
+        ),
+        FilledButton(onPressed: _save, child: Text(s.save)),
+      ],
+    );
+  }
+}
+
 class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
