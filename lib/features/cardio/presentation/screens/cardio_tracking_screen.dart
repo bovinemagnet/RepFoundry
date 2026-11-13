@@ -17,7 +17,14 @@ import '../widgets/hr_setup_guide_dialog.dart';
 
 final _cardioExercisesProvider = FutureProvider<List<Exercise>>((ref) async {
   final repo = ref.watch(exerciseRepositoryProvider);
-  return repo.getExercisesByMuscleGroup(MuscleGroup.cardio);
+  // Category or muscle group: the default Rowing Machine is a cardio
+  // exercise that works the full body (issue #148).
+  final exercises = await repo.getAllExercises();
+  return exercises
+      .where((e) =>
+          e.category == ExerciseCategory.cardio ||
+          e.muscleGroup == MuscleGroup.cardio)
+      .toList();
 });
 
 class CardioTrackingScreen extends ConsumerStatefulWidget {
@@ -494,51 +501,77 @@ class _ExerciseSegControl extends StatelessWidget {
             color: cs.surfaceContainerLow,
             borderRadius: BorderRadius.circular(999),
           ),
-          child: Row(
-            children: exercises.map((ex) {
-              final isSelected = ex.id == selectedId;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => onSelected(ex.id, ex.name),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 11,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected ? cs.primary : Colors.transparent,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.directions_run,
-                          size: 17,
-                          color:
-                              isSelected ? cs.onPrimary : cs.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            ex.name,
-                            overflow: TextOverflow.ellipsis,
-                            style: KineticText.mono(
-                              size: 12,
-                              letterSpacing: 0.4,
-                              color: isSelected
-                                  ? cs.onPrimary
-                                  : cs.onSurfaceVariant,
+          // Pills share the full width while they fit; once they don't, each
+          // takes the width of the longest name and the row scrolls.
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                child: IntrinsicWidth(
+                  child: Row(
+                    children: exercises.map((ex) {
+                      final isSelected = ex.id == selectedId;
+                      return Expanded(
+                        child: Builder(
+                          builder: (pillContext) => GestureDetector(
+                            onTap: () {
+                              onSelected(ex.id, ex.name);
+                              // A pill cut off by the edge slides into view.
+                              // Only this row scrolls, not the page.
+                              Scrollable.of(pillContext).position.ensureVisible(
+                                    pillContext.findRenderObject()!,
+                                    alignment: 0.5,
+                                    duration: const Duration(milliseconds: 200),
+                                  );
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 11,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? cs.primary
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.directions_run,
+                                    size: 17,
+                                    color: isSelected
+                                        ? cs.onPrimary
+                                        : cs.onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      ex.name,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: KineticText.mono(
+                                        size: 12,
+                                        letterSpacing: 0.4,
+                                        color: isSelected
+                                            ? cs.onPrimary
+                                            : cs.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      );
+                    }).toList(),
                   ),
                 ),
-              );
-            }).toList(),
+              ),
+            ),
           ),
         );
       },

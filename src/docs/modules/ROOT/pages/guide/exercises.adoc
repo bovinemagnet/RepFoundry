@@ -26,9 +26,9 @@ Built-in exercises show a chevron on the right; tapping the row selects that exe
 Every exercise has both a *category* (Strength, Cardio, Flexibility, or Custom) and a *muscle group* (Chest, Back, Shoulders, Biceps, Triceps, Forearms, Core, Quadriceps, Hamstrings, Glutes, Calves, Full Body, or Cardio). They look similar but drive different things:
 
 * *Category* sets the icon shown on the exercise's avatar in the library list.
-* *Muscle group* drives the filter chips on this screen — and, separately, it is what decides which exercises appear as choices on the *Cardio* tab. The cardio exercise list filters on muscle group only, not category.
+* *Muscle group* drives the filter chips on this screen — and, separately, it is one of the two things that decide which exercises appear as choices on the *Cardio* tab.
 
-This matters if you create your own cardio machine or activity: giving it a Cardio *category* is not enough to make it appear on the Cardio tab. Its muscle group must also be set to Cardio. The built-in *Rowing Machine* exercise is a good example of the trap — its category is Cardio, but its muscle group is Full Body, so it does not appear in the Cardio tab's exercise list even though it is clearly a cardio machine. See xref:guide/cardio.adoc[] for how that list is used.
+This matters if you create your own cardio machine or activity: an exercise appears on the Cardio tab if its *category* is Cardio or its *muscle group* is Cardio, so setting either one is enough. The built-in *Rowing Machine* exercise has a Cardio category and a Full Body muscle group, and it appears in the list because of its category. See xref:guide/cardio.adoc[] for how that list is used.
 
 == Creating a custom exercise
 
@@ -47,7 +47,7 @@ Tap the edit icon on a custom exercise's row to change its name, category, muscl
 
 == The default exercise library
 
-RepFoundry seeds 21 exercises on first run:
+RepFoundry seeds 23 exercises on first run:
 
 [cols="3,1,2,2"]
 |===
@@ -59,6 +59,7 @@ RepFoundry seeds 21 exercises on first run:
 | Cable Fly | Strength | Chest | Cable
 | Deadlift | Strength | Back | Barbell
 | Dumbbell Curl | Strength | Biceps | Dumbbell
+| Elliptical | Cardio | Cardio | Cardio Machine
 | Hip Thrust | Strength | Glutes | Barbell
 | Incline Dumbbell Press | Strength | Chest | Dumbbell
 | Lat Pulldown | Strength | Back | Cable
@@ -71,6 +72,7 @@ RepFoundry seeds 21 exercises on first run:
 | Pull-up | Strength | Back | Bodyweight
 | Romanian Deadlift | Strength | Hamstrings | Barbell
 | Rowing Machine | Cardio | Full Body | Cardio Machine
+| Stair Climber | Cardio | Cardio | Cardio Machine
 | Stationary Bike | Cardio | Cardio | Cardio Machine
 | Treadmill | Cardio | Cardio | Cardio Machine
 | Tricep Pushdown | Strength | Triceps | Cable

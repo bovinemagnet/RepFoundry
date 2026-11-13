@@ -176,6 +176,22 @@ class InMemoryExerciseRepository implements ExerciseRepository {
         equipmentType: EquipmentType.machine,
         updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       ),
+      Exercise(
+        id: '22',
+        name: 'Elliptical',
+        category: ExerciseCategory.cardio,
+        muscleGroup: MuscleGroup.cardio,
+        equipmentType: EquipmentType.cardioMachine,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      ),
+      Exercise(
+        id: '23',
+        name: 'Stair Climber',
+        category: ExerciseCategory.cardio,
+        muscleGroup: MuscleGroup.cardio,
+        equipmentType: EquipmentType.cardioMachine,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      ),
     ];
   }
 

@@ -20,7 +20,7 @@ All sets are persisted to SQLite immediately on entry — never batched — so d
 
 == Exercise Library
 
-RepFoundry seeds 21 default exercises into the database on first run (IDs `'1'` through `'21'`).
+RepFoundry seeds 23 default exercises into the database on first run (IDs `'1'` through `'23'`). Elliptical (`'22'`) and Stair Climber (`'23'`) were added in schema v15; existing installs receive them through a migration step, see xref:features/cardio.adoc#sport-list[Cardio].
 
 === Exercise Model
 

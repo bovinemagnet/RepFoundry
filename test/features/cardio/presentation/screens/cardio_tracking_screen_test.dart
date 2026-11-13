@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rep_foundry/features/cardio/domain/models/cardio_session.dart';
@@ -209,6 +210,138 @@ void main() {
 
       expect(find.text('Treadmill'), findsOneWidget);
       expect(find.text('Rowing'), findsOneWidget);
+    });
+
+    testWidgets(
+        'lists a cardio exercise whose muscle group is not cardio, and '
+        'leaves strength exercises off', (tester) async {
+      // Issue #148: the default Rowing Machine is a cardio exercise with a
+      // Full Body muscle group, and never appeared on the Cardio tab.
+      await tester.pumpWidget(buildScreen(cardioExercises: [
+        cardioExercise('Treadmill'),
+        Exercise.create(
+          name: 'Rowing Machine',
+          category: ExerciseCategory.cardio,
+          muscleGroup: MuscleGroup.fullBody,
+          equipmentType: EquipmentType.cardioMachine,
+        ),
+        Exercise.create(
+          name: 'Bench Press',
+          category: ExerciseCategory.strength,
+          muscleGroup: MuscleGroup.chest,
+          equipmentType: EquipmentType.barbell,
+        ),
+      ]));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Rowing Machine'), findsOneWidget);
+      expect(find.text('Bench Press'), findsNothing);
+    });
+
+    testWidgets(
+        'still lists an exercise filed under the cardio muscle group alone',
+        (tester) async {
+      // Before #148 the list was keyed on muscle group, so an exercise set
+      // up that way must not drop off it.
+      await tester.pumpWidget(buildScreen(cardioExercises: [
+        Exercise.create(
+          name: 'Skipping',
+          category: ExerciseCategory.strength,
+          muscleGroup: MuscleGroup.cardio,
+          equipmentType: EquipmentType.bodyweight,
+        ),
+      ]));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Skipping'), findsOneWidget);
+    });
+
+    testWidgets('shows five sports in full on a narrow phone', (tester) async {
+      final binding = TestWidgetsFlutterBinding.ensureInitialized();
+      binding.platformDispatcher.views.first.physicalSize =
+          const Size(720, 1480);
+      binding.platformDispatcher.views.first.devicePixelRatio = 1.75;
+
+      const names = [
+        'Elliptical',
+        'Rowing Machine',
+        'Stair Climber',
+        'Stationary Bike',
+        'Treadmill',
+      ];
+      await tester.pumpWidget(buildScreen(
+        cardioExercises: [for (final name in names) cardioExercise(name)],
+      ));
+      await tester.pumpAndSettle();
+
+      for (final name in names) {
+        final paragraph = tester.renderObject<RenderParagraph>(find.text(name));
+        expect(
+          paragraph.size.width,
+          greaterThanOrEqualTo(
+            paragraph.getMaxIntrinsicWidth(double.infinity) - 0.5,
+          ),
+          reason: '$name must not be truncated',
+        );
+      }
+
+      // The last pill can be reached and selected.
+      await tester.ensureVisible(find.text('Treadmill'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Treadmill'));
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(CardioTrackingScreen)),
+      );
+      expect(container.read(cardioTrackingProvider).selectedExerciseName,
+          'Treadmill');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a tapped sport pill half off the edge scrolls into view',
+        (tester) async {
+      final binding = TestWidgetsFlutterBinding.ensureInitialized();
+      binding.platformDispatcher.views.first.physicalSize =
+          const Size(720, 1480);
+      binding.platformDispatcher.views.first.devicePixelRatio = 1.75;
+
+      await tester.pumpWidget(buildScreen(cardioExercises: [
+        for (final name in [
+          'Elliptical',
+          'Rowing Machine',
+          'Stair Climber',
+          'Stationary Bike',
+          'Treadmill',
+        ])
+          cardioExercise(name),
+      ]));
+      await tester.pumpAndSettle();
+
+      final pill = find
+          .ancestor(
+            of: find.text('Stair Climber'),
+            matching: find.byType(GestureDetector),
+          )
+          .first;
+      final viewport = tester.getRect(
+          find.ancestor(of: pill, matching: find.byType(Scrollable)).first);
+      final before = tester.getRect(pill);
+      // Precondition: the pill starts cut off by the right edge.
+      expect(before.left, lessThan(viewport.right));
+      expect(before.right, greaterThan(viewport.right));
+
+      await tester.tapAt(Offset(before.left + 10, before.center.dy));
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(CardioTrackingScreen)),
+      );
+      expect(container.read(cardioTrackingProvider).selectedExerciseName,
+          'Stair Climber');
+      final after = tester.getRect(pill);
+      expect(after.left, greaterThanOrEqualTo(viewport.left - 0.5));
+      expect(after.right, lessThanOrEqualTo(viewport.right + 0.5));
     });
 
     testWidgets('selects the first cardio exercise by default', (tester) async {

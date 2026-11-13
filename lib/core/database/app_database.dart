@@ -48,7 +48,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// Static accessor for the schema version, usable from non-database code
   /// (e.g. the sync serialiser) without an `AppDatabase` instance.
-  static const int schemaVersionConst = 14;
+  static const int schemaVersionConst = 15;
 
   @override
   int get schemaVersion => schemaVersionConst;
@@ -315,6 +315,20 @@ class AppDatabase extends _$AppDatabase {
             await m.createIndex(idxCardioTrackPointsSession);
             await m.createIndex(idxCardioHeartRateSamplesSession);
           }
+          if (from < 15) {
+            // More default cardio machines (issue #148). Skipped when the
+            // user already made an exercise of the same name.
+            for (final ex in _cardioExercisesAddedInV15) {
+              final existing = await customSelect(
+                'SELECT 1 FROM exercises WHERE id = ? OR lower(name) = lower(?)',
+                variables: [
+                  Variable.withString(ex.id.value),
+                  Variable.withString(ex.name.value),
+                ],
+              ).get();
+              if (existing.isEmpty) await into(exercises).insert(ex);
+            }
+          }
         },
       );
 
@@ -357,8 +371,8 @@ ClientsCompanion _selfClientCompanion() => ClientsCompanion.insert(
       updatedAt: const Value(0),
     );
 
-/// The 21 default exercises seeded on first run.
-/// IDs '1'–'21' match the in-memory implementation.
+/// The 23 default exercises seeded on first run.
+/// IDs '1'–'23' match the in-memory implementation.
 const _defaultExercises = [
   ExercisesCompanion(
     id: Value('1'),
@@ -524,5 +538,25 @@ const _defaultExercises = [
     category: Value('strength'),
     muscleGroup: Value('hamstrings'),
     equipmentType: Value('machine'),
+  ),
+  ..._cardioExercisesAddedInV15,
+];
+
+/// Default cardio machines added in schema v15 (issue #148), so the upgrade
+/// can seed them on existing installs too.
+const _cardioExercisesAddedInV15 = [
+  ExercisesCompanion(
+    id: Value('22'),
+    name: Value('Elliptical'),
+    category: Value('cardio'),
+    muscleGroup: Value('cardio'),
+    equipmentType: Value('cardioMachine'),
+  ),
+  ExercisesCompanion(
+    id: Value('23'),
+    name: Value('Stair Climber'),
+    category: Value('cardio'),
+    muscleGroup: Value('cardio'),
+    equipmentType: Value('cardioMachine'),
   ),
 ];

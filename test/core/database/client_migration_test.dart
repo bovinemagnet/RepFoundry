@@ -90,6 +90,21 @@ void main() {
               deleted_at INTEGER NULL
             )
           ''');
+          // Not coach-scoped, but the later v15 step seeds cardio exercises
+          // into it on the way to the current version.
+          rawDb.execute('''
+            CREATE TABLE exercises (
+              id TEXT NOT NULL PRIMARY KEY,
+              name TEXT NOT NULL,
+              category TEXT NOT NULL,
+              muscle_group TEXT NOT NULL,
+              equipment_type TEXT NOT NULL,
+              is_custom INTEGER NOT NULL DEFAULT 0,
+              image_asset TEXT NULL,
+              updated_at INTEGER NOT NULL DEFAULT 0,
+              deleted_at INTEGER NULL
+            )
+          ''');
 
           // One pre-existing row per table, as a real upgrading install
           // would have accumulated before the roster feature shipped.
