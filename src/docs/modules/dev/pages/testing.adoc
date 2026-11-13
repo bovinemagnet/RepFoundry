@@ -162,6 +162,22 @@ Widget buildScreen() {
 
 Call `tester.pumpWidget(buildScreen())` in each test to get a fully wired widget with localisation and mocked providers.
 
+=== Font Preloading in Widget Tests
+
+`flutter test` runs `test/flutter_test_config.dart` (its `testExecutable`) before every test file.
+It preloads every `google_fonts` variant bundled under `assets/fonts/` and awaits `GoogleFonts.pendingFonts()` before any test runs: JetBrains Mono (w100-w800), Manrope (w200-w800), and Space Grotesk (w300-w700).
+
+This is needed because `google_fonts` loads each family and weight lazily, the first time a widget uses it.
+When the load finishes, the engine sends a `fontsChange` system message and each text render object schedules a frame callback to re-lay out.
+If that lands after a test's last pump, the callback is still pending at teardown and the test fails with "An animation is still running even after the widget tree was disposed".
+Under Flutter 3.50 this failed the first font-using test in 25 files (issue #151).
+
+If the app starts using a new bundled family or weight:
+
+. Add the font file under `assets/fonts/`.
+. Declare it in `pubspec.yaml`.
+. Add the variant to the preload in `test/flutter_test_config.dart`.
+
 === Presentation Controller Tests
 
 Riverpod controllers (`Notifier`, `AsyncNotifier`) are tested without a widget tree using `ProviderContainer` with overrides.
