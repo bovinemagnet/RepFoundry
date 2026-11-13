@@ -31,8 +31,9 @@ const String kMcpServerInstructions =
     '- Deleted records are never returned.\n'
     '- List tools take `limit` (default 20, at most 100) and return '
     '`next_cursor` while more remain; pass it back as `cursor`.\n'
-    '- Data is the user\'s own unless client data access is on, in which '
-    'case list_clients and a `client_id` argument are available.\n'
+    '- Training data is the user\'s own unless client data access is on, in '
+    'which case list_clients and a `client_id` argument are available. The '
+    'exercise library, templates and programmes are shared, not per client.\n'
     '- Warm-up sets are excluded from volume and set counts.';
 
 /// Everything the tools read from.

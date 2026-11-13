@@ -27,11 +27,15 @@ An assistant can look up:
 
 Deleted records are never returned.
 
-By default the assistant sees your own data only (the Me client).
-Two further switches widen that:
+By default the assistant sees your own training data only (the Me client).
+Your exercise library, workout templates and programmes are not kept per client, so the assistant can always see them, whatever the switches say.
+If you name templates or programmes after clients, those names are visible too.
 
-* *Include client data* adds the data of the clients on your roster, and the client list itself.
-* *Include health profile* adds the health profile behind your heart rate zones.
+Two further switches widen what is shared:
+
+* *Include client data* adds the training data of the clients on your roster, and the client list itself.
+* *Include health profile* adds the health profile behind heart rate zones: age, resting and maximum heart rate, any clinician-set limit, and the beta blocker and heart condition flags.
+With *Include client data* also on, this includes your clients' health profiles.
 
 Both are off until you switch them on.
 GPS routes and positions are never shared, whatever the switches say.

@@ -5073,7 +5073,7 @@ abstract class S {
   /// No description provided for @mcpIncludeClientsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Let assistants read your clients\' training'**
+  /// **'Let assistants read your clients\' training records'**
   String get mcpIncludeClientsSubtitle;
 
   /// No description provided for @mcpIncludeHealthTitle.
@@ -5085,7 +5085,7 @@ abstract class S {
   /// No description provided for @mcpIncludeHealthSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Age, heart-rate limits and medical flags'**
+  /// **'Age, heart-rate limits and medical flags — your clients\' too when client data is on'**
   String get mcpIncludeHealthSubtitle;
 
   /// No description provided for @mcpDisclosureTitle.

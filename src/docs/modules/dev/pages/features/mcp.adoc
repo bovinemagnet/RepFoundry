@@ -39,7 +39,7 @@ Desktop has no cloud sync, so the data served is whatever was logged on the desk
 
 Details worth knowing:
 
-* `McpScope` limits results to Me unless `includeClients` is on. When it is off, a `client_id` argument is rejected. Another client's workout id answers "Workout not found", so existence is not leaked.
+* `McpScope` limits client-scoped results to Me unless `includeClients` is on. When it is off, a `client_id` argument is rejected. Another client's workout id answers "Workout not found", so existence is not leaked; so does a soft-deleted client's, even with `includeClients` on. The exercise library, templates and programmes are not client-scoped and are always returned. With both toggles on, `get_health_profile` accepts a client's `client_id`.
 * `mcp_args.dart` applies a default `limit` of 20, capped at 100, parses ISO 8601 dates, and handles an opaque base64url cursor.
 * `McpServerHost` wraps `StreamableMcpServer`, which supports MCP 2025-11-25 sessions and 2026-07-28 stateless requests. A fresh `McpServer` is created per request or session.
 * Analytics aggregates moved to `lib/features/analytics/application/training_aggregates.dart` so the training-summary tool and the analytics screen share them.

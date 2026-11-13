@@ -1316,9 +1316,9 @@
   "mcpPortTitle": "Port",
   "mcpPortInvalid": "Enter a port between 1024 and 65535",
   "mcpIncludeClientsTitle": "Include client data",
-  "mcpIncludeClientsSubtitle": "Let assistants read your clients' training",
+  "mcpIncludeClientsSubtitle": "Let assistants read your clients' training records",
   "mcpIncludeHealthTitle": "Include health profile",
-  "mcpIncludeHealthSubtitle": "Age, heart-rate limits and medical flags",
+  "mcpIncludeHealthSubtitle": "Age, heart-rate limits and medical flags — your clients' too when client data is on",
   "mcpDisclosureTitle": "Before you turn this on",
   "mcpDisclosureBody": "An assistant you connect can read your training data. Most assistants send what they read to their AI provider. Nothing is shared until you connect an assistant using the endpoint and token shown here.",
   "mcpDisclosureAccept": "Turn on"

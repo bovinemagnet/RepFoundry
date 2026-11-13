@@ -2881,14 +2881,14 @@ class SEn extends S {
 
   @override
   String get mcpIncludeClientsSubtitle =>
-      'Let assistants read your clients\' training';
+      'Let assistants read your clients\' training records';
 
   @override
   String get mcpIncludeHealthTitle => 'Include health profile';
 
   @override
   String get mcpIncludeHealthSubtitle =>
-      'Age, heart-rate limits and medical flags';
+      'Age, heart-rate limits and medical flags — your clients\' too when client data is on';
 
   @override
   String get mcpDisclosureTitle => 'Before you turn this on';
