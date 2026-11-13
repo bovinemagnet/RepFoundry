@@ -105,16 +105,39 @@ void main() {
         hasLength(14));
   });
 
-  test('client data toggle controls the scope of every tool', () async {
-    final repos = _Repos();
-    final off = buildMcpTools(repos.deps(), const McpSettings())
-        .firstWhere((t) => t.name == 'list_workouts');
-    await expectLater(
-        off.call({'client_id': 'alice'}), throwsA(isA<McpToolError>()));
-    final on =
-        buildMcpTools(repos.deps(), const McpSettings(includeClients: true))
-            .firstWhere((t) => t.name == 'list_workouts');
-    expect(await on.call({'client_id': 'alice'}), contains('workouts'));
+  group('client data toggle', () {
+    bool takesClientId(McpTool t) =>
+        (t.inputSchema['properties']! as Map).containsKey('client_id');
+
+    const all = McpSettings(includeClients: true, includeHealthProfile: true);
+    const ids = {'workout': 'none', 'exercise': 'none'};
+
+    test('every tool that takes client_id refuses it while off', () async {
+      final repos = _Repos();
+      final exercise = await repos.exercises.getAllExercises();
+      final args = {...ids, 'exercise': exercise.first.id};
+      final scoped = buildMcpTools(
+              repos.deps(), const McpSettings(includeHealthProfile: true))
+          .where(takesClientId)
+          .toList();
+      expect(scoped.map((t) => t.name), hasLength(greaterThanOrEqualTo(10)));
+      for (final t in scoped) {
+        await expectLater(
+          t.call({..._argsFor(t.name, args), 'client_id': 'alice'}),
+          throwsA(isA<McpToolError>()),
+          reason: t.name,
+        );
+      }
+    });
+
+    test('control: every such tool accepts client_id while on', () async {
+      final repos = _Repos();
+      final exercise = await repos.exercises.getAllExercises();
+      final args = {...ids, 'exercise': exercise.first.id};
+      for (final t in buildMcpTools(repos.deps(), all).where(takesClientId)) {
+        await t.call({..._argsFor(t.name, args), 'client_id': 'alice'});
+      }
+    });
   });
 
   test('every tool has an object input schema, a description and unique name',

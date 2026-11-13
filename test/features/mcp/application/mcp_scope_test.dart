@@ -25,9 +25,9 @@ void main() {
           throwsA(isA<McpToolError>()));
     });
 
-    test('can read only Me', () {
-      expect(scope.canRead(kSelfClientId), isTrue);
-      expect(scope.canRead('alice'), isFalse);
+    test('can read only Me', () async {
+      expect(await scope.canRead(kSelfClientId), isTrue);
+      expect(await scope.canRead('alice'), isFalse);
     });
   });
 
@@ -49,6 +49,14 @@ void main() {
           throwsA(isA<McpToolError>()));
     });
 
-    test('can read any client', () => expect(scope.canRead('alice'), isTrue));
+    test('can read a live client', () async {
+      expect(await scope.canRead('alice'), isTrue);
+      expect(await scope.canRead(kSelfClientId), isTrue);
+    });
+
+    test('cannot read a deleted or unknown client', () async {
+      expect(await scope.canRead('gone'), isFalse);
+      expect(await scope.canRead('nobody'), isFalse);
+    });
   });
 }

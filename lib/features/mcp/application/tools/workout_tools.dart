@@ -172,7 +172,7 @@ class GetWorkoutTool implements McpTool {
     final w = await _workouts.getWorkout(id);
     // One message for missing, deleted and out-of-scope, so the existence
     // of another client's session is not revealed.
-    if (w == null || w.isDeleted || !_scope.canRead(w.clientId)) {
+    if (w == null || w.isDeleted || !await _scope.canRead(w.clientId)) {
       throw const McpToolError('Workout not found');
     }
 

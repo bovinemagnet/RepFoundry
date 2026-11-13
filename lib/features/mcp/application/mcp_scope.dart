@@ -12,8 +12,14 @@ class McpScope {
   final bool includeClients;
   final ClientRepository clients;
 
-  /// Whether a row owned by [clientId] may be returned.
-  bool canRead(String clientId) => includeClients || clientId == kSelfClientId;
+  /// Whether a row owned by [clientId] may be returned: always for Me;
+  /// for anyone else only with client data on and while the client exists.
+  Future<bool> canRead(String clientId) async {
+    if (clientId == kSelfClientId) return true;
+    if (!includeClients) return false;
+    final client = await clients.getClient(clientId);
+    return client != null && client.deletedAt == null;
+  }
 
   /// The client a scoped tool should read, from its optional `client_id`.
   Future<String> resolveClientId(Map<String, Object?> args) async {

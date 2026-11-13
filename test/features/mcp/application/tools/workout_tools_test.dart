@@ -4,6 +4,7 @@ import 'package:rep_foundry/features/mcp/application/mcp_tool.dart';
 import 'package:rep_foundry/features/mcp/application/tools/workout_tools.dart';
 import 'package:rep_foundry/features/stretching/domain/models/stretching_session.dart';
 
+import '../../support/fake_client_repository.dart';
 import '../../support/mcp_fixture.dart';
 
 void main() {
@@ -208,6 +209,21 @@ void main() {
       final r =
           await getTool(includeClients: true).call({'workout_id': theirs.id});
       expect(r['id'], theirs.id);
+    });
+
+    test("treats a deleted client's workout as not found", () async {
+      final gone = testClient('gone-client', deletedAt: DateTime.utc(2026, 2));
+      final fixture = McpFixture(extraClients: [gone]);
+      final theirs =
+          await fixture.workout(DateTime(2026, 3, 1), clientId: gone.id);
+      final tool = GetWorkoutTool(
+          fixture.workouts,
+          fixture.exercises,
+          fixture.cardio,
+          fixture.stretching,
+          fixture.scope(includeClients: true));
+      await expectLater(
+          tool.call({'workout_id': theirs.id}), throwsA(isA<McpToolError>()));
     });
 
     test('treats unknown and deleted workouts as not found', () async {

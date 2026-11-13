@@ -23,8 +23,11 @@ class McpFixture {
   final cardio = InMemoryCardioSessionRepository();
   final stretching = InMemoryStretchingSessionRepository();
   final records = InMemoryPersonalRecordRepository();
-  final clients =
-      FakeClientRepository([testClient(otherClientId, name: 'Alice')]);
+  McpFixture({List<Client> extraClients = const []})
+      : clients = FakeClientRepository(
+            [testClient(otherClientId, name: 'Alice'), ...extraClients]);
+
+  final FakeClientRepository clients;
 
   McpScope scope({bool includeClients = false}) =>
       McpScope(includeClients: includeClients, clients: clients);
