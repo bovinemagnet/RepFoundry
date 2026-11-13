@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hr_zones/hr_zones.dart';
@@ -11,6 +11,7 @@ import 'package:rep_foundry/features/clients/presentation/screens/client_detail_
 import 'package:rep_foundry/features/heart_rate/presentation/providers/health_profile_provider.dart';
 import 'package:rep_foundry/features/programmes/domain/models/programme.dart';
 import 'package:rep_foundry/features/templates/domain/models/workout_template.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -83,7 +84,7 @@ void main() {
     await tester.pumpWidget(UncontrolledProviderScope(
       container: container,
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: ClientDetailScreen(clientId: sarah.id),
       ),
@@ -120,7 +121,7 @@ void main() {
     await tester.pumpWidget(UncontrolledProviderScope(
       container: container,
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: ClientDetailScreen(clientId: sarah.id),
       ),
@@ -206,7 +207,7 @@ void main() {
     await tester.pumpWidget(UncontrolledProviderScope(
       container: container,
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: ClientDetailScreen(clientId: sarah.id),
       ),

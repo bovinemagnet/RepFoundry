@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rep_foundry/core/responsive/layout_mode.dart';
 import 'package:rep_foundry/core/widgets/desktop_nav_rail.dart';
 import 'package:rep_foundry/core/widgets/scaffold_with_nav_bar.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 /// Verifies the navigation shell adapts between a bottom nav on mobile and a
@@ -56,7 +57,7 @@ void main() {
 
   Widget buildApp(GoRouter router, {LayoutMode mode = LayoutMode.auto}) =>
       MaterialApp.router(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         routerConfig: router,
         builder: (context, child) => LayoutModeScope(mode: mode, child: child!),

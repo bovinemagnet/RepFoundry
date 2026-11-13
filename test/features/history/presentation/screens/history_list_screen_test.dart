@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
@@ -7,6 +7,7 @@ import 'package:rep_foundry/features/clients/presentation/providers/active_clien
 import 'package:rep_foundry/features/history/presentation/screens/history_list_screen.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 /// An [AsyncNotifier] override that resolves the active client to the fixed
@@ -45,7 +46,7 @@ void main() {
         ),
       ],
       child: const MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: HistoryListScreen(),
       ),

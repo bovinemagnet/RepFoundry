@@ -1,6 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:fake_async/fake_async.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +11,7 @@ import 'package:rep_foundry/features/trainer/domain/trainer_event.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/trainer_event_bus.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/trainer_settings_provider.dart';
 import 'package:rep_foundry/features/workout/presentation/widgets/rest_timer_widget.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -85,7 +86,7 @@ void main() {
   Widget buildHost() {
     return const ProviderScope(
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(body: RestTimerWidget()),
       ),
@@ -295,7 +296,7 @@ void main() {
             ),
           ],
           child: const MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: Scaffold(body: RestTimerWidget()),
           ),

@@ -1,13 +1,14 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/sync/presentation/widgets/sync_consent_dialog.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
   Widget buildHost(Future<bool> Function(BuildContext context) onPressed) {
     bool? lastResult;
     return MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: Builder(
@@ -42,7 +43,7 @@ void main() {
     testWidgets('Accept resolves the future to true', (tester) async {
       late Future<bool> consentFuture;
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(
@@ -66,7 +67,7 @@ void main() {
     testWidgets('Cancel resolves the future to false', (tester) async {
       late Future<bool> consentFuture;
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(
@@ -90,7 +91,7 @@ void main() {
     testWidgets('barrier is not dismissible', (tester) async {
       late Future<bool> consentFuture;
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(

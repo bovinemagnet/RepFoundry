@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Makes all descendant text selectable on desktop platforms, where users
 /// expect to be able to copy stats, notes, and error messages. Mobile keeps

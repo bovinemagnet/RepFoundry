@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rep_foundry/features/settings/presentation/providers/rest_timer_settings_provider.dart';
 import 'package:rep_foundry/features/workout/presentation/widgets/rest_timer_widget.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
@@ -31,7 +32,7 @@ void main() {
   Widget buildWidget() {
     return const ProviderScope(
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(body: RestTimerWidget()),
       ),

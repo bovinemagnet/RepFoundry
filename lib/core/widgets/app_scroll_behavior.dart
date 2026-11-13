@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Desktop-friendly scrolling: lists can be dragged with a mouse or trackpad
 /// as well as touch. The inherited [MaterialScrollBehavior] keeps the default

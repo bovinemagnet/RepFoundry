@@ -1,14 +1,15 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hr_zones/hr_zones.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/widgets/caution_badge.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
   group('CautionBadge', () {
     Widget buildHost(HealthProfile profile) {
       return MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(body: CautionBadge(profile: profile)),
       );

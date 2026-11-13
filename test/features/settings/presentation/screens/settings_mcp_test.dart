@@ -1,5 +1,5 @@
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +11,7 @@ import 'package:rep_foundry/features/mcp/presentation/providers/mcp_settings_pro
 import 'package:rep_foundry/features/settings/presentation/screens/settings_screen.dart';
 import 'package:rep_foundry/features/sync/application/sync_orchestrator.dart';
 import 'package:rep_foundry/features/sync/data/noop_cloud_sync_service.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -77,7 +78,7 @@ void main() {
             .overrideWith(() => _FixedStatusController(status)),
       ],
       child: const MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: SettingsScreen(),
       ),

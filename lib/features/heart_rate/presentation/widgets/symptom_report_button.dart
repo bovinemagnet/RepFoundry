@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../domain/analytics_events.dart';

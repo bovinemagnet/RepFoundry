@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:hr_zones/hr_zones.dart';
 
 /// A vertical gradient that paints every BPM in the colour of its training
