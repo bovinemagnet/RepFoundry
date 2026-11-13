@@ -1293,5 +1293,33 @@
   "trainerWithdrawConsentConfirmTitle": "Withdraw consent?",
   "trainerWithdrawConsentConfirmContent": "This turns the coach off and clears your acceptance of the safety notice. You'll need to accept it again before the coach can speak.",
   "trainerWithdrawConsentAction": "Withdraw",
-  "trainerSettingsEntrySubtitle": "Your coach's voice, persona, and safety notice."
+  "trainerSettingsEntrySubtitle": "Your coach's voice, persona, and safety notice.",
+
+  "sectionMcp": "AI Assistant Access (MCP)",
+  "mcpEnableTitle": "Allow assistants to read my data",
+  "mcpEnableSubtitle": "Apps on this computer can query your training log",
+  "mcpStatusTitle": "Status",
+  "mcpStatusStopped": "Off",
+  "mcpStatusRunning": "Running on 127.0.0.1:{port}",
+  "@mcpStatusRunning": {
+    "placeholders": { "port": { "type": "int" } }
+  },
+  "mcpStatusFailed": "Could not start: {reason}",
+  "@mcpStatusFailed": {
+    "placeholders": { "reason": { "type": "String" } }
+  },
+  "mcpEndpointTitle": "Endpoint",
+  "mcpTokenTitle": "Access token",
+  "mcpCopy": "Copy",
+  "mcpCopied": "Copied",
+  "mcpRegenerateToken": "Regenerate",
+  "mcpPortTitle": "Port",
+  "mcpPortInvalid": "Enter a port between 1024 and 65535",
+  "mcpIncludeClientsTitle": "Include client data",
+  "mcpIncludeClientsSubtitle": "Let assistants read your clients' training records",
+  "mcpIncludeHealthTitle": "Include health profile",
+  "mcpIncludeHealthSubtitle": "Age, heart-rate limits and medical flags — your clients' too when client data is on",
+  "mcpDisclosureTitle": "Before you turn this on",
+  "mcpDisclosureBody": "An assistant you connect can read your training data. Most assistants send what they read to their AI provider. Nothing is shared until you connect an assistant using the endpoint and token shown here.",
+  "mcpDisclosureAccept": "Turn on"
 }

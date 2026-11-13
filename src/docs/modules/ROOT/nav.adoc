@@ -23,6 +23,7 @@
 ** xref:guide/health-sync.adoc[Health sync]
 ** xref:guide/notifications.adoc[Notifications and reminders]
 ** xref:guide/settings.adoc[Settings, import and export]
+** xref:guide/ai-assistants.adoc[AI assistant access (desktop)]
 ** xref:privacy.adoc[Privacy policy]
 * For trainers
 ** xref:guide/clients.adoc[Managing clients]

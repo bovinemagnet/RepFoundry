@@ -1,0 +1,131 @@
+= AI assistant access (desktop)
+Paul Snow
+0.0.0
+:description: How to let an AI assistant on your computer read your RepFoundry training data, what it can and cannot see, and how to switch access off.
+
+On macOS, Windows and Linux, RepFoundry can let an AI assistant on the same computer read your training data, so that you can ask questions such as "how has my squat volume changed over the last eight weeks?".
+Access is read-only and off by default.
+
+NOTE: This feature is not available on iOS, Android or the web. The Settings section described here does not appear on those platforms.
+
+[NOTE]
+====
+Developers can find the implementation details in xref:dev:features/mcp.adoc[Assistant Access (MCP)].
+====
+
+== What an assistant can see
+
+An assistant can look up:
+
+* Your completed workouts, with the sets, weights, reps, RPE and heart rate you logged, plus any workout in progress.
+* Your exercise library and how often you have used each exercise.
+* Your exercise history and personal records.
+* Weekly training volume, training load and muscle balance.
+* Cardio sessions and your six-week cardio progress.
+* The weekly heart report, including time in each heart rate zone.
+* Body metrics, workout templates and programmes.
+
+Deleted records are never returned.
+
+By default the assistant sees your own training data only (the Me client).
+Your exercise library, workout templates and programmes are not kept per client, so the assistant can always see them, whatever the switches say.
+If you name templates or programmes after clients, those names are visible too.
+
+Two further switches widen what is shared:
+
+* *Include client data* adds the training data of the clients on your roster, and the client list itself.
+* *Include health profile* adds the health profile behind heart rate zones: age, resting and maximum heart rate, any clinician-set limit, and the beta blocker and heart condition flags.
+With *Include client data* also on, this includes your clients' health profiles.
+
+Both are off until you switch them on.
+GPS routes and positions are never shared, whatever the switches say.
+
+== What an assistant cannot do
+
+An assistant cannot add, change or delete anything.
+It can only read.
+
+== Where your data comes from
+
+The desktop app holds only what you logged on the desktop or imported from a JSON backup.
+The desktop app has no cloud sync, so your phone history does not appear automatically.
+To bring it across, export a backup on your phone and import it on the desktop under *Settings* > *Data*.
+See xref:guide/settings.adoc[Settings, import and export].
+
+== Turn it on
+
+. Open *Settings* and find *AI Assistant Access (MCP)*.
+. Switch on *Allow assistants to read my data*.
+. The first time, a dialog titled *Before you turn this on* appears. It explains that an assistant you connect can read your training data, that most assistants send what they read to their AI provider, and that nothing is shared until you connect an assistant using the endpoint and token. Read it and confirm.
+. Check that *Status* reads *Running on 127.0.0.1:<port>*.
+
+The section has these rows:
+
+[cols="1,3"]
+|===
+|Row |Purpose
+
+|Allow assistants to read my data
+|The main switch. Off by default.
+
+|Status
+|Shows *Off*, *Running on 127.0.0.1:<port>*, or *Could not start: <reason>*. A common reason is that the port is already in use by another program.
+
+|Endpoint
+|The address to give your assistant, by default `+http://127.0.0.1:47600/mcp+`. Use *Copy* to copy it.
+
+|Access token
+|A secret that proves the assistant is allowed in. It is masked on screen. Use *Copy* to copy it, or *Regenerate* to replace it.
+
+|Port
+|Defaults to 47600. You can use any number from 1024 to 65535. Change it if another program already uses the port.
+
+|Include client data
+|Off by default.
+
+|Include health profile
+|Off by default.
+|===
+
+== Connect an assistant
+
+Assistants that support the Model Context Protocol (MCP) can connect to RepFoundry.
+Configure your assistant with an MCP server that uses the Streamable HTTP transport:
+
+* URL: the *Endpoint* shown in Settings.
+* Header: `Authorization: Bearer <token>`, where `<token>` is the *Access token*.
+
+RepFoundry must be running on your computer for the assistant to connect.
+
+A generic example follows.
+The exact format depends on the assistant, so check its documentation.
+
+[source,json]
+----
+{
+  "mcpServers": {
+    "repfoundry": {
+      "type": "http",
+      "url": "http://127.0.0.1:47600/mcp",
+      "headers": {
+        "Authorization": "Bearer <token>"
+      }
+    }
+  }
+}
+----
+
+Replace `<token>` with the token you copied, and the port if you changed it.
+
+== Your privacy
+
+* RepFoundry answers only on your own computer (`127.0.0.1`). Other devices on your network cannot reach it, and web pages in your browser are refused.
+* Only an assistant holding the access token is let in. Treat the token like a password.
+* Most assistants send what they read to their AI provider. What happens to that data is then governed by the provider, not by RepFoundry.
+
+See the xref:privacy.adoc[privacy policy] for the full statement.
+
+== Cut off access
+
+* Switch off *Allow assistants to read my data* to stop the server immediately.
+* Choose *Regenerate* beside the access token to cut off every connected assistant. Each one must be given the new token to connect again.

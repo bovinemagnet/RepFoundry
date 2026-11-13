@@ -4979,6 +4979,132 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Your coach\'s voice, persona, and safety notice.'**
   String get trainerSettingsEntrySubtitle;
+
+  /// No description provided for @sectionMcp.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Assistant Access (MCP)'**
+  String get sectionMcp;
+
+  /// No description provided for @mcpEnableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow assistants to read my data'**
+  String get mcpEnableTitle;
+
+  /// No description provided for @mcpEnableSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Apps on this computer can query your training log'**
+  String get mcpEnableSubtitle;
+
+  /// No description provided for @mcpStatusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get mcpStatusTitle;
+
+  /// No description provided for @mcpStatusStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get mcpStatusStopped;
+
+  /// No description provided for @mcpStatusRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Running on 127.0.0.1:{port}'**
+  String mcpStatusRunning(int port);
+
+  /// No description provided for @mcpStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start: {reason}'**
+  String mcpStatusFailed(String reason);
+
+  /// No description provided for @mcpEndpointTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Endpoint'**
+  String get mcpEndpointTitle;
+
+  /// No description provided for @mcpTokenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Access token'**
+  String get mcpTokenTitle;
+
+  /// No description provided for @mcpCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get mcpCopy;
+
+  /// No description provided for @mcpCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get mcpCopied;
+
+  /// No description provided for @mcpRegenerateToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Regenerate'**
+  String get mcpRegenerateToken;
+
+  /// No description provided for @mcpPortTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Port'**
+  String get mcpPortTitle;
+
+  /// No description provided for @mcpPortInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a port between 1024 and 65535'**
+  String get mcpPortInvalid;
+
+  /// No description provided for @mcpIncludeClientsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Include client data'**
+  String get mcpIncludeClientsTitle;
+
+  /// No description provided for @mcpIncludeClientsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let assistants read your clients\' training records'**
+  String get mcpIncludeClientsSubtitle;
+
+  /// No description provided for @mcpIncludeHealthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Include health profile'**
+  String get mcpIncludeHealthTitle;
+
+  /// No description provided for @mcpIncludeHealthSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Age, heart-rate limits and medical flags — your clients\' too when client data is on'**
+  String get mcpIncludeHealthSubtitle;
+
+  /// No description provided for @mcpDisclosureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before you turn this on'**
+  String get mcpDisclosureTitle;
+
+  /// No description provided for @mcpDisclosureBody.
+  ///
+  /// In en, this message translates to:
+  /// **'An assistant you connect can read your training data. Most assistants send what they read to their AI provider. Nothing is shared until you connect an assistant using the endpoint and token shown here.'**
+  String get mcpDisclosureBody;
+
+  /// No description provided for @mcpDisclosureAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on'**
+  String get mcpDisclosureAccept;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

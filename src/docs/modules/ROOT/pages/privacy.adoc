@@ -3,7 +3,7 @@ Paul Snow
 0.0.0
 :description: RepFoundry's privacy policy — what data the app stores, where it is stored, and what control you have over it.
 
-*Effective date:* 21 September 2026
+*Effective date:* 13 November 2026
 
 RepFoundry is a workout tracking app for iOS and Android, published by Paul Snow. This policy explains what data the app handles, where it is stored, and what control you have over it.
 
@@ -62,6 +62,7 @@ Apart from the cloud sync and health platform sharing you enable, RepFoundry sen
 * *No developer server.* There is no RepFoundry backend and no account.
 * *No third-party tracking.* Fonts and other assets are bundled with the app; nothing is fetched at run time.
 * *Exports you initiate* — the app lets you share a cardio session as GPX and CSV files, and export a full JSON backup. Where those files go is decided by the app you share them with.
+* *AI assistant access (desktop only, off by default)* — on macOS, Windows and Linux you can let an AI assistant on the same computer read your training data. The app then answers requests on this computer only, and only from an assistant holding the access token shown in Settings; it never accepts connections from other devices or from web pages, and it cannot change your data. It shares your own training data, plus your exercise library, workout templates and programmes (which are not kept per client, so they are shared whatever the switches say). Your clients' training is shared only if you switch on client data, and health profiles (age, heart-rate limits, beta blocker and heart condition) only if you switch on the health profile; with both on, your clients' health profiles are shared too. GPS routes are never shared. Most assistants send what they read to their AI provider, so what happens next is governed by that provider's policy. Switching access off, or regenerating the token, cuts off every connected assistant.
 
 Links in the About screen open in your browser; what those websites collect is covered by their own policies.
 
