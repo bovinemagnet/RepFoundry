@@ -134,7 +134,7 @@ await tester.pumpWidget(
   ProviderScope(
     overrides: [/* provider overrides */],
     child: MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: const ActiveWorkoutScreen(),
     ),
@@ -142,7 +142,8 @@ await tester.pumpWidget(
 );
 ----
 
-See xref:localisation.adoc[Localisation] for details on the `S` class.
+`kAppLocalizationsDelegates` comes from `package:rep_foundry/l10n/app_localizations_delegates.dart`; never use `S.localizationsDelegates`.
+See xref:localisation.adoc[Localisation] for why, and for details on the `S` class.
 
 Many widget tests use a local `buildScreen()` helper to reduce boilerplate:
 
@@ -152,7 +153,7 @@ Widget buildScreen() {
   return ProviderScope(
     overrides: [/* provider overrides */],
     child: MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: const ScreenUnderTest(),
     ),

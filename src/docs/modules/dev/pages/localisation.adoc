@@ -98,17 +98,33 @@ Text(S.of(context)!.setsCompleted(controller.setCount))
 == Registering Delegates in the App
 
 Localisation delegates must be registered on the root `MaterialApp` (or `CupertinoApp`).
-This is done once in `lib/app/app.dart`:
+This is done once in `lib/app/app.dart`, using the list from `lib/l10n/app_localizations_delegates.dart`:
 
 [source,dart]
 ----
+const List<LocalizationsDelegate<dynamic>> kAppLocalizationsDelegates = [
+  S.delegate,
+  ...GlobalMaterialLocalizations.delegates, // from package:material_ui
+];
+
 MaterialApp.router(
-  localizationsDelegates: S.localizationsDelegates,
+  localizationsDelegates: kAppLocalizationsDelegates,
   supportedLocales: S.supportedLocales,
   routerConfig: router,
   // …
 );
 ----
+
+[IMPORTANT]
+====
+Do not use `S.localizationsDelegates`.
+The app imports Material from `package:material_ui`, which is a separate copy of Material, but `gen-l10n` still lists the `flutter_localizations` delegates in `S.localizationsDelegates`.
+Material widgets never find those, so on a Japanese, Korean or Chinese device there would be no Material strings at all, and any screen with a back button or dialog would throw `No MaterialLocalizations found`.
+`kAppLocalizationsDelegates` takes the Material, Cupertino and widgets strings from `material_ui` instead.
+
+`gen-l10n` offers no option to change that list, so `l10n.yaml` sets `header: "// ignore_for_file: deprecated_member_use"` to keep the generated files free of analyser notices.
+`test/app/app_localizations_test.dart` pumps the real app on Japanese, Korean and English devices and checks the Material strings follow the device language.
+====
 
 == Widget Test Setup
 
@@ -120,7 +136,7 @@ await tester.pumpWidget(
   ProviderScope(
     overrides: [/* … */],
     child: MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: const MyScreen(),
     ),
