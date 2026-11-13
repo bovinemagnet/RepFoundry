@@ -25,7 +25,7 @@
 - `application/` must not import `mcp_dart`, Flutter or presentation code.
 - British spelling in code comments, UI copy and docs. All UI strings go through `lib/l10n/app_en.arb`, followed by `flutter gen-l10n`.
 - Author Paul Snow, version `0.0.0` in any doc headers.
-- Every new test is proven able to fail. Break the protected line, see red, then restore it (project CLAUDE.md). Negative assertions need a positive control.
+- Every new test is proven able to fail. Break the protected line, see red, then restore it (project testing guidelines). Negative assertions need a positive control.
 - Stage files by name. `analysis_options.yaml` has an unrelated local edit made by tooling and must not be committed.
 
 ## Calls made while planning (deviations from the issue)
@@ -49,7 +49,7 @@
 
 ### Task 1: Spike — prove the SDK against two real clients (throwaway)
 
-Nothing from this task is committed. Work in the scratchpad: `/private/tmp/claude-501/-Volumes-mac-volume-1-gitHub-RepFoundry/59bbee70-ddbd-49b7-af8d-8672bc700a7c/scratchpad/mcp-spike/`, a `dart create -t console` project depending on `mcp_dart: ^2.4.3`.
+Nothing from this task is committed. Work in a temporary directory outside the repository, a `dart create -t console` project depending on `mcp_dart: ^2.4.3`.
 
 - [ ] **Step 1:** Write `bin/spike.dart`. It starts a `StreamableMcpServer` on `host: '127.0.0.1'`, port 47699, path `/mcp`, `allowedOrigins: {'https://no-browser-access.invalid'}`, and an `authenticationHandler` allowing only `Authorization: Bearer spike-token`. It registers one tool `ping` with `annotations: ToolAnnotations(readOnlyHint: true)` and an input schema built from a raw `Map` (find the SDK's map-to-`JsonSchema` conversion, e.g. `JsonSchema.fromJson`). The tool returns structured content `{ "pong": true }` plus a JSON text fallback.
 - [ ] **Step 2:** Client 1, TypeScript SDK: `npx -y @modelcontextprotocol/inspector --cli http://127.0.0.1:47699/mcp --transport http --header "Authorization: Bearer spike-token" --method tools/list`, then `--method tools/call --tool-name ping`. Expected: the tool is listed with `readOnlyHint: true`, and the call returns `pong`.
@@ -359,10 +359,10 @@ Result shapes:
 ### Task 11: Privacy policy and documentation
 
 **Files:**
-- Modify: `PRIVACY.md` (section 4 gains an "AI assistant access (desktop only, off by default)" bullet, and the effective date becomes 13 November 2026), `src/docs/modules/ROOT/pages/privacy.adoc` (same change), `src/docs/modules/ROOT/nav.adoc`, `src/docs/modules/dev/nav.adoc`, `CLAUDE.md` (add `mcp` to the feature directory list and one bullet under Additional Features)
+- Modify: `PRIVACY.md` (section 4 gains an "AI assistant access (desktop only, off by default)" bullet, and the effective date becomes 13 November 2026), `src/docs/modules/ROOT/pages/privacy.adoc` (same change), `src/docs/modules/ROOT/nav.adoc`, `src/docs/modules/dev/nav.adoc`, the project notes file (add `mcp` to the feature directory list and one bullet under Additional Features)
 - Create: `src/docs/modules/ROOT/pages/guide/ai-assistants.adoc` (switching it on, connecting an assistant with the endpoint and token, what is and is not shared, Me-only default and the two toggles; no class names), `src/docs/modules/dev/pages/features/mcp.adoc` (layers, tool catalogue table, security model including the 403 and Origin calls above, testing notes; links to the ROOT page and back), `src/docs/modules/dev/examples/mcp-request-flow.mmd`
 
-- [ ] **Step 1:** Dispatch the `asciidoc-antora-writer` agent for the two `.adoc` pages, the nav entries and `privacy.adoc`, and the `mermaid-diagram-creator` agent for the `.mmd`, in parallel. Edit `PRIVACY.md` and `CLAUDE.md` directly.
+- [ ] **Step 1:** Dispatch the `asciidoc-antora-writer` agent for the two `.adoc` pages, the nav entries and `privacy.adoc`, and the `mermaid-diagram-creator` agent for the `.mmd`, in parallel. Edit `PRIVACY.md` and the project notes file directly.
 - [ ] **Step 2:** Run `gradle25w antora`. Expected: no warnings or errors (CI runs with `--log-failure-level=warn`).
 - [ ] **Step 3:** Commit `docs: AI assistant access guide, developer page and privacy update (#154)`.
 
