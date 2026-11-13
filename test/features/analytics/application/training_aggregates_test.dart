@@ -26,7 +26,9 @@ void main() {
   final bench = _exercise('Bench', MuscleGroup.chest);
   final squat = _exercise('Squat', MuscleGroup.quadriceps);
   final row = _exercise('Rower', MuscleGroup.cardio);
-  final byId = {for (final e in [bench, squat, row]) e.id: e};
+  final byId = {
+    for (final e in [bench, squat, row]) e.id: e
+  };
 
   group('computeMuscleBalance', () {
     test('returns an empty list for no sets', () {
