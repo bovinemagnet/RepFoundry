@@ -1,5 +1,5 @@
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,6 +14,7 @@ import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/coach_bridge.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/trainer_settings_provider.dart';
 import 'package:rep_foundry/features/trainer/presentation/screens/trainer_settings_screen.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -45,7 +46,7 @@ void main() {
         speechServiceProvider.overrideWithValue(speechService),
       ],
       child: const MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: TrainerSettingsScreen(),
       ),
@@ -615,7 +616,7 @@ void main() {
           syncOrchestratorProvider.overrideWithValue(orchestrator),
         ],
         child: const MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: SettingsScreen(),
         ),

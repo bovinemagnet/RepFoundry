@@ -1,5 +1,5 @@
 import 'package:app_settings/app_settings.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../data/heart_rate_service.dart';

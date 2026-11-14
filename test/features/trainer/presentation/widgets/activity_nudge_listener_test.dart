@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +9,7 @@ import 'package:rep_foundry/features/trainer/domain/trainer_event.dart';
 import 'package:rep_foundry/features/trainer/presentation/providers/trainer_event_bus.dart';
 import 'package:rep_foundry/features/trainer/presentation/widgets/activity_nudge_listener.dart';
 import 'package:rep_foundry/features/workout/presentation/controllers/active_workout_controller.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 class _Entitled implements EntitlementService {
@@ -53,7 +54,7 @@ void main() {
     await tester.pumpWidget(UncontrolledProviderScope(
       container: container,
       child: MaterialApp.router(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         routerConfig: router,
       ),

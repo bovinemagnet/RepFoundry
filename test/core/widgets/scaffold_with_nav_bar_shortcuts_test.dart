@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rep_foundry/core/widgets/scaffold_with_nav_bar.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
@@ -32,7 +33,7 @@ void main() {
 
     await tester.pumpWidget(MaterialApp.router(
       routerConfig: router,
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
     ));
     await tester.pumpAndSettle();

@@ -161,7 +161,11 @@ GitHub Actions workflow (`.github/workflows/release.yml`) builds a signed Androi
 
 ## Localisation (l10n)
 
-All user-facing strings are externalised to `lib/l10n/app_en.arb` using Flutter's `gen-l10n` code generation. The generated class `S` lives in `lib/l10n/generated/` and is configured via `l10n.yaml` (output class `S`, output dir `lib/l10n/generated/`). Access strings via `S.of(context)!` in widget build methods. Widget tests must include `localizationsDelegates: S.localizationsDelegates` and `supportedLocales: S.supportedLocales` on their `MaterialApp`. Run `flutter gen-l10n` after modifying `.arb` files. The domain `warning_messages.dart` is retained as a non-Flutter fallback but presentation widgets use `S` instead.
+All user-facing strings are externalised to `lib/l10n/app_en.arb` using Flutter's `gen-l10n` code generation. The generated class `S` lives in `lib/l10n/generated/` and is configured via `l10n.yaml` (output class `S`, output dir `lib/l10n/generated/`). Access strings via `S.of(context)!` in widget build methods. Widget tests must include `localizationsDelegates: kAppLocalizationsDelegates` (`lib/l10n/app_localizations_delegates.dart`) and `supportedLocales: S.supportedLocales` on their `MaterialApp`. Never use `S.localizationsDelegates`: gen-l10n still lists the `flutter_localizations` delegates there, which `material_ui` widgets do not see, so non-English locales get no Material strings (`l10n.yaml`'s `header` mutes their deprecation in generated files). Run `flutter gen-l10n` after modifying `.arb` files. The domain `warning_messages.dart` is retained as a non-Flutter fallback but presentation widgets use `S` instead.
+
+## Material (`material_ui`)
+
+Import `package:material_ui/material_ui.dart`, never the deprecated `package:flutter/material.dart`. `material_ui` is a separate copy of Material, so a dependency still importing the framework library sees different `ThemeData`, `TextTheme` and `MaterialApp` types: check a package has moved across before adding or upgrading it (go_router ≥ 18 and google_fonts ≥ 9 have). CI pins Flutter 3.50.0 in both workflows.
 
 ## Linting
 

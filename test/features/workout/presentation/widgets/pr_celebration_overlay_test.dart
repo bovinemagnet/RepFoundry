@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/history/domain/models/personal_record.dart';
 import 'package:rep_foundry/features/workout/presentation/widgets/pr_celebration_overlay.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
@@ -9,7 +10,7 @@ void main() {
     testWidgets('renders exercise name and e1RM value', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: PRCelebrationOverlay(
@@ -31,7 +32,7 @@ void main() {
     testWidgets('shows correct text for weight PR', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: PRCelebrationOverlay(
@@ -51,7 +52,7 @@ void main() {
     testWidgets('shows correct text for reps PR', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: PRCelebrationOverlay(
@@ -71,7 +72,7 @@ void main() {
     testWidgets('shows correct text for volume PR', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: PRCelebrationOverlay(
@@ -93,7 +94,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: PRCelebrationOverlay(
@@ -118,7 +119,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: PRCelebrationOverlay(

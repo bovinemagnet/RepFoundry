@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Detects horizontal fling gestures over [child] and invokes the matching
 /// callback, so two screens can offer a swipe shortcut to one another

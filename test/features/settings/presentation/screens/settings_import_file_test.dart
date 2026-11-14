@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/database/app_database.dart';
@@ -17,6 +17,7 @@ import 'package:rep_foundry/features/stretching/data/in_memory_stretching_sessio
 import 'package:rep_foundry/features/sync/application/sync_orchestrator.dart';
 import 'package:rep_foundry/features/sync/data/noop_cloud_sync_service.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -80,7 +81,7 @@ void main() {
             .overrideWithValue(() async => pickedContent),
       ],
       child: const MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: SettingsScreen(),
       ),

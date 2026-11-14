@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/responsive/layout_mode.dart';
 import '../core/widgets/app_scroll_behavior.dart';
@@ -6,6 +6,7 @@ import '../core/widgets/desktop_text_selection.dart';
 import '../features/mcp/presentation/providers/mcp_server_controller.dart';
 import '../features/settings/presentation/providers/layout_mode_provider.dart';
 import '../features/settings/presentation/providers/theme_mode_provider.dart';
+import '../l10n/app_localizations_delegates.dart';
 import '../l10n/generated/app_localizations.dart';
 import 'router.dart';
 import 'theme.dart';
@@ -29,7 +30,7 @@ class RepFoundryApp extends ConsumerWidget {
       themeMode: themeMode,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       // Make the user's layout override available to the width-based breakpoint
       // helpers throughout the routed tree.
