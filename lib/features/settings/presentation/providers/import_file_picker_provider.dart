@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,17 +9,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final importFileContentPickerProvider =
     Provider<Future<String?> Function()>((ref) {
   return () async {
-    final result = await FilePicker.pickFiles(
+    final file = await FilePicker.pickFile(
       type: FileType.custom,
       allowedExtensions: ['csv', 'json'],
-      withData: true,
     );
-    final file = result?.files.firstOrNull;
     if (file == null) return null;
-    final bytes = file.bytes;
-    if (bytes != null) return utf8.decode(bytes, allowMalformed: true);
-    final path = file.path;
-    if (path == null) return null;
-    return File(path).readAsString();
+    return utf8.decode(await file.readAsBytes(), allowMalformed: true);
   };
 });
