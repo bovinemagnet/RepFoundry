@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
 import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dart';
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/exercises/presentation/screens/create_exercise_screen.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
@@ -20,7 +21,7 @@ void main() {
         exerciseRepositoryProvider.overrideWithValue(fakeRepo),
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: const CreateExerciseScreen(),
         navigatorObservers: observer != null ? [observer] : [],
@@ -58,7 +59,7 @@ void main() {
             exerciseRepositoryProvider.overrideWithValue(fakeRepo),
           ],
           child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: Builder(
               builder: (context) => Scaffold(
@@ -111,7 +112,7 @@ void main() {
             exerciseRepositoryProvider.overrideWithValue(fakeRepo),
           ],
           child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: Builder(
               builder: (context) => Scaffold(

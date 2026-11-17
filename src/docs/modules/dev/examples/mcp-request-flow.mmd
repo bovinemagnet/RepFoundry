@@ -1,0 +1,41 @@
+sequenceDiagram
+    autonumber
+    participant Assistant as Assistant (MCP client, same computer)
+    participant SDK as mcp_dart StreamableMcpServer
+    participant Guard as isMcpRequestAllowed
+    participant Tool as McpTool (e.g. list_workouts)
+    participant Scope as McpScope
+    participant Repo as Repositories (SQLite)
+
+    Note over SDK: Bound to 127.0.0.1 only
+    Assistant->>SDK: POST /mcp, Authorization: Bearer <token>
+
+    %% DNS-rebinding rules
+    alt Origin header present
+        Note over SDK: allowedOrigins is an unmatchable origin,<br/>so any Origin fails
+        SDK-->>Assistant: 403
+    else No Origin header
+        SDK->>Guard: authenticationHandler(request)
+        Note over Guard: No Origin header<br/>Host is exactly 127.0.0.1:port or localhost:port<br/>Bearer token matches (constant-time)
+        alt Any check fails
+            Guard-->>SDK: rejected
+            SDK-->>Assistant: 403
+        else All checks pass
+            Guard-->>SDK: allowed
+            Note over SDK: Fresh McpServer per request (2026-07-28)<br/>or per session (2025-11-25)
+            SDK->>Tool: tools/call
+            Tool->>Scope: resolveClientId(args)
+            Note over Scope: Me unless client data access is on
+            alt client_id supplied while access is off
+                Scope-->>Tool: McpToolError
+                Tool-->>SDK: McpToolError
+                Note over SDK: Becomes a tool result with isError true
+            else Client resolved
+                Scope-->>Tool: clientId
+                Tool->>Repo: Read-only queries (never writes)
+                Repo-->>Tool: Rows
+                Tool-->>SDK: JSON map (no GPS)
+            end
+            SDK-->>Assistant: CallToolResult (structured content + JSON text fallback)
+        end
+    end

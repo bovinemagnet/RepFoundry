@@ -1,14 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers.dart';
 import '../../../clients/presentation/providers/active_client_provider.dart';
-import '../../../exercises/domain/models/exercise.dart';
+import '../../application/training_aggregates.dart';
 
-class MuscleBalance {
-  final MuscleGroup group;
-  final double volumePercent;
-
-  const MuscleBalance({required this.group, required this.volumePercent});
-}
+export '../../application/training_aggregates.dart' show MuscleBalance;
 
 final muscleBalanceProvider =
     FutureProvider.autoDispose<List<MuscleBalance>>((ref) async {
@@ -23,30 +18,14 @@ final muscleBalanceProvider =
     clientId: clientId,
     limit: 100,
   );
-  final volumeByGroup = <MuscleGroup, double>{};
 
   final completedIds = [
     for (final w in workouts)
       if (w.completedAt != null) w.id,
   ];
   final setsByWorkout = await workoutRepo.getSetsForWorkouts(completedIds);
-  for (final sets in setsByWorkout.values) {
-    for (final s in sets) {
-      if (s.isWarmUp) continue;
-      final exercise = exerciseMap[s.exerciseId];
-      if (exercise == null) continue;
-      volumeByGroup[exercise.muscleGroup] =
-          (volumeByGroup[exercise.muscleGroup] ?? 0) + s.volume;
-    }
-  }
-
-  final total = volumeByGroup.values.fold(0.0, (a, b) => a + b);
-  if (total == 0) return [];
-
-  return volumeByGroup.entries
-      .where((e) => e.key != MuscleGroup.cardio)
-      .map((e) =>
-          MuscleBalance(group: e.key, volumePercent: (e.value / total) * 100))
-      .toList()
-    ..sort((a, b) => a.group.index.compareTo(b.group.index));
+  return computeMuscleBalance(
+    setsByWorkout.values.expand((sets) => sets),
+    exerciseMap,
+  );
 });

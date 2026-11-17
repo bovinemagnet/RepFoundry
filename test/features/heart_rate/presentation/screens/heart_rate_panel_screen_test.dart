@@ -1,5 +1,5 @@
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,6 +22,7 @@ import 'package:rep_foundry/features/heart_rate/presentation/widgets/heart_rate_
 import 'package:rep_foundry/features/heart_rate/presentation/widgets/zone_line_gradient.dart';
 import 'package:rep_foundry/core/widgets/sparkline_widget.dart';
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -127,7 +128,7 @@ void main() {
     return ProviderScope(
       overrides: screenOverrides().cast(),
       child: const MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: HeartRatePanelScreen(),
       ),
@@ -147,7 +148,7 @@ void main() {
         overrides: screenOverrides().cast(),
         child: MaterialApp.router(
           routerConfig: router,
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
         ),
       ));
@@ -312,7 +313,7 @@ void main() {
       await tester.pumpWidget(UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: HeartRatePanelScreen(),
         ),
@@ -360,7 +361,7 @@ void main() {
           heartRatePanelProvider.overrideWith(() => _SeedNotifier(state)),
         ],
         child: const MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: HeartRatePanelScreen(),
         ),
@@ -706,7 +707,7 @@ void main() {
           seededProfile,
         ],
         child: MaterialApp.router(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           routerConfig: router,
         ),

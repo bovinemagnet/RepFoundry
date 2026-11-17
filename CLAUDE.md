@@ -36,7 +36,7 @@ Presentation → Application → Domain ← Data
 - **Data**: Repository implementations (`DriftExerciseRepository`, `DriftWorkoutRepository` for production; `InMemory*Repository` kept for testing). Soft deletes via `deletedAt` field.
 - **Presentation**: Screens, widgets, and Riverpod controllers (`Notifier`, `AsyncNotifier`). Screens are thin — logic lives in controllers.
 
-**Feature directories** under `lib/features/`: `analytics`, `body_metrics`, `cardio`, `clients`, `exercises`, `health_sync`, `heart_rate`, `history`, `notifications`, `programmes`, `settings`, `stretching`, `sync`, `templates`, `trainer`, `workout`. Each feature contains its own `presentation/`, `application/`, `domain/`, and `data/` sub-layers.
+**Feature directories** under `lib/features/`: `analytics`, `body_metrics`, `cardio`, `clients`, `exercises`, `health_sync`, `heart_rate`, `history`, `mcp`, `notifications`, `programmes`, `settings`, `stretching`, `sync`, `templates`, `trainer`, `workout`. Each feature contains its own `presentation/`, `application/`, `domain/`, and `data/` sub-layers.
 
 Shared code lives in `lib/core/` (extensions, widgets, providers, database).
 
@@ -44,7 +44,7 @@ Shared code lives in `lib/core/` (extensions, widgets, providers, database).
 
 The app uses Drift for SQLite persistence. Key files:
 
-- `lib/core/database/app_database.dart` — `@DriftDatabase` class with 15 tables, `forTesting(QueryExecutor)` constructor, and seed data (21 default exercises)
+- `lib/core/database/app_database.dart` — `@DriftDatabase` class with 15 tables, `forTesting(QueryExecutor)` constructor, and seed data (23 default exercises)
 - `lib/core/database/tables/` — Drift table definitions (exercises, workouts, workout_sets, cardio_sessions, personal_records, workout_templates, template_exercises)
 - `lib/core/database/converters.dart` — DateTime↔epoch ms and enum↔string helpers
 - `lib/core/database/database_provider.dart` — Riverpod `Provider<AppDatabase>` overridden in `main()`
@@ -90,13 +90,14 @@ Offline-first cloud sync via iCloud (iOS) / Google Drive (Android). Key componen
 
 ## Additional Features
 
-- **Analytics** (`lib/features/analytics/`): Four Riverpod providers (weekly volume, muscle balance, PR timeline, training load) consumed by `AnalyticsScreen` with fl_chart charts. Presentation-only layer over workout data.
+- **Analytics** (`lib/features/analytics/`): Four Riverpod providers (weekly volume, muscle balance, PR timeline, training load) consumed by `AnalyticsScreen` with fl_chart charts. The pure aggregates (`computeWeeklyVolume`, `computeTrainingLoad`, `computeMuscleBalance`) live in `analytics/application/training_aggregates.dart`, shared with the MCP training summary tool.
 - **Body Metrics** (`lib/features/body_metrics/`): Tracks weight and optional body fat percentage entries (`BodyMetric` model). Backed by `DriftBodyMetricRepository`.
 - **Programmes** (`lib/features/programmes/`): Multi-week training programmes (`Programme`, `ProgrammeDay`, `ProgressionRule` models) with three progression strategies (fixedIncrement, percentage, deload). Drift repository + list/edit screens.
 - **Notifications** (`lib/features/notifications/`): `NotificationService` wrapping `flutter_local_notifications` with timezone support. `ReminderSettings` model + Riverpod provider for scheduled workout reminders.
 - **Health Sync** (`lib/features/health_sync/`): Platform health data synchronisation.
 - **Trainer** (`lib/features/trainer/`): Coach mode. `Persona` holds ARB phrase keys rather than literal text, so all coaching copy is localised; three packs (Steady, Hype, Sergeant) in `persona_packs.dart`. `CoachingEngine` decides when to speak; `CoachBridge` and `coach_announcements.dart` wire it to the UI. Encouragement is suppressed above the clinician cap, in caution mode, and in zone 5 — the safety warning itself still speaks. `TrainerSettings.speakInBackground` (default on) keeps the coach talking with the screen off; off, `CoachBridge` drops cues while the app is hidden or paused. `ActivityDetector` + `HrEventSource` emit `ActivityDetected` (opt-in, `activityNudgesEnabled`) after 90 s of sustained effort with no session running; `ActivityNudgeListener` around the shell shows the one-tap Start workout offer, withheld above the cap, in zone 5 and in caution mode. Gated behind `Entitlement.virtualTrainer`, which is empty by default — `TrainerEventBus.emit` drops every event when unentitled.
 - **Clients** (`lib/features/clients/`): Personal-trainer client roster (`Client`, `ClientPlanAssignment`) with per-client `HealthProfile`. An always-present self client (`kSelfClientId`) owns the operator's own data. The active client scopes new records and filters history and analytics. Roster and detail screens are reachable only via the desktop nav rail (≥600dp); the active-client switcher is available on phones mid-session.
+- **Assistant access / MCP** (`lib/features/mcp/`): desktop-only (macOS, Windows, Linux), read-only MCP server, off by default. `McpServerController` (started from `main()`) owns the single `McpServerHost`, which serves `StreamableMcpServer` from `mcp_dart` on `127.0.0.1:<port>/mcp` and is the only file importing it. `isMcpRequestAllowed` requires the bearer token, no `Origin`, and `Host` exactly `127.0.0.1:<port>`/`localhost:<port>`. Tools are pure-Dart `McpTool` classes in `application/tools/`, built by `buildMcpTools()`; data is Me-only through `McpScope` unless "Include client data" is on, and `list_clients`/`get_health_profile` are absent unless their toggles are on. Results never contain GPS. The gate is `isMcpHostSupported`, never `context.isDesktop`.
 - **Stretching** (`lib/features/stretching/`): Timed stretching entries (`StretchingSession`) with 20 localised presets. No dedicated route — it renders as a section inside the active workout screen.
 
 ## Navigation (GoRouter)
@@ -160,7 +161,11 @@ GitHub Actions workflow (`.github/workflows/release.yml`) builds a signed Androi
 
 ## Localisation (l10n)
 
-All user-facing strings are externalised to `lib/l10n/app_en.arb` using Flutter's `gen-l10n` code generation. The generated class `S` lives in `lib/l10n/generated/` and is configured via `l10n.yaml` (output class `S`, output dir `lib/l10n/generated/`). Access strings via `S.of(context)!` in widget build methods. Widget tests must include `localizationsDelegates: S.localizationsDelegates` and `supportedLocales: S.supportedLocales` on their `MaterialApp`. Run `flutter gen-l10n` after modifying `.arb` files. The domain `warning_messages.dart` is retained as a non-Flutter fallback but presentation widgets use `S` instead.
+All user-facing strings are externalised to `lib/l10n/app_en.arb` using Flutter's `gen-l10n` code generation. The generated class `S` lives in `lib/l10n/generated/` and is configured via `l10n.yaml` (output class `S`, output dir `lib/l10n/generated/`). Access strings via `S.of(context)!` in widget build methods. Widget tests must include `localizationsDelegates: kAppLocalizationsDelegates` (`lib/l10n/app_localizations_delegates.dart`) and `supportedLocales: S.supportedLocales` on their `MaterialApp`. Never use `S.localizationsDelegates`: gen-l10n still lists the `flutter_localizations` delegates there, which `material_ui` widgets do not see, so non-English locales get no Material strings (`l10n.yaml`'s `header` mutes their deprecation in generated files). Run `flutter gen-l10n` after modifying `.arb` files. The domain `warning_messages.dart` is retained as a non-Flutter fallback but presentation widgets use `S` instead.
+
+## Material (`material_ui`)
+
+Import `package:material_ui/material_ui.dart`, never the deprecated `package:flutter/material.dart`. `material_ui` is a separate copy of Material, so a dependency still importing the framework library sees different `ThemeData`, `TextTheme` and `MaterialApp` types: check a package has moved across before adding or upgrading it (go_router ≥ 18 and google_fonts ≥ 9 have). CI pins Flutter 3.50.0 in both workflows.
 
 ## Linting
 

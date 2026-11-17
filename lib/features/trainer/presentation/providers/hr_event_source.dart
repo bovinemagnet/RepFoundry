@@ -176,9 +176,9 @@ class HrEventSource {
   /// `exists` guards keep this from building either controller as a side
   /// effect: one that has never been built has no session running.
   bool _sessionRunning() {
-    final workout = _ref.exists(activeWorkoutControllerProvider) &&
+    final workout = _ref.read(activeWorkoutControllerProvider.exists) &&
         _ref.read(activeWorkoutControllerProvider).hasActiveWorkout;
-    final cardio = _ref.exists(cardioTrackingProvider) &&
+    final cardio = _ref.read(cardioTrackingProvider.exists) &&
         _ref.read(cardioTrackingProvider).isRunning;
     return workout || cardio;
   }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// An editorial-style date section header with uppercase tracking label
 /// and a thin separator line extending to the right.

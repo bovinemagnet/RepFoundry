@@ -1,5 +1,5 @@
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/core/providers.dart';
@@ -20,6 +20,7 @@ import 'package:rep_foundry/features/templates/data/workout_template_repository_
 import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout.dart';
 import 'package:rep_foundry/features/workout/domain/models/workout_set.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 /// An [AsyncNotifier] override that resolves the active client to the fixed
@@ -64,7 +65,7 @@ void main() {
         ),
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: WorkoutDetailScreen(workoutId: workoutId),
       ),
@@ -140,7 +141,7 @@ void main() {
           ),
         ],
         child: const MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: WorkoutDetailScreen(workoutId: 'w1'),
         ),
@@ -299,7 +300,7 @@ void main() {
           }),
         ],
         child: const MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: WorkoutDetailScreen(workoutId: 'w-cardio'),
         ),

@@ -1,5 +1,5 @@
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rep_foundry/features/analytics/presentation/providers/muscle_balance_provider.dart';
@@ -8,6 +8,7 @@ import 'package:rep_foundry/features/analytics/presentation/providers/pr_timelin
 import 'package:rep_foundry/features/analytics/presentation/providers/training_load_provider.dart';
 import 'package:rep_foundry/features/analytics/presentation/providers/weekly_volume_provider.dart';
 import 'package:rep_foundry/features/analytics/presentation/screens/analytics_screen.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
@@ -27,7 +28,7 @@ void main() {
         trainingLoadProvider.overrideWith((ref) async => load),
       ],
       child: const MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: AnalyticsScreen(),
       ),

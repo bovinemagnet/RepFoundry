@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,6 +12,7 @@ import 'package:rep_foundry/features/clients/presentation/providers/active_clien
 import 'package:rep_foundry/features/health_sync/data/health_sync_service.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_sync_settings_provider.dart';
 import 'package:rep_foundry/features/health_sync/presentation/providers/health_weight_import_provider.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 /// Always resolves to a fixed, non-Me client, regardless of SharedPreferences
@@ -109,7 +110,7 @@ void main() {
           bodyMetricRepositoryProvider.overrideWithValue(repository),
       ],
       child: const MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: BodyMetricsScreen(),
       ),
@@ -342,7 +343,7 @@ void main() {
             healthWeightCheckProvider.overrideWith((ref) async => sample),
           ],
           child: const MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: BodyMetricsScreen(),
           ),
@@ -381,7 +382,7 @@ void main() {
             healthWeightCheckProvider.overrideWith((ref) async => sample),
           ],
           child: const MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: BodyMetricsScreen(),
           ),
@@ -435,7 +436,7 @@ void main() {
         UncontrolledProviderScope(
           container: container,
           child: const MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: BodyMetricsScreen(),
           ),
@@ -474,7 +475,7 @@ void main() {
             healthWeightCheckProvider.overrideWith((ref) async => null),
           ],
           child: const MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: BodyMetricsScreen(),
           ),

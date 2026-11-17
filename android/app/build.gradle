@@ -25,6 +25,12 @@ android {
         jvmTarget = "1.8"
     }
 
+    // AGP 9 turns custom resource values off by default; the flavours use them
+    // for app_name.
+    buildFeatures {
+        resValues true
+    }
+
     defaultConfig {
         applicationId "com.repfoundry.app"
         // Android 10 (API 29) is the minimum per the PRD
@@ -60,11 +66,6 @@ android {
                     ? signingConfigs.release
                     : signingConfigs.debug
         }
-    }
-
-    // AGP 9 disables resValue by default; the flavours set app_name with it.
-    buildFeatures {
-        resValues true
     }
 
     flavorDimensions "env"

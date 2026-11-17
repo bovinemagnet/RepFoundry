@@ -1,5 +1,5 @@
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +12,7 @@ import 'package:rep_foundry/core/units/weight_unit.dart';
 import 'package:rep_foundry/core/units/weight_unit_provider.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/providers/zone_coloured_line_provider.dart';
 import 'package:rep_foundry/features/settings/presentation/screens/settings_screen.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 import 'package:rep_foundry/features/settings/presentation/providers/plate_settings_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -98,7 +99,7 @@ void main() {
         syncOrchestratorProvider.overrideWithValue(orchestrator),
       ],
       child: const MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: SettingsScreen(),
       ),

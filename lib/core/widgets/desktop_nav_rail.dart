@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rep_foundry/core/widgets/rep_foundry_app_icon.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';

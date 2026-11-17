@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +7,7 @@ import 'package:rep_foundry/features/exercises/data/exercise_repository_impl.dar
 import 'package:rep_foundry/features/exercises/domain/models/exercise.dart';
 import 'package:rep_foundry/features/exercises/presentation/providers/exercise_usage_provider.dart';
 import 'package:rep_foundry/features/exercises/presentation/screens/exercise_picker_screen.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
@@ -27,7 +28,7 @@ void main() {
     return ProviderScope(
       overrides: overrides(),
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: ExercisePickerScreen(sessionExerciseIds: sessionExerciseIds),
       ),
@@ -126,7 +127,7 @@ void main() {
         ProviderScope(
           overrides: overrides(),
           child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: Builder(
               builder: (context) => Scaffold(

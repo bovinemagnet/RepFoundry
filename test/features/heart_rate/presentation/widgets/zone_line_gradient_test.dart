@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hr_zones/hr_zones.dart';
 import 'package:rep_foundry/features/heart_rate/presentation/widgets/zone_line_gradient.dart';

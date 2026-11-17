@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:rep_foundry/core/units/weight_unit.dart';
 import 'package:rep_foundry/core/units/weight_unit_provider.dart';
 import 'package:rep_foundry/core/widgets/kinetic.dart';

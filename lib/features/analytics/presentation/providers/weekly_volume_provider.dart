@@ -1,50 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers.dart';
 import '../../../clients/presentation/providers/active_client_provider.dart';
+import '../../application/training_aggregates.dart';
 
-class SetData {
-  final DateTime date;
-  final double volume;
-  final double? rpe;
-
-  const SetData({required this.date, required this.volume, this.rpe});
-}
-
-class WeeklyVolume {
-  final DateTime weekStart;
-  final double totalVolume;
-  final double? percentChange;
-
-  const WeeklyVolume(
-      {required this.weekStart, required this.totalVolume, this.percentChange});
-}
-
-List<WeeklyVolume> computeWeeklyVolume(List<SetData> sets) {
-  final byWeek = <DateTime, double>{};
-  for (final s in sets) {
-    // Bucket by the user's local week, not the UTC week stored in the DB.
-    final local = s.date.toLocal();
-    final weekStart = local.subtract(Duration(days: local.weekday - 1));
-    final key = DateTime(weekStart.year, weekStart.month, weekStart.day);
-    byWeek[key] = (byWeek[key] ?? 0) + s.volume;
-  }
-
-  final sorted = byWeek.entries.toList()
-    ..sort((a, b) => a.key.compareTo(b.key));
-
-  final result = <WeeklyVolume>[];
-  for (var i = 0; i < sorted.length; i++) {
-    final prev = i > 0 ? sorted[i - 1].value : null;
-    final change = prev != null && prev > 0
-        ? ((sorted[i].value - prev) / prev) * 100
-        : null;
-    result.add(WeeklyVolume(
-        weekStart: sorted[i].key,
-        totalVolume: sorted[i].value,
-        percentChange: change));
-  }
-  return result;
-}
+export '../../application/training_aggregates.dart'
+    show SetData, WeeklyVolume, computeWeeklyVolume;
 
 final weeklyVolumeProvider =
     FutureProvider.autoDispose<List<WeeklyVolume>>((ref) async {

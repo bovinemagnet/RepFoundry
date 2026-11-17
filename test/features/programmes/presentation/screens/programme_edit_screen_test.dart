@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +10,7 @@ import 'package:rep_foundry/features/programmes/domain/repositories/programme_re
 import 'package:rep_foundry/features/programmes/presentation/screens/programme_edit_screen.dart';
 import 'package:rep_foundry/features/templates/domain/models/workout_template.dart';
 import 'package:rep_foundry/features/templates/domain/repositories/workout_template_repository.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 class _FakeProgrammeRepository implements ProgrammeRepository {
@@ -188,7 +189,7 @@ void main() {
           workoutTemplateRepositoryProvider.overrideWithValue(templateRepo),
       ],
       child: MaterialApp.router(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         routerConfig: router,
       ),

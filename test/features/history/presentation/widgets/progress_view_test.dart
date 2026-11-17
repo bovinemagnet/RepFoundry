@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +11,7 @@ import 'package:rep_foundry/features/history/presentation/providers/workout_freq
 import 'package:rep_foundry/features/history/presentation/providers/workout_volume_chart_provider.dart';
 import 'package:rep_foundry/features/history/presentation/widgets/calendar_heatmap.dart';
 import 'package:rep_foundry/features/history/presentation/widgets/progress_view.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 void main() {
@@ -57,7 +58,7 @@ void main() {
           workoutFrequencyProvider.overrideWith((ref) async => frequency),
         ],
         child: MaterialApp.router(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           routerConfig: router,
         ),

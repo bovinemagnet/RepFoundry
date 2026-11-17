@@ -44,6 +44,13 @@ double? get paceMinutesPerKm {
 
 `CardioTrackingScreen` renders a live dashboard driven by `CardioTrackingState` — elapsed time, GPS distance/pace, and current BPM are all fields on that state, updated by `CardioTrackingController` on a 1-second timer and on each GPS/HR stream event.
 
+[#sport-list]
+=== Sport list
+
+The sport pills come from `_cardioExercisesProvider` in `cardio_tracking_screen.dart`. It lists every non-deleted exercise whose category is Cardio or whose muscle group is Cardio, sorted by name, and the first entry is preselected. With the defaults that is Elliptical, Rowing Machine, Stair Climber, Stationary Bike and Treadmill. The built-in Rowing Machine (category Cardio, muscle group Full Body) therefore appears, as do custom exercises with a Cardio category. The pill row scrolls horizontally when the pills do not fit; while they fit they share the full width, and when they do not, each pill takes the width of the longest name so no name is truncated.
+
+Elliptical (`'22'`) and Stair Climber (`'23'`) are seeded defaults. For existing installs, the schema v15 migration step (guarded by `from < 15`) inserts each entry of `_cardioExercisesAddedInV15` in `AppDatabase`, but only if no exercise already has that id or the same name compared case-insensitively, so a user's own "Elliptical" is not duplicated. See xref:database.adoc#_migration_strategy[Database].
+
 == GPS Distance Tracking
 
 RepFoundry uses the `geolocator` package to stream GPS position fixes.

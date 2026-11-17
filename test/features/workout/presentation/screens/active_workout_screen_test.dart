@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +18,7 @@ import 'package:rep_foundry/features/workout/data/workout_repository_impl.dart';
 import 'package:rep_foundry/features/workout/presentation/controllers/active_workout_controller.dart';
 import 'package:rep_foundry/core/widgets/loading_widget.dart';
 import 'package:rep_foundry/features/workout/presentation/screens/active_workout_screen.dart';
+import 'package:rep_foundry/l10n/app_localizations_delegates.dart';
 import 'package:rep_foundry/l10n/generated/app_localizations.dart';
 
 import '../../../cardio/data/fake_heart_rate_service.dart';
@@ -56,7 +57,7 @@ void main() {
         syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: wrapInOuterScaffold ? const Scaffold(body: screen) : screen,
       ),
@@ -517,7 +518,7 @@ void main() {
             heartRateServiceProvider.overrideWithValue(hrService),
           ],
           child: const MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: ActiveWorkoutScreen(),
           ),
@@ -608,7 +609,7 @@ void main() {
           syncSettingsProvider.overrideWith(() => SyncSettingsNotifier()),
         ],
         child: MaterialApp.router(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           routerConfig: router,
         ),
