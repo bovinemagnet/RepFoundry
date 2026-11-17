@@ -44,7 +44,7 @@ void main() {
 
       expect(find.text('Settings'), findsWidgets);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
   });
 }

@@ -111,7 +111,7 @@ void main() {
       await pumpUntilFound(tester, find.text('Workout'));
       expect(find.text('Workout'), findsWidgets);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
   });
 }

@@ -34,7 +34,7 @@ void main() {
       // Programmes screen should show empty state.
       expect(find.text('No programmes yet'), findsOneWidget);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
 
     testWidgets('create a programme and verify it appears', (tester) async {
@@ -82,7 +82,7 @@ void main() {
       await pumpUntilFound(tester, find.text('Test Programme'));
       expect(find.text('Test Programme'), findsOneWidget);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
   });
 }

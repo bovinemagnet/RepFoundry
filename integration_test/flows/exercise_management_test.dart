@@ -42,7 +42,7 @@ void main() {
       await pumpUntilFound(tester, find.text('Barbell Squat'));
       expect(find.text('Barbell Squat'), findsOneWidget);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
 
     testWidgets('filter exercises by muscle group', (tester) async {
@@ -77,7 +77,7 @@ void main() {
       await pumpUntilFound(tester, find.text('Barbell Squat'));
       expect(find.text('Barbell Squat'), findsOneWidget);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
   });
 }

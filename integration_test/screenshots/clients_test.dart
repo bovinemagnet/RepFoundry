@@ -32,6 +32,6 @@ void main() {
 
     await settleForCapture(tester);
     await binding.takeScreenshot('clients');
-    await testApp.database.close();
+    await closeTestApp(tester, testApp.database);
   });
 }

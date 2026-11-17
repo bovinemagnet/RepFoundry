@@ -29,7 +29,7 @@ void main() {
       // Analytics screen should show the empty state.
       expect(find.text('Not enough data yet'), findsOneWidget);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
   });
 }

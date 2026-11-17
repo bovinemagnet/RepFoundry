@@ -19,7 +19,7 @@ void main() {
       expect(find.text('HEART RATE'), findsOneWidget);
       expect(find.text('SETTINGS'), findsOneWidget);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
 
     testWidgets('can navigate between tabs', (tester) async {
@@ -44,7 +44,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Start Workout'), findsWidgets);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
   });
 }

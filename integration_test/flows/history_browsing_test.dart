@@ -73,7 +73,7 @@ void main() {
       await pumpUntilFound(tester, find.text(exercise.name));
       expect(find.text(exercise.name), findsWidgets);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
   });
 }
