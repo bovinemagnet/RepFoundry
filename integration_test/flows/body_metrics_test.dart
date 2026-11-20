@@ -36,7 +36,7 @@ void main() {
       // Empty state should be shown.
       expect(find.text('No body metrics yet'), findsOneWidget);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
 
     testWidgets('add a body metric and verify it appears', (tester) async {
@@ -75,7 +75,7 @@ void main() {
       // Metric should appear in the list.
       expect(find.textContaining('75.5'), findsWidgets);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
   });
 }

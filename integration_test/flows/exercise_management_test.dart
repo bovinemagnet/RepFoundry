@@ -42,7 +42,7 @@ void main() {
       await pumpUntilFound(tester, find.text('Barbell Squat'));
       expect(find.text('Barbell Squat'), findsOneWidget);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
 
     testWidgets('filter exercises by muscle group', (tester) async {
@@ -68,8 +68,17 @@ void main() {
       // Should only show chest exercises — bench press should be visible.
       expect(find.text('Barbell Bench Press'), findsOneWidget);
 
-      // Reset filter by tapping "All".
+      // Reset filter by tapping "All". The chip row is a lazy horizontal list
+      // and ensureVisible(chest) scrolled "All" out of it, so it is not built
+      // until the row scrolls back.
       final allChip = find.text('All');
+      await tester.scrollUntilVisible(
+        allChip,
+        -100,
+        scrollable: find
+            .ancestor(of: chestChip, matching: find.byType(Scrollable))
+            .first,
+      );
       await tester.tap(allChip);
       await tester.pumpAndSettle();
 
@@ -77,7 +86,7 @@ void main() {
       await pumpUntilFound(tester, find.text('Barbell Squat'));
       expect(find.text('Barbell Squat'), findsOneWidget);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
   });
 }

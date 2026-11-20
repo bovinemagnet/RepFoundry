@@ -30,6 +30,6 @@ void main() {
     // in a screenshot review until someone notices the app looks unused.
     expect(find.textContaining('No workouts'), findsNothing);
 
-    await testApp.database.close();
+    await closeTestApp(tester, testApp.database);
   });
 }

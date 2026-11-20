@@ -213,19 +213,36 @@ They run on a real emulator (Android) or simulator (iOS).
 
 Integration tests live under `integration_test/` at the project root (separate from `test/`).
 
-The shared `createTestApp()` helper in `integration_test/test_app.dart` bootstraps the full app with a test database.
-Tests use `pumpUntilFound()` to wait for asynchronous widgets to appear before interacting:
+The shared helpers live in `integration_test/helpers/test_app.dart`.
+`createTestApp()` is asynchronous and returns a record, `({Widget app, AppDatabase database})`.
+It bootstraps the full app against an in-memory Drift database, with fakes for heart rate, location, health sync and notifications.
+Tests call the top-level `pumpUntilFound(tester, finder)` function to wait for asynchronous widgets to appear before interacting.
+It pumps every 100 ms until the finder matches, and gives up after a 10 second timeout.
 
 [source,dart]
 ----
 void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
   testWidgets('complete workout flow', (tester) async {
-    await tester.pumpWidget(createTestApp());
-    await tester.pumpUntilFound(find.text('Start Workout'));
+    final testApp = await createTestApp();
+    await tester.pumpWidget(testApp.app);
+    await tester.pumpAndSettle();
     // interact with the app …
+    await pumpUntilFound(tester, find.text('Workout'));
+
+    await closeTestApp(tester, testApp.database);
   });
 }
 ----
+
+IMPORTANT: Every test that pumps `createTestApp()` must end with `await closeTestApp(tester, testApp.database);`, and must never call `database.close()` directly.
+`closeTestApp()` unmounts the app with `tester.pumpWidget(const SizedBox.shrink())` and only then closes the database.
+Drift's `close()` waits for every watch-stream subscriber to receive its done event, and a paused subscriber never receives it.
+While the app is still mounted, a provider behind a hidden screen (a tab, or a route underneath another) can hold a paused subscription, so closing the database first hangs the test indefinitely.
+The framework timeout does not fire on a device, so the run simply stalls (issue #159 hung `complete_workout_test.dart` and `exercise_management_test.dart` on a physical Android phone).
+Unmounting the app cancels those subscriptions.
+The app itself never closes its database, so only tests are affected.
 
 == Running Tests
 

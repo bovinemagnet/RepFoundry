@@ -21,7 +21,7 @@ void main() {
       // "Cardio" (mixed case) uniquely identifies the screen.
       expect(find.text('Cardio'), findsOneWidget);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
   });
 }

@@ -44,6 +44,19 @@ Future<({Widget app, AppDatabase database})> createTestApp({
   return (app: app, database: database);
 }
 
+/// Unmounts the app, then closes [database]. Every test that pumps
+/// [createTestApp] ends with this rather than `database.close()`.
+///
+/// Drift's `close()` waits for each watch-stream subscriber to receive its
+/// done event, and a paused subscriber never does. While the app is mounted,
+/// a provider behind a hidden screen (a tab or route underneath) can hold a
+/// paused subscription, so closing first hangs the test forever (#159).
+/// Unmounting cancels those subscriptions.
+Future<void> closeTestApp(WidgetTester tester, AppDatabase database) async {
+  await tester.pumpWidget(const SizedBox.shrink());
+  await database.close();
+}
+
 /// Repeatedly pumps until the [finder] matches at least one widget,
 /// or times out after [timeout].
 Future<void> pumpUntilFound(

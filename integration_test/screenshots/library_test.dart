@@ -32,7 +32,7 @@ void main() {
     await goTo(tester, location);
     await settleForCapture(tester);
     await binding.takeScreenshot(name);
-    await testApp.database.close();
+    await closeTestApp(tester, testApp.database);
   }
 
   testWidgets('exercise-library', (tester) async {

@@ -43,7 +43,7 @@ void main() {
     await _typeSet(tester, weight: '62.5', reps: '6');
 
     await binding.takeScreenshot('workout-logging');
-    await testApp.database.close();
+    await closeTestApp(tester, testApp.database);
   });
 
   testWidgets('first-workout', (tester) async {
@@ -111,7 +111,7 @@ void main() {
     );
 
     await binding.takeScreenshot('first-workout');
-    await testApp.database.close();
+    await closeTestApp(tester, testApp.database);
   });
 
   testWidgets('stretching', (tester) async {
@@ -136,7 +136,7 @@ void main() {
     await settleForCapture(tester);
 
     await binding.takeScreenshot('stretching');
-    await testApp.database.close();
+    await closeTestApp(tester, testApp.database);
   });
 
   testWidgets('cardio-session', (tester) async {
@@ -198,7 +198,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     await binding.takeScreenshot('cardio-session');
-    await testApp.database.close();
+    await closeTestApp(tester, testApp.database);
   });
 
   testWidgets('heart-rate-panel', (tester) async {
@@ -233,7 +233,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     await binding.takeScreenshot('heart-rate-panel');
-    await testApp.database.close();
+    await closeTestApp(tester, testApp.database);
   });
 
   testWidgets('coach-mode', (tester) async {
@@ -249,7 +249,7 @@ void main() {
     await settleForCapture(tester);
 
     await binding.takeScreenshot('coach-mode');
-    await testApp.database.close();
+    await closeTestApp(tester, testApp.database);
   });
 }
 

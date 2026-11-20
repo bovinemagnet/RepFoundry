@@ -76,7 +76,7 @@ void main() {
       expect(find.text(exercise1.name), findsOneWidget);
       expect(find.text(exercise2.name), findsOneWidget);
 
-      await testApp.database.close();
+      await closeTestApp(tester, testApp.database);
     });
   });
 }

@@ -34,21 +34,21 @@ void main() {
     final database = await open(tester, location: '/history');
     await settleForCapture(tester);
     await binding.takeScreenshot('history');
-    await database.close();
+    await closeTestApp(tester, database);
   });
 
   testWidgets('analytics', (tester) async {
     final database = await open(tester, location: '/analytics');
     await settleForCapture(tester);
     await binding.takeScreenshot('analytics');
-    await database.close();
+    await closeTestApp(tester, database);
   });
 
   testWidgets('body-metrics', (tester) async {
     final database = await open(tester, location: '/body-metrics');
     await settleForCapture(tester);
     await binding.takeScreenshot('body-metrics');
-    await database.close();
+    await closeTestApp(tester, database);
   });
 
   testWidgets('sync', (tester) async {
@@ -72,7 +72,7 @@ void main() {
     await tester.pumpAndSettle();
     await settleForCapture(tester);
     await binding.takeScreenshot('sync');
-    await database.close();
+    await closeTestApp(tester, database);
   });
 
   testWidgets('nav', (tester) async {
@@ -85,6 +85,6 @@ void main() {
     final database = await open(tester, location: '/history');
     await settleForCapture(tester);
     await binding.takeScreenshot('nav');
-    await database.close();
+    await closeTestApp(tester, database);
   });
 }
